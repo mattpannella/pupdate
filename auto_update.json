@@ -1,0 +1,50 @@
+[
+  {
+    "repo": {
+      "user": "spiritualized1997",
+      "project": "openFPGA-GBA"
+      }
+  },
+  {
+    "repo": {
+      "user": "spiritualized1997",
+      "project": "openFPGA-GB-GBC"
+      },
+    "name": "Spiritualized.GBC"
+  },
+  {
+    "repo": {
+      "user": "spacemen3",
+      "project": "PDP-1"
+      }
+  },
+  {
+    "repo": {
+      "user": "Mazamars312",
+      "project": "Analogue_Pocket_Neogeo"
+      },
+    "name": "Mazamars312.NeoGeo",
+    "allowPrerelease": true
+  },
+  {
+    "repo": {
+      "user": "spiritualized1997",
+      "project": "openFPGA-SG1000"
+      },
+      "name": "Spiritualized.SG-1000"
+  },
+  {
+    "repo": {
+      "user": "spiritualized1997",
+      "project": "openFPGA-SMS"
+      },
+      "name": "Spiritualized.SMS"
+  },
+  {
+    "repo": {
+      "user": "spiritualized1997",
+      "project": "openFPGA-GG"
+      },
+      "name": "Spiritualized.GG"
+  }
+]
