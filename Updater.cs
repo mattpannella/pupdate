@@ -27,7 +27,7 @@ public class Updater
         if(File.Exists(coresFile)) {
             this.jsonFile = coresFile;
         } else {
-            throw new FileNotFoundException("Cores json file not found!");
+            throw new FileNotFoundException("Cores json file not found: " + coresFile);
         }
     }
 
