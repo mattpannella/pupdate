@@ -2,62 +2,64 @@ using System;
 using System.Text.RegularExpressions;
 using System.IO.Compression;
 using System.Text.Json;
-using System.Net.Http;
 using System.Net.Http.Headers; 
 
 public class Updater
 {
-    private string baseDir;
+    private const string SEMVER_FINDER = @"\D*(\d(\.\d)*\.\d)\D*";
 
-    private const string semverFinder = @"\D*(\d(\.\d)*\.\d)\D*";
-
-    private const string apiUrl = "https://api.github.com/repos/{0}/{1}/releases";
-    private string jsonFile;
+    private const string GITHUB_API_URL = "https://api.github.com/repos/{0}/{1}/releases";
     private static readonly string[] ZIP_TYPES = {"application/x-zip-compressed", "application/zip"};
+    private const string ZIP_FILE_NAME = "core.zip";
+
+    private bool _useConsole = false;
+    private string _baseDir;
+    private string _coresFile;
 
     public Updater(string coresFile, string baseDirectory)
     {
-        //make sure the path ends in a /
-        if(!baseDirectory.EndsWith(Path.DirectorySeparatorChar)) {
-            baseDirectory += Path.DirectorySeparatorChar;
-        }
-        this.baseDir = baseDirectory;
+        _baseDir = baseDirectory;
 
         //make sure the json file exists
         if(File.Exists(coresFile)) {
-            this.jsonFile = coresFile;
+            _coresFile = coresFile;
         } else {
             throw new FileNotFoundException("Cores json file not found: " + coresFile);
         }
     }
 
-    public async Task runUpdates()
+    public void PrintToConsole(bool set)
     {
-        string json = File.ReadAllText(jsonFile);
+        _useConsole = set;
+    }
+
+    public async Task RunUpdates()
+    {
+        string json = File.ReadAllText(_coresFile);
         List<Core>? coresList = JsonSerializer.Deserialize<List<Core>>(json);
         //TODO check if null
         foreach(Core core in coresList) {
             Repo repo = core.repo;
-            Console.WriteLine("Starting Repo: " + repo.project);
+            _writeMessage("Starting Repo: " + repo.project);
             string name = core.name;
             bool allowPrerelease = core.allowPrerelease;
-            string url = String.Format(apiUrl, repo.user, repo.project);
-            string response = await fetchReleases(url);
+            string url = String.Format(GITHUB_API_URL, repo.user, repo.project);
+            string response = await _fetchReleases(url);
             if(response == null) {
                 Environment.Exit(1);
             }
             List<Github.Release>? releases = JsonSerializer.Deserialize<List<Github.Release>>(response);
-            var mostRecentRelease = getMostRecentRelease(releases, allowPrerelease);
+            var mostRecentRelease = _getMostRecentRelease(releases, allowPrerelease);
             
             string tag_name = mostRecentRelease.tag_name;
             List<Github.Asset> assets = mostRecentRelease.assets;
 
-            Regex r = new Regex(semverFinder);
+            Regex r = new Regex(SEMVER_FINDER);
             Match matches = r.Match(tag_name);
 
             var releaseSemver = matches.Groups[1].Value;
             //TODO throw some error if it doesn't find a semver in the tag
-            releaseSemver = this.semverFix(releaseSemver);
+            releaseSemver = _semverFix(releaseSemver);
 
             Github.Asset coreAsset = null;
 
@@ -71,13 +73,13 @@ public class Updater
             }
 
             if(coreAsset == null) {
-                Console.WriteLine("No zip file found for release. Skipping");
+                _writeMessage("No zip file found for release. Skipping");
                 continue;
             }
 
             string nameGuess = name ?? coreAsset.name.Split("_")[0];
-            Console.WriteLine(tag_name + " is the most recent release, checking local core...");
-            string localCoreFile = baseDir + "Cores/"+nameGuess+"/core.json";
+            _writeMessage(tag_name + " is the most recent release, checking local core...");
+            string localCoreFile = Path.Combine(_baseDir, "Cores/"+nameGuess+"/core.json");
             bool fileExists = File.Exists(localCoreFile);
 
               if (fileExists) {
@@ -91,31 +93,31 @@ public class Updater
                 string localSemver = "";
                 if(matches != null && matches.Groups.Count > 1) {
                     localSemver = matches.Groups[1].Value;
-                    localSemver = semverFix(localSemver);
-                    Console.WriteLine("local core found: v" + localSemver);
+                    localSemver = _semverFix(localSemver);
+                    _writeMessage("local core found: v" + localSemver);
                 }
 
-                if (!isActuallySemver(localSemver) || !isActuallySemver(releaseSemver)) {
-                    Console.WriteLine("downloading core anyway");
-                    await updateCore(coreAsset.browser_download_url);
+                if (!_isActuallySemver(localSemver) || !_isActuallySemver(releaseSemver)) {
+                    _writeMessage("downloading core anyway");
+                    await _updateCore(coreAsset.browser_download_url);
                     continue;
                 }
 
-                if (semverCompare(releaseSemver, localSemver)){
-                    Console.WriteLine("Updating core");
-                    await updateCore(coreAsset.browser_download_url);
+                if (_semverCompare(releaseSemver, localSemver)){
+                    _writeMessage("Updating core");
+                    await _updateCore(coreAsset.browser_download_url);
                 } else {
-                    Console.WriteLine("Up to date. Skipping core");
+                    _writeMessage("Up to date. Skipping core");
                 }
             } else {
-                Console.WriteLine("Downloading core");
-                await updateCore(coreAsset.browser_download_url);
+                _writeMessage("Downloading core");
+                await _updateCore(coreAsset.browser_download_url);
             }
-            Console.WriteLine("------------");
+            _writeMessage("------------");
         }
     }
 
-    private Github.Release getMostRecentRelease(List<Github.Release> releases, bool allowPrerelease)
+    private Github.Release _getMostRecentRelease(List<Github.Release> releases, bool allowPrerelease)
     {
         foreach(Github.Release release in releases) {
             if(!release.draft && (allowPrerelease || !release.prerelease)) {
@@ -126,7 +128,7 @@ public class Updater
         return null;
     }
 
-    private async Task<string> fetchReleases(string url)
+    private async Task<string> _fetchReleases(string url)
     {
         try {
             var client = new HttpClient();
@@ -145,14 +147,14 @@ public class Updater
 
             return responseBody;
         } catch (HttpRequestException e) {
-            Console.WriteLine("Error pulling communicating with Github API.");
-            Console.WriteLine(e.Message);
+            _writeMessage("Error pulling communicating with Github API.");
+            _writeMessage(e.Message);
             return null;
         }
     }
 
     //even though its technically not a valid semver, allow use of 2 part versions, and just add a .0 to complete the 3rd part
-    private string semverFix(string version)
+    private string _semverFix(string version)
     {
         string[] parts = version.Split(".");
 
@@ -163,7 +165,7 @@ public class Updater
         return version;
     }
 
-    private bool semverCompare(string semverA, string semverB)
+    private bool _semverCompare(string semverA, string semverB)
     {
         Version verA = Version.Parse(semverA);
         Version verB = Version.Parse(semverB);
@@ -180,22 +182,29 @@ public class Updater
         }
     }
 
-    private bool isActuallySemver(string potentiallySemver)
+    private bool _isActuallySemver(string potentiallySemver)
     {
         Version ver = null;
         return Version.TryParse(potentiallySemver, out ver);
     }
 
-    private async Task updateCore(string downloadLink)
+    private async Task _updateCore(string downloadLink)
     {
-        Console.WriteLine("Downloading file " + downloadLink + "...");
-        string zipPath = baseDir + "core.zip";
-        string extractPath = baseDir;
+        _writeMessage("Downloading file " + downloadLink + "...");
+        string zipPath = Path.Combine(_baseDir, ZIP_FILE_NAME);
+        string extractPath = _baseDir;
         await HttpHelper.DownloadFileAsync(downloadLink, zipPath);
 
-        Console.WriteLine("Extracting...");
+        _writeMessage("Extracting...");
         ZipFile.ExtractToDirectory(zipPath, extractPath, true);
         File.Delete(zipPath);
-        Console.WriteLine("Installation complete.");
+        _writeMessage("Installation complete.");
+    }
+
+    private void _writeMessage(string message)
+    {
+        if(_useConsole) {
+            Console.WriteLine(message);
+        }
     }
 }
