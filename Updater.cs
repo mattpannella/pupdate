@@ -15,16 +15,22 @@ public class PocketCoreUpdater
     private const string ZIP_FILE_NAME = "core.zip";
 
     private bool _useConsole = false;
-    private string _baseDir;
-    private string _coresFile;
+    /// <summary>
+    /// The directory where fpga cores will be installed and updated into
+    /// </summary>
+    public string UpdateDirectory { get; set; }
+    /// <summary>
+    /// The json file containing the list of cores to check
+    /// </summary>
+    public string CoresFile { get; set; }
 
-    public PocketCoreUpdater(string coresFile, string baseDirectory)
+    public PocketCoreUpdater(string coresFile, string updateDirectory)
     {
-        _baseDir = baseDirectory;
+        UpdateDirectory = updateDirectory;
 
         //make sure the json file exists
         if(File.Exists(coresFile)) {
-            _coresFile = coresFile;
+            CoresFile = coresFile;
         } else {
             throw new FileNotFoundException("Cores json file not found: " + coresFile);
         }
@@ -37,7 +43,7 @@ public class PocketCoreUpdater
 
     public async Task RunUpdates()
     {
-        string json = File.ReadAllText(_coresFile);
+        string json = File.ReadAllText(CoresFile);
         List<Core>? coresList = JsonSerializer.Deserialize<List<Core>>(json);
         //TODO check if null
         foreach(Core core in coresList) {
@@ -81,7 +87,7 @@ public class PocketCoreUpdater
 
             string nameGuess = name ?? coreAsset.name.Split("_")[0];
             _writeMessage(tag_name + " is the most recent release, checking local core...");
-            string localCoreFile = Path.Combine(_baseDir, "Cores/"+nameGuess+"/core.json");
+            string localCoreFile = Path.Combine(UpdateDirectory, "Cores/"+nameGuess+"/core.json");
             bool fileExists = File.Exists(localCoreFile);
 
               if (fileExists) {
@@ -193,8 +199,8 @@ public class PocketCoreUpdater
     private async Task _updateCore(string downloadLink)
     {
         _writeMessage("Downloading file " + downloadLink + "...");
-        string zipPath = Path.Combine(_baseDir, ZIP_FILE_NAME);
-        string extractPath = _baseDir;
+        string zipPath = Path.Combine(UpdateDirectory, ZIP_FILE_NAME);
+        string extractPath = UpdateDirectory;
         await HttpHelper.DownloadFileAsync(downloadLink, zipPath);
 
         _writeMessage("Extracting...");
