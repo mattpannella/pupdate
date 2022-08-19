@@ -4,7 +4,9 @@ using System.IO.Compression;
 using System.Text.Json;
 using System.Net.Http.Headers; 
 
-public class Updater
+namespace pannella.analoguepocket;
+
+public class PocketCoreUpdater
 {
     private const string SEMVER_FINDER = @"\D*(\d(\.\d)*\.\d)\D*";
 
@@ -16,7 +18,7 @@ public class Updater
     private string _baseDir;
     private string _coresFile;
 
-    public Updater(string coresFile, string baseDirectory)
+    public PocketCoreUpdater(string coresFile, string baseDirectory)
     {
         _baseDir = baseDirectory;
 
@@ -206,5 +208,23 @@ public class Updater
         if(_useConsole) {
             Console.WriteLine(message);
         }
+        StatusUpdatedEventArgs args = new StatusUpdatedEventArgs();
+        args.Message = message;
+        OnStatusUpdated(args);
     }
+
+    protected virtual void OnStatusUpdated(StatusUpdatedEventArgs e)
+    {
+        EventHandler<StatusUpdatedEventArgs> handler = StatusUpdated;
+        if(handler != null)
+        {
+            handler(this, e);
+        }
+    }
+    public event EventHandler<StatusUpdatedEventArgs> StatusUpdated;
+}
+
+public class StatusUpdatedEventArgs : EventArgs
+{
+    public string Message { get; set; }
 }

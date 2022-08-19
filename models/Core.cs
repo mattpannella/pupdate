@@ -1,3 +1,5 @@
+namespace pannella.analoguepocket;
+
 public class Core
 {
     public string name { get; set; }
