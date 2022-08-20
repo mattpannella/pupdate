@@ -20,12 +20,12 @@ internal class Program
             }
         }
 
-        string path = "/Users/matt/pocket-test";
-        string cores = "/Users/matt/development/c#/pocket_updater/auto_update.json";
+        //string path = "/Users/matt/pocket-test";
+        //string cores = "/Users/matt/development/c#/pocket_updater/auto_update.json";
 
-        //string location = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
-        //string path = Path.GetDirectoryName(location);
-        //string cores = path + "/auto_update.json";
+        string location = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+        string path = Path.GetDirectoryName(location);
+        string cores = path + "/auto_update.json";
         
         PocketCoreUpdater updater = new PocketCoreUpdater(cores, path);
 
