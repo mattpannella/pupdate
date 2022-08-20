@@ -8,8 +8,10 @@ internal class Program
     private const string API_URL = "https://api.github.com/repos/mattpannella/pocket_core_autoupdate_net/releases";
     private static async Task Main(string[] args)
     {
+        Console.WriteLine("Analogue Pocket Core Updater v" + VERSION);
+        Console.WriteLine("Checking for updates...");
         if(await CheckVersion()) {
-            Console.WriteLine("A new version of this utility is availailable. Go to this url to download it:");
+            Console.WriteLine("A new version is available. Go to this url to download it:");
             Console.WriteLine("https://github.com/mattpannella/pocket_core_autoupdate_net/releases");
             Console.WriteLine("Would you like to continue anyway? [y/n]:");
             ConsoleKey response = Console.ReadKey(false).Key;
