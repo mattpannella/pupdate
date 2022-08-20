@@ -1,5 +1,4 @@
 using System;
-using System.Text.RegularExpressions;
 using System.IO.Compression;
 using System.Text.Json;
 using System.Net.Http.Headers; 
@@ -8,8 +7,6 @@ namespace pannella.analoguepocket;
 
 public class PocketCoreUpdater
 {
-    private const string SEMVER_FINDER = @"\D*(\d(\.\d)*\.\d)\D*";
-
     private const string GITHUB_API_URL = "https://api.github.com/repos/{0}/{1}/releases";
     private static readonly string[] ZIP_TYPES = {"application/x-zip-compressed", "application/zip"};
     private const string ZIP_FILE_NAME = "core.zip";
@@ -68,12 +65,7 @@ public class PocketCoreUpdater
             string tag_name = mostRecentRelease.tag_name;
             List<Github.Asset> assets = mostRecentRelease.assets;
 
-            Regex r = new Regex(SEMVER_FINDER);
-            Match matches = r.Match(tag_name);
-
-            var releaseSemver = matches.Groups[1].Value;
-            //TODO throw some error if it doesn't find a semver in the tag
-            releaseSemver = _semverFix(releaseSemver);
+            string releaseSemver = SemverUtil.FindSemver(tag_name);
 
             Github.Asset coreAsset = null;
 
@@ -102,22 +94,19 @@ public class PocketCoreUpdater
                 Analogue.Config? config = JsonSerializer.Deserialize<Analogue.Config>(json);
                 Analogue.Core localCore = config.core;
                 string ver_string = localCore.metadata.version;
-
-                matches = r.Match(ver_string);
-                string localSemver = "";
-                if(matches != null && matches.Groups.Count > 1) {
-                    localSemver = matches.Groups[1].Value;
-                    localSemver = _semverFix(localSemver);
+                string localSemver = SemverUtil.FindSemver(ver_string);
+                
+                if(localSemver != null) {
                     _writeMessage("local core found: v" + localSemver);
                 }
 
-                if (!_isActuallySemver(localSemver) || !_isActuallySemver(releaseSemver)) {
+                if (!SemverUtil.IsActuallySemver(localSemver) || !SemverUtil.IsActuallySemver(releaseSemver)) {
                     _writeMessage("downloading core anyway");
                     await _updateCore(coreAsset.browser_download_url);
                     continue;
                 }
 
-                if (_semverCompare(releaseSemver, localSemver)){
+                if (SemverUtil.SemverCompare(releaseSemver, localSemver)){
                     _writeMessage("Updating core");
                     await _updateCore(coreAsset.browser_download_url);
                 } else {
@@ -198,41 +187,6 @@ public class PocketCoreUpdater
             _writeMessage(e.Message);
             return null;
         }
-    }
-
-    //even though its technically not a valid semver, allow use of 2 part versions, and just add a .0 to complete the 3rd part
-    private string _semverFix(string version)
-    {
-        string[] parts = version.Split(".");
-
-        if(parts.Length == 2) {
-            version += ".0";
-        }
-        
-        return version;
-    }
-
-    private bool _semverCompare(string semverA, string semverB)
-    {
-        Version verA = Version.Parse(semverA);
-        Version verB = Version.Parse(semverB);
-        
-        switch(verA.CompareTo(verB))
-        {
-            case 0:
-            case -1:
-                return false;
-            case 1:
-                return true;
-            default:
-                return true;
-        }
-    }
-
-    private bool _isActuallySemver(string potentiallySemver)
-    {
-        Version ver = null;
-        return Version.TryParse(potentiallySemver, out ver);
     }
 
     private async Task _updateCore(string downloadLink)
