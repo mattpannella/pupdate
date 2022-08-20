@@ -12,9 +12,9 @@ internal class Program
         string cores = path + "/auto_update.json";
         
         PocketCoreUpdater updater = new PocketCoreUpdater(cores, path);
-        //updater.PrintToConsole(true);
 
         updater.StatusUpdated += updater_StatusUpdated;
+        updater.InstallBiosFiles(true);
 
         Console.WriteLine("Starting update process...");
 

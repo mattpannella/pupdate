@@ -13,6 +13,7 @@ public class PocketCoreUpdater
     private const string GITHUB_API_URL = "https://api.github.com/repos/{0}/{1}/releases";
     private static readonly string[] ZIP_TYPES = {"application/x-zip-compressed", "application/zip"};
     private const string ZIP_FILE_NAME = "core.zip";
+    private bool _installBios = false;
 
     private bool _useConsole = false;
     /// <summary>
@@ -39,6 +40,11 @@ public class PocketCoreUpdater
     public void PrintToConsole(bool set)
     {
         _useConsole = set;
+    }
+
+    public void InstallBiosFiles(bool set)
+    {
+        _installBios = set;
     }
 
     public async Task RunUpdates()
@@ -121,7 +127,40 @@ public class PocketCoreUpdater
                 _writeMessage("Downloading core");
                 await _updateCore(coreAsset.browser_download_url);
             }
+            await SetupBios(core.bios);
             _writeMessage("------------");
+        }
+    }
+
+    private async Task SetupBios(Bios bios)
+    {
+        if(_installBios && bios != null) {
+            _writeMessage("Looking for BIOS");
+            string path = Path.Combine(UpdateDirectory, bios.location);
+            foreach(BiosFile file in bios.files) {
+                string filePath = Path.Combine(path, file.file_name);
+                if(File.Exists(filePath)) {
+                    _writeMessage("BIOS file already installed: " + file.file_name);
+                } else {
+                    if(file.zip) {
+                        string zipFile = Path.Combine(path, "bios.zip");
+                        _writeMessage("Downloading zip file...");
+                        await HttpHelper.DownloadFileAsync(file.url, zipFile);
+                        string extractPath = Path.Combine(UpdateDirectory, "temp");
+                        _writeMessage("Extracting files...");
+                        ZipFile.ExtractToDirectory(zipFile, extractPath, true);
+                        _writeMessage("Moving file: " + file.file_name);
+                        File.Move(Path.Combine(extractPath, file.zip_file), filePath);
+                        _writeMessage("Deleting temp files");
+                        Directory.Delete(extractPath, true);
+                        File.Delete(zipFile);
+                    } else {
+                        _writeMessage("Downloading " + file.file_name);
+                        await HttpHelper.DownloadFileAsync(file.url, filePath);
+                        _writeMessage("Finished downloading " + file.file_name);
+                    }
+                }
+            }
         }
     }
 

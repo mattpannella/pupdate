@@ -3,6 +3,15 @@
     "repo": {
       "user": "spiritualized1997",
       "project": "openFPGA-GBA"
+      },
+      "bios": {
+        "location": "assets/gba/common/",
+        "files": [
+          {
+            "file_name": "gba_bios.bin",
+            "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/GBA.zip/gba_bios.bin"
+          }
+        ]
       }
   },
   {
@@ -10,7 +19,16 @@
       "user": "spiritualized1997",
       "project": "openFPGA-GB-GBC"
       },
-    "name": "Spiritualized.GBC"
+    "name": "Spiritualized.GBC",
+    "bios": {
+      "location": "assets/gbc/common/",
+      "files": [
+        {
+          "file_name": "gbc_bios.bin",
+          "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/Gameboy.zip/GBC_boot_ROM.gb"
+        }
+      ]
+    }
   },
   {
     "repo": {
@@ -24,7 +42,22 @@
       "project": "Analogue_Pocket_Neogeo"
       },
     "name": "Mazamars312.NeoGeo",
-    "allowPrerelease": true
+    "allowPrerelease": true,
+    "bios": {
+      "location": "assets/ng/common",
+      "files": [
+        {
+          "url": "http://unibios.free.fr/download/uni-bios-40.zip",
+          "file_name": "uni-bios_1_0.rom",
+          "zip": true,
+          "zip_file": "uni-bios.rom"
+        },
+        {
+          "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/NeoGeo.zip/000-lo.lo",
+          "file_name": "000-lo.lo"
+        }
+      ]
+    }
   },
   {
     "repo": {
