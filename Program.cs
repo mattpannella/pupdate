@@ -8,16 +8,24 @@ internal class Program
     private const string API_URL = "https://api.github.com/repos/mattpannella/pocket_core_autoupdate_net/releases";
     private static async Task Main(string[] args)
     {
-        //check github api for latest version
-        //compare with this one
-        //if github has newer, show download url and ask y/n if they want to update anyway
+        if(await CheckVersion()) {
+            Console.WriteLine("A new version of this utility is availailable. Go to this url to download it:");
+            Console.WriteLine("https://github.com/mattpannella/pocket_core_autoupdate_net/releases");
+            Console.WriteLine("Would you like to continue anyway? [y/n]:");
+            ConsoleKey response = Console.ReadKey(false).Key;
+            if (response == ConsoleKey.N) {
+                Console.WriteLine("Come again soon");
+                Console.ReadLine(); //wait for input so the console doesn't auto close in windows
+                Environment.Exit(1);
+            }
+        }
 
-        //string path = "/Users/matt/pocket-test";
-        //string cores = "/Users/matt/development/c#/pocket_updater/auto_update.json";
+        string path = "/Users/matt/pocket-test";
+        string cores = "/Users/matt/development/c#/pocket_updater/auto_update.json";
 
-        string location = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
-        string path = Path.GetDirectoryName(location);
-        string cores = path + "/auto_update.json";
+        //string location = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+        //string path = Path.GetDirectoryName(location);
+        //string cores = path + "/auto_update.json";
         
         PocketCoreUpdater updater = new PocketCoreUpdater(cores, path);
 
@@ -37,7 +45,8 @@ internal class Program
         Console.WriteLine(e.Message);
     }
 
-  /*  async static Task<string> CheckVersion()
+    //return true if newer version is available
+    async static Task<bool> CheckVersion()
     {
         try {
             var client = new HttpClient();
@@ -55,11 +64,15 @@ internal class Program
             var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             List<Github.Release>? releases = JsonSerializer.Deserialize<List<Github.Release>>(responseBody);
 
-            releases[0].tag_name
+            string tag_name = releases[0].tag_name;
+            string? v = SemverUtil.FindSemver(tag_name);
+            if(v != null) {
+                return SemverUtil.SemverCompare(v, VERSION);
+            }
 
-            return responseBody;
+            return false;
         } catch (HttpRequestException e) {
-            return null;
+            return false;
         }
-    }*/
+    }
 }
