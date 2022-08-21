@@ -50,6 +50,9 @@ public class PocketCoreUpdater
         List<Core>? coresList = JsonSerializer.Deserialize<List<Core>>(json);
         //TODO check if null
         foreach(Core core in coresList) {
+            if(core.skip) {
+                continue;
+            }
             Repo repo = core.repo;
             _writeMessage("Starting Repo: " + repo.project);
             string name = core.name;

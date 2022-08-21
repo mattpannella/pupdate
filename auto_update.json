@@ -12,7 +12,8 @@
             "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/GBA.zip/gba_bios.bin"
           }
         ]
-      }
+      },
+      "platform": "Gameboy Advance"
   },
   {
     "repo": {
@@ -28,13 +29,15 @@
           "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/Gameboy.zip/GBC_boot_ROM.gb"
         }
       ]
-    }
+    },
+    "platform": "Gameboy/Gameboy Color"
   },
   {
     "repo": {
       "user": "spacemen3",
       "project": "PDP-1"
-      }
+      },
+      "platform": "PDP-1"
   },
   {
     "repo": {
@@ -57,27 +60,31 @@
           "file_name": "000-lo.lo"
         }
       ]
-    }
+    },
+    "platform": "Neo Geo"
   },
   {
     "repo": {
       "user": "spiritualized1997",
       "project": "openFPGA-SG1000"
       },
-      "name": "Spiritualized.SG-1000"
+      "name": "Spiritualized.SG-1000",
+      "platform": "SG-1000"
   },
   {
     "repo": {
       "user": "spiritualized1997",
       "project": "openFPGA-SMS"
       },
-      "name": "Spiritualized.SMS"
+      "name": "Spiritualized.SMS",
+      "platform": "Master System"
   },
   {
     "repo": {
       "user": "spiritualized1997",
       "project": "openFPGA-GG"
       },
-      "name": "Spiritualized.GG"
+      "name": "Spiritualized.GG",
+      "platform": "Game Gear"
   }
 ]
