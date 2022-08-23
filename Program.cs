@@ -29,7 +29,7 @@ internal class Program
         string path = Path.GetDirectoryName(location);
         string cores = path + "/auto_update.json";
         
-        PocketCoreUpdater updater = new PocketCoreUpdater(cores, path);
+        PocketCoreUpdater updater = new PocketCoreUpdater(path, cores);
 
         updater.StatusUpdated += updater_StatusUpdated;
         updater.InstallBiosFiles(true);
@@ -77,4 +77,6 @@ internal class Program
             return false;
         }
     }
+
+    public void checkusb(Device)
 }

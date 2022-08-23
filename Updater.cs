@@ -22,15 +22,17 @@ public class PocketCoreUpdater
     /// </summary>
     public string CoresFile { get; set; }
 
-    public PocketCoreUpdater(string coresFile, string updateDirectory)
+    public PocketCoreUpdater(string updateDirectory, string coresFile = null)
     {
         UpdateDirectory = updateDirectory;
 
         //make sure the json file exists
-        if(File.Exists(coresFile)) {
-            CoresFile = coresFile;
-        } else {
-            throw new FileNotFoundException("Cores json file not found: " + coresFile);
+        if(coresFile != null) {
+            if(File.Exists(coresFile)) {
+                CoresFile = coresFile;
+            } else {
+                throw new FileNotFoundException("Cores json file not found: " + coresFile);
+            }
         }
     }
 
@@ -46,6 +48,9 @@ public class PocketCoreUpdater
 
     public async Task RunUpdates()
     {
+        if(CoresFile == null) {
+            throw new Exception("No Cores file has been set");
+        }
         string json = File.ReadAllText(CoresFile);
         List<Core>? coresList = JsonSerializer.Deserialize<List<Core>>(json);
         //TODO check if null
