@@ -22,6 +22,11 @@ public class PocketCoreUpdater
     /// </summary>
     public string CoresFile { get; set; }
 
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="updateDirectory">The directory to install/update openFPGA cores in.</param>
+    /// <param name="coresFile">Path to cores json file</param>
     public PocketCoreUpdater(string updateDirectory, string coresFile = null)
     {
         UpdateDirectory = updateDirectory;
@@ -36,16 +41,27 @@ public class PocketCoreUpdater
         }
     }
 
+    /// <summary>
+    /// Turn on/off printing progress messages to the console
+    /// </summary>
+    /// <param name="set">Set to true to turn on console messages</param>
     public void PrintToConsole(bool set)
     {
         _useConsole = set;
     }
 
+    /// <summary>
+    /// Turn on/off the automatic BIOS downloader
+    /// </summary>
+    /// <param name="set">Set to true to enable automatic BIOS downloading</param>
     public void InstallBiosFiles(bool set)
     {
         _installBios = set;
     }
 
+    /// <summary>
+    /// Run the full openFPGA core download and update process
+    /// </summary>
     public async Task RunUpdates()
     {
         if(CoresFile == null) {
@@ -228,10 +244,17 @@ public class PocketCoreUpdater
             handler(this, e);
         }
     }
+
+    /// <summary>
+    /// Event is raised every time the updater prints a progress update
+    /// </summary>
     public event EventHandler<StatusUpdatedEventArgs> StatusUpdated;
 }
 
 public class StatusUpdatedEventArgs : EventArgs
 {
+    /// <summary>
+    /// Contains the message from the updater
+    /// </summary>
     public string Message { get; set; }
 }
