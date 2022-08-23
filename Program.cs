@@ -77,6 +77,4 @@ internal class Program
             return false;
         }
     }
-
-    public void checkusb(Device)
 }
