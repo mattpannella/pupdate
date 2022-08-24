@@ -4,17 +4,21 @@ using System.Text.Json;
 
 internal class Program
 {
-    private const string VERSION = "1.1.1";
+    private const string VERSION = "1.2.0";
     private const string API_URL = "https://api.github.com/repos/mattpannella/pocket_core_autoupdate_net/releases";
+
+    private const string REMOTE_CORES_FILE = "https://raw.githubusercontent.com/mattpannella/pocket_core_autoupdate_net/main/auto_update.json";
     private static async Task Main(string[] args)
     {
+        ConsoleKey response;
+
         Console.WriteLine("Analogue Pocket Core Updater v" + VERSION);
         Console.WriteLine("Checking for updates...");
         if(await CheckVersion()) {
             Console.WriteLine("A new version is available. Go to this url to download it:");
             Console.WriteLine("https://github.com/mattpannella/pocket_core_autoupdate_net/releases");
             Console.WriteLine("Would you like to continue anyway? [y/n]:");
-            ConsoleKey response = Console.ReadKey(false).Key;
+            response = Console.ReadKey(false).Key;
             if (response == ConsoleKey.N) {
                 Console.WriteLine("Come again soon");
                 Console.ReadLine(); //wait for input so the console doesn't auto close in windows
@@ -28,6 +32,22 @@ internal class Program
         string location = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
         string path = Path.GetDirectoryName(location);
         string cores = path + "/auto_update.json";
+
+        Console.WriteLine("Download master cores list file from github? (This will overwrite your current file) [y/n]:");
+        response = Console.ReadKey(false).Key;
+        if (response == ConsoleKey.Y) {
+            try {
+                Console.WriteLine("Downloading...");
+                await HttpHelper.DownloadFileAsync(REMOTE_CORES_FILE, cores);
+                Console.WriteLine("Download complete:");
+                Console.WriteLine(cores);
+            } catch (UnauthorizedAccessException e) {
+                Console.WriteLine("Unable to save file.");
+                Console.WriteLine(e.Message);
+                Console.ReadLine();
+                Environment.Exit(1);
+            }
+        }
         
         PocketCoreUpdater updater = new PocketCoreUpdater(path, cores);
 

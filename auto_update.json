@@ -86,5 +86,13 @@
       },
       "name": "Spiritualized.GG",
       "platform": "Game Gear"
+  },
+  {
+    "repo": {
+      "user": "agg23",
+      "project": "analogue-pong"
+      },
+      "name": "agg23.Pong",
+      "platform": "Pong"
   }
 ]
