@@ -94,5 +94,13 @@
       },
       "name": "agg23.Pong",
       "platform": "Pong"
+  },
+  {
+    "repo": {
+      "user": "nullobject",
+      "project": "openfpga-tecmo"
+      },
+      "name": "nullobject.tecmo",
+      "platform": "Tecmo"
   }
 ]
