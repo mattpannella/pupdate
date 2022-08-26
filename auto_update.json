@@ -101,6 +101,7 @@
       "project": "openfpga-tecmo"
       },
       "name": "nullobject.tecmo",
-      "platform": "Tecmo"
+      "platform": "Tecmo",
+      "allowPrerelease": true
   }
 ]
