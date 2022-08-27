@@ -1,105 +1,105 @@
 [
   {
-    "repo": {
-      "user": "spiritualized1997",
-      "project": "openFPGA-GBA"
+      "repo": {
+          "user": "spiritualized1997",
+          "project": "openFPGA-GBA"
       },
       "bios": {
-        "location": "assets/gba/common/",
-        "files": [
-          {
-            "file_name": "gba_bios.bin",
-            "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/GBA.zip/gba_bios.bin"
-          }
-        ]
+          "location": "assets/gba/common/",
+          "files": [
+              {
+                  "file_name": "gba_bios.bin",
+                  "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/GBA.zip/gba_bios.bin"
+              }
+          ]
       },
       "name": "Spiritualized.GBA",
       "platform": "Gameboy Advance"
   },
   {
-    "repo": {
-      "user": "spiritualized1997",
-      "project": "openFPGA-GB-GBC"
+      "repo": {
+          "user": "spiritualized1997",
+          "project": "openFPGA-GB-GBC"
       },
-    "name": "Spiritualized.GBC",
-    "bios": {
-      "location": "assets/gbc/common/",
-      "files": [
-        {
-          "file_name": "gbc_bios.bin",
-          "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/Gameboy.zip/GBC_boot_ROM.gb"
-        }
-      ]
-    },
-    "platform": "Gameboy/Gameboy Color"
+      "name": "Spiritualized.GBC",
+      "bios": {
+          "location": "assets/gbc/common/",
+          "files": [
+              {
+                  "file_name": "gbc_bios.bin",
+                  "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/Gameboy.zip/GBC_boot_ROM.gb"
+              }
+          ]
+      },
+      "platform": "Gameboy/Gameboy Color"
   },
   {
-    "repo": {
-      "user": "spacemen3",
-      "project": "PDP-1"
+      "repo": {
+          "user": "spacemen3",
+          "project": "PDP-1"
       },
       "platform": "PDP-1"
   },
   {
-    "repo": {
-      "user": "Mazamars312",
-      "project": "Analogue_Pocket_Neogeo"
+      "repo": {
+          "user": "Mazamars312",
+          "project": "Analogue_Pocket_Neogeo"
       },
-    "name": "Mazamars312.NeoGeo",
-    "allowPrerelease": true,
-    "bios": {
-      "location": "assets/ng/common",
-      "files": [
-        {
-          "url": "http://unibios.free.fr/download/uni-bios-40.zip",
-          "file_name": "uni-bios_1_0.rom",
-          "zip": true,
-          "zip_file": "uni-bios.rom"
-        },
-        {
-          "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/NeoGeo.zip/000-lo.lo",
-          "file_name": "000-lo.lo"
-        }
-      ]
-    },
-    "platform": "Neo Geo"
+      "name": "Mazamars312.NeoGeo",
+      "allowPrerelease": true,
+      "bios": {
+          "location": "assets/ng/common",
+          "files": [
+              {
+                  "url": "http://unibios.free.fr/download/uni-bios-40.zip",
+                  "file_name": "uni-bios_1_0.rom",
+                  "zip": true,
+                  "zip_file": "uni-bios.rom"
+              },
+              {
+                  "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/NeoGeo.zip/000-lo.lo",
+                  "file_name": "000-lo.lo"
+              }
+          ]
+      },
+      "platform": "Neo Geo"
   },
   {
-    "repo": {
-      "user": "spiritualized1997",
-      "project": "openFPGA-SG1000"
+      "repo": {
+          "user": "spiritualized1997",
+          "project": "openFPGA-SG1000"
       },
       "name": "Spiritualized.SG-1000",
       "platform": "SG-1000"
   },
   {
-    "repo": {
-      "user": "spiritualized1997",
-      "project": "openFPGA-SMS"
+      "repo": {
+          "user": "spiritualized1997",
+          "project": "openFPGA-SMS"
       },
       "name": "Spiritualized.SMS",
       "platform": "Master System"
   },
   {
-    "repo": {
-      "user": "spiritualized1997",
-      "project": "openFPGA-GG"
+      "repo": {
+          "user": "spiritualized1997",
+          "project": "openFPGA-GG"
       },
       "name": "Spiritualized.GG",
       "platform": "Game Gear"
   },
   {
-    "repo": {
-      "user": "agg23",
-      "project": "analogue-pong"
+      "repo": {
+          "user": "agg23",
+          "project": "analogue-pong"
       },
       "name": "agg23.Pong",
       "platform": "Pong"
   },
   {
-    "repo": {
-      "user": "nullobject",
-      "project": "openfpga-tecmo"
+      "repo": {
+          "user": "nullobject",
+          "project": "openfpga-tecmo"
       },
       "name": "nullobject.tecmo",
       "platform": "Tecmo",
