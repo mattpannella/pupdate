@@ -4,7 +4,7 @@ using System.Text.Json;
 
 internal class Program
 {
-    private const string VERSION = "1.2.0";
+    private const string VERSION = "1.3.0";
     private const string API_URL = "https://api.github.com/repos/mattpannella/pocket_core_autoupdate_net/releases";
 
     private const string REMOTE_CORES_FILE = "https://raw.githubusercontent.com/mattpannella/pocket_core_autoupdate_net/main/auto_update.json";
@@ -53,7 +53,6 @@ internal class Program
 
         updater.StatusUpdated += updater_StatusUpdated;
         updater.InstallBiosFiles(true);
-
         Console.WriteLine("Starting update process...");
 
         await updater.RunUpdates();

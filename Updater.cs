@@ -12,6 +12,8 @@ public class PocketCoreUpdater
     private const string ZIP_FILE_NAME = "core.zip";
     private bool _installBios = false;
 
+    private string _githubApiKey;
+
     private bool _useConsole = false;
     /// <summary>
     /// The directory where fpga cores will be installed and updated into
@@ -69,7 +71,7 @@ public class PocketCoreUpdater
         }
         string json = File.ReadAllText(CoresFile);
         List<Core>? coresList = JsonSerializer.Deserialize<List<Core>>(json);
-        //TODO check if null
+
         foreach(Core core in coresList) {
             if(core.skip) {
                 continue;
@@ -77,6 +79,10 @@ public class PocketCoreUpdater
             Repo repo = core.repo;
             _writeMessage("Starting Repo: " + repo.project);
             string name = core.name;
+            if(name == null) {
+                _writeMessage("Core Name is required. Skipping.");
+                continue;
+            }
             bool allowPrerelease = core.allowPrerelease;
             string url = String.Format(GITHUB_API_URL, repo.user, repo.project);
             string response = await _fetchReleases(url);
@@ -85,34 +91,22 @@ public class PocketCoreUpdater
             }
             List<Github.Release>? releases = JsonSerializer.Deserialize<List<Github.Release>>(response);
             var mostRecentRelease = _getMostRecentRelease(releases, allowPrerelease);
-            
+            if(mostRecentRelease == null) {
+                _writeMessage("No releases found. Skipping");
+                continue;
+            }
             string tag_name = mostRecentRelease.tag_name;
             List<Github.Asset> assets = mostRecentRelease.assets;
 
             string releaseSemver = SemverUtil.FindSemver(tag_name);
 
-            Github.Asset coreAsset = null;
-
-            // might need to search for the right zip here if there's more than one
-            //iterate through assets to find the zip release
-            for(int i = 0; i < assets.Count; i++) {
-                if(ZIP_TYPES.Contains(assets[i].content_type)) {
-                    coreAsset = assets[i];
-                    break;
-                }
-            }
-
-            if(coreAsset == null) {
-                _writeMessage("No zip file found for release. Skipping");
-                continue;
-            }
-
-            string nameGuess = name ?? coreAsset.name.Split("_")[0];
             _writeMessage(tag_name + " is the most recent release, checking local core...");
-            string localCoreFile = Path.Combine(UpdateDirectory, "Cores/"+nameGuess+"/core.json");
+            string localCoreFile = Path.Combine(UpdateDirectory, "Cores/"+name+"/core.json");
             bool fileExists = File.Exists(localCoreFile);
 
-              if (fileExists) {
+            bool foundZip = false;
+
+            if (fileExists) {
                 json = File.ReadAllText(localCoreFile);
                 
                 Analogue.Config? config = JsonSerializer.Deserialize<Analogue.Config>(json);
@@ -126,21 +120,36 @@ public class PocketCoreUpdater
 
                 if (!SemverUtil.IsActuallySemver(localSemver) || !SemverUtil.IsActuallySemver(releaseSemver)) {
                     _writeMessage("downloading core anyway");
-                    await _updateCore(coreAsset.browser_download_url);
-                    continue;
-                }
-
-                if (SemverUtil.SemverCompare(releaseSemver, localSemver)){
+                } else if (SemverUtil.SemverCompare(releaseSemver, localSemver)){
                     _writeMessage("Updating core");
-                    await _updateCore(coreAsset.browser_download_url);
                 } else {
+                    await SetupBios(core.bios); //check for bios even if core isn't updating
                     _writeMessage("Up to date. Skipping core");
+                    _writeMessage("------------");
+                    continue;
                 }
             } else {
                 _writeMessage("Downloading core");
-                await _updateCore(coreAsset.browser_download_url);
+            }
+            
+            // might need to search for the right zip here if there's more than one
+            //iterate through assets to find the zip release
+            foreach(Github.Asset asset in assets) {
+                if(!ZIP_TYPES.Contains(asset.content_type)) {
+                    //not a zip file. move on
+                    continue;
+                }
+                foundZip = true;
+                await _getAsset(asset.browser_download_url);
+            }
+
+            if(!foundZip) {
+                _writeMessage("No zip file found for release. Skipping");
+                _writeMessage("------------");
+                continue;
             }
             await SetupBios(core.bios);
+            _writeMessage("Installation complete.");
             _writeMessage("------------");
         }
     }
@@ -150,8 +159,13 @@ public class PocketCoreUpdater
         if(_installBios && bios != null) {
             _writeMessage("Looking for BIOS");
             string path = Path.Combine(UpdateDirectory, bios.location);
+            string filePath;
             foreach(BiosFile file in bios.files) {
-                string filePath = Path.Combine(path, file.file_name);
+                if(file.overrideLocation != null) { //we have a location override
+                    filePath = Path.Combine(UpdateDirectory, file.overrideLocation, file.file_name);
+                } else {
+                    filePath = Path.Combine(path, file.file_name);
+                }
                 if(File.Exists(filePath)) {
                     _writeMessage("BIOS file already installed: " + file.file_name);
                 } else {
@@ -200,6 +214,10 @@ public class PocketCoreUpdater
             };
             var agent = new ProductInfoHeaderValue("Analogue-Pocket-Auto-Updater", "1.0");
             request.Headers.UserAgent.Add(agent);
+            if(_githubApiKey != null) {
+                client.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("token", _githubApiKey);
+            }
             var response = await client.SendAsync(request).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
@@ -207,13 +225,13 @@ public class PocketCoreUpdater
 
             return responseBody;
         } catch (HttpRequestException e) {
-            _writeMessage("Error pulling communicating with Github API.");
+            _writeMessage("Error communicating with Github API.");
             _writeMessage(e.Message);
             return null;
         }
     }
 
-    private async Task _updateCore(string downloadLink)
+    private async Task _getAsset(string downloadLink)
     {
         _writeMessage("Downloading file " + downloadLink + "...");
         string zipPath = Path.Combine(UpdateDirectory, ZIP_FILE_NAME);
@@ -223,7 +241,6 @@ public class PocketCoreUpdater
         _writeMessage("Extracting...");
         ZipFile.ExtractToDirectory(zipPath, extractPath, true);
         File.Delete(zipPath);
-        _writeMessage("Installation complete.");
     }
 
     private void _writeMessage(string message)
@@ -234,6 +251,11 @@ public class PocketCoreUpdater
         StatusUpdatedEventArgs args = new StatusUpdatedEventArgs();
         args.Message = message;
         OnStatusUpdated(args);
+    }
+
+    public void SetGithubApiKey(string key)
+    {
+        _githubApiKey = key;
     }
 
     protected virtual void OnStatusUpdated(StatusUpdatedEventArgs e)

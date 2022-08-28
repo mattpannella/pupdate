@@ -12,4 +12,5 @@ public class BiosFile
     public string file_name { get; set; }
     public bool zip { get; set; }
     public string zip_file { get; set; }
+    public string overrideLocation { get; set; }
 }

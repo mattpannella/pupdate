@@ -28,6 +28,11 @@
               {
                   "file_name": "gbc_bios.bin",
                   "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/Gameboy.zip/GBC_boot_ROM.gb"
+              },
+              {
+                "overrideLocation": "assets/gb/common/",
+                "file_name": "dmg_bios.bin",
+                "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/Gameboy.zip/GB_boot_ROM.gb"
               }
           ]
       },
@@ -38,7 +43,8 @@
           "user": "spacemen3",
           "project": "PDP-1"
       },
-      "platform": "PDP-1"
+      "platform": "PDP-1",
+      "name": "Spacemen3.PDP1"
   },
   {
       "repo": {
