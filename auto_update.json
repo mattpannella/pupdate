@@ -110,5 +110,13 @@
       "name": "nullobject.tecmo",
       "platform": "Tecmo",
       "allowPrerelease": true
+  },
+  {
+      "repo": {
+          "user": "agg23",
+          "project": "analogue-arduboy"
+      },
+      "name": "agg23.Arduboy",
+      "platform": "Arduboy"
   }
 ]
