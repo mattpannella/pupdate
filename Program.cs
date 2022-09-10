@@ -1,15 +1,33 @@
 ﻿using pannella.analoguepocket;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using CommandLine;
 
 internal class Program
 {
-    private const string VERSION = "1.3.0";
+    private const string VERSION = "1.4.0";
     private const string API_URL = "https://api.github.com/repos/mattpannella/pocket_core_autoupdate_net/releases";
 
     private const string REMOTE_CORES_FILE = "https://raw.githubusercontent.com/mattpannella/pocket_core_autoupdate_net/main/auto_update.json";
     private static async Task Main(string[] args)
     {
+        bool autoUpdate = false;
+        string location = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+        string path = Path.GetDirectoryName(location);
+
+        Parser.Default.ParseArguments<Options>(args)
+            .WithParsed<Options>(o =>
+            {
+                if(o.Update) {
+                    autoUpdate = true;
+                }
+                if(o.InstallPath != null && o.InstallPath != "") {
+                    Console.WriteLine("path: " + o.InstallPath);
+                    path = o.InstallPath;
+                }
+            }
+        );
+
         ConsoleKey response;
 
         Console.WriteLine("Analogue Pocket Core Updater v" + VERSION);
@@ -26,27 +44,20 @@ internal class Program
             }
         }
 
-        //string path = "/Users/matt/pocket-test";
-        //string cores = "/Users/matt/development/c#/pocket_updater/auto_update.json";
+        //path = "/Users/mattpannella/pocket-test";
+        //string cores = "/Users/mattpannella/development/c#/pocket_updater/auto_update.json";
 
-        string location = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
-        string path = Path.GetDirectoryName(location);
+        
         string cores = path + "/auto_update.json";
 
-        Console.WriteLine("Download master cores list file from github? (This will overwrite your current file) [y/n]:");
-        response = Console.ReadKey(false).Key;
-        if (response == ConsoleKey.Y) {
-            try {
-                Console.WriteLine("Downloading...");
-                await HttpHelper.DownloadFileAsync(REMOTE_CORES_FILE, cores);
-                Console.WriteLine("Download complete:");
-                Console.WriteLine(cores);
-            } catch (UnauthorizedAccessException e) {
-                Console.WriteLine("Unable to save file.");
-                Console.WriteLine(e.Message);
-                Console.ReadLine();
-                Environment.Exit(1);
+        if(!autoUpdate) {
+            Console.WriteLine("Download master cores list file from github? (This will overwrite your current file) [y/n]:");
+            response = Console.ReadKey(false).Key;
+            if (response == ConsoleKey.Y) {
+                await DownloadCoresFile(cores);
             }
+        } else {
+            await DownloadCoresFile(cores);
         }
         
         PocketCoreUpdater updater = new PocketCoreUpdater(path, cores);
@@ -59,6 +70,21 @@ internal class Program
         
         Console.WriteLine("and now its done");
         Console.ReadLine(); //wait for input so the console doesn't auto close in windows
+    }
+
+    async static Task DownloadCoresFile(string file)
+    {
+        try {
+            Console.WriteLine("Downloading cores file...");
+            await HttpHelper.DownloadFileAsync(REMOTE_CORES_FILE, file);
+            Console.WriteLine("Download complete:");
+            Console.WriteLine(file);
+        } catch (UnauthorizedAccessException e) {
+            Console.WriteLine("Unable to save file.");
+            Console.WriteLine(e.Message);
+            Console.ReadLine();
+            Environment.Exit(1);
+        }
     }
 
     static void updater_StatusUpdated(object sender, StatusUpdatedEventArgs e)
@@ -96,4 +122,13 @@ internal class Program
             return false;
         }
     }
+}
+
+public class Options
+{
+    [Option ('u', "update", Required = false, HelpText = "Automatically download newest core list without asking.")]
+    public bool Update {get; set; }
+
+    [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
+    public string? InstallPath { get; set; }
 }
