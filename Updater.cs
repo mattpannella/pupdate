@@ -2,6 +2,7 @@ using System;
 using System.IO.Compression;
 using System.Text.Json;
 using System.Net.Http.Headers; 
+using System.Text.RegularExpressions;
 
 namespace pannella.analoguepocket;
 
@@ -9,7 +10,15 @@ public class PocketCoreUpdater
 {
     private const string GITHUB_API_URL = "https://api.github.com/repos/{0}/{1}/releases";
     private static readonly string[] ZIP_TYPES = {"application/x-zip-compressed", "application/zip"};
+    private const string FIRMWARE_URL = "https://www.analogue.co/support/pocket/firmware/latest";
     private const string ZIP_FILE_NAME = "core.zip";
+    private static readonly Regex BIN_REGEX = new Regex(@"(?inx)
+        <a \s [^>]*
+            href \s* = \s*
+                (?<q> ['""] )
+                    (?<url> [^'""]*\.bin )
+                \k<q>
+        [^>]* >");
     private bool _installBios = false;
 
     private string _githubApiKey;
@@ -66,6 +75,8 @@ public class PocketCoreUpdater
     /// </summary>
     public async Task RunUpdates()
     {
+        await UpdateFirmware();
+
         if(CoresFile == null) {
             throw new Exception("No Cores file has been set");
         }
@@ -264,6 +275,43 @@ public class PocketCoreUpdater
         if(handler != null)
         {
             handler(this, e);
+        }
+    }
+
+    public async Task UpdateFirmware()
+    {
+        _writeMessage("Checking for firmware updates...");
+        string html = await HttpHelper.GetHTML(FIRMWARE_URL);
+        
+        MatchCollection matches = BIN_REGEX.Matches(html);
+        if(matches.Count != 1) {
+            _writeMessage("cant find it");
+            return;
+        } 
+
+        string firmwareUrl = matches[0].Groups["url"].ToString();
+        string[] parts = firmwareUrl.Split("/");
+        string filename = parts[parts.Length-1];
+
+        string settingsfile = "/Users/mattpannella/development/c#/pocket_updater/pocket_updater_settings.json";
+        string json = File.ReadAllText(settingsfile);
+        Settings? coresList = JsonSerializer.Deserialize<Settings>(json);
+        if(coresList.firmware.version != filename) {
+            _writeMessage("Firmware update found. Downloading...");
+            await HttpHelper.DownloadFileAsync(firmwareUrl, Path.Combine(UpdateDirectory, filename));
+            _writeMessage("Download Complete");
+            _writeMessage(Path.Combine(UpdateDirectory, filename));
+            var oldfile = Path.Combine(UpdateDirectory, coresList.firmware.version);
+            if(File.Exists(oldfile)) {
+                _writeMessage("Deleting old firmware file...");
+                File.Delete(oldfile);
+            }
+            coresList.firmware.version = filename;
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            File.WriteAllText(settingsfile, JsonSerializer.Serialize(coresList, options));
+            _writeMessage("To install firmware, restart your Pocket.");
+        } else {
+            _writeMessage("Firmware up to date.");
         }
     }
 

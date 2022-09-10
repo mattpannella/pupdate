@@ -119,5 +119,14 @@
        "name":"agg23.Arduboy",
        "platform":"Arduboy",
        "allowPrerelease":true
+    },
+    {
+       "repo":{
+          "user":"ericlewis",
+          "project":"openfpga-spacerace"
+       },
+       "name":"ericlewis.SpaceRace",
+       "platform":"SpaceRace",
+       "allowPrerelease":true
     }
  ]
