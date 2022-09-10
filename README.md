@@ -1,4 +1,4 @@
-[![Current Release](https://img.shields.io/github/v/release/mattpannella/pocket_core_autoupdate_net?display_name=tag)](https://github.com/mattpannella/pocket_core_autoupdate_net/releases/latest)
+[![Current Release](https://img.shields.io/github/v/release/mattpannella/pocket_core_autoupdate_net?label=Current%20Release)](https://github.com/mattpannella/pocket_core_autoupdate_net/releases/latest) ![Downloads](https://img.shields.io/github/downloads/mattpannella/pocket_core_autoupdate_net/latest/total?label=Downloads)
 
 A free utility for updating the openFPGA cores, and firmware, on your Analogue Pocket. 
 I will be maintaining the list of available cores, which can be found in the `auto_update.json` file. But if I ever fall behind, or just stop keeping it up to date, you can manually add to it by following the format of the existing cores. It currently only supports github repos that uses the releases feature and release via zip file. If/when future openFPGA developers release their cores via other platforms, I'll do my best to implement support for those as well.
