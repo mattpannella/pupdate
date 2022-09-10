@@ -33,6 +33,8 @@ public class PocketCoreUpdater
     /// </summary>
     public string CoresFile { get; set; }
 
+    public string SettingsFile { get; set; }
+
     /// <summary>
     /// Constructor
     /// </summary>
@@ -50,6 +52,8 @@ public class PocketCoreUpdater
                 throw new FileNotFoundException("Cores json file not found: " + coresFile);
             }
         }
+
+        SettingsFile = Path.Combine(updateDirectory, "pocket_updater_settings.json");
     }
 
     /// <summary>
@@ -293,9 +297,11 @@ public class PocketCoreUpdater
         string[] parts = firmwareUrl.Split("/");
         string filename = parts[parts.Length-1];
 
-        string settingsfile = "/Users/mattpannella/development/c#/pocket_updater/pocket_updater_settings.json";
-        string json = File.ReadAllText(settingsfile);
-        Settings? coresList = JsonSerializer.Deserialize<Settings>(json);
+        Settings coresList = new Settings();
+        if(File.Exists(SettingsFile)) {
+            string json = File.ReadAllText(SettingsFile);
+            coresList = JsonSerializer.Deserialize<Settings>(json);
+        }
         if(coresList.firmware.version != filename) {
             _writeMessage("Firmware update found. Downloading...");
             await HttpHelper.DownloadFileAsync(firmwareUrl, Path.Combine(UpdateDirectory, filename));
@@ -308,7 +314,7 @@ public class PocketCoreUpdater
             }
             coresList.firmware.version = filename;
             var options = new JsonSerializerOptions { WriteIndented = true };
-            File.WriteAllText(settingsfile, JsonSerializer.Serialize(coresList, options));
+            File.WriteAllText(SettingsFile, JsonSerializer.Serialize(coresList, options));
             _writeMessage("To install firmware, restart your Pocket.");
         } else {
             _writeMessage("Firmware up to date.");
