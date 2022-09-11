@@ -177,6 +177,8 @@ public class PocketCoreUpdater
             string filePath;
             foreach(BiosFile file in bios.files) {
                 if(file.overrideLocation != null) { //we have a location override
+                    //ensure directory is there. hack to fix gb/gbc issue
+                    Directory.CreateDirectory(Path.Combine(UpdateDirectory, file.overrideLocation));
                     filePath = Path.Combine(UpdateDirectory, file.overrideLocation, file.file_name);
                 } else {
                     filePath = Path.Combine(path, file.file_name);
