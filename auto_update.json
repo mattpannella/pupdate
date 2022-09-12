@@ -137,5 +137,14 @@
        "name":"ericlewis.LunarLander",
        "platform":"LunarLander",
        "allowPrerelease":true
+    },
+    {
+       "repo":{
+          "user":"ericlewis",
+          "project":"openfpga-asteroids"
+       },
+       "name":"ericlewis.Asteroids",
+       "platform":"Asteroids",
+       "allowPrerelease":true
     }
  ]
