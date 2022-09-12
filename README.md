@@ -24,3 +24,16 @@ example:
 
 ----
 This is a port of the work initially done by [neil-morrison44](https://github.com/neil-morrison44) here https://gist.github.com/neil-morrison44/34fbb18de90cd9a32ca5bdafb2a812b8 with a few tweaks to suit my needs
+
+----
+If you'd like to add your(or anyone else's) core to the list, here is the format used in auto_update.json
+```
+{
+   "repo":{
+      "user":<github username. required>,
+      "project":<github project name. required>
+   },
+   "name":<name of the directory the core gets installed to. example: Spiritualized.GBA>,
+   "platform":<platform name. required>
+}
+```
