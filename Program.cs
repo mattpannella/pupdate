@@ -49,6 +49,9 @@ internal class Program
 
         
         string cores = path + "/auto_update.json";
+        if(!File.Exists(cores)) {
+            autoUpdate = true;
+        }
 
         if(!autoUpdate) {
             Console.WriteLine("Download master cores list file from github? (This will overwrite your current file) [y/n]:");

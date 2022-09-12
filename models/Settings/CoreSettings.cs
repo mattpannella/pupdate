@@ -4,4 +4,9 @@ public class CoreSettings
 {
     public bool skip { get; set; }
     public Bios bios { get; set; }
+
+    public CoreSettings()
+    {
+        skip = false;
+    }
 }
