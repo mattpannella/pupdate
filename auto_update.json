@@ -128,5 +128,14 @@
        "name":"ericlewis.SpaceRace",
        "platform":"SpaceRace",
        "allowPrerelease":true
+    },
+    {
+       "repo":{
+          "user":"ericlewis",
+          "project":"openfpga-lunarlander"
+       },
+       "name":"ericlewis.LunarLander",
+       "platform":"LunarLander",
+       "allowPrerelease":true
     }
  ]
