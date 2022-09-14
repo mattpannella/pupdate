@@ -146,5 +146,14 @@
        "name":"ericlewis.Asteroids",
        "platform":"Asteroids",
        "allowPrerelease":true
+    },
+    {
+       "repo":{
+          "user":"ericlewis",
+          "project":"openfpga-superbreakout"
+       },
+       "name":"ericlewis.SuperBreakout",
+       "platform":"Super Breakout",
+       "allowPrerelease":true
     }
  ]
