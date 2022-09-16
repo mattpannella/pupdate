@@ -54,9 +54,9 @@ internal class Program
         }
 
         if(!autoUpdate) {
-            Console.WriteLine("Download master cores list file from github? (This will overwrite your current file) [y/n]:");
+            Console.WriteLine("Download master cores list file from github? (This will overwrite your current file) [y/n]: (default is y)");
             response = Console.ReadKey(false).Key;
-            if (response == ConsoleKey.Y) {
+            if (response == ConsoleKey.Y || response == ConsoleKey.Enter) {
                 await DownloadCoresFile(cores);
             }
         } else {
