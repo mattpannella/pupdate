@@ -277,7 +277,7 @@ public class PocketCoreUpdater
                     var a = entry.ExternalAttributes;
                     var lowerByte = (byte)(a & 0x00FF);
                     var attributes = (FileAttributes)lowerByte;
-                    if (!attributes.HasFlag(FileAttributes.Directory)) {
+                    if (!(attributes.HasFlag(FileAttributes.Directory) || entry.FullName.Substring(entry.FullName.Length -1) == "/" || entry.FullName.Substring(entry.FullName.Length - 1) == @"\")) {
                         if (!File.Exists(destination)) {
                             new System.IO.FileInfo(destination).Directory.Create();
                         }
@@ -290,6 +290,7 @@ public class PocketCoreUpdater
                     break;
             }
         }
+        zip.Dispose();
         if(extraFiles) {
             _writeMessage("Additional were installed. They can be found in: ");
             _writeMessage(extraPath);
