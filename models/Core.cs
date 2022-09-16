@@ -8,4 +8,9 @@ public class Core
     public Bios bios { get; set; }
     public bool skip { get; set; }
     public string platform { get; set; }
+
+    public override string ToString()
+    {
+        return platform + ": " + name;
+    }
 }

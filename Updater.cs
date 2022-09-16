@@ -155,7 +155,7 @@ public class PocketCoreUpdater
                     continue;
                 }
                 foundZip = true;
-                await _getAsset(asset.browser_download_url);
+                await _getAsset(asset.browser_download_url, core.name);
             }
 
             if(!foundZip) {
@@ -177,6 +177,8 @@ public class PocketCoreUpdater
             string filePath;
             foreach(BiosFile file in bios.files) {
                 if(file.overrideLocation != null) { //we have a location override
+                    //ensure directory is there. hack to fix gb/gbc issue
+                    Directory.CreateDirectory(Path.Combine(UpdateDirectory, file.overrideLocation));
                     filePath = Path.Combine(UpdateDirectory, file.overrideLocation, file.file_name);
                 } else {
                     filePath = Path.Combine(path, file.file_name);
@@ -246,15 +248,61 @@ public class PocketCoreUpdater
         }
     }
 
-    private async Task _getAsset(string downloadLink)
+    private async Task _getAsset(string downloadLink, string coreName)
     {
         _writeMessage("Downloading file " + downloadLink + "...");
         string zipPath = Path.Combine(UpdateDirectory, ZIP_FILE_NAME);
         string extractPath = UpdateDirectory;
+        string extraPath = Path.Combine(UpdateDirectory, "updater assets", coreName);
         await HttpHelper.DownloadFileAsync(downloadLink, zipPath);
 
         _writeMessage("Extracting...");
+        
         ZipFile.ExtractToDirectory(zipPath, extractPath, true);
+        var zip = ZipFile.OpenRead(zipPath);
+        bool extraFiles = false;
+        List<string> directories = new List<string>();
+        foreach(ZipArchiveEntry entry in zip.Entries) {
+            string[] parts = entry.FullName.Split(Path.DirectorySeparatorChar);
+            switch(parts[0]) {
+                case "Assets":
+                case "Cores":
+                case "Platforms":
+                case "Saves":
+                    //move along
+                    break;
+                default:
+                    var source = Path.Combine(extractPath, entry.FullName);
+                    var destination = Path.Combine(extraPath, entry.FullName);
+                    var a = entry.ExternalAttributes;
+                    var lowerByte = (byte)(a & 0x00FF);
+                    var attributes = (FileAttributes)lowerByte;
+                    if (!attributes.HasFlag(FileAttributes.Directory)) {
+                        if (!File.Exists(destination)) {
+                            new System.IO.FileInfo(destination).Directory.Create();
+                        }
+                        File.Move(source, destination,true);
+                        extraFiles = true;
+                        if(!directories.Contains(parts[0])) {
+                            directories.Add(parts[0]);
+                        }
+                    }
+                    break;
+            }
+        }
+        if(extraFiles) {
+            _writeMessage("Additional were installed. They can be found in: ");
+            _writeMessage(extraPath);
+        }
+        foreach(string d in directories) {
+            var deleteme = Path.Combine(extractPath, d);
+            //delete it if it exists
+            if(File.Exists(deleteme)) {
+                File.Delete(deleteme);
+            } else if(Directory.Exists(deleteme)) {
+                Directory.Delete(deleteme, true);
+            }
+        }
         File.Delete(zipPath);
     }
 
