@@ -164,5 +164,14 @@
       "name":"boogermann.galaga",
       "platform":"Galaga",
       "allowPrerelease":true
+   },
+    {
+      "repo":{
+         "user":"agg23",
+         "project":"openfpga-SNES"
+      },
+      "name":"agg23.SNES",
+      "platform":"SNES",
+      "allowPrerelease":true
    }
  ]
