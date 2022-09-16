@@ -165,7 +165,7 @@
       "platform":"Galaga",
       "allowPrerelease":true
    },
-    {
+   {
       "repo":{
          "user":"agg23",
          "project":"openfpga-SNES"
