@@ -155,5 +155,14 @@
        "name":"ericlewis.SuperBreakout",
        "platform":"Super Breakout",
        "allowPrerelease":true
-    }
+    },
+    {
+      "repo":{
+         "user":"opengateware",
+         "project":"arcade-galaga"
+      },
+      "name":"boogermann.galaga",
+      "platform":"Galaga",
+      "allowPrerelease":true
+   }
  ]
