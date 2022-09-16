@@ -290,6 +290,7 @@ public class PocketCoreUpdater
                     break;
             }
         }
+        zip.Dispose();
         if(extraFiles) {
             _writeMessage("Additional were installed. They can be found in: ");
             _writeMessage(extraPath);
