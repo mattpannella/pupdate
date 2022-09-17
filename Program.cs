@@ -5,7 +5,7 @@ using CommandLine;
 
 internal class Program
 {
-    private const string VERSION = "1.5.0";
+    private const string VERSION = "1.6.0";
     private const string API_URL = "https://api.github.com/repos/mattpannella/pocket_core_autoupdate_net/releases";
 
     private const string REMOTE_CORES_FILE = "https://raw.githubusercontent.com/mattpannella/pocket_core_autoupdate_net/main/auto_update.json";
@@ -14,6 +14,7 @@ internal class Program
         bool autoUpdate = false;
         string location = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
         string path = Path.GetDirectoryName(location);
+        bool extractAll = false;
 
         Parser.Default.ParseArguments<Options>(args)
             .WithParsed<Options>(o =>
@@ -24,6 +25,9 @@ internal class Program
                 if(o.InstallPath != null && o.InstallPath != "") {
                     Console.WriteLine("path: " + o.InstallPath);
                     path = o.InstallPath;
+                }
+                if(o.ExtractAll) {
+                    extractAll = true;
                 }
             }
         );
@@ -44,11 +48,11 @@ internal class Program
             }
         }
 
-        //path = "/Users/mattpannella/pocket-test";
-        //string cores = "/Users/mattpannella/development/c#/pocket_updater/auto_update.json";
+        path = "/Users/mattpannella/pocket-test";
+        string cores = "/Users/mattpannella/development/c#/pocket_updater/auto_update.json";
 
         
-        string cores = path + "/auto_update.json";
+        //string cores = path + "/auto_update.json";
         if(!File.Exists(cores)) {
             autoUpdate = true;
         }
@@ -64,6 +68,7 @@ internal class Program
         }
         
         PocketCoreUpdater updater = new PocketCoreUpdater(path, cores);
+        updater.ExtractAll(extractAll);
 
         updater.StatusUpdated += updater_StatusUpdated;
         updater.InstallBiosFiles(true);
@@ -130,8 +135,11 @@ internal class Program
 public class Options
 {
     [Option ('u', "update", Required = false, HelpText = "Automatically download newest core list without asking.")]
-    public bool Update {get; set; }
+    public bool Update { get; set; }
 
     [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
     public string? InstallPath { get; set; }
+
+     [Option ('a', "all", Required = false, HelpText = "Extract all release assets, instead of just ones containing openFPGA cores.")]
+     public bool ExtractAll { get; set; }
 }

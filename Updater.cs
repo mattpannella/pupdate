@@ -23,6 +23,8 @@ public class PocketCoreUpdater
 
     private string _githubApiKey;
 
+    private bool _extractAll = false;
+
     private bool _useConsole = false;
     /// <summary>
     /// The directory where fpga cores will be installed and updated into
@@ -253,56 +255,27 @@ public class PocketCoreUpdater
         _writeMessage("Downloading file " + downloadLink + "...");
         string zipPath = Path.Combine(UpdateDirectory, ZIP_FILE_NAME);
         string extractPath = UpdateDirectory;
-        string extraPath = Path.Combine(UpdateDirectory, "updater assets", coreName);
         await HttpHelper.DownloadFileAsync(downloadLink, zipPath);
 
-        _writeMessage("Extracting...");
-        
-        ZipFile.ExtractToDirectory(zipPath, extractPath, true);
-        var zip = ZipFile.OpenRead(zipPath);
-        bool extraFiles = false;
-        List<string> directories = new List<string>();
-        foreach(ZipArchiveEntry entry in zip.Entries) {
-            string[] parts = entry.FullName.Split(Path.DirectorySeparatorChar);
-            switch(parts[0]) {
-                case "Assets":
-                case "Cores":
-                case "Platforms":
-                case "Saves":
-                    //move along
+        bool isCore = _extractAll;
+
+        if(!isCore) {
+            var zip = ZipFile.OpenRead(zipPath);
+            foreach(ZipArchiveEntry entry in zip.Entries) {
+                string[] parts = entry.FullName.Split(Path.DirectorySeparatorChar);
+                if(parts[0] == "Cores") {
+                    isCore = true;
                     break;
-                default:
-                    var source = Path.Combine(extractPath, entry.FullName);
-                    var destination = Path.Combine(extraPath, entry.FullName);
-                    var a = entry.ExternalAttributes;
-                    var lowerByte = (byte)(a & 0x00FF);
-                    var attributes = (FileAttributes)lowerByte;
-                    if (!(attributes.HasFlag(FileAttributes.Directory) || entry.FullName.Substring(entry.FullName.Length -1) == "/" || entry.FullName.Substring(entry.FullName.Length - 1) == @"\")) {
-                        if (!File.Exists(destination)) {
-                            new System.IO.FileInfo(destination).Directory.Create();
-                        }
-                        File.Move(source, destination,true);
-                        extraFiles = true;
-                        if(!directories.Contains(parts[0])) {
-                            directories.Add(parts[0]);
-                        }
-                    }
-                    break;
+                }
             }
+            zip.Dispose();
         }
-        zip.Dispose();
-        if(extraFiles) {
-            _writeMessage("Additional were installed. They can be found in: ");
-            _writeMessage(extraPath);
-        }
-        foreach(string d in directories) {
-            var deleteme = Path.Combine(extractPath, d);
-            //delete it if it exists
-            if(File.Exists(deleteme)) {
-                File.Delete(deleteme);
-            } else if(Directory.Exists(deleteme)) {
-                Directory.Delete(deleteme, true);
-            }
+
+        if(!isCore) {
+            _writeMessage("Zip does not contain openFPGA core. Skipping. Please use -a if you'd like to extra all zips.");
+        } else {
+            _writeMessage("Extracting...");
+            ZipFile.ExtractToDirectory(zipPath, extractPath, true);
         }
         File.Delete(zipPath);
     }
@@ -368,6 +341,11 @@ public class PocketCoreUpdater
         } else {
             _writeMessage("Firmware up to date.");
         }
+    }
+
+    public void ExtractAll(bool value)
+    {
+        _extractAll = value;
     }
 
     /// <summary>
