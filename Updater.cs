@@ -19,7 +19,7 @@ public class PocketCoreUpdater
                     (?<url> [^'""]*\.bin )
                 \k<q>
         [^>]* >");
-    private bool _installBios = false;
+    private bool _downloadAssets = false;
 
     private string _githubApiKey;
 
@@ -91,9 +91,9 @@ public class PocketCoreUpdater
     /// Turn on/off the automatic BIOS downloader
     /// </summary>
     /// <param name="set">Set to true to enable automatic BIOS downloading</param>
-    public void InstallBiosFiles(bool set)
+    public void DownloadAssets(bool set)
     {
-        _installBios = set;
+        _downloadAssets = set;
     }
 
     /// <summary>
@@ -154,7 +154,7 @@ public class PocketCoreUpdater
                 } else if (SemverUtil.SemverCompare(releaseSemver, localSemver)){
                     _writeMessage("Updating core");
                 } else {
-                    await SetupBios(core.bios); //check for bios even if core isn't updating
+                    await _DownloadAssets(core.assets); //check for roms even if core isn't updating
                     _writeMessage("Up to date. Skipping core");
                     _writeMessage("------------");
                     continue;
@@ -179,19 +179,19 @@ public class PocketCoreUpdater
                 _writeMessage("------------");
                 continue;
             }
-            await SetupBios(core.bios);
+            await _DownloadAssets(core.assets);
             _writeMessage("Installation complete.");
             _writeMessage("------------");
         }
     }
 
-    private async Task SetupBios(Bios bios)
+    private async Task _DownloadAssets(Dependency assets)
     {
-        if(_installBios && bios != null) {
-            _writeMessage("Looking for BIOS");
-            string path = Path.Combine(UpdateDirectory, bios.location);
+        if(_downloadAssets && assets != null) {
+            _writeMessage("Looking for Assets");
+            string path = Path.Combine(UpdateDirectory, assets.location);
             string filePath;
-            foreach(BiosFile file in bios.files) {
+            foreach(DependencyFile file in assets.files) {
                 if(file.overrideLocation != null) { //we have a location override
                     //ensure directory is there. hack to fix gb/gbc issue
                     Directory.CreateDirectory(Path.Combine(UpdateDirectory, file.overrideLocation));
@@ -200,10 +200,10 @@ public class PocketCoreUpdater
                     filePath = Path.Combine(path, file.file_name);
                 }
                 if(File.Exists(filePath)) {
-                    _writeMessage("BIOS file already installed: " + file.file_name);
+                    _writeMessage("Asset already installed: " + file.file_name);
                 } else {
                     if(file.zip) {
-                        string zipFile = Path.Combine(path, "bios.zip");
+                        string zipFile = Path.Combine(path, "roms.zip");
                         _writeMessage("Downloading zip file...");
                         await HttpHelper.DownloadFileAsync(file.url, zipFile);
                         string extractPath = Path.Combine(UpdateDirectory, "temp");

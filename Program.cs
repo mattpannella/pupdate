@@ -49,7 +49,7 @@ internal class Program
         }
 
         //path = "/Users/mattpannella/pocket-test";
-        //string cores = "/Users/mattpannella/development/c#/pocket_updater/auto_update.json";
+        //string cores = "/Users/mattpannella/development/c#/pocket_updater/pocket_updater_cores.json";
 
         
         string cores = path + "/auto_update.json";
@@ -71,7 +71,7 @@ internal class Program
         updater.ExtractAll(extractAll);
 
         updater.StatusUpdated += updater_StatusUpdated;
-        updater.InstallBiosFiles(true);
+        updater.DownloadAssets(true);
         Console.WriteLine("Starting update process...");
 
         await updater.RunUpdates();

@@ -4,7 +4,7 @@
         "user": "spiritualized1997",
         "project": "openFPGA-GBA"
       },
-      "bios": {
+      "assets": {
         "location": "assets/gba/common/",
         "files": [
           {
@@ -22,7 +22,7 @@
         "project": "openFPGA-GB-GBC"
       },
       "name": "Spiritualized.GBC",
-      "bios": {
+      "assets": {
         "location": "assets/gbc/common/",
         "files": [
           {
@@ -52,7 +52,7 @@
         "project": "Analogue_Pocket_Neogeo"
       },
       "name": "Mazamars312.NeoGeo",
-      "bios": {
+      "assets": {
         "location": "assets/ng/common",
         "files": [
           {
@@ -106,7 +106,7 @@
         "user": "nullobject",
         "project": "openfpga-tecmo"
       },
-      "bios": {
+      "assets": {
         "location": "assets/tecmo/common",
         "files": [
           {
@@ -163,7 +163,7 @@
         "user": "ericlewis",
         "project": "openfpga-lunarlander"
       },
-      "bios": {
+      "assets": {
         "location": "assets/lunarlander/ericlewis.LunarLander/",
         "files": [
           {
@@ -180,7 +180,7 @@
         "user": "ericlewis",
         "project": "openfpga-asteroids"
       },
-      "bios": {
+      "assets": {
         "location": "assets/asteroids/ericlewis.Asteroids/",
         "files": [
           {
@@ -197,7 +197,7 @@
         "user": "ericlewis",
         "project": "openfpga-superbreakout"
       },
-      "bios": {
+      "assets": {
         "location": "assets/superbreakout/common/",
         "files": [
           {
@@ -214,7 +214,7 @@
         "user": "opengateware",
         "project": "arcade-galaga"
       },
-      "bios": {
+      "assets": {
         "location": "assets/galaga/common/",
         "files": [
           {
