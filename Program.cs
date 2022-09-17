@@ -48,11 +48,11 @@ internal class Program
             }
         }
 
-        path = "/Users/mattpannella/pocket-test";
-        string cores = "/Users/mattpannella/development/c#/pocket_updater/auto_update.json";
+        //path = "/Users/mattpannella/pocket-test";
+        //string cores = "/Users/mattpannella/development/c#/pocket_updater/auto_update.json";
 
         
-        //string cores = path + "/auto_update.json";
+        string cores = path + "/auto_update.json";
         if(!File.Exists(cores)) {
             autoUpdate = true;
         }
