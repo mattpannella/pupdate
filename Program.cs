@@ -5,7 +5,7 @@ using CommandLine;
 
 internal class Program
 {
-    private const string VERSION = "1.6.0";
+    private const string VERSION = "2.0.0";
     private const string API_URL = "https://api.github.com/repos/mattpannella/pocket_core_autoupdate_net/releases";
 
     private const string REMOTE_CORES_FILE = "https://raw.githubusercontent.com/mattpannella/pocket_core_autoupdate_net/main/auto_update.json";
