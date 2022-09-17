@@ -109,4 +109,9 @@ public class SettingsManager
         SaveSettings();
     }
 
+    public Config GetConfig()
+    {
+        return _settings.config;
+    }
+
 }

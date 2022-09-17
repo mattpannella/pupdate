@@ -111,31 +111,31 @@
         "files": [
           {
             "file_name": "gemini.rom",
-            "url": "https://archive.org/download/pocket-roms/Tecmo/gemini.rom"
+            "archive_file": "Tecmo/gemini.rom"
           },
           {
             "file_name": "rygar.rom",
-            "url": "https://archive.org/download/pocket-roms/Tecmo/rygar.rom"
+            "archive_file": "Tecmo/rygar.rom"
           },
           {
             "file_name": "geminij.rom",
-            "url": "https://archive.org/download/pocket-roms/Tecmo/geminij.rom"
+            "archive_file": "Tecmo/geminij.rom"
           },
           {
             "file_name": "rygar2.rom",
-            "url": "https://archive.org/download/pocket-roms/Tecmo/rygar2.rom"
+            "archive_file": "Tecmo/rygar2.rom"
           },
           {
             "file_name": "rygarj.rom",
-            "url": "https://archive.org/download/pocket-roms/Tecmo/rygarj.rom"
+            "archive_file": "Tecmo/rygarj.rom"
           },
           {
             "file_name": "silkworm.rom",
-            "url": "https://archive.org/download/pocket-roms/Tecmo/silkworm.rom"
+            "archive_file": "Tecmo/silkworm.rom"
           },
           {
             "file_name": "silkwrmj.rom",
-            "url": "https://archive.org/download/pocket-roms/Tecmo/silkwrmj.rom"
+            "archive_file": "Tecmo/silkwrmj.rom"
           }
         ]
       },
@@ -168,7 +168,7 @@
         "files": [
           {
             "file_name": "llander.rom",
-            "url": "https://archive.org/download/pocket-roms/Lunar_Lander/llander.rom"
+            "archive_file": "Lunar_Lander/llander.rom"
           }
         ]
       },
@@ -185,7 +185,7 @@
         "files": [
           {
             "file_name": "asteroid.rom",
-            "url": "https://archive.org/download/pocket-roms/Asteroids/asteroid.rom"
+            "archive_file": "Asteroids/asteroid.rom"
           }
         ]
       },
@@ -202,7 +202,7 @@
         "files": [
           {
             "file_name": "sbrkout.rom",
-            "url": "https://archive.org/download/pocket-roms/Super_Breakout/sbrkout.rom"
+            "archive_file": "Super_Breakout/sbrkout.rom"
           }
         ]
       },
@@ -219,63 +219,63 @@
         "files": [
           {
             "file_name": "galaga.rom",
-            "url": "https://archive.org/download/pocket-roms/Galaga/galaga.rom"
+            "archive_file": "Galaga/galaga.rom"
           },
           {
             "file_name": "galagads.rom",
-            "url": "https://archive.org/download/pocket-roms/Galaga/galagads.rom"
+            "archive_file": "Galaga/galagads.rom"
           },
           {
             "file_name": "galagaef.rom",
-            "url": "https://archive.org/download/pocket-roms/Galaga/galagaef.rom"
+            "archive_file": "Galaga/galagaef.rom"
           },
           {
             "file_name": "galagamf.rom",
-            "url": "https://archive.org/download/pocket-roms/Galaga/galagamf.rom"
+            "archive_file": "Galaga/galagamf.rom"
           },
           {
             "file_name": "galagamw.rom",
-            "url": "https://archive.org/download/pocket-roms/Galaga/galagamw.rom"
+            "archive_file": "Galaga/galagamw.rom"
           },
           {
             "file_name": "galagao.rom",
-            "url": "https://archive.org/download/pocket-roms/Galaga/galagao.rom"
+            "archive_file": "Galaga/galagao.rom"
           },
           {
             "file_name": "galagosb.rom",
-            "url": "https://archive.org/download/pocket-roms/Galaga/galagosb.rom"
+            "archive_file": "Galaga/galagosb.rom"
           },
           {
             "file_name": "galagost.rom",
-            "url": "https://archive.org/download/pocket-roms/Galaga/galagost.rom"
+            "archive_file": "Galaga/galagost.rom"
           },
           {
             "file_name": "galaped.rom",
-            "url": "https://archive.org/download/pocket-roms/Galaga/galaped.rom"
+            "archive_file": "Galaga/galaped.rom"
           },
           {
             "file_name": "galgaxin.rom",
-            "url": "https://archive.org/download/pocket-roms/Galaga/galgaxin.rom"
+            "archive_file": "Galaga/galgaxin.rom"
           },
           {
             "file_name": "gatsbee.rom",
-            "url": "https://archive.org/download/pocket-roms/Galaga/gatsbee.rom"
+            "archive_file": "Galaga/gatsbee.rom"
           },
           {
             "file_name": "nebulbee.rom",
-            "url": "https://archive.org/download/pocket-roms/Galaga/nebulbee.rom"
+            "archive_file": "Galaga/nebulbee.rom"
           },
           {
             "file_name": "vgalaga.rom",
-            "url": "https://archive.org/download/pocket-roms/Galaga/vgalaga.rom"
+            "archive_file": "Galaga/vgalaga.rom"
           },
           {
             "file_name": "vgalagaf.rom",
-            "url": "https://archive.org/download/pocket-roms/Galaga/vgalagaf.rom"
+            "archive_file": "Galaga/vgalagaf.rom"
           },
           {
             "file_name": "vgalagam.rom",
-            "url": "https://archive.org/download/pocket-roms/Galaga/vgalagam.rom"
+            "archive_file": "Galaga/vgalagam.rom"
           }
         ]
       },

@@ -9,6 +9,7 @@ namespace pannella.analoguepocket;
 public class PocketCoreUpdater
 {
     private const string GITHUB_API_URL = "https://api.github.com/repos/{0}/{1}/releases";
+    private const string ARCHIVE_BASE_URL = "https://archive.org/download";
     private static readonly string[] ZIP_TYPES = {"application/x-zip-compressed", "application/zip"};
     private const string FIRMWARE_URL = "https://www.analogue.co/support/pocket/firmware/latest";
     private const string ZIP_FILE_NAME = "core.zip";
@@ -202,10 +203,11 @@ public class PocketCoreUpdater
                 if(File.Exists(filePath)) {
                     _writeMessage("Asset already installed: " + file.file_name);
                 } else {
+                    string url = BuildAssetUrl(file);
                     if(file.zip) {
                         string zipFile = Path.Combine(path, "roms.zip");
                         _writeMessage("Downloading zip file...");
-                        await HttpHelper.DownloadFileAsync(file.url, zipFile);
+                        await HttpHelper.DownloadFileAsync(url, zipFile);
                         string extractPath = Path.Combine(UpdateDirectory, "temp");
                         _writeMessage("Extracting files...");
                         ZipFile.ExtractToDirectory(zipFile, extractPath, true);
@@ -216,12 +218,24 @@ public class PocketCoreUpdater
                         File.Delete(zipFile);
                     } else {
                         _writeMessage("Downloading " + file.file_name);
-                        await HttpHelper.DownloadFileAsync(file.url, filePath);
+                        await HttpHelper.DownloadFileAsync(url, filePath);
                         _writeMessage("Finished downloading " + file.file_name);
                     }
                 }
             }
         }
+    }
+
+    private string BuildAssetUrl(DependencyFile asset)
+    {
+        string archive = _settingsManager.GetConfig().archive_name;
+        if(archive != null && asset.archive_file != null) {
+            return ARCHIVE_BASE_URL + "/" + archive + "/" + asset.archive_file;
+        } else if(asset.url != null) {
+            return asset.url;
+        }
+
+        return "";
     }
 
     private Github.Release _getMostRecentRelease(List<Github.Release> releases, bool allowPrerelease)

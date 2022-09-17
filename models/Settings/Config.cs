@@ -8,6 +8,6 @@ public class Config
     public Config()
     {
         download_assets = true;
-        archive_name = "pocket_roms";
+        archive_name = "pocket-roms";
     }
 }
