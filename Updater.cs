@@ -37,6 +37,10 @@ public class PocketCoreUpdater
 
     public string SettingsFile { get; set; }
 
+    private SettingsManager _settingsManager;
+
+    private List<Core> _cores;
+
     /// <summary>
     /// Constructor
     /// </summary>
@@ -54,8 +58,24 @@ public class PocketCoreUpdater
                 throw new FileNotFoundException("Cores json file not found: " + coresFile);
             }
         }
+        LoadCores();
 
         SettingsFile = Path.Combine(updateDirectory, "pocket_updater_settings.json");
+        LoadSettings();
+    }
+
+    public void LoadCores()
+    {
+        if(CoresFile == null) {
+            throw new Exception("No Cores file has been set");
+        }
+        string json = File.ReadAllText(CoresFile);
+        _cores = JsonSerializer.Deserialize<List<Core>>(json);
+    }
+
+    public void LoadSettings()
+    {
+         _settingsManager = new SettingsManager(SettingsFile, _cores);
     }
 
     /// <summary>
@@ -82,15 +102,9 @@ public class PocketCoreUpdater
     public async Task RunUpdates()
     {
         await UpdateFirmware();
-
-        if(CoresFile == null) {
-            throw new Exception("No Cores file has been set");
-        }
-        string json = File.ReadAllText(CoresFile);
-        List<Core>? coresList = JsonSerializer.Deserialize<List<Core>>(json);
-
-        foreach(Core core in coresList) {
-            if(core.skip) {
+        string json;
+        foreach(Core core in _cores) {
+            if(_settingsManager.GetCoreSettings(core.name).skip) {
                 continue;
             }
             Repo repo = core.repo;
@@ -100,7 +114,7 @@ public class PocketCoreUpdater
                 _writeMessage("Core Name is required. Skipping.");
                 continue;
             }
-            bool allowPrerelease = core.allowPrerelease;
+            bool allowPrerelease = _settingsManager.GetCoreSettings(core.name).allowPrerelease;
             string url = String.Format(GITHUB_API_URL, repo.user, repo.project);
             string response = await _fetchReleases(url);
             if(response == null) {
@@ -319,24 +333,18 @@ public class PocketCoreUpdater
         string[] parts = firmwareUrl.Split("/");
         string filename = parts[parts.Length-1];
 
-        Settings coresList = new Settings();
-        if(File.Exists(SettingsFile)) {
-            string json = File.ReadAllText(SettingsFile);
-            coresList = JsonSerializer.Deserialize<Settings>(json);
-        }
-        if(coresList.firmware.version != filename) {
+        Firmware current = _settingsManager.GetCurrentFirmware();
+        if(current.version != filename) {
             _writeMessage("Firmware update found. Downloading...");
             await HttpHelper.DownloadFileAsync(firmwareUrl, Path.Combine(UpdateDirectory, filename));
             _writeMessage("Download Complete");
             _writeMessage(Path.Combine(UpdateDirectory, filename));
-            var oldfile = Path.Combine(UpdateDirectory, coresList.firmware.version);
+            var oldfile = Path.Combine(UpdateDirectory, current.version);
             if(File.Exists(oldfile)) {
                 _writeMessage("Deleting old firmware file...");
                 File.Delete(oldfile);
             }
-            coresList.firmware.version = filename;
-            var options = new JsonSerializerOptions { WriteIndented = true };
-            File.WriteAllText(SettingsFile, JsonSerializer.Serialize(coresList, options));
+            _settingsManager.SetFirmwareVersion(filename);
             _writeMessage("To install firmware, restart your Pocket.");
         } else {
             _writeMessage("Firmware up to date.");
