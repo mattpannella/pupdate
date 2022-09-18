@@ -16,6 +16,7 @@ The updater currently accepts 2 command line parameters. I will probably add mor
 ```
  -u, --update    Automatically download newest core list without asking.
  -p, --path      Absolute path to install location
+ -a, --all       Extract all release assets, instead of just ones containing openFPGA cores.
 ```
 example:
 `
@@ -26,14 +27,14 @@ example:
 This is a port of the work initially done by [neil-morrison44](https://github.com/neil-morrison44) here https://gist.github.com/neil-morrison44/34fbb18de90cd9a32ca5bdafb2a812b8 with a few tweaks to suit my needs
 
 ----
-If you'd like to add your(or anyone else's) core to the list, here is the format used in auto_update.json
+If you'd like to add your(or anyone else's) core to the list, here is the format used in pocket_updater_cores.json
 ```
 {
    "repo":{
       "user":<github username. required>,
       "project":<github project name. required>
    },
-   "name":<name of the directory the core gets installed to. example: Spiritualized.GBA>,
+   "name":<name of the directory the core gets installed to. example: Spiritualized.GBA. required>,
    "platform":<platform name. required>
 }
 ```
