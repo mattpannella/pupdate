@@ -9,7 +9,7 @@ public class SettingsManager
     private Settings _settings;
     private string _settingsFile;
 
-    public SettingsManager(string settingsFile, List<Core> cores)
+    public SettingsManager(string settingsFile, List<Core> cores = null)
     {
         _settings = new Settings();
         if (File.Exists(settingsFile))
@@ -19,9 +19,10 @@ public class SettingsManager
         }
         _settingsFile = settingsFile;
 
-        _initializeCoreSettings(cores);
-
-        SaveSettings();
+        if(cores != null) {
+            _initializeCoreSettings(cores);
+            SaveSettings();
+        }
     }
 
     //loop through every core, and add any missing ones to the settings file

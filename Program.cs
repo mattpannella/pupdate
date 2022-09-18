@@ -69,7 +69,7 @@ internal class Program
         
         PocketCoreUpdater updater = new PocketCoreUpdater(path, cores);
         updater.ExtractAll(extractAll);
-
+        updater.SetGithubApiKey(GetGithubToken(path));
         updater.StatusUpdated += updater_StatusUpdated;
         updater.DownloadAssets(true);
         Console.WriteLine("Starting update process...");
@@ -78,6 +78,17 @@ internal class Program
         
         Console.WriteLine("and now its done");
         Console.ReadLine(); //wait for input so the console doesn't auto close in windows
+    }
+
+    public static string? GetGithubToken(string path)
+    {
+        string fullpath = Path.Combine(path, "pocket_updater_settings.json");
+        if(File.Exists(fullpath)) {
+            SettingsManager sm = new SettingsManager(fullpath);
+            return sm.GetConfig().github_token;
+        }
+
+        return null;
     }
 
     async static Task DownloadCoresFile(string file)
