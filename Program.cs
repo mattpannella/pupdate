@@ -5,10 +5,10 @@ using CommandLine;
 
 internal class Program
 {
-    private const string VERSION = "1.6.0";
+    private const string VERSION = "2.0.1";
     private const string API_URL = "https://api.github.com/repos/mattpannella/pocket_core_autoupdate_net/releases";
 
-    private const string REMOTE_CORES_FILE = "https://raw.githubusercontent.com/mattpannella/pocket_core_autoupdate_net/main/auto_update.json";
+    private const string REMOTE_CORES_FILE = "https://raw.githubusercontent.com/mattpannella/pocket_core_autoupdate_net/main/pocket_updater_cores.json";
     private static async Task Main(string[] args)
     {
         bool autoUpdate = false;
@@ -49,10 +49,10 @@ internal class Program
         }
 
         //path = "/Users/mattpannella/pocket-test";
-        //string cores = "/Users/mattpannella/development/c#/pocket_updater/auto_update.json";
+        //string cores = "/Users/mattpannella/development/c#/pocket_updater/pocket_updater_cores.json";
 
         
-        string cores = path + "/auto_update.json";
+        string cores = path + "/pocket_updater_cores.json";
         if(!File.Exists(cores)) {
             autoUpdate = true;
         }
@@ -69,15 +69,31 @@ internal class Program
         
         PocketCoreUpdater updater = new PocketCoreUpdater(path, cores);
         updater.ExtractAll(extractAll);
-
+        updater.SetGithubApiKey(GetGithubToken(path));
         updater.StatusUpdated += updater_StatusUpdated;
-        updater.InstallBiosFiles(true);
+        updater.DownloadAssets(true);
         Console.WriteLine("Starting update process...");
 
         await updater.RunUpdates();
         
         Console.WriteLine("and now its done");
         Console.ReadLine(); //wait for input so the console doesn't auto close in windows
+    }
+
+    public static string? GetGithubToken(string path)
+    {
+        try {
+            string fullpath = Path.Combine(path, "pocket_updater_settings.json");
+            if(File.Exists(fullpath)) {
+                SettingsManager sm = new SettingsManager(fullpath);
+                return sm.GetConfig().github_token;
+            }
+
+            return null;
+        }
+        catch (Exception e) {
+            return null;
+        }
     }
 
     async static Task DownloadCoresFile(string file)
