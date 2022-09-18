@@ -5,7 +5,7 @@ using CommandLine;
 
 internal class Program
 {
-    private const string VERSION = "2.0.0";
+    private const string VERSION = "2.0.1";
     private const string API_URL = "https://api.github.com/repos/mattpannella/pocket_core_autoupdate_net/releases";
 
     private const string REMOTE_CORES_FILE = "https://raw.githubusercontent.com/mattpannella/pocket_core_autoupdate_net/main/pocket_updater_cores.json";
@@ -82,13 +82,18 @@ internal class Program
 
     public static string? GetGithubToken(string path)
     {
-        string fullpath = Path.Combine(path, "pocket_updater_settings.json");
-        if(File.Exists(fullpath)) {
-            SettingsManager sm = new SettingsManager(fullpath);
-            return sm.GetConfig().github_token;
-        }
+        try {
+            string fullpath = Path.Combine(path, "pocket_updater_settings.json");
+            if(File.Exists(fullpath)) {
+                SettingsManager sm = new SettingsManager(fullpath);
+                return sm.GetConfig().github_token;
+            }
 
-        return null;
+            return null;
+        }
+        catch (Exception e) {
+            return null;
+        }
     }
 
     async static Task DownloadCoresFile(string file)

@@ -17,12 +17,18 @@ public class SettingsManager
             string json = File.ReadAllText(settingsFile);
             _settings = JsonSerializer.Deserialize<Settings>(json);
         }
+
+        //bandaid to fix old settings files
+        if(_settings.config == null) {
+            _settings.config = new Config();
+        }
         _settingsFile = settingsFile;
 
         if(cores != null) {
             _initializeCoreSettings(cores);
-            SaveSettings();
         }
+
+        SaveSettings();
     }
 
     //loop through every core, and add any missing ones to the settings file

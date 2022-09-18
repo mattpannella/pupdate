@@ -105,85 +105,90 @@ public class PocketCoreUpdater
         await UpdateFirmware();
         string json;
         foreach(Core core in _cores) {
-            if(_settingsManager.GetCoreSettings(core.name).skip) {
-                continue;
-            }
-            Repo repo = core.repo;
-            _writeMessage("Starting Repo: " + repo.project);
-            string name = core.name;
-            if(name == null) {
-                _writeMessage("Core Name is required. Skipping.");
-                continue;
-            }
-            bool allowPrerelease = _settingsManager.GetCoreSettings(core.name).allowPrerelease;
-            string url = String.Format(GITHUB_API_URL, repo.user, repo.project);
-            string response = await _fetchReleases(url);
-            if(response == null) {
-                Environment.Exit(1);
-            }
-            List<Github.Release>? releases = JsonSerializer.Deserialize<List<Github.Release>>(response);
-            var mostRecentRelease = _getMostRecentRelease(releases, allowPrerelease);
-            if(mostRecentRelease == null) {
-                _writeMessage("No releases found. Skipping");
-                continue;
-            }
-            string tag_name = mostRecentRelease.tag_name;
-            List<Github.Asset> assets = mostRecentRelease.assets;
+            try {
+                if(_settingsManager.GetCoreSettings(core.name).skip) {
+                    continue;
+                }
+                Repo repo = core.repo;
+                _writeMessage("Starting Repo: " + repo.project);
+                string name = core.name;
+                if(name == null) {
+                    _writeMessage("Core Name is required. Skipping.");
+                    continue;
+                }
+                bool allowPrerelease = _settingsManager.GetCoreSettings(core.name).allowPrerelease;
+                string url = String.Format(GITHUB_API_URL, repo.user, repo.project);
+                string response = await _fetchReleases(url);
+                if(response == null) {
+                    Environment.Exit(1);
+                }
+                List<Github.Release>? releases = JsonSerializer.Deserialize<List<Github.Release>>(response);
+                var mostRecentRelease = _getMostRecentRelease(releases, allowPrerelease);
+                if(mostRecentRelease == null) {
+                    _writeMessage("No releases found. Skipping");
+                    continue;
+                }
+                string tag_name = mostRecentRelease.tag_name;
+                List<Github.Asset> assets = mostRecentRelease.assets;
 
-            string releaseSemver = SemverUtil.FindSemver(tag_name);
+                string releaseSemver = SemverUtil.FindSemver(tag_name);
 
-            _writeMessage(tag_name + " is the most recent release, checking local core...");
-            string localCoreFile = Path.Combine(UpdateDirectory, "Cores/"+name+"/core.json");
-            bool fileExists = File.Exists(localCoreFile);
+                _writeMessage(tag_name + " is the most recent release, checking local core...");
+                string localCoreFile = Path.Combine(UpdateDirectory, "Cores/"+name+"/core.json");
+                bool fileExists = File.Exists(localCoreFile);
 
-            bool foundZip = false;
+                bool foundZip = false;
 
-            if (fileExists) {
-                json = File.ReadAllText(localCoreFile);
+                if (fileExists) {
+                    json = File.ReadAllText(localCoreFile);
+                    
+                    Analogue.Config? config = JsonSerializer.Deserialize<Analogue.Config>(json);
+                    Analogue.Core localCore = config.core;
+                    string ver_string = localCore.metadata.version;
+                    string localSemver = SemverUtil.FindSemver(ver_string);
+                    
+                    if(localSemver != null) {
+                        _writeMessage("local core found: v" + localSemver);
+                    }
+
+                    if (!SemverUtil.IsActuallySemver(localSemver) || !SemverUtil.IsActuallySemver(releaseSemver)) {
+                        _writeMessage("downloading core anyway");
+                    } else if (SemverUtil.SemverCompare(releaseSemver, localSemver)){
+                        _writeMessage("Updating core");
+                    } else {
+                        await _DownloadAssets(core.assets); //check for roms even if core isn't updating
+                        _writeMessage("Up to date. Skipping core");
+                        _writeMessage("------------");
+                        continue;
+                    }
+                } else {
+                    _writeMessage("Downloading core");
+                }
                 
-                Analogue.Config? config = JsonSerializer.Deserialize<Analogue.Config>(json);
-                Analogue.Core localCore = config.core;
-                string ver_string = localCore.metadata.version;
-                string localSemver = SemverUtil.FindSemver(ver_string);
-                
-                if(localSemver != null) {
-                    _writeMessage("local core found: v" + localSemver);
+                // might need to search for the right zip here if there's more than one
+                //iterate through assets to find the zip release
+                foreach(Github.Asset asset in assets) {
+                    if(!ZIP_TYPES.Contains(asset.content_type)) {
+                        //not a zip file. move on
+                        continue;
+                    }
+                    foundZip = true;
+                    await _getAsset(asset.browser_download_url, core.name);
                 }
 
-                if (!SemverUtil.IsActuallySemver(localSemver) || !SemverUtil.IsActuallySemver(releaseSemver)) {
-                    _writeMessage("downloading core anyway");
-                } else if (SemverUtil.SemverCompare(releaseSemver, localSemver)){
-                    _writeMessage("Updating core");
-                } else {
-                    await _DownloadAssets(core.assets); //check for roms even if core isn't updating
-                    _writeMessage("Up to date. Skipping core");
+                if(!foundZip) {
+                    _writeMessage("No zip file found for release. Skipping");
                     _writeMessage("------------");
                     continue;
                 }
-            } else {
-                _writeMessage("Downloading core");
-            }
-            
-            // might need to search for the right zip here if there's more than one
-            //iterate through assets to find the zip release
-            foreach(Github.Asset asset in assets) {
-                if(!ZIP_TYPES.Contains(asset.content_type)) {
-                    //not a zip file. move on
-                    continue;
-                }
-                foundZip = true;
-                await _getAsset(asset.browser_download_url, core.name);
-            }
-
-            if(!foundZip) {
-                _writeMessage("No zip file found for release. Skipping");
+                await _DownloadAssets(core.assets);
+                _writeMessage("Installation complete.");
                 _writeMessage("------------");
-                continue;
+            } catch(Exception e) {
+                _writeMessage("Uh oh something went wrong.");
+                _writeMessage(e.Message);
             }
-            await _DownloadAssets(core.assets);
-            _writeMessage("Installation complete.");
-            _writeMessage("------------");
-        }
+        } 
     }
 
     private async Task _DownloadAssets(Dependency assets)
@@ -191,6 +196,9 @@ public class PocketCoreUpdater
         if(_downloadAssets && assets != null) {
             _writeMessage("Looking for Assets");
             string path = Path.Combine(UpdateDirectory, assets.location);
+            if(!Directory.Exists(path)) {
+                Directory.CreateDirectory(path);
+            }
             string filePath;
             foreach(DependencyFile file in assets.files) {
                 if(file.overrideLocation != null) { //we have a location override
