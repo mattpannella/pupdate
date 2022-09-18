@@ -52,7 +52,7 @@ internal class Program
         //string cores = "/Users/mattpannella/development/c#/pocket_updater/pocket_updater_cores.json";
 
         
-        string cores = path + "/auto_update.json";
+        string cores = path + "/pocket_updater_cores.json";
         if(!File.Exists(cores)) {
             autoUpdate = true;
         }
