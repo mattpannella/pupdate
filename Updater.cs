@@ -290,7 +290,7 @@ public class PocketCoreUpdater
         if(!isCore) {
             var zip = ZipFile.OpenRead(zipPath);
             foreach(ZipArchiveEntry entry in zip.Entries) {
-                string[] parts = entry.FullName.Split(Path.DirectorySeparatorChar);
+                string[] parts = entry.FullName.Split('/');
                 if(parts.Contains("Cores")) {
                     isCore = true;
                     break;
