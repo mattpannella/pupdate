@@ -47,7 +47,7 @@ public class PocketCoreUpdater
     /// </summary>
     /// <param name="updateDirectory">The directory to install/update openFPGA cores in.</param>
     /// <param name="coresFile">Path to cores json file</param>
-    public PocketCoreUpdater(string updateDirectory, string coresFile = null)
+    public PocketCoreUpdater(string updateDirectory, string coresFile = null, string settingsPath = null)
     {
         UpdateDirectory = updateDirectory;
 
@@ -61,7 +61,11 @@ public class PocketCoreUpdater
         }
         LoadCores();
 
-        SettingsFile = Path.Combine(updateDirectory, "pocket_updater_settings.json");
+        if(settingsPath != null) {
+            SettingsFile = Path.Combine(settingsPath, "pocket_updater_settings.json");
+        } else {
+            SettingsFile = Path.Combine(updateDirectory, "pocket_updater_settings.json");
+        }
         LoadSettings();
     }
 
