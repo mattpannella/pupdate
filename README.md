@@ -13,7 +13,7 @@ A complete list of available cores can also be found here: https://joshcampbell1
 To run the updater, all you need to do is put the executable file for your platform (windows, mac os, or linux) in the root of your sd card and run the program. It will prompt you to download the latest list of available cores before starting the update process.
 
 #### Advanced Usage
-The updater currently accepts 2 command line parameters. I will probably add more options in the future
+The updater currently accepts 3 command line parameters. I will probably add more options in the future
 ```
  -u, --update    Automatically download newest core list without asking.
  -p, --path      Absolute path to install location
