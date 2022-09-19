@@ -1,297 +1,314 @@
 [
-    {
-      "repo": {
-        "user": "spiritualized1997",
-        "project": "openFPGA-GBA"
-      },
-      "assets": {
-        "location": "assets/gba/common/",
-        "files": [
-          {
-            "file_name": "gba_bios.bin",
-            "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/GBA.zip/gba_bios.bin"
-          }
-        ]
-      },
-      "name": "Spiritualized.GBA",
-      "platform": "Gameboy Advance"
+  {
+    "repo": {
+      "user": "spiritualized1997",
+      "project": "openFPGA-GBA"
     },
-    {
-      "repo": {
-        "user": "spiritualized1997",
-        "project": "openFPGA-GB-GBC"
-      },
-      "name": "Spiritualized.GBC",
-      "assets": {
-        "location": "assets/gbc/common/",
-        "files": [
-          {
-            "file_name": "gbc_bios.bin",
-            "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/Gameboy.zip/GBC_boot_ROM.gb"
-          },
-          {
-            "overrideLocation": "assets/gb/common/",
-            "file_name": "dmg_bios.bin",
-            "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/Gameboy.zip/GB_boot_ROM.gb"
-          }
-        ]
-      },
-      "platform": "Gameboy/Gameboy Color"
+    "assets": {
+      "location": "assets/gba/common/",
+      "files": [
+        {
+          "file_name": "gba_bios.bin",
+          "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/GBA.zip/gba_bios.bin"
+        }
+      ]
     },
-    {
-      "repo": {
-        "user": "spacemen3",
-        "project": "PDP-1"
-      },
-      "platform": "PDP-1",
-      "name": "Spacemen3.PDP1"
+    "name": "Spiritualized.GBA",
+    "platform": "Gameboy Advance"
+  },
+  {
+    "repo": {
+      "user": "spiritualized1997",
+      "project": "openFPGA-GB-GBC"
     },
-    {
-      "repo": {
-        "user": "Mazamars312",
-        "project": "Analogue_Pocket_Neogeo"
-      },
-      "name": "Mazamars312.NeoGeo",
-      "assets": {
-        "location": "assets/ng/common",
-        "files": [
-          {
-            "url": "http://unibios.free.fr/download/uni-bios-40.zip",
-            "file_name": "uni-bios_1_0.rom",
-            "zip": true,
-            "zip_file": "uni-bios.rom"
-          },
-          {
-            "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/NeoGeo.zip/000-lo.lo",
-            "file_name": "000-lo.lo"
-          },
-          {
-            "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/NeoGeo.zip/sfix.sfix",
-            "file_name": "sfix.sfix"
-          }
-        ]
-      },
-      "platform": "Neo Geo"
+    "name": "Spiritualized.GBC",
+    "assets": {
+      "location": "assets/gbc/common/",
+      "files": [
+        {
+          "file_name": "gbc_bios.bin",
+          "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/Gameboy.zip/GBC_boot_ROM.gb"
+        },
+        {
+          "overrideLocation": "assets/gb/common/",
+          "file_name": "dmg_bios.bin",
+          "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/Gameboy.zip/GB_boot_ROM.gb"
+        }
+      ]
     },
-    {
-      "repo": {
-        "user": "spiritualized1997",
-        "project": "openFPGA-SG1000"
-      },
-      "name": "Spiritualized.SG-1000",
-      "platform": "SG-1000"
+    "platform": "Gameboy/Gameboy Color"
+  },
+  {
+    "repo": {
+      "user": "spacemen3",
+      "project": "PDP-1"
     },
-    {
-      "repo": {
-        "user": "spiritualized1997",
-        "project": "openFPGA-SMS"
-      },
-      "name": "Spiritualized.SMS",
-      "platform": "Master System"
+    "platform": "PDP-1",
+    "name": "Spacemen3.PDP1"
+  },
+  {
+    "repo": {
+      "user": "Mazamars312",
+      "project": "Analogue_Pocket_Neogeo"
     },
-    {
-      "repo": {
-        "user": "spiritualized1997",
-        "project": "openFPGA-GG"
-      },
-      "name": "Spiritualized.GG",
-      "platform": "Game Gear"
+    "name": "Mazamars312.NeoGeo",
+    "assets": {
+      "location": "assets/ng/common",
+      "files": [
+        {
+          "url": "http://unibios.free.fr/download/uni-bios-40.zip",
+          "file_name": "uni-bios_1_0.rom",
+          "zip": true,
+          "zip_file": "uni-bios.rom"
+        },
+        {
+          "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/NeoGeo.zip/000-lo.lo",
+          "file_name": "000-lo.lo"
+        },
+        {
+          "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/NeoGeo.zip/sfix.sfix",
+          "file_name": "sfix.sfix"
+        }
+      ]
     },
-    {
-      "repo": {
-        "user": "agg23",
-        "project": "analogue-pong"
-      },
-      "name": "agg23.Pong",
-      "platform": "Pong"
+    "platform": "Neo Geo"
+  },
+  {
+    "repo": {
+      "user": "spiritualized1997",
+      "project": "openFPGA-SG1000"
     },
-    {
-      "repo": {
-        "user": "nullobject",
-        "project": "openfpga-tecmo"
-      },
-      "assets": {
-        "location": "assets/tecmo/common",
-        "files": [
-          {
-            "file_name": "gemini.rom",
-            "archive_file": "Tecmo/gemini.rom"
-          },
-          {
-            "file_name": "rygar.rom",
-            "archive_file": "Tecmo/rygar.rom"
-          },
-          {
-            "file_name": "geminij.rom",
-            "archive_file": "Tecmo/geminij.rom"
-          },
-          {
-            "file_name": "rygar2.rom",
-            "archive_file": "Tecmo/rygar2.rom"
-          },
-          {
-            "file_name": "rygarj.rom",
-            "archive_file": "Tecmo/rygarj.rom"
-          },
-          {
-            "file_name": "silkworm.rom",
-            "archive_file": "Tecmo/silkworm.rom"
-          },
-          {
-            "file_name": "silkwrmj.rom",
-            "archive_file": "Tecmo/silkwrmj.rom"
-          }
-        ]
-      },
-      "name": "nullobject.tecmo",
-      "platform": "Tecmo"
+    "name": "Spiritualized.SG-1000",
+    "platform": "SG-1000"
+  },
+  {
+    "repo": {
+      "user": "spiritualized1997",
+      "project": "openFPGA-SMS"
     },
-    {
-      "repo": {
-        "user": "agg23",
-        "project": "analogue-arduboy"
-      },
-      "name": "agg23.Arduboy",
-      "platform": "Arduboy"
+    "name": "Spiritualized.SMS",
+    "platform": "Master System"
+  },
+  {
+    "repo": {
+      "user": "spiritualized1997",
+      "project": "openFPGA-GG"
     },
-    {
-      "repo": {
-        "user": "ericlewis",
-        "project": "openfpga-spacerace"
-      },
-      "name": "ericlewis.SpaceRace",
-      "platform": "SpaceRace"
+    "name": "Spiritualized.GG",
+    "platform": "Game Gear"
+  },
+  {
+    "repo": {
+      "user": "agg23",
+      "project": "analogue-pong"
     },
-    {
-      "repo": {
-        "user": "ericlewis",
-        "project": "openfpga-lunarlander"
-      },
-      "assets": {
-        "location": "assets/lunarlander/ericlewis.LunarLander/",
-        "files": [
-          {
-            "file_name": "llander.rom",
-            "archive_file": "Lunar_Lander/llander.rom"
-          }
-        ]
-      },
-      "name": "ericlewis.LunarLander",
-      "platform": "LunarLander"
+    "name": "agg23.Pong",
+    "platform": "Pong"
+  },
+  {
+    "repo": {
+      "user": "nullobject",
+      "project": "openfpga-tecmo"
     },
-    {
-      "repo": {
-        "user": "ericlewis",
-        "project": "openfpga-asteroids"
-      },
-      "assets": {
-        "location": "assets/asteroids/ericlewis.Asteroids/",
-        "files": [
-          {
-            "file_name": "asteroid.rom",
-            "archive_file": "Asteroids/asteroid.rom"
-          }
-        ]
-      },
-      "name": "ericlewis.Asteroids",
-      "platform": "Asteroids"
+    "assets": {
+      "location": "assets/tecmo/common",
+      "files": [
+        {
+          "file_name": "gemini.rom",
+          "archive_file": "Tecmo/gemini.rom"
+        },
+        {
+          "file_name": "rygar.rom",
+          "archive_file": "Tecmo/rygar.rom"
+        },
+        {
+          "file_name": "geminij.rom",
+          "archive_file": "Tecmo/geminij.rom"
+        },
+        {
+          "file_name": "rygar2.rom",
+          "archive_file": "Tecmo/rygar2.rom"
+        },
+        {
+          "file_name": "rygarj.rom",
+          "archive_file": "Tecmo/rygarj.rom"
+        },
+        {
+          "file_name": "silkworm.rom",
+          "archive_file": "Tecmo/silkworm.rom"
+        },
+        {
+          "file_name": "silkwrmj.rom",
+          "archive_file": "Tecmo/silkwrmj.rom"
+        }
+      ]
     },
-    {
-      "repo": {
-        "user": "ericlewis",
-        "project": "openfpga-superbreakout"
-      },
-      "assets": {
-        "location": "assets/superbreakout/common/",
-        "files": [
-          {
-            "file_name": "sbrkout.rom",
-            "archive_file": "Super_Breakout/sbrkout.rom"
-          }
-        ]
-      },
-      "name": "ericlewis.SuperBreakout",
-      "platform": "Super Breakout"
+    "name": "nullobject.tecmo",
+    "platform": "Tecmo"
+  },
+  {
+    "repo": {
+      "user": "agg23",
+      "project": "analogue-arduboy"
     },
-    {
-      "repo": {
-        "user": "opengateware",
-        "project": "arcade-galaga"
-      },
-      "assets": {
-        "location": "assets/galaga/common/",
-        "files": [
-          {
-            "file_name": "galaga.rom",
-            "archive_file": "Galaga/galaga.rom"
-          },
-          {
-            "file_name": "galagads.rom",
-            "archive_file": "Galaga/galagads.rom"
-          },
-          {
-            "file_name": "galagaef.rom",
-            "archive_file": "Galaga/galagaef.rom"
-          },
-          {
-            "file_name": "galagamf.rom",
-            "archive_file": "Galaga/galagamf.rom"
-          },
-          {
-            "file_name": "galagamw.rom",
-            "archive_file": "Galaga/galagamw.rom"
-          },
-          {
-            "file_name": "galagao.rom",
-            "archive_file": "Galaga/galagao.rom"
-          },
-          {
-            "file_name": "galagosb.rom",
-            "archive_file": "Galaga/galagosb.rom"
-          },
-          {
-            "file_name": "galagost.rom",
-            "archive_file": "Galaga/galagost.rom"
-          },
-          {
-            "file_name": "galaped.rom",
-            "archive_file": "Galaga/galaped.rom"
-          },
-          {
-            "file_name": "galgaxin.rom",
-            "archive_file": "Galaga/galgaxin.rom"
-          },
-          {
-            "file_name": "gatsbee.rom",
-            "archive_file": "Galaga/gatsbee.rom"
-          },
-          {
-            "file_name": "nebulbee.rom",
-            "archive_file": "Galaga/nebulbee.rom"
-          },
-          {
-            "file_name": "vgalaga.rom",
-            "archive_file": "Galaga/vgalaga.rom"
-          },
-          {
-            "file_name": "vgalagaf.rom",
-            "archive_file": "Galaga/vgalagaf.rom"
-          },
-          {
-            "file_name": "vgalagam.rom",
-            "archive_file": "Galaga/vgalagam.rom"
-          }
-        ]
-      },
-      "name": "boogermann.galaga",
-      "platform": "Galaga"
+    "name": "agg23.Arduboy",
+    "platform": "Arduboy"
+  },
+  {
+    "repo": {
+      "user": "ericlewis",
+      "project": "openfpga-spacerace"
     },
-    {
-      "repo": {
-        "user": "agg23",
-        "project": "openfpga-SNES"
-      },
-      "name": "agg23.SNES",
-      "platform": "SNES"
-    }
-  ]
+    "name": "ericlewis.SpaceRace",
+    "platform": "SpaceRace"
+  },
+  {
+    "repo": {
+      "user": "ericlewis",
+      "project": "openfpga-lunarlander"
+    },
+    "assets": {
+      "location": "assets/lunarlander/ericlewis.LunarLander/",
+      "files": [
+        {
+          "file_name": "llander.rom",
+          "archive_file": "Lunar_Lander/llander.rom"
+        }
+      ]
+    },
+    "name": "ericlewis.LunarLander",
+    "platform": "LunarLander"
+  },
+  {
+    "repo": {
+      "user": "ericlewis",
+      "project": "openfpga-asteroids"
+    },
+    "assets": {
+      "location": "assets/asteroids/ericlewis.Asteroids/",
+      "files": [
+        {
+          "file_name": "asteroid.rom",
+          "archive_file": "Asteroids/asteroid.rom"
+        }
+      ]
+    },
+    "name": "ericlewis.Asteroids",
+    "platform": "Asteroids"
+  },
+  {
+    "repo": {
+      "user": "ericlewis",
+      "project": "openfpga-superbreakout"
+    },
+    "assets": {
+      "location": "assets/superbreakout/common/",
+      "files": [
+        {
+          "file_name": "sbrkout.rom",
+          "archive_file": "Super_Breakout/sbrkout.rom"
+        }
+      ]
+    },
+    "name": "ericlewis.SuperBreakout",
+    "platform": "Super Breakout"
+  },
+  {
+    "repo": {
+      "user": "ericlewis",
+      "project": "openfpga-dominos"
+    },
+    "assets": {
+      "location": "assets/dominos/common/",
+      "files": [
+        {
+          "file_name": "dominos.rom",
+          "archive_file": "Dominos/dominos.rom"
+        }
+      ]
+    },
+    "name": "ericlewis.Dominos",
+    "platform": "Dominos"
+  },
+  {
+    "repo": {
+      "user": "opengateware",
+      "project": "arcade-galaga"
+    },
+    "assets": {
+      "location": "assets/galaga/common/",
+      "files": [
+        {
+          "file_name": "galaga.rom",
+          "archive_file": "Galaga/galaga.rom"
+        },
+        {
+          "file_name": "galagads.rom",
+          "archive_file": "Galaga/galagads.rom"
+        },
+        {
+          "file_name": "galagaef.rom",
+          "archive_file": "Galaga/galagaef.rom"
+        },
+        {
+          "file_name": "galagamf.rom",
+          "archive_file": "Galaga/galagamf.rom"
+        },
+        {
+          "file_name": "galagamw.rom",
+          "archive_file": "Galaga/galagamw.rom"
+        },
+        {
+          "file_name": "galagao.rom",
+          "archive_file": "Galaga/galagao.rom"
+        },
+        {
+          "file_name": "galagosb.rom",
+          "archive_file": "Galaga/galagosb.rom"
+        },
+        {
+          "file_name": "galagost.rom",
+          "archive_file": "Galaga/galagost.rom"
+        },
+        {
+          "file_name": "galaped.rom",
+          "archive_file": "Galaga/galaped.rom"
+        },
+        {
+          "file_name": "galgaxin.rom",
+          "archive_file": "Galaga/galgaxin.rom"
+        },
+        {
+          "file_name": "gatsbee.rom",
+          "archive_file": "Galaga/gatsbee.rom"
+        },
+        {
+          "file_name": "nebulbee.rom",
+          "archive_file": "Galaga/nebulbee.rom"
+        },
+        {
+          "file_name": "vgalaga.rom",
+          "archive_file": "Galaga/vgalaga.rom"
+        },
+        {
+          "file_name": "vgalagaf.rom",
+          "archive_file": "Galaga/vgalagaf.rom"
+        },
+        {
+          "file_name": "vgalagam.rom",
+          "archive_file": "Galaga/vgalagam.rom"
+        }
+      ]
+    },
+    "name": "boogermann.galaga",
+    "platform": "Galaga"
+  },
+  {
+    "repo": {
+      "user": "agg23",
+      "project": "openfpga-SNES"
+    },
+    "name": "agg23.SNES",
+    "platform": "SNES"
+  }
+]
