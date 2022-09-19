@@ -65,7 +65,11 @@
          {
            "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/NeoGeo.zip/000-lo.lo",
            "file_name": "000-lo.lo"
-         }
+         },
+          {
+            "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/NeoGeo.zip/sfix.sfix",
+            "file_name": "sfix.sfix"
+          }
        ]
      },
      "platform": "Neo Geo"
