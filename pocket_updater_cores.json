@@ -5,7 +5,7 @@
       "project": "openFPGA-GBA"
     },
     "assets": {
-      "location": "assets/gba/common/",
+      "location": "Assets/gba/common/",
       "files": [
         {
           "file_name": "gba_bios.bin",
@@ -23,14 +23,14 @@
     },
     "name": "Spiritualized.GBC",
     "assets": {
-      "location": "assets/gbc/common/",
+      "location": "Assets/gbc/common/",
       "files": [
         {
           "file_name": "gbc_bios.bin",
           "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/Gameboy.zip/GBC_boot_ROM.gb"
         },
         {
-          "overrideLocation": "assets/gb/common/",
+          "overrideLocation": "Assets/gb/common/",
           "file_name": "dmg_bios.bin",
           "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/Gameboy.zip/GB_boot_ROM.gb"
         }
@@ -53,7 +53,7 @@
     },
     "name": "Mazamars312.NeoGeo",
     "assets": {
-      "location": "assets/ng/common",
+      "location": "Assets/ng/common",
       "files": [
         {
           "url": "http://unibios.free.fr/download/uni-bios-40.zip",
@@ -111,7 +111,7 @@
       "project": "openfpga-tecmo"
     },
     "assets": {
-      "location": "assets/tecmo/common",
+      "location": "Assets/tecmo/common",
       "files": [
         {
           "file_name": "gemini.rom",
@@ -168,7 +168,7 @@
       "project": "openfpga-lunarlander"
     },
     "assets": {
-      "location": "assets/lunarlander/ericlewis.LunarLander/",
+      "location": "Assets/lunarlander/ericlewis.LunarLander/",
       "files": [
         {
           "file_name": "llander.rom",
@@ -185,7 +185,7 @@
       "project": "openfpga-asteroids"
     },
     "assets": {
-      "location": "assets/asteroids/ericlewis.Asteroids/",
+      "location": "Assets/asteroids/ericlewis.Asteroids/",
       "files": [
         {
           "file_name": "asteroid.rom",
@@ -202,7 +202,7 @@
       "project": "openfpga-superbreakout"
     },
     "assets": {
-      "location": "assets/superbreakout/common/",
+      "location": "Assets/superbreakout/common/",
       "files": [
         {
           "file_name": "sbrkout.rom",
@@ -219,7 +219,7 @@
       "project": "openfpga-dominos"
     },
     "assets": {
-      "location": "assets/dominos/common/",
+      "location": "Assets/dominos/common/",
       "files": [
         {
           "file_name": "dominos.rom",
@@ -236,7 +236,7 @@
       "project": "arcade-galaga"
     },
     "assets": {
-      "location": "assets/galaga/common/",
+      "location": "Assets/galaga/common/",
       "files": [
         {
           "file_name": "galaga.rom",
