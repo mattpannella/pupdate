@@ -23,6 +23,10 @@ example:
 `
 /path/to/pocket_updater -u -p /path/to/sdcard/
 `
+
+#### Disabling Cores
+You can edit your `pocket_updater_settings.json` file and set the `skip` flag to true for any core you don't want to be updated. It won't remove anything from your sd installs, it just skips that core during the update process
+
 #### Github Personal Access Token
 If you're running up against the rate limit on the github api, you can provide your personal access token to the updater via the settings.
 Edit your local copy of `pocket_updater_settings.json` and put your token in config>github_token
