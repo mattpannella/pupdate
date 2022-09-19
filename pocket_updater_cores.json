@@ -293,5 +293,22 @@
       },
       "name": "agg23.SNES",
       "platform": "SNES"
+    },
+    {
+      "repo": {
+        "user": "ericlewis",
+        "project": "openfpga-dominos"
+      },
+      "assets": {
+        "location": "assets/dominos/common/",
+        "files": [
+          {
+            "file_name": "dominos.rom",
+            "archive_file": "Dominos/dominos.rom"
+          }
+        ]
+      },
+      "name": "ericlewis.Dominos",
+      "platform": "Dominos"
     }
   ]
