@@ -308,7 +308,7 @@
       "user": "opengateware",
       "project": "arcade-digdug"
     },
-    "bios": {
+    "assets": {
       "location": "Assets/digdug/common/",
       "files": [
         {
