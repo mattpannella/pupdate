@@ -314,6 +314,40 @@
   },
   {
     "repo": {
+      "user": "opengateware",
+      "project": "arcade-digdug"
+    },
+    "bios": {
+      "location": "Assets/digdug/common/",
+      "files": [
+        {
+          "file_name": "digdug.rom",
+          "url": "https://archive.org/download/pocket-roms/DigDug/digdug.rom"
+        },
+        {
+          "file_name": "digduat1.rom",
+          "url": "https://archive.org/download/pocket-roms/DigDug/digduat1.rom"
+        },
+        {
+          "file_name": "digdug1.rom",
+          "url": "https://archive.org/download/pocket-roms/DigDug/digdug1.rom"
+        },
+        {
+          "file_name": "digdugat.rom",
+          "url": "https://archive.org/download/pocket-roms/DigDug/digdugat.rom"
+        },
+        {
+          "file_name": "digsid.rom",
+          "url": "https://archive.org/download/pocket-roms/DigDug/digsid.rom"
+        }
+      ]
+    },
+    "name": "boogermann.digdug",
+    "platform": "Dig Dug",
+    "allowPrerelease": true
+  },
+  {
+    "repo": {
       "user": "agg23",
       "project": "openfpga-SNES"
     },
