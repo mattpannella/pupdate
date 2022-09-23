@@ -344,14 +344,5 @@
     },
     "name": "agg23.SNES",
     "platform": "SNES"
-  },
-  {
-    "repo": {
-      "user": "ericlewis",
-      "project": "openFPGA-Genesis"
-    },
-    "name": "ericlewis.Genesis",
-    "platform": "Genesis",
-    "preRelease": true
   }
 ]
