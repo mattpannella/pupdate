@@ -9,7 +9,7 @@
       "files": [
         {
           "file_name": "gba_bios.bin",
-          "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/GBA.zip/gba_bios.bin"
+          "archive_file": "BIOS/gba_bios.bin"
         }
       ]
     },
@@ -27,12 +27,12 @@
       "files": [
         {
           "file_name": "gbc_bios.bin",
-          "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/Gameboy.zip/GBC_boot_ROM.gb"
+          "archive_file": "BIOS/gbc_bios.bin"
         },
         {
           "overrideLocation": "Assets/gb/common/",
           "file_name": "dmg_bios.bin",
-          "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/Gameboy.zip/GB_boot_ROM.gb"
+          "archive_file": "BIOS/dmg_bios.bin"
         }
       ]
     },
@@ -62,11 +62,11 @@
           "zip_file": "uni-bios.rom"
         },
         {
-          "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/NeoGeo.zip/000-lo.lo",
+          "archive_file": "BIOS/000-lo.lo",
           "file_name": "000-lo.lo"
         },
         {
-          "url": "https://archive.org/download/mister-console-bios-pack_theypsilon/NeoGeo.zip/sfix.sfix",
+          "archive_file": "BIOS/sfix.sfix",
           "file_name": "sfix.sfix"
         }
       ]
@@ -111,35 +111,35 @@
       "project": "openfpga-tecmo"
     },
     "assets": {
-      "location": "Assets/tecmo/common",
+      "location": "Assets/Arcade/Tecmo/common",
       "files": [
         {
           "file_name": "gemini.rom",
-          "archive_file": "Tecmo/gemini.rom"
+          "archive_file": "Arcade/Tecmo/gemini.rom"
         },
         {
           "file_name": "rygar.rom",
-          "archive_file": "Tecmo/rygar.rom"
+          "archive_file": "Arcade/Tecmo/rygar.rom"
         },
         {
           "file_name": "geminij.rom",
-          "archive_file": "Tecmo/geminij.rom"
+          "archive_file": "Arcade/Tecmo/geminij.rom"
         },
         {
           "file_name": "rygar2.rom",
-          "archive_file": "Tecmo/rygar2.rom"
+          "archive_file": "Arcade/Tecmo/rygar2.rom"
         },
         {
           "file_name": "rygarj.rom",
-          "archive_file": "Tecmo/rygarj.rom"
+          "archive_file": "Arcade/Tecmo/rygarj.rom"
         },
         {
           "file_name": "silkworm.rom",
-          "archive_file": "Tecmo/silkworm.rom"
+          "archive_file": "Arcade/Tecmo/silkworm.rom"
         },
         {
           "file_name": "silkwrmj.rom",
-          "archive_file": "Tecmo/silkwrmj.rom"
+          "archive_file": "Arcade/Tecmo/silkwrmj.rom"
         }
       ]
     },
@@ -172,7 +172,7 @@
       "files": [
         {
           "file_name": "llander.rom",
-          "archive_file": "Lunar_Lander/llander.rom"
+          "archive_file": "Arcade/Lunar_Lander/llander.rom"
         }
       ]
     },
@@ -189,7 +189,7 @@
       "files": [
         {
           "file_name": "asteroid.rom",
-          "archive_file": "Asteroids/asteroid.rom"
+          "archive_file": "Arcade/Asteroids/asteroid.rom"
         }
       ]
     },
@@ -206,7 +206,7 @@
       "files": [
         {
           "file_name": "sbrkout.rom",
-          "archive_file": "Super_Breakout/sbrkout.rom"
+          "archive_file": "Arcade/Super_Breakout/sbrkout.rom"
         }
       ]
     },
@@ -223,7 +223,7 @@
       "files": [
         {
           "file_name": "dominos.rom",
-          "archive_file": "Dominos/dominos.rom"
+          "archive_file": "Arcade/Dominos/dominos.rom"
         }
       ]
     },
@@ -236,67 +236,67 @@
       "project": "arcade-galaga"
     },
     "assets": {
-      "location": "Assets/galaga/common/",
+      "location": "Assets/Arcade/Galaga/common/",
       "files": [
         {
           "file_name": "galaga.rom",
-          "archive_file": "Galaga/galaga.rom"
+          "archive_file": "Arcade/Galaga/galaga.rom"
         },
         {
           "file_name": "galagads.rom",
-          "archive_file": "Galaga/galagads.rom"
+          "archive_file": "Arcade/Galaga/galagads.rom"
         },
         {
           "file_name": "galagaef.rom",
-          "archive_file": "Galaga/galagaef.rom"
+          "archive_file": "Arcade/Galaga/galagaef.rom"
         },
         {
           "file_name": "galagamf.rom",
-          "archive_file": "Galaga/galagamf.rom"
+          "archive_file": "Arcade/Galaga/galagamf.rom"
         },
         {
           "file_name": "galagamw.rom",
-          "archive_file": "Galaga/galagamw.rom"
+          "archive_file": "Arcade/Galaga/galagamw.rom"
         },
         {
           "file_name": "galagao.rom",
-          "archive_file": "Galaga/galagao.rom"
+          "archive_file": "Arcade/Galaga/galagao.rom"
         },
         {
           "file_name": "galagosb.rom",
-          "archive_file": "Galaga/galagosb.rom"
+          "archive_file": "Arcade/Galaga/galagosb.rom"
         },
         {
           "file_name": "galagost.rom",
-          "archive_file": "Galaga/galagost.rom"
+          "archive_file": "Arcade/Galaga/galagost.rom"
         },
         {
           "file_name": "galaped.rom",
-          "archive_file": "Galaga/galaped.rom"
+          "archive_file": "Arcade/Galaga/galaped.rom"
         },
         {
           "file_name": "galgaxin.rom",
-          "archive_file": "Galaga/galgaxin.rom"
+          "archive_file": "Arcade/Galaga/galgaxin.rom"
         },
         {
           "file_name": "gatsbee.rom",
-          "archive_file": "Galaga/gatsbee.rom"
+          "archive_file": "Arcade/Galaga/gatsbee.rom"
         },
         {
           "file_name": "nebulbee.rom",
-          "archive_file": "Galaga/nebulbee.rom"
+          "archive_file": "Arcade/Galaga/nebulbee.rom"
         },
         {
           "file_name": "vgalaga.rom",
-          "archive_file": "Galaga/vgalaga.rom"
+          "archive_file": "Arcade/Galaga/vgalaga.rom"
         },
         {
           "file_name": "vgalagaf.rom",
-          "archive_file": "Galaga/vgalagaf.rom"
+          "archive_file": "Arcade/Galaga/vgalagaf.rom"
         },
         {
           "file_name": "vgalagam.rom",
-          "archive_file": "Galaga/vgalagam.rom"
+          "archive_file": "Arcade/Galaga/vgalagam.rom"
         }
       ]
     },
@@ -309,27 +309,27 @@
       "project": "arcade-digdug"
     },
     "assets": {
-      "location": "Assets/digdug/common/",
+      "location": "Assets/Arcade/DigDug/common/",
       "files": [
         {
           "file_name": "digdug.rom",
-          "archive_file": "DigDug/digdug.rom"
+          "archive_file": "Arcade/DigDug/digdug.rom"
         },
         {
           "file_name": "digduat1.rom",
-          "archive_file": "DigDug/digduat1.rom"
+          "archive_file": "Arcade/DigDug/digduat1.rom"
         },
         {
           "file_name": "digdug1.rom",
-          "archive_file": "DigDug/digdug1.rom"
+          "archive_file": "Arcade/DigDug/digdug1.rom"
         },
         {
           "file_name": "digdugat.rom",
-          "archive_file": "DigDug/digdugat.rom"
+          "archive_file": "Arcade/DigDug/digdugat.rom"
         },
         {
           "file_name": "digsid.rom",
-          "archive_file": "DigDug/digsid.rom"
+          "archive_file": "Arcade/DigDug/digsid.rom"
         }
       ]
     },
