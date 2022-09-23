@@ -111,7 +111,7 @@
       "project": "openfpga-tecmo"
     },
     "assets": {
-      "location": "Assets/Arcade/Tecmo/common",
+      "location": "Assets/Tecmo/common",
       "files": [
         {
           "file_name": "gemini.rom",
@@ -236,7 +236,7 @@
       "project": "arcade-galaga"
     },
     "assets": {
-      "location": "Assets/Arcade/Galaga/common/",
+      "location": "Assets/Galaga/common/",
       "files": [
         {
           "file_name": "galaga.rom",
@@ -309,7 +309,7 @@
       "project": "arcade-digdug"
     },
     "assets": {
-      "location": "Assets/Arcade/DigDug/common/",
+      "location": "Assets/DigDug/common/",
       "files": [
         {
           "file_name": "digdug.rom",
