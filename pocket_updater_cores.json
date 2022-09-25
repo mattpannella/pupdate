@@ -306,6 +306,59 @@
   {
     "repo": {
       "user": "opengateware",
+      "project": "arcade-xevious"
+    },
+    "assets": {
+      "location": "Assets/xevious/common/",
+      "files": [
+        {
+          "file_name": "battles2.rom",
+          "archive_file": "Arcade/Xevious.zip/battles2.rom"
+        },
+        {
+          "file_name": "gaous.rom",
+          "archive_file": "Arcade/Xevious.zip/gaous.rom"
+        },
+        {
+          "file_name": "sxevious.rom",
+          "archive_file": "Arcade/Xevious.zip/sxevious.rom"
+        },
+        {
+          "file_name": "xeviblk.rom",
+          "archive_file": "Arcade/Xevious.zip/xeviblk.rom"
+        },
+        {
+          "file_name": "xevios.rom",
+          "archive_file": "Arcade/Xevious.zip/xevios.rom"
+        },
+        {
+          "file_name": "xevious.rom",
+          "archive_file": "Arcade/Xevious.zip/xevious.rom"
+        },
+        {
+          "file_name": "xevious3.rom",
+          "archive_file": "Arcade/Xevious.zip/xevious3.rom"
+        },
+        {
+          "file_name": "xevious4.rom",
+          "archive_file": "Arcade/Xevious.zip/xevious4.rom"
+        },
+        {
+          "file_name": "xevious5.rom",
+          "archive_file": "Arcade/Xevious.zip/xevious5.rom"
+        },
+        {
+          "file_name": "xevioush.rom",
+          "archive_file": "Arcade/Xevious.zip/xevioush.rom"
+        }
+      ]
+    },
+    "name": "boogermann.xevious",
+    "platform": "Xevious"
+  },
+  {
+    "repo": {
+      "user": "opengateware",
       "project": "arcade-digdug"
     },
     "assets": {
