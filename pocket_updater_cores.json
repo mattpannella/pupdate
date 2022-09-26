@@ -393,6 +393,14 @@
   {
     "repo": {
       "user": "agg23",
+      "project": "openfpga-NES"
+    },
+    "name": "agg23.NES",
+    "platform": "NES"
+  },
+  {
+    "repo": {
+      "user": "agg23",
       "project": "openfpga-SNES"
     },
     "name": "agg23.SNES",
