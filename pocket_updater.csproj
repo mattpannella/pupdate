@@ -4,6 +4,12 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Version>2.1.0</Version>
+    <Description>Keep your Analogue Pocket up to date</Description>
+    <Copyright>2022 Matt Pannella</Copyright>
+    <Authors>Matt Pannella</Authors>
+    <Product>Pocket Updater</Product>
+    <RepositoryUrl>https://github.com/mattpannella/pocket_core_autoupdate_net</RepositoryUrl>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1"/>

@@ -9,12 +9,15 @@ public class SettingsManager
     private Settings _settings;
     private string _settingsFile;
 
-    public SettingsManager(string settingsFile, List<Core> cores = null)
+    private const string SETTINGS_FILENAME = "pocket_updater_settings.json";
+
+    public SettingsManager(string settingsPath, List<Core> cores = null)
     {
         _settings = new Settings();
-        if (File.Exists(settingsFile))
+        string file = Path.Combine(settingsPath, SETTINGS_FILENAME);
+        if (File.Exists(file))
         {
-            string json = File.ReadAllText(settingsFile);
+            string json = File.ReadAllText(file);
             _settings = JsonSerializer.Deserialize<Settings>(json);
         }
 
@@ -22,7 +25,7 @@ public class SettingsManager
         if(_settings.config == null) {
             _settings.config = new Config();
         }
-        _settingsFile = settingsFile;
+        _settingsFile = file;
 
         if(cores != null) {
             _initializeCoreSettings(cores);
@@ -119,6 +122,11 @@ public class SettingsManager
     public Config GetConfig()
     {
         return _settings.config;
+    }
+
+    public void UpdateConfig(Config config)
+    {
+        _settings.config = config;
     }
 
 }

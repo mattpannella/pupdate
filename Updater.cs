@@ -25,6 +25,7 @@ public class PocketCoreUpdater
     private string _githubApiKey;
 
     private bool _extractAll = false;
+    private bool _downloadFirmare = true;
 
     private bool _useConsole = false;
     /// <summary>
@@ -36,7 +37,7 @@ public class PocketCoreUpdater
     /// </summary>
     public string CoresFile { get; set; }
 
-    public string SettingsFile { get; set; }
+    public string SettingsPath { get; set; }
 
     private SettingsManager _settingsManager;
 
@@ -62,9 +63,9 @@ public class PocketCoreUpdater
         LoadCores();
 
         if(settingsPath != null) {
-            SettingsFile = Path.Combine(settingsPath, "pocket_updater_settings.json");
+            SettingsPath = settingsPath;
         } else {
-            SettingsFile = Path.Combine(updateDirectory, "pocket_updater_settings.json");
+            SettingsPath = updateDirectory;
         }
         LoadSettings();
     }
@@ -80,7 +81,7 @@ public class PocketCoreUpdater
 
     public void LoadSettings()
     {
-         _settingsManager = new SettingsManager(SettingsFile, _cores);
+         _settingsManager = new SettingsManager(SettingsPath, _cores);
     }
 
     /// <summary>
@@ -101,12 +102,19 @@ public class PocketCoreUpdater
         _downloadAssets = set;
     }
 
+    public void DownloadFirmware(bool set)
+    {
+        _downloadFirmare = set;
+    }
+
     /// <summary>
     /// Run the full openFPGA core download and update process
     /// </summary>
     public async Task RunUpdates()
     {
-        await UpdateFirmware();
+        if(_downloadFirmare) {
+            await UpdateFirmware();
+        }
         string json;
         foreach(Core core in _cores) {
             try {
@@ -273,7 +281,7 @@ public class PocketCoreUpdater
             };
             var agent = new ProductInfoHeaderValue("Analogue-Pocket-Auto-Updater", "1.0");
             request.Headers.UserAgent.Add(agent);
-            if(_githubApiKey != null) {
+            if(_githubApiKey != null && _githubApiKey != "") {
                 client.DefaultRequestHeaders.Authorization =
                     new AuthenticationHeaderValue("token", _githubApiKey);
             }
