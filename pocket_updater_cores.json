@@ -424,15 +424,15 @@
       "files": [
         {
           "file_name": "gberet.rom",
-          "archive_file": "Green_Beret.zip/gberet.rom"
+          "archive_file": "Arcade/Green_Beret.zip/gberet.rom"
         },
         {
           "file_name": "mrgoemon.rom",
-          "archive_file": "Green_Beret.zip/mrgoemon.rom"
+          "archive_file": "Arcade/Green_Beret.zip/mrgoemon.rom"
         },
         {
           "file_name": "rushatck.rom",
-          "archive_file": "Green_Beret.zip/rushatck.rom"
+          "archive_file": "Arcade/Green_Beret.zip/rushatck.rom"
         }
       ]
     },
