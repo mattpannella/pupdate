@@ -11,6 +11,6 @@ public class Config
     {
         download_assets = true;
         download_firmware = true;
-        archive_name = "pocket-roms";
+        archive_name = "openFPGA-Files";
     }
 }

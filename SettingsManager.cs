@@ -9,6 +9,9 @@ public class SettingsManager
     private Settings _settings;
     private string _settingsFile;
 
+    private const string OLD_DEFAULT = "pocket-roms";
+    private const string NEW_DEFAULT = "openFPGA-Files";
+
     private const string SETTINGS_FILENAME = "pocket_updater_settings.json";
 
     public SettingsManager(string settingsPath, List<Core> cores = null)
@@ -19,6 +22,11 @@ public class SettingsManager
         {
             string json = File.ReadAllText(file);
             _settings = JsonSerializer.Deserialize<Settings>(json);
+
+            //hack to force people over to new default :)
+            if(_settings.config.archive_name == OLD_DEFAULT) {
+                _settings.config.archive_name = NEW_DEFAULT;
+            }
         }
 
         //bandaid to fix old settings files
