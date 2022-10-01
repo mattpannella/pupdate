@@ -69,12 +69,12 @@ public class PocketCoreUpdater
 
     public async Task LoadDependencies()
     {
-        _assets = await AssetsAPI.GetAssets();
+        _assets = await AssetsService.GetAssets();
     }
 
     public async Task LoadCores()
     {
-        _cores = await CoresAPI.GetCores();
+        _cores = await CoresService.GetCores();
     }
 
     public void LoadSettings()

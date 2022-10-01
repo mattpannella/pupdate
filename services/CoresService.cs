@@ -2,7 +2,7 @@ using System.Text.Json;
 
 namespace pannella.analoguepocket;
 
-public static class CoresAPI
+public static class CoresService
 {
     private const string END_POINT = "https://joshcampbell191.github.io/openfpga-cores-inventory/api/v0/analogue-pocket/cores.json";
 

@@ -2,7 +2,7 @@ using System.Text.Json;
 
 namespace pannella.analoguepocket;
 
-public static class AssetsAPI
+public static class AssetsService
 {
     private const string END_POINT = "https://raw.githubusercontent.com/mattpannella/pocket_core_autoupdate_net/develop/pocket_updater_assets.json";
 
