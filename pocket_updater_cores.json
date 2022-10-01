@@ -413,5 +413,31 @@
     },
     "name": "ericlewis.Genesis",
     "platform": "Genesis"
+  },
+  {
+    "repo": {
+      "user": "opengateware",
+      "project": "arcade-gberet"
+    },
+    "assets": {
+      "location": "Assets/gberet/common/",
+      "files": [
+        {
+          "file_name": "gberet.rom",
+          "archive_file": "gberet.rom"
+        },
+        {
+          "file_name": "mrgoemon.rom",
+          "archive_file": "mrgoemon.rom"
+        },
+        {
+          "file_name": "rushatck.rom",
+          "archive_file": "rushatck.rom"
+        }
+      ]
+    },
+    "name": "boogermann.gberet",
+    "platform": "Green Beret",
+    "allowPrerelease": true
   }
 ]
