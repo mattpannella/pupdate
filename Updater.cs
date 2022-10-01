@@ -312,7 +312,7 @@ public class PocketCoreUpdater
         }
 
         if(!isCore) {
-            _writeMessage("Zip does not contain openFPGA core. Skipping. Please use -a if you'd like to extra all zips.");
+            _writeMessage("Zip does not contain openFPGA core. Skipping. Please use -a if you'd like to extract all zips.");
         } else {
             _writeMessage("Extracting...");
             ZipFile.ExtractToDirectory(zipPath, extractPath, true);
