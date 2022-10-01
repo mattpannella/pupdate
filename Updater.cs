@@ -25,6 +25,7 @@ public class PocketCoreUpdater
     private string _githubApiKey;
 
     private bool _extractAll = false;
+    private bool _downloadFirmare = true;
 
     private bool _useConsole = false;
     /// <summary>
@@ -36,51 +37,49 @@ public class PocketCoreUpdater
     /// </summary>
     public string CoresFile { get; set; }
 
-    public string SettingsFile { get; set; }
+    public string SettingsPath { get; set; }
 
     private SettingsManager _settingsManager;
 
     private List<Core> _cores;
 
+    private Dictionary<string, Dependency> _assets;
     /// <summary>
     /// Constructor
     /// </summary>
     /// <param name="updateDirectory">The directory to install/update openFPGA cores in.</param>
-    /// <param name="coresFile">Path to cores json file</param>
-    public PocketCoreUpdater(string updateDirectory, string coresFile = null, string settingsPath = null)
+    /// <param name="settingsPath">Path to settings json file</param>
+    public PocketCoreUpdater(string updateDirectory, string settingsPath = null)
     {
         UpdateDirectory = updateDirectory;
 
-        //make sure the json file exists
-        if(coresFile != null) {
-            if(File.Exists(coresFile)) {
-                CoresFile = coresFile;
-            } else {
-                throw new FileNotFoundException("Cores json file not found: " + coresFile);
-            }
-        }
-        LoadCores();
-
         if(settingsPath != null) {
-            SettingsFile = Path.Combine(settingsPath, "pocket_updater_settings.json");
+            SettingsPath = settingsPath;
         } else {
-            SettingsFile = Path.Combine(updateDirectory, "pocket_updater_settings.json");
+            SettingsPath = updateDirectory;
         }
+    }
+
+    public async Task Initialize()
+    {
+        await LoadCores();
+        await LoadDependencies();
         LoadSettings();
     }
 
-    public void LoadCores()
+    public async Task LoadDependencies()
     {
-        if(CoresFile == null) {
-            throw new Exception("No Cores file has been set");
-        }
-        string json = File.ReadAllText(CoresFile);
-        _cores = JsonSerializer.Deserialize<List<Core>>(json);
+        _assets = await AssetsService.GetAssets();
+    }
+
+    public async Task LoadCores()
+    {
+        _cores = await CoresService.GetCores();
     }
 
     public void LoadSettings()
     {
-         _settingsManager = new SettingsManager(SettingsFile, _cores);
+         _settingsManager = new SettingsManager(SettingsPath, _cores);
     }
 
     /// <summary>
@@ -101,27 +100,38 @@ public class PocketCoreUpdater
         _downloadAssets = set;
     }
 
+    public void DownloadFirmware(bool set)
+    {
+        _downloadFirmare = set;
+    }
+
     /// <summary>
     /// Run the full openFPGA core download and update process
     /// </summary>
     public async Task RunUpdates()
     {
-        await UpdateFirmware();
+        if(_cores == null) {
+            throw new Exception("Must initialize updater before running update process");
+        }
+
+        if(_downloadFirmare) {
+            await UpdateFirmware();
+        }
         string json;
         foreach(Core core in _cores) {
             try {
-                if(_settingsManager.GetCoreSettings(core.name).skip) {
+                if(_settingsManager.GetCoreSettings(core.identifier).skip) {
                     continue;
                 }
-                Repo repo = core.repo;
-                _writeMessage("Starting Repo: " + repo.project);
-                string name = core.name;
+                Repo repo = core.repository;
+                _writeMessage("Starting Repo: " + repo.name);
+                string name = core.identifier;
                 if(name == null) {
                     _writeMessage("Core Name is required. Skipping.");
                     continue;
                 }
-                bool allowPrerelease = _settingsManager.GetCoreSettings(core.name).allowPrerelease;
-                string url = String.Format(GITHUB_API_URL, repo.user, repo.project);
+                bool allowPrerelease = _settingsManager.GetCoreSettings(core.identifier).allowPrerelease;
+                string url = String.Format(GITHUB_API_URL, repo.owner, repo.name);
                 string response = await _fetchReleases(url);
                 if(response == null) {
                     Environment.Exit(1);
@@ -160,7 +170,9 @@ public class PocketCoreUpdater
                     } else if (SemverUtil.SemverCompare(releaseSemver, localSemver)){
                         _writeMessage("Updating core");
                     } else {
-                        await _DownloadAssets(core.assets); //check for roms even if core isn't updating
+                        if(_assets.ContainsKey(core.identifier)) {
+                            await _DownloadAssets(_assets[core.identifier]); //check for roms even if core isn't updating
+                        }
                         _writeMessage("Up to date. Skipping core");
                         _writeMessage("------------");
                         continue;
@@ -177,7 +189,7 @@ public class PocketCoreUpdater
                         continue;
                     }
                     foundZip = true;
-                    await _getAsset(asset.browser_download_url, core.name);
+                    await _getAsset(asset.browser_download_url, core.identifier);
                 }
 
                 if(!foundZip) {
@@ -185,7 +197,9 @@ public class PocketCoreUpdater
                     _writeMessage("------------");
                     continue;
                 }
-                await _DownloadAssets(core.assets);
+                if(_assets.ContainsKey(core.identifier)) {
+                    await _DownloadAssets(_assets[core.identifier]);
+                }
                 _writeMessage("Installation complete.");
                 _writeMessage("------------");
             } catch(Exception e) {
@@ -273,7 +287,7 @@ public class PocketCoreUpdater
             };
             var agent = new ProductInfoHeaderValue("Analogue-Pocket-Auto-Updater", "1.0");
             request.Headers.UserAgent.Add(agent);
-            if(_githubApiKey != null) {
+            if(_githubApiKey != null && _githubApiKey != "") {
                 client.DefaultRequestHeaders.Authorization =
                     new AuthenticationHeaderValue("token", _githubApiKey);
             }

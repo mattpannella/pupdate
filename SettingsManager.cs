@@ -9,20 +9,31 @@ public class SettingsManager
     private Settings _settings;
     private string _settingsFile;
 
-    public SettingsManager(string settingsFile, List<Core> cores = null)
+    private const string OLD_DEFAULT = "pocket-roms";
+    private const string NEW_DEFAULT = "openFPGA-Files";
+
+    private const string SETTINGS_FILENAME = "pocket_updater_settings.json";
+
+    public SettingsManager(string settingsPath, List<Core> cores = null)
     {
         _settings = new Settings();
-        if (File.Exists(settingsFile))
+        string file = Path.Combine(settingsPath, SETTINGS_FILENAME);
+        if (File.Exists(file))
         {
-            string json = File.ReadAllText(settingsFile);
+            string json = File.ReadAllText(file);
             _settings = JsonSerializer.Deserialize<Settings>(json);
+
+            //hack to force people over to new default :)
+            if(_settings.config.archive_name == OLD_DEFAULT) {
+                _settings.config.archive_name = NEW_DEFAULT;
+            }
         }
 
         //bandaid to fix old settings files
         if(_settings.config == null) {
             _settings.config = new Config();
         }
-        _settingsFile = settingsFile;
+        _settingsFile = file;
 
         if(cores != null) {
             _initializeCoreSettings(cores);
@@ -39,8 +50,8 @@ public class SettingsManager
         }
         foreach(Core core in cores)
         {
-            if(!_settings.coreSettings.ContainsKey(core.name)) {
-                EnableCore(core.name);
+            if(!_settings.coreSettings.ContainsKey(core.identifier)) {
+                EnableCore(core.identifier);
             }
         }
     }
@@ -119,6 +130,11 @@ public class SettingsManager
     public Config GetConfig()
     {
         return _settings.config;
+    }
+
+    public void UpdateConfig(Config config)
+    {
+        _settings.config = config;
     }
 
 }

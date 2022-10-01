@@ -5,10 +5,8 @@ using CommandLine;
 
 internal class Program
 {
-    private const string VERSION = "2.0.1";
+    private static string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
     private const string API_URL = "https://api.github.com/repos/mattpannella/pocket_core_autoupdate_net/releases";
-
-    private const string REMOTE_CORES_FILE = "https://raw.githubusercontent.com/mattpannella/pocket_core_autoupdate_net/main/pocket_updater_cores.json";
     private static async Task Main(string[] args)
     {
         bool autoUpdate = false;
@@ -19,9 +17,6 @@ internal class Program
         Parser.Default.ParseArguments<Options>(args)
             .WithParsed<Options>(o =>
             {
-                if(o.Update) {
-                    autoUpdate = true;
-                }
                 if(o.InstallPath != null && o.InstallPath != "") {
                     Console.WriteLine("path: " + o.InstallPath);
                     path = o.InstallPath;
@@ -30,11 +25,20 @@ internal class Program
                     extractAll = true;
                 }
             }
-        );
+            ).WithNotParsed<Options>(o => 
+                {
+                    if(o.IsHelp()) {
+                        Environment.Exit(1);
+                    }
+                    if(o.IsVersion()) {
+                        Environment.Exit(1);
+                    }
+                }
+            );
 
         ConsoleKey response;
 
-        Console.WriteLine("Analogue Pocket Core Updater v" + VERSION);
+        Console.WriteLine("Analogue Pocket Core Updater v" + version);
         Console.WriteLine("Checking for updates...");
         if(await CheckVersion()) {
             Console.WriteLine("A new version is available. Go to this url to download it:");
@@ -49,66 +53,24 @@ internal class Program
         }
 
         //path = "/Users/mattpannella/pocket-test";
-        //string cores = "/Users/mattpannella/development/c#/pocket_updater/pocket_updater_cores.json";
 
-        
-        string cores = path + "/pocket_updater_cores.json";
-        if(!File.Exists(cores)) {
-            autoUpdate = true;
-        }
+        PocketCoreUpdater updater = new PocketCoreUpdater(path);
+        SettingsManager settings = new SettingsManager(path);
 
-        if(!autoUpdate) {
-            Console.WriteLine("Download master cores list file from github? (This will overwrite your current file) [y/n]: (default is y)");
-            response = Console.ReadKey(false).Key;
-            if (response == ConsoleKey.Y || response == ConsoleKey.Enter) {
-                await DownloadCoresFile(cores);
-            }
-        } else {
-            await DownloadCoresFile(cores);
-        }
-        
-        PocketCoreUpdater updater = new PocketCoreUpdater(path, cores);
         updater.ExtractAll(extractAll);
-        updater.SetGithubApiKey(GetGithubToken(path));
+        
+        updater.SetGithubApiKey(settings.GetConfig().github_token);
+        updater.DownloadFirmware(settings.GetConfig().download_firmware);
         updater.StatusUpdated += updater_StatusUpdated;
-        updater.DownloadAssets(true);
+        updater.DownloadAssets(settings.GetConfig().download_assets);
+        await updater.Initialize();
+
         Console.WriteLine("Starting update process...");
 
         await updater.RunUpdates();
         
         Console.WriteLine("and now its done");
         Console.ReadLine(); //wait for input so the console doesn't auto close in windows
-    }
-
-    public static string? GetGithubToken(string path)
-    {
-        try {
-            string fullpath = Path.Combine(path, "pocket_updater_settings.json");
-            if(File.Exists(fullpath)) {
-                SettingsManager sm = new SettingsManager(fullpath);
-                return sm.GetConfig().github_token;
-            }
-
-            return null;
-        }
-        catch (Exception e) {
-            return null;
-        }
-    }
-
-    async static Task DownloadCoresFile(string file)
-    {
-        try {
-            Console.WriteLine("Downloading cores file...");
-            await HttpHelper.DownloadFileAsync(REMOTE_CORES_FILE, file);
-            Console.WriteLine("Download complete:");
-            Console.WriteLine(file);
-        } catch (UnauthorizedAccessException e) {
-            Console.WriteLine("Unable to save file.");
-            Console.WriteLine(e.Message);
-            Console.ReadLine();
-            Environment.Exit(1);
-        }
     }
 
     static void updater_StatusUpdated(object sender, StatusUpdatedEventArgs e)
@@ -138,7 +100,7 @@ internal class Program
             string tag_name = releases[0].tag_name;
             string? v = SemverUtil.FindSemver(tag_name);
             if(v != null) {
-                return SemverUtil.SemverCompare(v, VERSION);
+                return SemverUtil.SemverCompare(v, version);
             }
 
             return false;
@@ -150,9 +112,6 @@ internal class Program
 
 public class Options
 {
-    [Option ('u', "update", Required = false, HelpText = "Automatically download newest core list without asking.")]
-    public bool Update { get; set; }
-
     [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
     public string? InstallPath { get; set; }
 
