@@ -1,0 +1,433 @@
+{
+  "Spiritualized.GBA": {
+    "location": "Assets/gba/common/",
+    "files": [
+      {
+        "url": null,
+        "file_name": "gba_bios.bin",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "BIOS/gba_bios.bin"
+      }
+    ]
+  },
+  "Spiritualized.GBC": {
+    "location": "Assets/gbc/common/",
+    "files": [
+      {
+        "url": null,
+        "file_name": "gbc_bios.bin",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "BIOS/gbc_bios.bin"
+      },
+      {
+        "url": null,
+        "file_name": "dmg_bios.bin",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": "Assets/gb/common/",
+        "archive_file": "BIOS/dmg_bios.bin"
+      }
+    ]
+  },
+  "Mazamars312.NeoGeo": {
+    "location": "Assets/ng/common",
+    "files": [
+      {
+        "url": "http://unibios.free.fr/download/uni-bios-40.zip",
+        "file_name": "uni-bios_1_0.rom",
+        "zip": true,
+        "zip_file": "uni-bios.rom",
+        "overrideLocation": null,
+        "archive_file": null
+      },
+      {
+        "url": null,
+        "file_name": "000-lo.lo",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "BIOS/000-lo.lo"
+      },
+      {
+        "url": null,
+        "file_name": "sfix.sfix",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "BIOS/sfix.sfix"
+      }
+    ]
+  },
+  "nullobject.tecmo": {
+    "location": "Assets/Tecmo/common",
+    "files": [
+      {
+        "url": null,
+        "file_name": "gemini.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Tecmo.zip/gemini.rom"
+      },
+      {
+        "url": null,
+        "file_name": "rygar.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Tecmo.zip/rygar.rom"
+      },
+      {
+        "url": null,
+        "file_name": "geminij.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Tecmo.zip/geminij.rom"
+      },
+      {
+        "url": null,
+        "file_name": "rygar2.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Tecmo.zip/rygar2.rom"
+      },
+      {
+        "url": null,
+        "file_name": "rygarj.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Tecmo.zip/rygarj.rom"
+      },
+      {
+        "url": null,
+        "file_name": "silkworm.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Tecmo.zip/silkworm.rom"
+      },
+      {
+        "url": null,
+        "file_name": "silkwrmj.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Tecmo.zip/silkwrmj.rom"
+      }
+    ]
+  },
+  "ericlewis.LunarLander": {
+    "location": "Assets/lunarlander/ericlewis.LunarLander/",
+    "files": [
+      {
+        "url": null,
+        "file_name": "llander.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Lunar_Lander.zip/llander.rom"
+      }
+    ]
+  },
+  "ericlewis.Asteroids": {
+    "location": "Assets/asteroids/ericlewis.Asteroids/",
+    "files": [
+      {
+        "url": null,
+        "file_name": "asteroid.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Asteroids.zip/asteroid.rom"
+      }
+    ]
+  },
+  "ericlewis.SuperBreakout": {
+    "location": "Assets/superbreakout/common/",
+    "files": [
+      {
+        "url": null,
+        "file_name": "sbrkout.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Super_Breakout.zip/sbrkout.rom"
+      }
+    ]
+  },
+  "ericlewis.Dominos": {
+    "location": "Assets/dominos/common/",
+    "files": [
+      {
+        "url": null,
+        "file_name": "dominos.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Dominos.zip/dominos.rom"
+      }
+    ]
+  },
+  "boogermann.galaga": {
+    "location": "Assets/Galaga/common/",
+    "files": [
+      {
+        "url": null,
+        "file_name": "galaga.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Galaga.zip/galaga.rom"
+      },
+      {
+        "url": null,
+        "file_name": "galagads.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Galaga.zip/galagads.rom"
+      },
+      {
+        "url": null,
+        "file_name": "galagaef.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Galaga.zip/galagaef.rom"
+      },
+      {
+        "url": null,
+        "file_name": "galagamf.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Galaga.zip/galagamf.rom"
+      },
+      {
+        "url": null,
+        "file_name": "galagamw.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Galaga.zip/galagamw.rom"
+      },
+      {
+        "url": null,
+        "file_name": "galagao.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Galaga.zip/galagao.rom"
+      },
+      {
+        "url": null,
+        "file_name": "galagosb.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Galaga.zip/galagosb.rom"
+      },
+      {
+        "url": null,
+        "file_name": "galagost.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Galaga.zip/galagost.rom"
+      },
+      {
+        "url": null,
+        "file_name": "galaped.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Galaga.zip/galaped.rom"
+      },
+      {
+        "url": null,
+        "file_name": "galgaxin.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Galaga.zip/galgaxin.rom"
+      },
+      {
+        "url": null,
+        "file_name": "gatsbee.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Galaga.zip/gatsbee.rom"
+      },
+      {
+        "url": null,
+        "file_name": "nebulbee.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Galaga.zip/nebulbee.rom"
+      },
+      {
+        "url": null,
+        "file_name": "vgalaga.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Galaga.zip/vgalaga.rom"
+      },
+      {
+        "url": null,
+        "file_name": "vgalagaf.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Galaga.zip/vgalagaf.rom"
+      },
+      {
+        "url": null,
+        "file_name": "vgalagam.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Galaga.zip/vgalagam.rom"
+      }
+    ]
+  },
+  "boogermann.xevious": {
+    "location": "Assets/xevious/common/",
+    "files": [
+      {
+        "url": null,
+        "file_name": "battles2.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Xevious.zip/battles2.rom"
+      },
+      {
+        "url": null,
+        "file_name": "gaous.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Xevious.zip/gaous.rom"
+      },
+      {
+        "url": null,
+        "file_name": "sxevious.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Xevious.zip/sxevious.rom"
+      },
+      {
+        "url": null,
+        "file_name": "xeviblk.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Xevious.zip/xeviblk.rom"
+      },
+      {
+        "url": null,
+        "file_name": "xevios.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Xevious.zip/xevios.rom"
+      },
+      {
+        "url": null,
+        "file_name": "xevious.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Xevious.zip/xevious.rom"
+      },
+      {
+        "url": null,
+        "file_name": "xevious3.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Xevious.zip/xevious3.rom"
+      },
+      {
+        "url": null,
+        "file_name": "xevious4.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Xevious.zip/xevious4.rom"
+      },
+      {
+        "url": null,
+        "file_name": "xevious5.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Xevious.zip/xevious5.rom"
+      },
+      {
+        "url": null,
+        "file_name": "xevioush.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/Xevious.zip/xevioush.rom"
+      }
+    ]
+  },
+  "boogermann.digdug": {
+    "location": "Assets/DigDug/common/",
+    "files": [
+      {
+        "url": null,
+        "file_name": "digdug.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/DigDug.zip/digdug.rom"
+      },
+      {
+        "url": null,
+        "file_name": "digduat1.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/DigDug.zip/digduat1.rom"
+      },
+      {
+        "url": null,
+        "file_name": "digdug1.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/DigDug.zip/digdug1.rom"
+      },
+      {
+        "url": null,
+        "file_name": "digdugat.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/DigDug.zip/digdugat.rom"
+      },
+      {
+        "url": null,
+        "file_name": "digsid.rom",
+        "zip": false,
+        "zip_file": null,
+        "overrideLocation": null,
+        "archive_file": "Arcade/DigDug.zip/digsid.rom"
+      }
+    ]
+  }
+}
