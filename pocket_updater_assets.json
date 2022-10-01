@@ -4,7 +4,7 @@
     "files": [
       {
         "file_name": "gba_bios.bin",
-        "archive_file": "BIOS/gba_bios.bin"
+        "archive_file": "BIOS/gba_bios.bin" 
       }
     ]
   },
@@ -243,6 +243,23 @@
       {
         "file_name": "digsid.rom",
         "archive_file": "Arcade/DigDug.zip/digsid.rom"
+      }
+    ]
+  },
+  "boogermann.gberet": {
+    "location": "Assets/gberet/common/",
+    "files": [
+      {
+        "file_name": "gberet.rom",
+        "archive_file": "Arcade/Green_Beret.zip/gberet.rom"
+      },
+      {
+        "file_name": "mrgoemon.rom",
+        "archive_file": "Arcade/Green_Beret.zip/mrgoemon.rom"
+      },
+      {
+        "file_name": "rushatck.rom",
+        "archive_file": "Arcade/Green_Beret.zip/rushatck.rom"
       }
     ]
   }
