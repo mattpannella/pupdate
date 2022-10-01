@@ -1,0 +1,20 @@
+using System.Text.Json;
+
+namespace pannella.analoguepocket;
+
+public static class AssetsAPI
+{
+    private const string END_POINT = "https://raw.githubusercontent.com/mattpannella/pocket_core_autoupdate_net/develop/pocket_updater_assets.json";
+
+    public static async Task<Dictionary<string, Dependency>> GetAssets()
+    {
+        string json = await HttpHelper.GetHTML(END_POINT);
+        Dictionary<string, Dependency>? assets = JsonSerializer.Deserialize<Dictionary<string, Dependency>?>(json);
+
+        if(assets != null) {
+            return assets;
+        }
+
+        return new Dictionary<string, Dependency>();
+    }
+}

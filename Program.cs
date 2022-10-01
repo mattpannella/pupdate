@@ -7,7 +7,6 @@ internal class Program
 {
     private static string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
     private const string API_URL = "https://api.github.com/repos/mattpannella/pocket_core_autoupdate_net/releases";
-    private const string REMOTE_ASSETS_FILE = "https://raw.githubusercontent.com/mattpannella/pocket_core_autoupdate_net/develop/pocket_updater_assets.json";
     private static async Task Main(string[] args)
     {
         bool autoUpdate = false;
@@ -18,9 +17,6 @@ internal class Program
         Parser.Default.ParseArguments<Options>(args)
             .WithParsed<Options>(o =>
             {
-                if(o.Update) {
-                    autoUpdate = true;
-                }
                 if(o.InstallPath != null && o.InstallPath != "") {
                     Console.WriteLine("path: " + o.InstallPath);
                     path = o.InstallPath;
@@ -57,23 +53,7 @@ internal class Program
         }
 
         //path = "/Users/mattpannella/pocket-test";
-        //string cores = "/Users/mattpannella/development/c#/pocket_updater/pocket_updater_cores.json";
 
-        string assets = path + "/pocket_updater_assets.json";
-        if(!File.Exists(assets)) {
-            autoUpdate = true;
-        }
-
-        if(!autoUpdate) {
-            Console.WriteLine("Download master assets file from github? (This will overwrite your current file) [y/n]: (default is y)");
-            response = Console.ReadKey(false).Key;
-            if (response == ConsoleKey.Y || response == ConsoleKey.Enter) {
-                await DownloadAssetsFile(assets);
-            }
-        } else {
-            await DownloadAssetsFile(assets);
-        }
-        
         PocketCoreUpdater updater = new PocketCoreUpdater(path);
         SettingsManager settings = new SettingsManager(path);
 
@@ -84,28 +64,13 @@ internal class Program
         updater.StatusUpdated += updater_StatusUpdated;
         updater.DownloadAssets(settings.GetConfig().download_assets);
         await updater.Initialize();
-        
+
         Console.WriteLine("Starting update process...");
 
         await updater.RunUpdates();
         
         Console.WriteLine("and now its done");
         Console.ReadLine(); //wait for input so the console doesn't auto close in windows
-    }
-
-    async static Task DownloadAssetsFile(string file)
-    {
-        try {
-            Console.WriteLine("Downloading assets file...");
-            await HttpHelper.DownloadFileAsync(REMOTE_ASSETS_FILE, file);
-            Console.WriteLine("Download complete:");
-            Console.WriteLine(file);
-        } catch (UnauthorizedAccessException e) {
-            Console.WriteLine("Unable to save file.");
-            Console.WriteLine(e.Message);
-            Console.ReadLine();
-            Environment.Exit(1);
-        }
     }
 
     static void updater_StatusUpdated(object sender, StatusUpdatedEventArgs e)
@@ -147,9 +112,6 @@ internal class Program
 
 public class Options
 {
-    [Option ('u', "update", Required = false, HelpText = "Automatically download newest assets list without asking.")]
-    public bool Update { get; set; }
-
     [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
     public string? InstallPath { get; set; }
 

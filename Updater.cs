@@ -43,8 +43,7 @@ public class PocketCoreUpdater
 
     private List<Core> _cores;
 
-    private Dictionary<string, Dependency> _assets = new Dictionary<string, Dependency>();
-
+    private Dictionary<string, Dependency> _assets;
     /// <summary>
     /// Constructor
     /// </summary>
@@ -64,18 +63,13 @@ public class PocketCoreUpdater
     public async Task Initialize()
     {
         await LoadCores();
-        LoadDependencies();
+        await LoadDependencies();
         LoadSettings();
     }
 
-    public void LoadDependencies()
+    public async Task LoadDependencies()
     {
-        string file = Path.Combine(UpdateDirectory, "pocket_updater_assets.json");
-        string json = File.ReadAllText(file);
-        Dictionary<string, Dependency>? assets = JsonSerializer.Deserialize<Dictionary<string, Dependency>?>(json);
-        if(assets != null) {
-            _assets = assets;
-        }
+        _assets = await AssetsAPI.GetAssets();
     }
 
     public async Task LoadCores()
@@ -119,7 +113,7 @@ public class PocketCoreUpdater
         if(_cores == null) {
             throw new Exception("Must initialize updater before running update process");
         }
-        
+
         if(_downloadFirmare) {
             await UpdateFirmware();
         }
