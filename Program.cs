@@ -7,8 +7,7 @@ internal class Program
 {
     private static string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
     private const string API_URL = "https://api.github.com/repos/mattpannella/pocket_core_autoupdate_net/releases";
-
-    private const string REMOTE_CORES_FILE = "https://raw.githubusercontent.com/mattpannella/pocket_core_autoupdate_net/main/pocket_updater_cores.json";
+    private const string REMOTE_ASSETS_FILE = "https://raw.githubusercontent.com/mattpannella/pocket_core_autoupdate_net/develop/pocket_updater_assets.json";
     private static async Task Main(string[] args)
     {
         bool autoUpdate = false;
@@ -60,23 +59,22 @@ internal class Program
         //path = "/Users/mattpannella/pocket-test";
         //string cores = "/Users/mattpannella/development/c#/pocket_updater/pocket_updater_cores.json";
 
-        
-        string cores = path + "/pocket_updater_cores.json";
-        if(!File.Exists(cores)) {
+        string assets = path + "/pocket_updater_assets.json";
+        if(!File.Exists(assets)) {
             autoUpdate = true;
         }
 
         if(!autoUpdate) {
-            Console.WriteLine("Download master cores list file from github? (This will overwrite your current file) [y/n]: (default is y)");
+            Console.WriteLine("Download master assets file from github? (This will overwrite your current file) [y/n]: (default is y)");
             response = Console.ReadKey(false).Key;
             if (response == ConsoleKey.Y || response == ConsoleKey.Enter) {
-                await DownloadCoresFile(cores);
+                await DownloadAssetsFile(assets);
             }
         } else {
-            await DownloadCoresFile(cores);
+            await DownloadAssetsFile(assets);
         }
         
-        PocketCoreUpdater updater = new PocketCoreUpdater(path, cores);
+        PocketCoreUpdater updater = new PocketCoreUpdater(path);
         SettingsManager settings = new SettingsManager(path);
 
         updater.ExtractAll(extractAll);
@@ -85,6 +83,8 @@ internal class Program
         updater.DownloadFirmware(settings.GetConfig().download_firmware);
         updater.StatusUpdated += updater_StatusUpdated;
         updater.DownloadAssets(settings.GetConfig().download_assets);
+        await updater.Initialize();
+        
         Console.WriteLine("Starting update process...");
 
         await updater.RunUpdates();
@@ -93,11 +93,11 @@ internal class Program
         Console.ReadLine(); //wait for input so the console doesn't auto close in windows
     }
 
-    async static Task DownloadCoresFile(string file)
+    async static Task DownloadAssetsFile(string file)
     {
         try {
-            Console.WriteLine("Downloading cores file...");
-            await HttpHelper.DownloadFileAsync(REMOTE_CORES_FILE, file);
+            Console.WriteLine("Downloading assets file...");
+            await HttpHelper.DownloadFileAsync(REMOTE_ASSETS_FILE, file);
             Console.WriteLine("Download complete:");
             Console.WriteLine(file);
         } catch (UnauthorizedAccessException e) {
@@ -147,7 +147,7 @@ internal class Program
 
 public class Options
 {
-    [Option ('u', "update", Required = false, HelpText = "Automatically download newest core list without asking.")]
+    [Option ('u', "update", Required = false, HelpText = "Automatically download newest assets list without asking.")]
     public bool Update { get; set; }
 
     [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]

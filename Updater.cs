@@ -43,40 +43,44 @@ public class PocketCoreUpdater
 
     private List<Core> _cores;
 
+    private Dictionary<string, Dependency> _assets = new Dictionary<string, Dependency>();
+
     /// <summary>
     /// Constructor
     /// </summary>
     /// <param name="updateDirectory">The directory to install/update openFPGA cores in.</param>
-    /// <param name="coresFile">Path to cores json file</param>
-    public PocketCoreUpdater(string updateDirectory, string coresFile = null, string settingsPath = null)
+    /// <param name="settingsPath">Path to settings json file</param>
+    public PocketCoreUpdater(string updateDirectory, string settingsPath = null)
     {
         UpdateDirectory = updateDirectory;
-
-        //make sure the json file exists
-        if(coresFile != null) {
-            if(File.Exists(coresFile)) {
-                CoresFile = coresFile;
-            } else {
-                throw new FileNotFoundException("Cores json file not found: " + coresFile);
-            }
-        }
-        LoadCores();
 
         if(settingsPath != null) {
             SettingsPath = settingsPath;
         } else {
             SettingsPath = updateDirectory;
         }
+    }
+
+    public async Task Initialize()
+    {
+        await LoadCores();
+        LoadDependencies();
         LoadSettings();
     }
 
-    public void LoadCores()
+    public void LoadDependencies()
     {
-        if(CoresFile == null) {
-            throw new Exception("No Cores file has been set");
+        string file = Path.Combine(UpdateDirectory, "pocket_updater_assets.json");
+        string json = File.ReadAllText(file);
+        Dictionary<string, Dependency>? assets = JsonSerializer.Deserialize<Dictionary<string, Dependency>?>(json);
+        if(assets != null) {
+            _assets = assets;
         }
-        string json = File.ReadAllText(CoresFile);
-        _cores = JsonSerializer.Deserialize<List<Core>>(json);
+    }
+
+    public async Task LoadCores()
+    {
+        _cores = await CoresAPI.GetCores();
     }
 
     public void LoadSettings()
@@ -112,24 +116,28 @@ public class PocketCoreUpdater
     /// </summary>
     public async Task RunUpdates()
     {
+        if(_cores == null) {
+            throw new Exception("Must initialize updater before running update process");
+        }
+        
         if(_downloadFirmare) {
             await UpdateFirmware();
         }
         string json;
         foreach(Core core in _cores) {
             try {
-                if(_settingsManager.GetCoreSettings(core.name).skip) {
+                if(_settingsManager.GetCoreSettings(core.identifier).skip) {
                     continue;
                 }
-                Repo repo = core.repo;
-                _writeMessage("Starting Repo: " + repo.project);
-                string name = core.name;
+                Repo repo = core.repository;
+                _writeMessage("Starting Repo: " + repo.name);
+                string name = core.identifier;
                 if(name == null) {
                     _writeMessage("Core Name is required. Skipping.");
                     continue;
                 }
-                bool allowPrerelease = _settingsManager.GetCoreSettings(core.name).allowPrerelease;
-                string url = String.Format(GITHUB_API_URL, repo.user, repo.project);
+                bool allowPrerelease = _settingsManager.GetCoreSettings(core.identifier).allowPrerelease;
+                string url = String.Format(GITHUB_API_URL, repo.owner, repo.name);
                 string response = await _fetchReleases(url);
                 if(response == null) {
                     Environment.Exit(1);
@@ -168,7 +176,9 @@ public class PocketCoreUpdater
                     } else if (SemverUtil.SemverCompare(releaseSemver, localSemver)){
                         _writeMessage("Updating core");
                     } else {
-                        await _DownloadAssets(core.assets); //check for roms even if core isn't updating
+                        if(_assets.ContainsKey(core.identifier)) {
+                            await _DownloadAssets(_assets[core.identifier]); //check for roms even if core isn't updating
+                        }
                         _writeMessage("Up to date. Skipping core");
                         _writeMessage("------------");
                         continue;
@@ -185,7 +195,7 @@ public class PocketCoreUpdater
                         continue;
                     }
                     foundZip = true;
-                    await _getAsset(asset.browser_download_url, core.name);
+                    await _getAsset(asset.browser_download_url, core.identifier);
                 }
 
                 if(!foundZip) {
@@ -193,7 +203,9 @@ public class PocketCoreUpdater
                     _writeMessage("------------");
                     continue;
                 }
-                await _DownloadAssets(core.assets);
+                if(_assets.ContainsKey(core.identifier)) {
+                    await _DownloadAssets(_assets[core.identifier]);
+                }
                 _writeMessage("Installation complete.");
                 _writeMessage("------------");
             } catch(Exception e) {

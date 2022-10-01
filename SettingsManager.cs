@@ -50,8 +50,8 @@ public class SettingsManager
         }
         foreach(Core core in cores)
         {
-            if(!_settings.coreSettings.ContainsKey(core.name)) {
-                EnableCore(core.name);
+            if(!_settings.coreSettings.ContainsKey(core.identifier)) {
+                EnableCore(core.identifier);
             }
         }
     }

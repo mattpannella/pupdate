@@ -2,6 +2,7 @@ namespace pannella.analoguepocket;
 
 public class Repo
 {
-    public string user { get; set; }
-    public string project { get; set; }
+    public string name { get; set; }
+    public string owner { get; set; }
+    public string platform { get; set; }
 }
