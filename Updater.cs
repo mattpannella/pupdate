@@ -256,7 +256,7 @@ public class PocketCoreUpdater
     {
         string archive = _settingsManager.GetConfig().archive_name;
         if(archive != null && asset.archive_zip != null) {
-            return ARCHIVE_BASE_URL + "/" + archive + "/" + asset.archive_zip + "/" + asset.file_name;
+            return ARCHIVE_BASE_URL + "/" + archive + "/" + asset.archive_zip + ".zip/" + asset.file_name;
         } else if(archive != null && asset.archive_file != null) {
             return ARCHIVE_BASE_URL + "/" + archive + "/" + asset.archive_file;
         } else if(asset.url != null) {
