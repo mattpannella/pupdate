@@ -15,7 +15,6 @@ To run the updater, all you need to do is put the executable file for your platf
 #### Advanced Usage
 The updater currently accepts 3 command line parameters. I will probably add more options in the future
 ```
- -u, --update    Automatically download newest core list without asking.
  -p, --path      Absolute path to install location
  -a, --all       Extract all release assets, instead of just ones containing openFPGA cores.
 ```
@@ -32,17 +31,7 @@ If you're running up against the rate limit on the github api, you can provide y
 Edit your local copy of `pocket_updater_settings.json` and put your token in config>github_token
 
 ## Submitting new cores ##
-If you'd like to add your(or anyone else's) core to the list, here is the format used in pocket_updater_cores.json. Just create a pull request and I will get your change merged in.
-```
-{
-   "repo":{
-      "user":<github username. required>,
-      "project":<github project name. required>
-   },
-   "name":<name of the directory the core gets installed to. example: Spiritualized.GBA. required>,
-   "platform":<platform name. required>
-}
-```
+You can submit new cores here https://github.com/joshcampbell191/openfpga-cores-inventory
 
 ## Credits ##
 This is a port of the work initially done by [neil-morrison44](https://github.com/neil-morrison44) here https://gist.github.com/neil-morrison44/34fbb18de90cd9a32ca5bdafb2a812b8 with a few tweaks to suit my needs
