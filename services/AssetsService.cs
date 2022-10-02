@@ -4,7 +4,7 @@ namespace pannella.analoguepocket;
 
 public static class AssetsService
 {
-    private const string END_POINT = "https://raw.githubusercontent.com/mattpannella/pocket_core_autoupdate_net/main/pocket_updater_assets.json";
+    private const string END_POINT = "https://raw.githubusercontent.com/mattpannella/pocket_core_autoupdate_net/develop/pocket_updater_assets.json";
 
     public static async Task<Dictionary<string, Dependency>> GetAssets()
     {
