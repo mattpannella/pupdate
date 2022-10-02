@@ -134,7 +134,7 @@ public class PocketCoreUpdater
                 string url = String.Format(GITHUB_API_URL, repo.owner, repo.name);
                 string response = await _fetchReleases(url);
                 if(response == null) {
-                    Environment.Exit(1);
+                    continue;
                 }
                 List<Github.Release>? releases = JsonSerializer.Deserialize<List<Github.Release>>(response);
                 var mostRecentRelease = _getMostRecentRelease(releases, allowPrerelease);

@@ -9,7 +9,6 @@ internal class Program
     private const string API_URL = "https://api.github.com/repos/mattpannella/pocket_core_autoupdate_net/releases";
     private static async Task Main(string[] args)
     {
-        bool autoUpdate = false;
         string location = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
         string path = Path.GetDirectoryName(location);
         bool extractAll = false;
