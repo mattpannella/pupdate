@@ -25,9 +25,15 @@ example:
 #### Disabling Cores
 You can edit your `pocket_updater_settings.json` file and set the `skip` flag to true for any core you don't want to be updated. It won't remove anything from your sd installs, it just skips that core during the update process
 
+#### Ignore pre-release cores
+You can edit your `pocket_updater_settings.json` file and set the `allowPrerelease` flag to false for any core you don't want to be updated until it hits 1.0
+
+#### Disable Firmware Downloading
+Set `config.download_firmware` to `false` in your settings file
+
 #### Github Personal Access Token
 If you're running up against the rate limit on the github api, you can provide your personal access token to the updater via the settings.
-Edit your local copy of `pocket_updater_settings.json` and put your token in config>github_token
+Edit your local copy of `pocket_updater_settings.json` and put your token in `config.github_token`
 
 ## Submitting new cores ##
 You can submit new cores here https://github.com/joshcampbell191/openfpga-cores-inventory
