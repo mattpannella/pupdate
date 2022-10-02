@@ -255,7 +255,9 @@ public class PocketCoreUpdater
     private string BuildAssetUrl(DependencyFile asset)
     {
         string archive = _settingsManager.GetConfig().archive_name;
-        if(archive != null && asset.archive_file != null) {
+        if(archive != null && asset.archive_zip != null) {
+            return ARCHIVE_BASE_URL + "/" + archive + "/" + asset.archive_zip + ".zip/" + asset.file_name;
+        } else if(archive != null && asset.archive_file != null) {
             return ARCHIVE_BASE_URL + "/" + archive + "/" + asset.archive_file;
         } else if(asset.url != null) {
             return asset.url;

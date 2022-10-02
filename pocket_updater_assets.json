@@ -4,7 +4,7 @@
     "files": [
       {
         "file_name": "gba_bios.bin",
-        "archive_file": "BIOS.zip/gba_bios.bin" 
+        "archive_zip": "BIOS" 
       }
     ]
   },
@@ -13,12 +13,12 @@
     "files": [
       {
         "file_name": "gbc_bios.bin",
-        "archive_file": "BIOS.zip/gbc_bios.bin"
+        "archive_zip": "BIOS"
       },
       {
         "file_name": "dmg_bios.bin",
         "overrideLocation": "Assets/gb/common/",
-        "archive_file": "BIOS.zip/dmg_bios.bin"
+        "archive_zip": "BIOS"
       }
     ]
   },
@@ -29,16 +29,15 @@
         "url": "http://unibios.free.fr/download/uni-bios-40.zip",
         "file_name": "uni-bios_1_0.rom",
         "zip": true,
-        "zip_file": "uni-bios.rom",
-        "archive_file": null
+        "zip_file": "uni-bios.rom"
       },
       {
         "file_name": "000-lo.lo",
-        "archive_file": "BIOS.zip/000-lo.lo"
+        "archive_zip": "BIOS"
       },
       {
         "file_name": "sfix.sfix",
-        "archive_file": "BIOS.zip/sfix.sfix"
+        "archive_zip": "BIOS"
       }
     ]
   },
@@ -47,31 +46,31 @@
     "files": [
       {
         "file_name": "gemini.rom",
-        "archive_file": "Arcade_Roms.zip/gemini.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "rygar.rom",
-        "archive_file": "Arcade_Roms.zip/rygar.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "geminij.rom",
-        "archive_file": "Arcade_Roms.zip/geminij.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "rygar2.rom",
-        "archive_file": "Arcade_Roms.zip/rygar2.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "rygarj.rom",
-        "archive_file": "Arcade_Roms.zip/rygarj.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "silkworm.rom",
-        "archive_file": "Arcade_Roms.zip/silkworm.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "silkwrmj.rom",
-        "archive_file": "Arcade_Roms.zip/silkwrmj.rom"
+        "archive_zip": "Arcade_Roms"
       }
     ]
   },
@@ -80,7 +79,7 @@
     "files": [
       {
         "file_name": "llander.rom",
-        "archive_file": "Arcade_Roms.zip/llander.rom"
+        "archive_zip": "Arcade_Roms"
       }
     ]
   },
@@ -89,7 +88,7 @@
     "files": [
       {
         "file_name": "asteroid.rom",
-        "archive_file": "Arcade_Roms.zip/asteroid.rom"
+        "archive_zip": "Arcade_Roms"
       }
     ]
   },
@@ -98,7 +97,7 @@
     "files": [
       {
         "file_name": "sbrkout.rom",
-        "archive_file": "Arcade_Roms.zip/sbrkout.rom"
+        "archive_zip": "Arcade_Roms"
       }
     ]
   },
@@ -107,7 +106,7 @@
     "files": [
       {
         "file_name": "dominos.rom",
-        "archive_file": "Arcade_Roms.zip/dominos.rom"
+        "archive_zip": "Arcade_Roms"
       }
     ]
   },
@@ -116,63 +115,63 @@
     "files": [
       {
         "file_name": "galaga.rom",
-        "archive_file": "Arcade_Roms.zip/galaga.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "galagads.rom",
-        "archive_file": "Arcade_Roms.zip/galagads.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "galagaef.rom",
-        "archive_file": "Arcade_Roms.zip/galagaef.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "galagamf.rom",
-        "archive_file": "Arcade_Roms.zip/galagamf.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "galagamw.rom",
-        "archive_file": "Arcade_Roms.zip/galagamw.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "galagao.rom",
-        "archive_file": "Arcade_Roms.zip/galagao.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "galagosb.rom",
-        "archive_file": "Arcade_Roms.zip/galagosb.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "galagost.rom",
-        "archive_file": "Arcade_Roms.zip/galagost.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "galaped.rom",
-        "archive_file": "Arcade_Roms.zip/galaped.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "galgaxin.rom",
-        "archive_file": "Arcade_Roms.zip/galgaxin.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "gatsbee.rom",
-        "archive_file": "Arcade_Roms.zip/gatsbee.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "nebulbee.rom",
-        "archive_file": "Arcade_Roms.zip/nebulbee.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "vgalaga.rom",
-        "archive_file": "Arcade_Roms.zip/vgalaga.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "vgalagaf.rom",
-        "archive_file": "Arcade_Roms.zip/vgalagaf.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "vgalagam.rom",
-        "archive_file": "Arcade_Roms.zip/vgalagam.rom"
+        "archive_zip": "Arcade_Roms"
       }
     ]
   },
@@ -181,43 +180,43 @@
     "files": [
       {
         "file_name": "battles2.rom",
-        "archive_file": "Arcade_Roms.zip/battles2.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "gaous.rom",
-        "archive_file": "Arcade_Roms.zip/gaous.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "sxevious.rom",
-        "archive_file": "Arcade_Roms.zip/sxevious.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "xeviblk.rom",
-        "archive_file": "Arcade_Roms.zip/xeviblk.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "xevios.rom",
-        "archive_file": "Arcade_Roms.zip/xevios.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "xevious.rom",
-        "archive_file": "Arcade_Roms.zip/xevious.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "xevious3.rom",
-        "archive_file": "Arcade_Roms.zip/xevious3.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "xevious4.rom",
-        "archive_file": "Arcade_Roms.zip/xevious4.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "xevious5.rom",
-        "archive_file": "Arcade_Roms.zip/xevious5.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "xevioush.rom",
-        "archive_file": "Arcade_Roms.zip/xevioush.rom"
+        "archive_zip": "Arcade_Roms"
       }
     ]
   },
@@ -226,23 +225,23 @@
     "files": [
       {
         "file_name": "digdug.rom",
-        "archive_file": "Arcade_Roms.zip/digdug.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "digduat1.rom",
-        "archive_file": "Arcade_Roms.zip/digduat1.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "digdug1.rom",
-        "archive_file": "Arcade_Roms.zip/digdug1.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "digdugat.rom",
-        "archive_file": "Arcade_Roms.zip/digdugat.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "digsid.rom",
-        "archive_file": "Arcade_Roms.zip/digsid.rom"
+        "archive_zip": "Arcade_Roms"
       }
     ]
   },
@@ -251,15 +250,15 @@
     "files": [
       {
         "file_name": "gberet.rom",
-        "archive_file": "Arcade_Roms.zip/gberet.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "mrgoemon.rom",
-        "archive_file": "Arcade_Roms.zip/mrgoemon.rom"
+        "archive_zip": "Arcade_Roms"
       },
       {
         "file_name": "rushatck.rom",
-        "archive_file": "Arcade_Roms.zip/rushatck.rom"
+        "archive_zip": "Arcade_Roms"
       }
     ]
   }

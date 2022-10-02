@@ -14,4 +14,5 @@ public class DependencyFile
     public string zip_file { get; set; }
     public string overrideLocation { get; set; }
     public string archive_file { get; set; }
+    public string archive_zip { get; set; }
 }
