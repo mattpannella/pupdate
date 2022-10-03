@@ -222,24 +222,6 @@
   },
   {
     "repo": {
-      "user": "ericlewis",
-      "project": "openfpga-dominos"
-    },
-    "bios": {
-      "location": "Assets/dominos/common/",
-      "files": [
-        {
-          "file_name": "dominos.rom",
-          "url": "https://archive.org/download/pocket-roms/Dominos/dominos.rom"
-        }
-      ]
-    },
-    "name": "ericlewis.dominos",
-    "platform": "Dominos",
-    "allowPrerelease": true
-  },
-  {
-    "repo": {
       "user": "opengateware",
       "project": "arcade-galaga"
     },
