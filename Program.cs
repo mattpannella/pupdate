@@ -10,7 +10,7 @@ internal class Program
     private static async Task Main(string[] args)
     {
         string location = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
-        string path = Path.GetDirectoryName(location);
+        string? path = Path.GetDirectoryName(location);
         bool extractAll = false;
 
         Parser.Default.ParseArguments<Options>(args)

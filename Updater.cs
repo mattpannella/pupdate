@@ -22,7 +22,7 @@ public class PocketCoreUpdater
         [^>]* >");
     private bool _downloadAssets = false;
 
-    private string _githubApiKey;
+    private string _githubApiKey = "";
 
     private bool _extractAll = false;
     private bool _downloadFirmare = true;
@@ -32,24 +32,20 @@ public class PocketCoreUpdater
     /// The directory where fpga cores will be installed and updated into
     /// </summary>
     public string UpdateDirectory { get; set; }
-    /// <summary>
-    /// The json file containing the list of cores to check
-    /// </summary>
-    public string CoresFile { get; set; }
 
     public string SettingsPath { get; set; }
 
-    private SettingsManager _settingsManager;
+    private SettingsManager? _settingsManager;
 
-    private List<Core> _cores;
+    private List<Core>? _cores;
 
-    private Dictionary<string, Dependency> _assets;
+    private Dictionary<string, Dependency>? _assets;
     /// <summary>
     /// Constructor
     /// </summary>
     /// <param name="updateDirectory">The directory to install/update openFPGA cores in.</param>
     /// <param name="settingsPath">Path to settings json file</param>
-    public PocketCoreUpdater(string updateDirectory, string settingsPath = null)
+    public PocketCoreUpdater(string updateDirectory, string? settingsPath = null)
     {
         UpdateDirectory = updateDirectory;
 
@@ -123,7 +119,7 @@ public class PocketCoreUpdater
                 if(_settingsManager.GetCoreSettings(core.identifier).skip) {
                     continue;
                 }
-                Repo repo = core.repository;
+                Repo? repo = core.repository;
                 _writeMessage("Starting Repo: " + repo.name);
                 string name = core.identifier;
                 if(name == null) {
@@ -401,7 +397,7 @@ public class PocketCoreUpdater
     /// <summary>
     /// Event is raised every time the updater prints a progress update
     /// </summary>
-    public event EventHandler<StatusUpdatedEventArgs> StatusUpdated;
+    public event EventHandler<StatusUpdatedEventArgs>? StatusUpdated;
 }
 
 public class StatusUpdatedEventArgs : EventArgs

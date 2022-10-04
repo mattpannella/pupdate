@@ -53,7 +53,7 @@ public class SemverUtil
 
     public static bool IsActuallySemver(string potentiallySemver)
     {
-        Version ver = null;
+        Version? ver = null;
         return Version.TryParse(potentiallySemver, out ver);
     }
 }

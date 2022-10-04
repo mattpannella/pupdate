@@ -6,7 +6,7 @@ public static class HttpHelper
 
    public static async Task DownloadFileAsync(string uri, string outputPath)
    {
-      Uri uriResult;
+      Uri? uriResult;
 
       if (!Uri.TryCreate(uri, UriKind.Absolute, out uriResult))
          throw new InvalidOperationException("URI is invalid.");
@@ -17,7 +17,7 @@ public static class HttpHelper
 
    public static async Task<String> GetHTML(string uri)
    {
-      Uri uriResult;
+      Uri? uriResult;
 
       if (!Uri.TryCreate(uri, UriKind.Absolute, out uriResult))
          throw new InvalidOperationException("URI is invalid.");
