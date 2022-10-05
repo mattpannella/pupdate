@@ -200,6 +200,9 @@ public class PocketCoreUpdater
                 _writeMessage(e.Message);
             }
         } 
+        UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs();
+        args.Message = "we're all done";
+        OnUpdateProcessComplete(args);
     }
 
     private async Task _DownloadAssets(Dependency assets)
@@ -336,6 +339,15 @@ public class PocketCoreUpdater
         }
     }
 
+    protected virtual void OnUpdateProcessComplete(UpdateProcessCompleteEventArgs e)
+    {
+        EventHandler<UpdateProcessCompleteEventArgs> handler = UpdateProcessComplete;
+        if(handler != null)
+        {
+            handler(this, e);
+        }
+    }
+
     public async Task UpdateFirmware()
     {
         _writeMessage("Checking for firmware updates...");
@@ -378,12 +390,21 @@ public class PocketCoreUpdater
     /// Event is raised every time the updater prints a progress update
     /// </summary>
     public event EventHandler<StatusUpdatedEventArgs>? StatusUpdated;
+    public event EventHandler<UpdateProcessCompleteEventArgs>? UpdateProcessComplete;
 }
 
 public class StatusUpdatedEventArgs : EventArgs
 {
     /// <summary>
     /// Contains the message from the updater
+    /// </summary>
+    public string Message { get; set; }
+}
+
+public class UpdateProcessCompleteEventArgs : EventArgs
+{
+    /// <summary>
+    /// Some kind of results
     /// </summary>
     public string Message { get; set; }
 }

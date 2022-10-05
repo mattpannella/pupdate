@@ -60,6 +60,7 @@ internal class Program
         updater.SetGithubApiKey(settings.GetConfig().github_token);
         updater.DownloadFirmware(settings.GetConfig().download_firmware);
         updater.StatusUpdated += updater_StatusUpdated;
+        updater.UpdateProcessComplete += updater_UpdateProcessComplete;
         updater.DownloadAssets(settings.GetConfig().download_assets);
         await updater.Initialize();
 
@@ -67,12 +68,17 @@ internal class Program
 
         await updater.RunUpdates();
         
-        Console.WriteLine("and now its done");
         Console.ReadLine(); //wait for input so the console doesn't auto close in windows
     }
 
     static void updater_StatusUpdated(object sender, StatusUpdatedEventArgs e)
     {
+        Console.WriteLine(e.Message);
+    }
+
+    static void updater_UpdateProcessComplete(object sender, UpdateProcessCompleteEventArgs e)
+    {
+        Console.WriteLine("All done here's your summary:");
         Console.WriteLine(e.Message);
     }
 
