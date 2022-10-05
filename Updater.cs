@@ -8,7 +8,6 @@ namespace pannella.analoguepocket;
 
 public class PocketCoreUpdater
 {
-    private const string GITHUB_API_URL = "https://api.github.com/repos/{0}/{1}/releases";
     private const string ARCHIVE_BASE_URL = "https://archive.org/download";
     private static readonly string[] ZIP_TYPES = {"application/x-zip-compressed", "application/zip"};
     private const string FIRMWARE_URL = "https://www.analogue.co/support/pocket/firmware/latest";
@@ -127,12 +126,10 @@ public class PocketCoreUpdater
                     continue;
                 }
                 bool allowPrerelease = _settingsManager.GetCoreSettings(core.identifier).allowPrerelease;
-                string url = String.Format(GITHUB_API_URL, repo.owner, repo.name);
-                string response = await _fetchReleases(url);
-                if(response == null) {
+                List<Github.Release>? releases = await _fetchReleases(repo.owner, repo.name, _githubApiKey);
+                if(releases == null) {
                     continue;
                 }
-                List<Github.Release>? releases = JsonSerializer.Deserialize<List<Github.Release>>(response);
                 var mostRecentRelease = _getMostRecentRelease(releases, allowPrerelease);
                 if(mostRecentRelease == null) {
                     _writeMessage("No releases found. Skipping");
@@ -273,28 +270,11 @@ public class PocketCoreUpdater
         return null;
     }
 
-    private async Task<string> _fetchReleases(string url)
+    private async Task<List<Github.Release>?> _fetchReleases(string user, string repository, string token = "")
     {
         try {
-            var client = new HttpClient();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            var request = new HttpRequestMessage
-            {
-                Method = HttpMethod.Get,
-                RequestUri = new Uri(url)
-            };
-            var agent = new ProductInfoHeaderValue("Analogue-Pocket-Auto-Updater", "1.0");
-            request.Headers.UserAgent.Add(agent);
-            if(_githubApiKey != null && _githubApiKey != "") {
-                client.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue("token", _githubApiKey);
-            }
-            var response = await client.SendAsync(request).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-
-            var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-            return responseBody;
+            var releases = await GithubApi.GetReleases(user, repository, token);
+            return releases;
         } catch (HttpRequestException e) {
             _writeMessage("Error communicating with Github API.");
             _writeMessage(e.Message);

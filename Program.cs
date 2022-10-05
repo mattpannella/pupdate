@@ -1,12 +1,13 @@
 ﻿using pannella.analoguepocket;
-using System.Net.Http.Headers;
-using System.Text.Json;
+using System.Runtime.InteropServices;
 using CommandLine;
 
 internal class Program
 {
     private static string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
-    private const string API_URL = "https://api.github.com/repos/mattpannella/pocket_core_autoupdate_net/releases";
+    private const string USER = "mattpannella";
+    private const string REPOSITORY = "pocket_core_autoupdate_net";
+    private const string RELEASE_URL = "https://github.com/mattpannella/pocket_core_autoupdate_net/releases/download/{0}/pocket_updater_{1}.zip";
     private static async Task Main(string[] args)
     {
         string location = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
@@ -34,14 +35,14 @@ internal class Program
                     }
                 }
             );
+        
+        //path = "/Users/mattpannella/pocket-test";
 
         ConsoleKey response;
 
         Console.WriteLine("Analogue Pocket Core Updater v" + version);
         Console.WriteLine("Checking for updates...");
-        if(await CheckVersion()) {
-            Console.WriteLine("A new version is available. Go to this url to download it:");
-            Console.WriteLine("https://github.com/mattpannella/pocket_core_autoupdate_net/releases");
+        if(await CheckVersion(path)) {
             Console.WriteLine("Would you like to continue anyway? [y/n]:");
             response = Console.ReadKey(false).Key;
             if (response == ConsoleKey.N) {
@@ -50,8 +51,6 @@ internal class Program
                 Environment.Exit(1);
             }
         }
-
-        //path = "/Users/mattpannella/pocket-test";
 
         PocketCoreUpdater updater = new PocketCoreUpdater(path);
         SettingsManager settings = new SettingsManager(path);
@@ -78,34 +77,46 @@ internal class Program
     }
 
     //return true if newer version is available
-    async static Task<bool> CheckVersion()
+    async static Task<bool> CheckVersion(string path)
     {
         try {
-            var client = new HttpClient();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            var request = new HttpRequestMessage
-            {
-                Method = HttpMethod.Get,
-                RequestUri = new Uri(API_URL)
-            };
-            var agent = new ProductInfoHeaderValue("Analogue-Pocket-Auto-Updater", "1.0");
-            request.Headers.UserAgent.Add(agent);
-            var response = await client.SendAsync(request).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-
-            var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            List<Github.Release>? releases = JsonSerializer.Deserialize<List<Github.Release>>(responseBody);
+            List<Github.Release> releases = await GithubApi.GetReleases(USER, REPOSITORY);
 
             string tag_name = releases[0].tag_name;
             string? v = SemverUtil.FindSemver(tag_name);
             if(v != null) {
-                return SemverUtil.SemverCompare(v, version);
+                bool check = SemverUtil.SemverCompare(v, version);
+                if(check) {
+                    Console.WriteLine("A new version is available. Downloading now...");
+                    string platform = GetPlatform();
+                    string url = String.Format(RELEASE_URL, tag_name, platform);
+                    string saveLocation = Path.Combine(path, "pocket_updater.zip");
+                    await HttpHelper.DownloadFileAsync(url, saveLocation);
+                    Console.WriteLine("Download complete.");
+                    Console.WriteLine(saveLocation);
+                }
+                return check;
             }
 
             return false;
         } catch (HttpRequestException e) {
             return false;
         }
+    }
+
+    private static string GetPlatform()
+    {
+        if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+            return "win";
+        }
+        if(RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
+            return "mac";
+        }
+        if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
+            return "linux";
+        }
+
+        return "";
     }
 }
 
