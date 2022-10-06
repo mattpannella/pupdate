@@ -13,6 +13,7 @@ internal class Program
         string location = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
         string? path = Path.GetDirectoryName(location);
         bool extractAll = false;
+        bool coreSelector = false;
 
         Parser.Default.ParseArguments<Options>(args)
             .WithParsed<Options>(o =>
@@ -23,6 +24,9 @@ internal class Program
                 }
                 if(o.ExtractAll) {
                     extractAll = true;
+                }
+                if(o.CoreSelector) {
+                    coreSelector = true;
                 }
             }
             ).WithNotParsed<Options>(o => 
@@ -55,6 +59,11 @@ internal class Program
         PocketCoreUpdater updater = new PocketCoreUpdater(path);
         SettingsManager settings = new SettingsManager(path);
 
+        if(coreSelector || settings.GetConfig().core_selector) {
+            List<Core> cores =  await CoresService.GetCores();
+            RunCoreSelector(settings, cores);
+        }
+
         updater.ExtractAll(extractAll);
         
         updater.SetGithubApiKey(settings.GetConfig().github_token);
@@ -71,6 +80,24 @@ internal class Program
         Console.ReadLine(); //wait for input so the console doesn't auto close in windows
     }
 
+    static void RunCoreSelector(SettingsManager settings, List<Core> cores)
+    {
+        ConsoleKey response;
+        Console.WriteLine("Select your cores! The available cores will be listed 1 at a time. For each one, hit 'n' if you don't want it installed, or just hit enter if you want it. Ok you've got this. Here we go...");
+        foreach(Core core in cores) {
+            Console.Write(core.identifier + "?[y/n] ");
+            response = Console.ReadKey(false).Key;
+            if (response == ConsoleKey.N) {
+                settings.DisableCore(core.identifier);
+            } else {
+                settings.EnableCore(core.identifier);
+            }
+            Console.WriteLine("");
+        }
+        settings.GetConfig().core_selector = false;
+        settings.SaveSettings();
+    }
+
     static void updater_StatusUpdated(object sender, StatusUpdatedEventArgs e)
     {
         Console.WriteLine(e.Message);
@@ -80,17 +107,23 @@ internal class Program
     {
         Console.WriteLine("------------");
         Console.WriteLine(e.Message);
-        Console.WriteLine("Cores Updated:");
-        foreach(string core in e.InstalledCores) {
-            Console.WriteLine(core);
+        if(e.InstalledCores.Count > 0) {
+            Console.WriteLine("Cores Updated:");
+            foreach(string core in e.InstalledCores) {
+                Console.WriteLine(core);
+            }
+            Console.WriteLine("");
         }
-        Console.WriteLine("");
-        Console.WriteLine("Assets Installed:");
-        foreach(string asset in e.InstalledAssets) {
-            Console.WriteLine(asset);
+        if(e.InstalledAssets.Count > 0) {
+            Console.WriteLine("Assets Installed:");
+            foreach(string asset in e.InstalledAssets) {
+                Console.WriteLine(asset);
+            }
+            Console.WriteLine("");
         }
         if(e.FirmwareUpdated) {
             Console.WriteLine("New Firmware was downloaded. Restart your Pocket to install");
+            Console.WriteLine("");
         }
         Console.WriteLine("we did it, come again soon");
     }
@@ -146,4 +179,7 @@ public class Options
 
      [Option ('a', "all", Required = false, HelpText = "Extract all release assets, instead of just ones containing openFPGA cores.")]
      public bool ExtractAll { get; set; }
+
+     [Option ('c', "coreselector", Required = false, HelpText = "Run the core selector.")]
+     public bool CoreSelector { get; set; }
 }
