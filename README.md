@@ -17,14 +17,15 @@ The updater currently accepts 2 command line parameters. I will probably add mor
 ```
  -p, --path      Absolute path to install location
  -a, --all       Extract all release assets, instead of just ones containing openFPGA cores.
+ -c, --coreselector    Run the core selector.
 ```
 example:
 `
-/path/to/pocket_updater -u -p /path/to/sdcard/
+/path/to/pocket_updater -c -p /path/to/sdcard/
 `
 
-#### Disabling Cores
-You can edit your `pocket_updater_settings.json` file and set the `skip` flag to true for any core you don't want to be updated. It won't remove anything from your sd installs, it just skips that core during the update process
+#### Core Selector
+On your first run it will prompt you to select the cores you want tracked. After that initial run, you can always run this again by setting core_selector to true in the settings json file, or if running from the cli you can use the paramater -c
 
 #### Ignore pre-release cores
 You can edit your `pocket_updater_settings.json` file and set the `allowPrerelease` flag to false for any core you don't want to be updated until it hits 1.0
