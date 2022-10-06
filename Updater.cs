@@ -208,7 +208,7 @@ public class PocketCoreUpdater
             }
         } 
         UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs();
-        args.Message = "hooray we did it";
+        args.Message = "Update Process Complete";
         args.InstalledCores = installed;
         args.InstalledAssets = installedAssets;
         args.FirmwareUpdated = firmwareDownloaded;

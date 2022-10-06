@@ -79,6 +79,7 @@ internal class Program
     static void updater_UpdateProcessComplete(object sender, UpdateProcessCompleteEventArgs e)
     {
         Console.WriteLine("------------");
+        Console.WriteLine(e.Message);
         Console.WriteLine("Cores Updated:");
         foreach(string core in e.InstalledCores) {
             Console.WriteLine(core);
@@ -91,7 +92,7 @@ internal class Program
         if(e.FirmwareUpdated) {
             Console.WriteLine("New Firmware was downloaded. Restart your Pocket to install");
         }
-        Console.WriteLine(e.Message);
+        Console.WriteLine("we did it, come again soon");
     }
 
     //return true if newer version is available
