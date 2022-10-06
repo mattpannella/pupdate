@@ -105,12 +105,15 @@ public class PocketCoreUpdater
     /// </summary>
     public async Task RunUpdates()
     {
+        List<string> installed = new List<string>();
+        List<string> installedAssets = new List<string>();
+        bool firmwareDownloaded = false;
         if(_cores == null) {
             throw new Exception("Must initialize updater before running update process");
         }
 
         if(_downloadFirmare) {
-            await UpdateFirmware();
+            firmwareDownloaded = await UpdateFirmware();
         }
         string json;
         foreach(Core core in _cores) {
@@ -164,7 +167,8 @@ public class PocketCoreUpdater
                         _writeMessage("Updating core");
                     } else {
                         if(_assets.ContainsKey(core.identifier)) {
-                            await _DownloadAssets(_assets[core.identifier]); //check for roms even if core isn't updating
+                            var list = await _DownloadAssets(_assets[core.identifier]); //check for roms even if core isn't updating
+                            installedAssets.AddRange(list);
                         }
                         _writeMessage("Up to date. Skipping core");
                         _writeMessage("------------");
@@ -182,7 +186,9 @@ public class PocketCoreUpdater
                         continue;
                     }
                     foundZip = true;
-                    await _getAsset(asset.browser_download_url, core.identifier);
+                    if(await _getAsset(asset.browser_download_url, core.identifier)) {
+                        installed.Add(core.identifier + " " + tag_name);
+                    }
                 }
 
                 if(!foundZip) {
@@ -191,7 +197,8 @@ public class PocketCoreUpdater
                     continue;
                 }
                 if(_assets.ContainsKey(core.identifier)) {
-                    await _DownloadAssets(_assets[core.identifier]);
+                    var list = await _DownloadAssets(_assets[core.identifier]);
+                    installedAssets.AddRange(list);
                 }
                 _writeMessage("Installation complete.");
                 _writeMessage("------------");
@@ -201,12 +208,16 @@ public class PocketCoreUpdater
             }
         } 
         UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs();
-        args.Message = "we're all done";
+        args.Message = "hooray we did it";
+        args.InstalledCores = installed;
+        args.InstalledAssets = installedAssets;
+        args.FirmwareUpdated = firmwareDownloaded;
         OnUpdateProcessComplete(args);
     }
 
-    private async Task _DownloadAssets(Dependency assets)
+    private async Task<List<string>> _DownloadAssets(Dependency assets)
     {
+        List<string> installed = new List<string>();
         if(_downloadAssets && assets != null) {
             _writeMessage("Looking for Assets");
             string path = Path.Combine(UpdateDirectory, assets.location);
@@ -238,14 +249,18 @@ public class PocketCoreUpdater
                         _writeMessage("Deleting temp files");
                         Directory.Delete(extractPath, true);
                         File.Delete(zipFile);
+                        installed.Add(filePath);
                     } else {
                         _writeMessage("Downloading " + file.file_name);
                         await HttpHelper.DownloadFileAsync(url, filePath);
                         _writeMessage("Finished downloading " + file.file_name);
+                        installed.Add(filePath);
                     }
                 }
             }
         }
+
+        return installed;
     }
 
     private string BuildAssetUrl(DependencyFile asset)
@@ -285,8 +300,9 @@ public class PocketCoreUpdater
         }
     }
 
-    private async Task _getAsset(string downloadLink, string coreName)
+    private async Task<bool> _getAsset(string downloadLink, string coreName)
     {
+        bool updated = false;
         _writeMessage("Downloading file " + downloadLink + "...");
         string zipPath = Path.Combine(UpdateDirectory, ZIP_FILE_NAME);
         string extractPath = UpdateDirectory;
@@ -311,8 +327,11 @@ public class PocketCoreUpdater
         } else {
             _writeMessage("Extracting...");
             ZipFile.ExtractToDirectory(zipPath, extractPath, true);
+            updated = true;
         }
         File.Delete(zipPath);
+
+        return updated;
     }
 
     private void _writeMessage(string message)
@@ -348,15 +367,16 @@ public class PocketCoreUpdater
         }
     }
 
-    public async Task UpdateFirmware()
+    public async Task<bool> UpdateFirmware()
     {
+        bool flag = false;
         _writeMessage("Checking for firmware updates...");
         string html = await HttpHelper.GetHTML(FIRMWARE_URL);
         
         MatchCollection matches = BIN_REGEX.Matches(html);
         if(matches.Count != 1) {
             _writeMessage("cant find it");
-            return;
+            return false;
         } 
 
         string firmwareUrl = matches[0].Groups["url"].ToString();
@@ -365,6 +385,7 @@ public class PocketCoreUpdater
 
         Firmware current = _settingsManager.GetCurrentFirmware();
         if(current.version != filename) {
+            flag = true;
             _writeMessage("Firmware update found. Downloading...");
             await HttpHelper.DownloadFileAsync(firmwareUrl, Path.Combine(UpdateDirectory, filename));
             _writeMessage("Download Complete");
@@ -379,6 +400,8 @@ public class PocketCoreUpdater
         } else {
             _writeMessage("Firmware up to date.");
         }
+
+        return flag;
     }
 
     public void ExtractAll(bool value)
@@ -407,4 +430,7 @@ public class UpdateProcessCompleteEventArgs : EventArgs
     /// Some kind of results
     /// </summary>
     public string Message { get; set; }
+    public List<string> InstalledCores { get; set; }
+    public List<string> InstalledAssets { get; set; }
+    public bool FirmwareUpdated { get; set; } = false;
 }

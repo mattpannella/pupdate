@@ -78,7 +78,19 @@ internal class Program
 
     static void updater_UpdateProcessComplete(object sender, UpdateProcessCompleteEventArgs e)
     {
-        Console.WriteLine("All done here's your summary:");
+        Console.WriteLine("------------");
+        Console.WriteLine("Cores Updated:");
+        foreach(string core in e.InstalledCores) {
+            Console.WriteLine(core);
+        }
+        Console.WriteLine("");
+        Console.WriteLine("Assets Installed:");
+        foreach(string asset in e.InstalledAssets) {
+            Console.WriteLine(asset);
+        }
+        if(e.FirmwareUpdated) {
+            Console.WriteLine("New Firmware was downloaded. Restart your Pocket to install");
+        }
         Console.WriteLine(e.Message);
     }
 
