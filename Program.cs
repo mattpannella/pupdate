@@ -1,18 +1,19 @@
 ﻿using pannella.analoguepocket;
-using System.Net.Http.Headers;
-using System.Text.Json;
+using System.Runtime.InteropServices;
 using CommandLine;
 
 internal class Program
 {
     private static string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
-    private const string API_URL = "https://api.github.com/repos/mattpannella/pocket_core_autoupdate_net/releases";
+    private const string USER = "mattpannella";
+    private const string REPOSITORY = "pocket_core_autoupdate_net";
+    private const string RELEASE_URL = "https://github.com/mattpannella/pocket_core_autoupdate_net/releases/download/{0}/pocket_updater_{1}.zip";
     private static async Task Main(string[] args)
     {
-        bool autoUpdate = false;
         string location = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
-        string path = Path.GetDirectoryName(location);
+        string? path = Path.GetDirectoryName(location);
         bool extractAll = false;
+        bool coreSelector = false;
 
         Parser.Default.ParseArguments<Options>(args)
             .WithParsed<Options>(o =>
@@ -23,6 +24,9 @@ internal class Program
                 }
                 if(o.ExtractAll) {
                     extractAll = true;
+                }
+                if(o.CoreSelector) {
+                    coreSelector = true;
                 }
             }
             ).WithNotParsed<Options>(o => 
@@ -35,14 +39,14 @@ internal class Program
                     }
                 }
             );
+        
+        //path = "/Users/mattpannella/pocket-test";
 
         ConsoleKey response;
 
         Console.WriteLine("Analogue Pocket Core Updater v" + version);
         Console.WriteLine("Checking for updates...");
-        if(await CheckVersion()) {
-            Console.WriteLine("A new version is available. Go to this url to download it:");
-            Console.WriteLine("https://github.com/mattpannella/pocket_core_autoupdate_net/releases");
+        if(await CheckVersion(path)) {
             Console.WriteLine("Would you like to continue anyway? [y/n]:");
             response = Console.ReadKey(false).Key;
             if (response == ConsoleKey.N) {
@@ -52,16 +56,20 @@ internal class Program
             }
         }
 
-        //path = "/Users/mattpannella/pocket-test";
-
         PocketCoreUpdater updater = new PocketCoreUpdater(path);
         SettingsManager settings = new SettingsManager(path);
+
+        if(coreSelector || settings.GetConfig().core_selector) {
+            List<Core> cores =  await CoresService.GetCores();
+            RunCoreSelector(settings, cores);
+        }
 
         updater.ExtractAll(extractAll);
         
         updater.SetGithubApiKey(settings.GetConfig().github_token);
         updater.DownloadFirmware(settings.GetConfig().download_firmware);
         updater.StatusUpdated += updater_StatusUpdated;
+        updater.UpdateProcessComplete += updater_UpdateProcessComplete;
         updater.DownloadAssets(settings.GetConfig().download_assets);
         await updater.Initialize();
 
@@ -69,8 +77,25 @@ internal class Program
 
         await updater.RunUpdates();
         
-        Console.WriteLine("and now its done");
         Console.ReadLine(); //wait for input so the console doesn't auto close in windows
+    }
+
+    static void RunCoreSelector(SettingsManager settings, List<Core> cores)
+    {
+        ConsoleKey response;
+        Console.WriteLine("Select your cores! The available cores will be listed 1 at a time. For each one, hit 'n' if you don't want it installed, or just hit enter if you want it. Ok you've got this. Here we go...");
+        foreach(Core core in cores) {
+            Console.Write(core.identifier + "?[y/n] ");
+            response = Console.ReadKey(false).Key;
+            if (response == ConsoleKey.N) {
+                settings.DisableCore(core.identifier);
+            } else {
+                settings.EnableCore(core.identifier);
+            }
+            Console.WriteLine("");
+        }
+        settings.GetConfig().core_selector = false;
+        settings.SaveSettings();
     }
 
     static void updater_StatusUpdated(object sender, StatusUpdatedEventArgs e)
@@ -78,35 +103,72 @@ internal class Program
         Console.WriteLine(e.Message);
     }
 
+    static void updater_UpdateProcessComplete(object sender, UpdateProcessCompleteEventArgs e)
+    {
+        Console.WriteLine("------------");
+        Console.WriteLine(e.Message);
+        if(e.InstalledCores.Count > 0) {
+            Console.WriteLine("Cores Updated:");
+            foreach(string core in e.InstalledCores) {
+                Console.WriteLine(core);
+            }
+            Console.WriteLine("");
+        }
+        if(e.InstalledAssets.Count > 0) {
+            Console.WriteLine("Assets Installed:");
+            foreach(string asset in e.InstalledAssets) {
+                Console.WriteLine(asset);
+            }
+            Console.WriteLine("");
+        }
+        if(e.FirmwareUpdated) {
+            Console.WriteLine("New Firmware was downloaded. Restart your Pocket to install");
+            Console.WriteLine("");
+        }
+        Console.WriteLine("we did it, come again soon");
+    }
+
     //return true if newer version is available
-    async static Task<bool> CheckVersion()
+    async static Task<bool> CheckVersion(string path)
     {
         try {
-            var client = new HttpClient();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            var request = new HttpRequestMessage
-            {
-                Method = HttpMethod.Get,
-                RequestUri = new Uri(API_URL)
-            };
-            var agent = new ProductInfoHeaderValue("Analogue-Pocket-Auto-Updater", "1.0");
-            request.Headers.UserAgent.Add(agent);
-            var response = await client.SendAsync(request).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-
-            var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            List<Github.Release>? releases = JsonSerializer.Deserialize<List<Github.Release>>(responseBody);
+            List<Github.Release> releases = await GithubApi.GetReleases(USER, REPOSITORY);
 
             string tag_name = releases[0].tag_name;
             string? v = SemverUtil.FindSemver(tag_name);
             if(v != null) {
-                return SemverUtil.SemverCompare(v, version);
+                bool check = SemverUtil.SemverCompare(v, version);
+                if(check) {
+                    Console.WriteLine("A new version is available. Downloading now...");
+                    string platform = GetPlatform();
+                    string url = String.Format(RELEASE_URL, tag_name, platform);
+                    string saveLocation = Path.Combine(path, "pocket_updater.zip");
+                    await HttpHelper.DownloadFileAsync(url, saveLocation);
+                    Console.WriteLine("Download complete.");
+                    Console.WriteLine(saveLocation);
+                }
+                return check;
             }
 
             return false;
         } catch (HttpRequestException e) {
             return false;
         }
+    }
+
+    private static string GetPlatform()
+    {
+        if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+            return "win";
+        }
+        if(RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
+            return "mac";
+        }
+        if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
+            return "linux";
+        }
+
+        return "";
     }
 }
 
@@ -117,4 +179,7 @@ public class Options
 
      [Option ('a', "all", Required = false, HelpText = "Extract all release assets, instead of just ones containing openFPGA cores.")]
      public bool ExtractAll { get; set; }
+
+     [Option ('c', "coreselector", Required = false, HelpText = "Run the core selector.")]
+     public bool CoreSelector { get; set; }
 }
