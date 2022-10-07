@@ -4,7 +4,7 @@
     "files": [
       {
         "file_name": "gba_bios.bin",
-        "archive_zip": "BIOS" 
+        "archive_zip": "BIOS"
       }
     ]
   },
@@ -258,6 +258,28 @@
       },
       {
         "file_name": "rushatck.rom",
+        "archive_zip": "Arcade_Roms"
+      }
+    ]
+
+  },
+  "boogermann.pooyan": {
+    "location": "Assets/pooyan/common/",
+    "files": [
+      {
+        "file_name": "pooyan.rom",
+        "archive_zip": "Arcade_Roms"
+      },
+      {
+        "file_name": "pooyaiag.rom",
+        "archive_zip": "Arcade_Roms"
+      },
+	  {
+        "file_name": "pooyans.rom",
+        "archive_zip": "Arcade_Roms"
+      },
+      {
+        "file_name": "pootan.rom",
         "archive_zip": "Arcade_Roms"
       }
     ]
