@@ -14,6 +14,7 @@ internal class Program
         string? path = Path.GetDirectoryName(location);
         bool extractAll = false;
         bool coreSelector = false;
+        bool preserveImages = false;
 
         Parser.Default.ParseArguments<Options>(args)
             .WithParsed<Options>(o =>
@@ -27,6 +28,9 @@ internal class Program
                 }
                 if(o.CoreSelector) {
                     coreSelector = true;
+                }
+                if(o.PreserveImages) {
+                    preserveImages = true;
                 }
             }
             ).WithNotParsed<Options>(o => 
@@ -62,6 +66,10 @@ internal class Program
         if(coreSelector || settings.GetConfig().core_selector) {
             List<Core> cores =  await CoresService.GetCores();
             RunCoreSelector(settings, cores);
+        }
+
+        if(preserveImages || settings.GetConfig().preserve_images) {
+            updater.PreserveImages(true);
         }
 
         updater.ExtractAll(extractAll);
@@ -105,7 +113,7 @@ internal class Program
 
     static void updater_UpdateProcessComplete(object sender, UpdateProcessCompleteEventArgs e)
     {
-        Console.WriteLine("------------");
+        Console.WriteLine("-------------");
         Console.WriteLine(e.Message);
         if(e.InstalledCores.Count > 0) {
             Console.WriteLine("Cores Updated:");
@@ -121,8 +129,9 @@ internal class Program
             }
             Console.WriteLine("");
         }
-        if(e.FirmwareUpdated) {
+        if(e.FirmwareUpdated != "") {
             Console.WriteLine("New Firmware was downloaded. Restart your Pocket to install");
+            Console.WriteLine(e.FirmwareUpdated);
             Console.WriteLine("");
         }
         Console.WriteLine("we did it, come again soon");
@@ -177,9 +186,12 @@ public class Options
     [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
     public string? InstallPath { get; set; }
 
-     [Option ('a', "all", Required = false, HelpText = "Extract all release assets, instead of just ones containing openFPGA cores.")]
-     public bool ExtractAll { get; set; }
+    [Option ('a', "all", Required = false, HelpText = "Extract all release assets, instead of just ones containing openFPGA cores.")]
+    public bool ExtractAll { get; set; }
 
-     [Option ('c', "coreselector", Required = false, HelpText = "Run the core selector.")]
-     public bool CoreSelector { get; set; }
+    [Option ('c', "coreselector", Required = false, HelpText = "Run the core selector.")]
+    public bool CoreSelector { get; set; }
+
+    [Option ('i', "images", Required = false, HelpText = "Preserve the images directory, so custom images aren't overwritten by updates.")]
+    public bool PreserveImages { get; set; }
 }

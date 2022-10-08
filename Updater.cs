@@ -20,6 +20,7 @@ public class PocketCoreUpdater
                 \k<q>
         [^>]* >");
     private bool _downloadAssets = false;
+    private bool _preserveImages = false;
 
     private string _githubApiKey = "";
 
@@ -95,6 +96,15 @@ public class PocketCoreUpdater
         _downloadAssets = set;
     }
 
+    /// <summary>
+    /// Turn on/off preserving custom images
+    /// </summary>
+    /// <param name="set">Set to true to enable preserving custom images</param>
+    public void PreserveImages(bool set)
+    {
+        _preserveImages = set;
+    }
+
     public void DownloadFirmware(bool set)
     {
         _downloadFirmare = set;
@@ -107,7 +117,8 @@ public class PocketCoreUpdater
     {
         List<Dictionary<string, string>> installed = new List<Dictionary<string, string>>();
         List<string> installedAssets = new List<string>();
-        bool firmwareDownloaded = false;
+        bool imagesBacked = false;
+        string firmwareDownloaded = "";
         if(_cores == null) {
             throw new Exception("Must initialize updater before running update process");
         }
@@ -115,19 +126,27 @@ public class PocketCoreUpdater
         if(_downloadFirmare) {
             firmwareDownloaded = await UpdateFirmware();
         }
+
+        if(_preserveImages) {
+            _writeMessage("Backing up images");
+            Util.BackupImagesDirectory(UpdateDirectory);
+            _writeMessage("Finished backing up images");
+            Divide();
+            imagesBacked = true;
+        }
         string json;
         foreach(Core core in _cores) {
             try {
                 if(_settingsManager.GetCoreSettings(core.identifier).skip) {
                     continue;
                 }
-                Repo? repo = core.repository;
-                _writeMessage("Starting Repo: " + repo.name);
                 string name = core.identifier;
                 if(name == null) {
                     _writeMessage("Core Name is required. Skipping.");
                     continue;
                 }
+                Repo? repo = core.repository;
+                _writeMessage("Checking Core: " + name);
                 bool allowPrerelease = _settingsManager.GetCoreSettings(core.identifier).allowPrerelease;
                 List<Github.Release>? releases = await _fetchReleases(repo.owner, repo.name, _githubApiKey);
                 if(releases == null) {
@@ -177,7 +196,7 @@ public class PocketCoreUpdater
                             installedAssets.AddRange(list);
                         }
                         _writeMessage("Up to date. Skipping core");
-                        _writeMessage("------------");
+                        Divide();
                         continue;
                     }
                 } else {
@@ -203,7 +222,7 @@ public class PocketCoreUpdater
 
                 if(!foundZip) {
                     _writeMessage("No zip file found for release. Skipping");
-                    _writeMessage("------------");
+                    Divide();
                     continue;
                 }
                 if(_assets.ContainsKey(core.identifier)) {
@@ -211,12 +230,17 @@ public class PocketCoreUpdater
                     installedAssets.AddRange(list);
                 }
                 _writeMessage("Installation complete.");
-                _writeMessage("------------");
+                Divide();
             } catch(Exception e) {
                 _writeMessage("Uh oh something went wrong.");
                 _writeMessage(e.Message);
             }
         } 
+        if(imagesBacked) {
+            _writeMessage("Restoring images");
+            Util.RestoreImagesDirectory(UpdateDirectory);
+            Divide();
+        }
         UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs();
         args.Message = "Update Process Complete";
         args.InstalledCores = installed;
@@ -271,6 +295,11 @@ public class PocketCoreUpdater
         }
 
         return installed;
+    }
+
+    private void Divide()
+    {
+        _writeMessage("-------------");
     }
 
     private string BuildAssetUrl(DependencyFile asset)
@@ -377,16 +406,16 @@ public class PocketCoreUpdater
         }
     }
 
-    public async Task<bool> UpdateFirmware()
+    public async Task<string> UpdateFirmware()
     {
-        bool flag = false;
+        string version = "";
         _writeMessage("Checking for firmware updates...");
         string html = await HttpHelper.GetHTML(FIRMWARE_URL);
         
         MatchCollection matches = BIN_REGEX.Matches(html);
         if(matches.Count != 1) {
             _writeMessage("cant find it");
-            return false;
+            return version;
         } 
 
         string firmwareUrl = matches[0].Groups["url"].ToString();
@@ -395,7 +424,7 @@ public class PocketCoreUpdater
 
         Firmware current = _settingsManager.GetCurrentFirmware();
         if(current.version != filename) {
-            flag = true;
+            version = filename;
             _writeMessage("Firmware update found. Downloading...");
             await HttpHelper.DownloadFileAsync(firmwareUrl, Path.Combine(UpdateDirectory, filename));
             _writeMessage("Download Complete");
@@ -410,8 +439,8 @@ public class PocketCoreUpdater
         } else {
             _writeMessage("Firmware up to date.");
         }
-
-        return flag;
+        Divide();
+        return version;
     }
 
     public void ExtractAll(bool value)
@@ -442,5 +471,5 @@ public class UpdateProcessCompleteEventArgs : EventArgs
     public string Message { get; set; }
     public List<Dictionary<string, string>> InstalledCores { get; set; }
     public List<string> InstalledAssets { get; set; }
-    public bool FirmwareUpdated { get; set; } = false;
+    public string FirmwareUpdated { get; set; } = "";
 }
