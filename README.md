@@ -13,11 +13,13 @@ A complete list of available cores can also be found here: https://joshcampbell1
 To run the updater, all you need to do is put the executable file for your platform (windows, mac os, or linux) in the root of your sd card and run the program.
 
 #### Advanced Usage
-The updater currently accepts 2 command line parameters. I will probably add more options in the future
+The updater currently accepts 4 command line parameters. I will probably add more options in the future
 ```
  -p, --path      Absolute path to install location
  -a, --all       Extract all release assets, instead of just ones containing openFPGA cores.
  -c, --coreselector    Run the core selector.
+ -i, --images          Preserve the images directory, so custom images aren't
+                        overwritten by updates.
 ```
 example:
 `
@@ -35,6 +37,10 @@ Set `config.download_firmware` to `false` in your settings file
 
 #### Disable Asset Downloading
 Set `config.download_assets` to `false` in your settings file, if you'd like to supply your own BIOS and arcade rom files
+
+#### Preserve Custom Images
+If you have custom images set for your cores, you can use this option to preserve them during the update process.
+Set `config.preserve_images` to `true` in your settings file, or use `-i` as a command line parameter
 
 #### Github Personal Access Token
 If you're running up against the rate limit on the github api, you can provide your personal access token to the updater via the settings.
