@@ -33,6 +33,9 @@ You can edit your `pocket_updater_settings.json` file and set the `allowPrerelea
 #### Disable Firmware Downloading
 Set `config.download_firmware` to `false` in your settings file
 
+#### Disable Asset Downloading
+Set `config.download_assets` to `false` in your settings file, if you'd like to supply your own BIOS and arcade rom files
+
 #### Github Personal Access Token
 If you're running up against the rate limit on the github api, you can provide your personal access token to the updater via the settings.
 Edit your local copy of `pocket_updater_settings.json` and put your token in `config.github_token`
