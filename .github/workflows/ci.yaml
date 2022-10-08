@@ -1,0 +1,60 @@
+name: Publish
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  release:
+    name: Release
+    strategy:
+      matrix:
+        kind: ['linux', 'windows', 'macOS']
+        include:
+          - kind: linux
+            os: ubuntu-latest
+            target: linux-x64
+          - kind: windows
+            os: windows-latest
+            target: win-x64
+          - kind: macOS
+            os: macos-latest
+            target: osx-x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.400
+
+      - name: Build
+        shell: bash
+        run: |
+          tag=$(git describe --tags --abbrev=0)
+          release_name="App-$tag-${{ matrix.target }}"
+
+          # Build everything
+          dotnet publish pocket_updater.csproj -p:PublishSingleFile=true -r ${{ matrix.target }} -c Release --self-contained true -o "$release_name"
+
+          # Pack files
+          if [ "${{ matrix.target }}" == "win-x64" ]; then
+            # Pack to zip for Windows
+            7z a -tzip "pocket_updater_win.zip" "./${release_name}/*"
+          if [ "${{ matrix.target }}" == "osx-x64" ]; then
+            zip pocket_updater_mac.zip "${release_name}/*"
+          else
+            zip pocket_updater_mac.zip "${release_name}/*"
+          fi
+
+          # Delete output directory
+          rm -r "$release_name"
+
+      - name: Publish
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "pocket_updater*"
+        env:
+          GITHUB_TOKEN: ${{ secrets.API_TOKEN }}
