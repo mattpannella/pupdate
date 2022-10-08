@@ -109,8 +109,8 @@ internal class Program
         Console.WriteLine(e.Message);
         if(e.InstalledCores.Count > 0) {
             Console.WriteLine("Cores Updated:");
-            foreach(string core in e.InstalledCores) {
-                Console.WriteLine(core);
+            foreach(Dictionary<string, string> core in e.InstalledCores) {
+                Console.WriteLine(core["core"] + " " + core["version"]);
             }
             Console.WriteLine("");
         }

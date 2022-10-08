@@ -105,7 +105,7 @@ public class PocketCoreUpdater
     /// </summary>
     public async Task RunUpdates()
     {
-        List<string> installed = new List<string>();
+        List<Dictionary<string, string>> installed = new List<Dictionary<string, string>>();
         List<string> installedAssets = new List<string>();
         bool firmwareDownloaded = false;
         if(_cores == null) {
@@ -160,6 +160,12 @@ public class PocketCoreUpdater
                     if(localSemver != null) {
                         _writeMessage("local core found: v" + localSemver);
                     }
+                    //HACK TIME
+                    if(core.identifier == "Spiritualized.GG" && localSemver == "1.2.0") {
+                        Hacks.GamegearFix(UpdateDirectory);
+                        localSemver = "1.3.0";
+                    }
+                    //HACK TIME
 
                     if (!SemverUtil.IsActuallySemver(localSemver) || !SemverUtil.IsActuallySemver(releaseSemver)) {
                         _writeMessage("downloading core anyway");
@@ -187,7 +193,11 @@ public class PocketCoreUpdater
                     }
                     foundZip = true;
                     if(await _getAsset(asset.browser_download_url, core.identifier)) {
-                        installed.Add(core.identifier + " " + tag_name);
+                        Dictionary<string, string> summary = new Dictionary<string, string>();
+                        summary.Add("version", releaseSemver);
+                        summary.Add("core", core.identifier);
+                        summary.Add("platform", core.platform);
+                        installed.Add(summary);
                     }
                 }
 
@@ -430,7 +440,7 @@ public class UpdateProcessCompleteEventArgs : EventArgs
     /// Some kind of results
     /// </summary>
     public string Message { get; set; }
-    public List<string> InstalledCores { get; set; }
+    public List<Dictionary<string, string>> InstalledCores { get; set; }
     public List<string> InstalledAssets { get; set; }
     public bool FirmwareUpdated { get; set; } = false;
 }
