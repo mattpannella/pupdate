@@ -46,31 +46,31 @@
     "files": [
       {
         "file_name": "gemini.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "gemini.rom"
       },
       {
         "file_name": "rygar.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "rygar.rom"
       },
       {
         "file_name": "geminij.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "geminij.rom"
       },
       {
         "file_name": "rygar2.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "rygar2.rom"
       },
       {
         "file_name": "rygarj.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "rygarj.rom"
       },
       {
         "file_name": "silkworm.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "silkworm.rom"
       },
       {
         "file_name": "silkwrmj.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_name": "silkwrmj.rom"
       }
     ]
   },
