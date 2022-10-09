@@ -283,5 +283,18 @@
         "archive_zip": "Arcade_Roms"
       }
     ]
+  },
+  "boogermann.bankpanic": {
+    "location": "Assets/bankpanic/common/",
+    "files": [
+      {
+        "file_name": "bankp.rom",
+        "archive_file": "bankp.rom"
+      },
+      {
+        "file_name": "combh.rom",
+        "archive_file": "combh.rom"
+      }
+    ]
   }
 }
