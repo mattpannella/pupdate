@@ -2,11 +2,11 @@ namespace pannella.analoguepocket;
 
 public class Util
 {
-    private static string _imagesDirectory = Path.Combine("Platforms", "_images");
+    private static string _platformsDirectory = "Platforms";
     private static string _temp = "imagesbackup";
-    public static bool BackupImagesDirectory(string rootPath)
+    public static bool BackupPlatformsDirectory(string rootPath)
     {
-        string fullPath = Path.Combine(rootPath, _imagesDirectory);
+        string fullPath = Path.Combine(rootPath, _platformsDirectory);
         if(!Directory.Exists(fullPath)) {
             return false;
         }
@@ -14,16 +14,16 @@ public class Util
         string tempPath = Path.Combine(rootPath, _temp);
         try {
             Directory.CreateDirectory(tempPath);
-            CopyDirectory(fullPath, tempPath, false, true);
+            CopyDirectory(fullPath, tempPath, true, true);
         } catch (Exception) {
             return false;
         }
         return true;
     }
 
-    public static bool RestoreImagesDirectory(string rootPath)
+    public static bool RestorePlatformsDirectory(string rootPath)
     {
-        string fullPath = Path.Combine(rootPath, _imagesDirectory);
+        string fullPath = Path.Combine(rootPath, _platformsDirectory);
         if(!Directory.Exists(fullPath)) {
             return false;
         }
@@ -31,7 +31,7 @@ public class Util
         if(!Directory.Exists(tempPath)) {
             return false;
         }
-        CopyDirectory(tempPath, fullPath, false, true);
+        CopyDirectory(tempPath, fullPath, true, true);
         Directory.Delete(tempPath, true);
 
         return true;

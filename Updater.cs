@@ -128,9 +128,9 @@ public class PocketCoreUpdater
         }
 
         if(_preserveImages) {
-            _writeMessage("Backing up images");
-            Util.BackupImagesDirectory(UpdateDirectory);
-            _writeMessage("Finished backing up images");
+            _writeMessage("Backing up platforms folder");
+            Util.BackupPlatformsDirectory(UpdateDirectory);
+            _writeMessage("Finished backing up platforms folder");
             Divide();
             imagesBacked = true;
         }
@@ -237,8 +237,8 @@ public class PocketCoreUpdater
             }
         } 
         if(imagesBacked) {
-            _writeMessage("Restoring images");
-            Util.RestoreImagesDirectory(UpdateDirectory);
+            _writeMessage("Restoring platforms folder");
+            Util.RestorePlatformsDirectory(UpdateDirectory);
             Divide();
         }
         UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs();
