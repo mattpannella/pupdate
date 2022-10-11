@@ -22,7 +22,7 @@ The updater currently accepts 4 command line parameters. I will probably add mor
 ```
 example:
 `
-/path/to/pocket_updater -c -p /path/to/sdcard/
+/path/to/pocket_updater -a -p /path/to/sdcard/
 `
 
 #### Core Selector
