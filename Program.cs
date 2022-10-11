@@ -14,7 +14,7 @@ internal class Program
         string? path = Path.GetDirectoryName(location);
         bool extractAll = false;
         bool coreSelector = false;
-        bool preserveImages = false;
+        bool preservePlatformsFolder = false;
 
         Parser.Default.ParseArguments<Options>(args)
             .WithParsed<Options>(o =>
@@ -29,8 +29,8 @@ internal class Program
                 if(o.CoreSelector) {
                     coreSelector = true;
                 }
-                if(o.PreserveImages) {
-                    preserveImages = true;
+                if(o.PreservePlatformsFolder) {
+                    preservePlatformsFolder = true;
                 }
             }
             ).WithNotParsed<Options>(o => 
@@ -68,8 +68,8 @@ internal class Program
             RunCoreSelector(settings, cores);
         }
 
-        if(preserveImages || settings.GetConfig().preserve_images) {
-            updater.PreserveImages(true);
+        if(preservePlatformsFolder || settings.GetConfig().preserve_images) {
+            updater.PreservePlatformsFolder(true);
         }
 
         updater.ExtractAll(extractAll);
@@ -193,6 +193,6 @@ public class Options
     [Option ('c', "coreselector", Required = false, HelpText = "Run the core selector.")]
     public bool CoreSelector { get; set; }
 
-    [Option ('i', "images", Required = false, HelpText = "Preserve the images directory, so custom images aren't overwritten by updates.")]
-    public bool PreserveImages { get; set; }
+    [Option ('f', "platformsfolder", Required = false, HelpText = "Preserve the Platforms folder, so customizations aren't overwritten by updates.")]
+    public bool PreservePlatformsFolder { get; set; }
 }
