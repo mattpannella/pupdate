@@ -155,6 +155,7 @@ internal class Program
                     await HttpHelper.DownloadFileAsync(url, saveLocation);
                     Console.WriteLine("Download complete.");
                     Console.WriteLine(saveLocation);
+                    Console.WriteLine("Go to " + releases[0].html_url + " for a change log");
                 }
                 return check;
             }

@@ -8,6 +8,6 @@ public class CoreSettings
     public CoreSettings()
     {
         skip = false;
-        allowPrerelease = true;
+        allowPrerelease = false;
     }
 }

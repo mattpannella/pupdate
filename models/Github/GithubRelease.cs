@@ -8,4 +8,5 @@ public class Release
     public string? url { get; set; }
     public List<Asset>? assets { get; set; }
     public bool draft { get; set; }
+    public string? html_url { get; set; }
 }
