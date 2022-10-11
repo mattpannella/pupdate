@@ -8,6 +8,15 @@
       }
     ]
   },
+  "Spiritualized.NES": {
+    "location": "Assets/nes/common/",
+    "files": [
+      {
+        "file_name": "fds.bios",
+        "archive_file": "fds.bios"
+      }
+    ]
+  },
   "Spiritualized.GBC": {
     "location": "Assets/gbc/common/",
     "files": [
@@ -274,7 +283,7 @@
         "file_name": "pooyaiag.rom",
         "archive_zip": "Arcade_Roms"
       },
-	  {
+      {
         "file_name": "pooyans.rom",
         "archive_zip": "Arcade_Roms"
       },
