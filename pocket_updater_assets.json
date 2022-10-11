@@ -13,7 +13,7 @@
     "files": [
       {
         "file_name": "fds.bios",
-        "archive_file": "BIOS/fds.bios"
+        "archive_file": "/BIOS/fds.bios"
       }
     ]
   },
