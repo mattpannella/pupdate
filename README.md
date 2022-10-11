@@ -18,8 +18,7 @@ The updater currently accepts 4 command line parameters. I will probably add mor
  -p, --path      Absolute path to install location
  -a, --all       Extract all release assets, instead of just ones containing openFPGA cores.
  -c, --coreselector    Run the core selector.
- -i, --images          Preserve the images directory, so custom images aren't
-                        overwritten by updates.
+ -f, --platformsfolder   Preserve the Platforms folder, so customizations aren't overwritten by updates
 ```
 example:
 `
