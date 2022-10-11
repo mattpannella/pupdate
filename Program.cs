@@ -68,7 +68,7 @@ internal class Program
             RunCoreSelector(settings, cores);
         }
 
-        if(preservePlatformsFolder || settings.GetConfig().preserve_images) {
+        if(preservePlatformsFolder || settings.GetConfig().preserve_platforms_folder) {
             updater.PreservePlatformsFolder(true);
         }
 
