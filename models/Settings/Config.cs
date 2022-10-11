@@ -7,7 +7,7 @@ public class Config
     public string? github_token { get; set; }
     public bool download_firmware { get; set; }
     public bool core_selector { get; set; }
-    public bool preserve_images { get; set; }
+    public bool preserve_platforms_folder { get; set; }
 
     public Config()
     {
@@ -15,6 +15,6 @@ public class Config
         download_firmware = true;
         archive_name = "openFPGA-Files";
         core_selector = true;
-        preserve_images = false;
+        preserve_platforms_folder = false;
     }
 }
