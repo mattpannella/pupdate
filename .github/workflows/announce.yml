@@ -18,6 +18,7 @@ jobs:
             -d '{
                 "username": "mattpannella",
                 "avatar_url": "https://avatars.githubusercontent.com/u/4806679",
+                "content": "BIG NEWS",
                 "embeds": [{
                     "color": 4819409,
                     "title": "You are now the corn man. A new Pocket Updater Utility build has been released.",
