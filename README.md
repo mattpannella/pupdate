@@ -28,8 +28,8 @@ example:
 #### Core Selector
 On your first run it will prompt you to select the cores you want tracked. After that initial run, you can always run this again by setting core_selector to true in the settings json file, or if running from the cli you can use the paramater -c
 
-#### Ignore pre-release cores
-You can edit your `pocket_updater_settings.json` file and set the `allowPrerelease` flag to false for any core you don't want to be updated until it hits 1.0
+#### Allow pre-release cores
+You can edit your `pocket_updater_settings.json` file and set the `allowPrerelease` flag to true for any core want to download, even though it's still pre-release
 
 #### Disable Firmware Downloading
 Set `config.download_firmware` to `false` in your settings file
