@@ -305,5 +305,14 @@
         "archive_file": "combh.rom"
       }
     ]
+  },
+  "ericlewis.DonkeyKong": {
+    "location": "Assets/donkeykong/common/",
+    "files": [
+      {
+        "file_name": "dkong.rom",
+        "archive_file": "dkong.rom"
+      }
+    ]
   }
 }
