@@ -148,17 +148,24 @@ public class PocketCoreUpdater
                 Repo? repo = core.repository;
                 _writeMessage("Checking Core: " + name);
                 bool allowPrerelease = _settingsManager.GetCoreSettings(core.identifier).allowPrerelease;
-                List<Github.Release>? releases = await _fetchReleases(repo.owner, repo.name, _githubApiKey);
-                if(releases == null) {
-                    continue;
+
+                var mostRecentRelease = core.release;
+                var prerelease = core.prerelease;
+                if(allowPrerelease && mostRecentRelease == null) {
+                    mostRecentRelease = prerelease;
                 }
-                var mostRecentRelease = _getMostRecentRelease(releases, allowPrerelease);
+                else if(allowPrerelease && prerelease != null) {
+                    string semver1 = SemverUtil.FindSemver(mostRecentRelease.tag_name);
+                    string semver2 = SemverUtil.FindSemver(prerelease.tag_name);
+                    if(SemverUtil.SemverCompare(semver2, semver1)) {
+                        mostRecentRelease = prerelease;
+                    }
+                }
                 if(mostRecentRelease == null) {
                     _writeMessage("No releases found. Skipping");
                     continue;
                 }
                 string tag_name = mostRecentRelease.tag_name;
-                List<Github.Asset> assets = mostRecentRelease.assets;
 
                 string releaseSemver = SemverUtil.FindSemver(tag_name);
 
@@ -205,6 +212,8 @@ public class PocketCoreUpdater
                 
                 // might need to search for the right zip here if there's more than one
                 //iterate through assets to find the zip release
+                var release = await _fetchRelease(repo.owner, repo.name, tag_name, _githubApiKey);
+                List<Github.Asset> assets = release.assets;
                 foreach(Github.Asset asset in assets) {
                     if(!ZIP_TYPES.Contains(asset.content_type)) {
                         //not a zip file. move on
@@ -305,7 +314,9 @@ public class PocketCoreUpdater
     private string BuildAssetUrl(DependencyFile asset)
     {
         string archive = _settingsManager.GetConfig().archive_name;
-        if(archive != null && asset.archive_zip != null) {
+        if(asset.file_name != null && asset.archive_zip == null && asset.archive_file == null && !asset.zip) {
+            return ARCHIVE_BASE_URL + "/" + archive + "/" + asset.file_name;
+        } else if(archive != null && asset.archive_zip != null) {
             return ARCHIVE_BASE_URL + "/" + archive + "/" + asset.archive_zip + ".zip/" + asset.file_name;
         } else if(archive != null && asset.archive_file != null) {
             return ARCHIVE_BASE_URL + "/" + archive + "/" + asset.archive_file;
@@ -332,6 +343,18 @@ public class PocketCoreUpdater
         try {
             var releases = await GithubApi.GetReleases(user, repository, token);
             return releases;
+        } catch (HttpRequestException e) {
+            _writeMessage("Error communicating with Github API.");
+            _writeMessage(e.Message);
+            return null;
+        }
+    }
+
+    private async Task<Github.Release>? _fetchRelease(string user, string repository, string tag_name, string token = "")
+    {
+        try {
+            var release = await GithubApi.GetRelease(user, repository, tag_name, token);
+            return release;
         } catch (HttpRequestException e) {
             _writeMessage("Error communicating with Github API.");
             _writeMessage(e.Message);
