@@ -10,6 +10,29 @@ public static class GithubApi
     public static async Task<List<Github.Release>> GetReleases(string user, string repository, string? token = "")
     {
         string url = String.Format(END_POINT, user, repository);
+        var responseBody = await CallAPI(url, token);
+
+        List<Github.Release>? releases = JsonSerializer.Deserialize<List<Github.Release>>(responseBody);
+
+        if(releases == null) {
+            releases = new List<Github.Release>();
+        }
+
+        return releases;
+    }
+
+    public static async Task<Github.Release?> GetRelease(string user, string repository, string tag_name, string? token = "")
+    {
+        string url = String.Format(END_POINT, user, repository) + "/tags/" + tag_name;
+        
+        var responseBody = await CallAPI(url, token);
+        Github.Release? release = JsonSerializer.Deserialize<Github.Release>(responseBody);
+        
+        return release;
+    }
+
+    private static async Task<string> CallAPI(string url, string? token = "")
+    {
         var client = new HttpClient();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         var request = new HttpRequestMessage
@@ -26,12 +49,7 @@ public static class GithubApi
         response.EnsureSuccessStatusCode();
 
         var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        List<Github.Release>? releases = JsonSerializer.Deserialize<List<Github.Release>>(responseBody);
 
-        if(releases == null) {
-            releases = new List<Github.Release>();
-        }
-
-        return releases;
+        return responseBody;
     }
 }

@@ -4,7 +4,7 @@ namespace pannella.analoguepocket;
 
 public static class CoresService
 {
-    private const string END_POINT = "https://joshcampbell191.github.io/openfpga-cores-inventory/api/v0/analogue-pocket/cores.json";
+    private const string END_POINT = "https://joshcampbell191.github.io/openfpga-cores-inventory/api/v1/analogue-pocket/cores.json";
 
     public static async Task<List<Core>> GetCores()
     {
