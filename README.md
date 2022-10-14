@@ -29,7 +29,7 @@ example:
 On your first run it will prompt you to select the cores you want tracked. After that initial run, you can always run this again by setting core_selector to true in the settings json file, or if running from the cli you can use the paramater -c
 
 #### Allow pre-release cores
-You can edit your `pocket_updater_settings.json` file and set the `allowPrerelease` flag to true for any core want to download, even though it's still pre-release
+You can edit your `pocket_updater_settings.json` file and set the `allowPrerelease` flag to `true` for any core want to download, even though it's still pre-release
 
 #### Disable Firmware Downloading
 Set `config.download_firmware` to `false` in your settings file
@@ -37,9 +37,9 @@ Set `config.download_firmware` to `false` in your settings file
 #### Disable Asset Downloading
 Set `config.download_assets` to `false` in your settings file, if you'd like to supply your own BIOS and arcade rom files
 
-#### Preserve Custom Images
-If you have custom images set for your cores, you can use this option to preserve them during the update process.
-Set `config.preserve_images` to `true` in your settings file, or use `-i` as a command line parameter
+#### Preserve Platforms Folder Customizations
+If you have any customizations to the Platforms folder, you can use this option to preserve them during the update process.
+Set `config.preserve_platforms_folder` to `true` in your settings file, or use `-f` as a command line parameter
 
 #### Github Personal Access Token
 If you're running up against the rate limit on the github api, you can provide your personal access token to the updater via the settings.
