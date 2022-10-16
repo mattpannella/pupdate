@@ -51,7 +51,7 @@ internal class Program
         Console.WriteLine("Analogue Pocket Core Updater v" + version);
         Console.WriteLine("Checking for updates...");
         if(await CheckVersion(path)) {
-            Console.WriteLine("Would you like to continue anyway? [y/n]:");
+            Console.WriteLine("Would you like to continue anyway? [Y/n]:");
             response = Console.ReadKey(false).Key;
             if (response == ConsoleKey.N) {
                 Console.WriteLine("Come again soon");
@@ -93,7 +93,7 @@ internal class Program
         ConsoleKey response;
         Console.WriteLine("Select your cores! The available cores will be listed 1 at a time. For each one, hit 'n' if you don't want it installed, or just hit enter if you want it. Ok you've got this. Here we go...");
         foreach(Core core in cores) {
-            Console.Write(core.identifier + "?[y/n] ");
+            Console.Write(core.identifier + "?[Y/n] ");
             response = Console.ReadKey(false).Key;
             if (response == ConsoleKey.N) {
                 settings.DisableCore(core.identifier);
