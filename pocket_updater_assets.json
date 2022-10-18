@@ -323,5 +323,14 @@
         "archive_file": "qbert.rom"
       }
     ]
+  },
+  "pram0d.snowbros2": {
+    "location": "Assets/snowbros2/common/",
+    "files": [
+      {
+        "file_name": "snowbro2.rom",
+        "archive_file": "snowbro2.rom"
+      }
+    ]
   }
 }
