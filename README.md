@@ -45,6 +45,9 @@ Set `config.preserve_platforms_folder` to `true` in your settings file, or use `
 If you're running up against the rate limit on the github api, you can provide your personal access token to the updater via the settings.
 Edit your local copy of `pocket_updater_settings.json` and put your token in `config.github_token`
 
+#### Troubleshooting
+If you run the update process and get a message like `Error in framework RS: bridge not responding` when running a core, try to run the updater in a local folder on your pc, and then copy the files over to the sd card afterwards. I'm nt entirely sure what the issue is, but I've seen nit reported a bunch of times now and running the updater locally seems to help.
+
 ## Submitting new cores ##
 You can submit new cores here https://github.com/joshcampbell191/openfpga-cores-inventory
 
