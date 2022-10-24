@@ -150,17 +150,11 @@ public class PocketCoreUpdater
                 bool allowPrerelease = _settingsManager.GetCoreSettings(core.identifier).allowPrerelease;
 
                 var mostRecentRelease = core.release;
-                var prerelease = core.prerelease;
-                if(allowPrerelease && mostRecentRelease == null) {
-                    mostRecentRelease = prerelease;
+
+                if(allowPrerelease && core.prerelease != null) {
+                    mostRecentRelease = core.prerelease;
                 }
-                else if(allowPrerelease && prerelease != null) {
-                    string semver1 = SemverUtil.FindSemver(mostRecentRelease.tag_name);
-                    string semver2 = SemverUtil.FindSemver(prerelease.tag_name);
-                    if(SemverUtil.SemverCompare(semver2, semver1)) {
-                        mostRecentRelease = prerelease;
-                    }
-                }
+
                 if(mostRecentRelease == null) {
                     _writeMessage("No releases found. Skipping");
                     continue;
