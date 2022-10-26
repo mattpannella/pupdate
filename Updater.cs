@@ -252,6 +252,35 @@ public class PocketCoreUpdater
         OnUpdateProcessComplete(args);
     }
 
+    private async Task<List<string>> _DownloadAssetsNew(string id, List<Asset> assets)
+    {
+        List<string> installed = new List<string>();
+
+        if(_downloadAssets && assets != null) {
+            _writeMessage("Looking for Assets");
+            foreach(Asset asset in assets) {
+                if(asset.filename != null) {
+                    string path = Path.Combine(UpdateDirectory, "Assets", asset.platform);
+                    if(asset.core_specific) {
+                        path = Path.Combine(path, id);
+                    }
+                    path = Path.Combine(path, asset.filename);
+                    if(File.Exists(path)) {
+                        _writeMessage("Asset already installed: " + asset.filename);
+                    } else {
+                        string url = BuildAssetUrlNew(asset.filename);
+                        _writeMessage("Downloading " + asset.filename);
+                        await HttpHelper.DownloadFileAsync(url, path);
+                        _writeMessage("Finished downloading " + asset.filename);
+                        installed.Add(path);
+                    }
+                }
+            }
+        }
+        
+        return installed; 
+    }
+
     private async Task<List<string>> _DownloadAssets(Dependency assets)
     {
         List<string> installed = new List<string>();
@@ -319,6 +348,12 @@ public class PocketCoreUpdater
         }
 
         return "";
+    }
+
+    private string BuildAssetUrlNew(string filename)
+    {
+        string archive = _settingsManager.GetConfig().archive_name;
+        return ARCHIVE_BASE_URL + "/" + archive + "/" + filename;
     }
 
     private Github.Release _getMostRecentRelease(List<Github.Release> releases, bool allowPrerelease)
