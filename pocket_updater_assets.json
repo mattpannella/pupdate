@@ -4,7 +4,7 @@
     "files": [
       {
         "file_name": "gba_bios.bin",
-        "archive_zip": "BIOS"
+        "archive_file": "gba_bios.bin"
       }
     ]
   },
@@ -13,7 +13,7 @@
     "files": [
       {
         "file_name": "fds.bios",
-        "archive_file": "BIOS/fds.bios"
+        "archive_file": "fds.bios"
       }
     ]
   },
@@ -22,12 +22,12 @@
     "files": [
       {
         "file_name": "gbc_bios.bin",
-        "archive_zip": "BIOS"
+        "archive_file": "gbc_bios.bin"
       },
       {
         "file_name": "dmg_bios.bin",
         "overrideLocation": "Assets/gb/common/",
-        "archive_zip": "BIOS"
+        "archive_file": "dmg_bios.bin"
       }
     ]
   },
@@ -42,11 +42,11 @@
       },
       {
         "file_name": "000-lo.lo",
-        "archive_zip": "BIOS"
+        "archive_file": "000-lo.lo"
       },
       {
         "file_name": "sfix.sfix",
-        "archive_zip": "BIOS"
+        "archive_file": "sfix.sfix"
       }
     ]
   },
