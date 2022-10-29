@@ -53,6 +53,8 @@ You can submit new cores here https://github.com/joshcampbell191/openfpga-cores-
 
 ## Credits ##
 
+Thanks to [neil-morrison44](https://github.com/neil-morrison44). This is a port built on top of the work originally done by him here https://gist.github.com/neil-morrison44/34fbb18de90cd9a32ca5bdafb2a812b8
+
 Special thanks to [RetroDriven](https://github.com/RetroDriven/) for maintaining the arcade rom archive.
 
 And if you're looking for something with a few more features and a user interface, check out this updater. https://github.com/RetroDriven/Pocket_Updater
