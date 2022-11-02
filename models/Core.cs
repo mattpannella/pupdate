@@ -8,7 +8,7 @@ public class Core
     public Release release { get; set; }
     public Release? prerelease { get; set; }
     public bool mono { get; set; }
-    public string release_path { get; set; } = "";
+    public string? release_path { get; set; }
 
     public override string ToString()
     {
