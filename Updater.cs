@@ -71,12 +71,12 @@ public class PocketCoreUpdater
     public async Task LoadCores()
     {
         _cores = await CoresService.GetCores();
-        await LoadOtherCores();
+        await LoadNonAPICores();
     }
 
-    public async Task LoadOtherCores()
+    public async Task LoadNonAPICores()
     {
-        _cores.AddRange(await CoresService.GetOtherCores());
+        _cores.AddRange(await CoresService.GetNonAPICores());
     }
 
     public void LoadSettings()
@@ -195,7 +195,7 @@ public class PocketCoreUpdater
                         _writeMessage("Downloading core");
                     }
                     
-                    await _getOtherAsset(core);
+                    await _fetchCustomRelease(core);
                     Dictionary<string, string> summary = new Dictionary<string, string>();
                     summary.Add("version", date.ToString("yyyyMMdd"));
                     summary.Add("core", core.identifier);
@@ -500,7 +500,7 @@ public class PocketCoreUpdater
         return updated;
     }
 
-    private async Task<bool> _getOtherAsset(Core core)
+    private async Task<bool> _fetchCustomRelease(Core core)
     {
         string zip_name = core.identifier + "_" + core.release.tag_name + ".zip";
         Github.File file = await GithubApi.GetFile(core.repository.owner, core.repository.name, "releases/" + zip_name);

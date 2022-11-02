@@ -19,7 +19,7 @@ public static class CoresService
         }
     }
 
-    public static async Task<List<Core>> GetOtherCores()
+    public static async Task<List<Core>> GetNonAPICores()
     {
         string json = await HttpHelper.GetHTML(OTHER);
         List<Core> parsed = JsonSerializer.Deserialize<List<Core>>(json);
