@@ -73,6 +73,11 @@ public class PocketCoreUpdater
         _cores = await CoresService.GetCores();
     }
 
+    public async Task LoadOtherCores()
+    {
+        _cores.AddRange(await CoresService.GetOtherCores());
+    }
+
     public void LoadSettings()
     {
          _settingsManager = new SettingsManager(SettingsPath, _cores);
@@ -137,6 +142,10 @@ public class PocketCoreUpdater
         string json;
         foreach(Core core in _cores) {
             try {
+                //bandaid. just skip these for now
+                if(core.mono) {
+                    continue;
+                }
                 if(_settingsManager.GetCoreSettings(core.identifier).skip) {
                     continue;
                 }
@@ -241,6 +250,7 @@ public class PocketCoreUpdater
                 _writeMessage(e.Message);
             }
         } 
+        await UpdateOtherCores();
         if(imagesBacked) {
             _writeMessage("Restoring platforms folder");
             Util.RestorePlatformsDirectory(UpdateDirectory);
@@ -252,6 +262,104 @@ public class PocketCoreUpdater
         args.InstalledAssets = installedAssets;
         args.FirmwareUpdated = firmwareDownloaded;
         OnUpdateProcessComplete(args);
+    }
+
+    private async Task UpdateOtherCores()
+    {
+        string json;
+        foreach(Core core in _cores) {
+            try {
+                if(!core.mono) {
+                    continue;
+                }
+                if(_settingsManager.GetCoreSettings(core.identifier).skip) {
+                    continue;
+                }
+                string name = core.identifier;
+                if(name == null) {
+                    _writeMessage("Core Name is required. Skipping.");
+                    continue;
+                }
+                Repo? repo = core.repository;
+                _writeMessage("Checking Core: " + name);
+
+                var mostRecentRelease = core.release;
+
+                if(mostRecentRelease == null) {
+                    _writeMessage("No releases found. Skipping");
+                    continue;
+                }
+                DateTime date;
+
+                DateTime.TryParseExact(mostRecentRelease.tag_name, "yyyyMMdd", 
+                            System.Globalization.CultureInfo.InvariantCulture,
+                           System.Globalization.DateTimeStyles.None, out date);
+
+                _writeMessage(mostRecentRelease.tag_name + " is the most recent release, checking local core...");
+                string localCoreFile = Path.Combine(UpdateDirectory, "Cores", name);
+                bool fileExists = Directory.Exists(localCoreFile);
+
+                bool foundZip = false;
+
+                if (fileExists) {
+                    DateTime localDate = Directory.GetLastWriteTime(localCoreFile);
+                    
+                    if(localDate != null) {
+                        _writeMessage("local core found: v" + localDate.ToString("yyyyMMdd"));
+                    }
+                    
+                    if (DateTime.Compare(localDate, date) < 0){
+                        _writeMessage("Updating core");
+                    } else {
+                        if(_assets.ContainsKey(core.identifier)) {
+                            var list = await _DownloadAssets(_assets[core.identifier]); //check for roms even if core isn't updating
+                            //var list = await _DownloadAssetsNew(core.identifier, mostRecentRelease.assets);
+                           // installedAssets.AddRange(list);
+                        }
+                        _writeMessage("Up to date. Skipping core");
+                        Divide();
+                        continue;
+                    }
+                } else {
+                    _writeMessage("Downloading core");
+                }
+                
+                // might need to search for the right zip here if there's more than one
+                //iterate through assets to find the zip release
+                var release = await _fetchRelease(repo.owner, repo.name, mostRecentRelease.tag_name, _githubApiKey);
+                List<Github.Asset> assets = release.assets;
+                foreach(Github.Asset asset in assets) {
+                    if(!ZIP_TYPES.Contains(asset.content_type)) {
+                        //not a zip file. move on
+                        continue;
+                    }
+                    foundZip = true;
+                    if(await _getAsset(asset.browser_download_url, core.identifier)) {
+                      //  Dictionary<string, string> summary = new Dictionary<string, string>();
+                        //summary.Add("version", releaseSemver);
+                        //summary.Add("core", core.identifier);
+                        //summary.Add("platform", core.platform);
+                        //installed.Add(summary);
+                    }
+                }
+
+                if(!foundZip) {
+                    _writeMessage("No zip file found for release. Skipping");
+                    Divide();
+                    continue;
+                }
+                if(_assets.ContainsKey(core.identifier)) {
+                    var list = await _DownloadAssets(_assets[core.identifier]);
+                    //var list = await _DownloadAssetsNew(core.identifier, mostRecentRelease.assets);
+                    //installedAssets.AddRange(list);
+                }
+                _writeMessage("Installation complete.");
+                Divide();
+            } catch(Exception e) {
+                _writeMessage("Uh oh something went wrong.");
+                _writeMessage(e.Message);
+            }
+        } 
     }
 
     private async Task<List<string>> _DownloadAssetsNew(string id, List<Asset> assets)

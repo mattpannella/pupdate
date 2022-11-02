@@ -10,80 +10,85 @@ internal class Program
     private const string RELEASE_URL = "https://github.com/mattpannella/pocket_core_autoupdate_net/releases/download/{0}/pocket_updater_{1}.zip";
     private static async Task Main(string[] args)
     {
-        string location = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
-        string? path = Path.GetDirectoryName(location);
-        bool extractAll = false;
-        bool coreSelector = false;
-        bool preservePlatformsFolder = false;
+        try {
+            string location = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+            string? path = Path.GetDirectoryName(location);
+            bool extractAll = false;
+            bool coreSelector = false;
+            bool preservePlatformsFolder = false;
 
-        Parser.Default.ParseArguments<Options>(args)
-            .WithParsed<Options>(o =>
-            {
-                if(o.InstallPath != null && o.InstallPath != "") {
-                    Console.WriteLine("path: " + o.InstallPath);
-                    path = o.InstallPath;
-                }
-                if(o.ExtractAll) {
-                    extractAll = true;
-                }
-                if(o.CoreSelector) {
-                    coreSelector = true;
-                }
-                if(o.PreservePlatformsFolder) {
-                    preservePlatformsFolder = true;
-                }
-            }
-            ).WithNotParsed<Options>(o => 
+            Parser.Default.ParseArguments<Options>(args)
+                .WithParsed<Options>(o =>
                 {
-                    if(o.IsHelp()) {
-                        Environment.Exit(1);
+                    if(o.InstallPath != null && o.InstallPath != "") {
+                        Console.WriteLine("path: " + o.InstallPath);
+                        path = o.InstallPath;
                     }
-                    if(o.IsVersion()) {
-                        Environment.Exit(1);
+                    if(o.ExtractAll) {
+                        extractAll = true;
+                    }
+                    if(o.CoreSelector) {
+                        coreSelector = true;
+                    }
+                    if(o.PreservePlatformsFolder) {
+                        preservePlatformsFolder = true;
                     }
                 }
-            );
-        
-        //path = "/Users/mattpannella/pocket-test";
+                ).WithNotParsed<Options>(o => 
+                    {
+                        if(o.IsHelp()) {
+                            Environment.Exit(1);
+                        }
+                        if(o.IsVersion()) {
+                            Environment.Exit(1);
+                        }
+                    }
+                );
+            
+            //path = "/Users/mattpannella/pocket-test/new";
 
-        ConsoleKey response;
+            ConsoleKey response;
 
-        Console.WriteLine("Analogue Pocket Core Updater v" + version);
-        Console.WriteLine("Checking for updates...");
-        if(await CheckVersion(path)) {
-            Console.WriteLine("Would you like to continue anyway? [y/n]:");
-            response = Console.ReadKey(false).Key;
-            if (response == ConsoleKey.N) {
-                Console.WriteLine("Come again soon");
-                Console.ReadLine(); //wait for input so the console doesn't auto close in windows
-                Environment.Exit(1);
+            Console.WriteLine("Analogue Pocket Core Updater v" + version);
+            Console.WriteLine("Checking for updates...");
+            if(await CheckVersion(path)) {
+                Console.WriteLine("Would you like to continue anyway? [y/n]:");
+                response = Console.ReadKey(false).Key;
+                if (response == ConsoleKey.N) {
+                    Console.WriteLine("Come again soon");
+                    Console.ReadLine(); //wait for input so the console doesn't auto close in windows
+                    Environment.Exit(1);
+                }
             }
+
+            PocketCoreUpdater updater = new PocketCoreUpdater(path);
+            SettingsManager settings = new SettingsManager(path);
+
+            if(coreSelector || settings.GetConfig().core_selector) {
+                List<Core> cores =  await CoresService.GetCores();
+                RunCoreSelector(settings, cores);
+            }
+
+            if(preservePlatformsFolder || settings.GetConfig().preserve_platforms_folder) {
+                updater.PreservePlatformsFolder(true);
+            }
+
+            updater.ExtractAll(extractAll);
+            
+            updater.SetGithubApiKey(settings.GetConfig().github_token);
+            updater.DownloadFirmware(settings.GetConfig().download_firmware);
+            updater.StatusUpdated += updater_StatusUpdated;
+            updater.UpdateProcessComplete += updater_UpdateProcessComplete;
+            updater.DownloadAssets(settings.GetConfig().download_assets);
+            await updater.Initialize();
+
+            Console.WriteLine("Starting update process...");
+
+            await updater.RunUpdates();
+        } catch (Exception e) {
+            Console.WriteLine("Well, something went wrong. Sorry about that.");
+            Console.WriteLine(e.Message);
         }
-
-        PocketCoreUpdater updater = new PocketCoreUpdater(path);
-        SettingsManager settings = new SettingsManager(path);
-
-        if(coreSelector || settings.GetConfig().core_selector) {
-            List<Core> cores =  await CoresService.GetCores();
-            RunCoreSelector(settings, cores);
-        }
-
-        if(preservePlatformsFolder || settings.GetConfig().preserve_platforms_folder) {
-            updater.PreservePlatformsFolder(true);
-        }
-
-        updater.ExtractAll(extractAll);
-        
-        updater.SetGithubApiKey(settings.GetConfig().github_token);
-        updater.DownloadFirmware(settings.GetConfig().download_firmware);
-        updater.StatusUpdated += updater_StatusUpdated;
-        updater.UpdateProcessComplete += updater_UpdateProcessComplete;
-        updater.DownloadAssets(settings.GetConfig().download_assets);
-        await updater.Initialize();
-
-        Console.WriteLine("Starting update process...");
-
-        await updater.RunUpdates();
         
         Console.ReadLine(); //wait for input so the console doesn't auto close in windows
     }
