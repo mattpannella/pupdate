@@ -8,6 +8,7 @@ public class Config
     public bool download_firmware { get; set; }
     public bool core_selector { get; set; }
     public bool preserve_platforms_folder { get; set; }
+    public bool download_unsupported_cores { get; set; }
 
     public Config()
     {
@@ -16,5 +17,6 @@ public class Config
         archive_name = "openFPGA-Files";
         core_selector = true;
         preserve_platforms_folder = false;
+        download_unsupported_cores = true;
     }
 }
