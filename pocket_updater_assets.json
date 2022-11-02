@@ -339,6 +339,16 @@
       {
         "file_name": "garegga.rom",
         "archive_file": "bgaregga.rom"
+      },
+      {
+        "file_name": "kingdmgp.rom",
+        "archive_file": "kingdmgp.rom",
+        "overrideLocation": "Assets/kingdmgp/common/"
+      },
+      {
+        "file_name": "sstriker.rom",
+        "archive_file": "sstriker.rom",
+        "overrideLocation": "Assets/sstriker/common/"
       }
     ]
   }
