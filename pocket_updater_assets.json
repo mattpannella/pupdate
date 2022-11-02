@@ -4,7 +4,16 @@
     "files": [
       {
         "file_name": "gba_bios.bin",
-        "archive_zip": "BIOS"
+        "archive_file": "gba_bios.bin"
+      }
+    ]
+  },
+  "Spiritualized.NES": {
+    "location": "Assets/nes/common/",
+    "files": [
+      {
+        "file_name": "fds.bios",
+        "archive_file": "fds.bios"
       }
     ]
   },
@@ -13,12 +22,12 @@
     "files": [
       {
         "file_name": "gbc_bios.bin",
-        "archive_zip": "BIOS"
+        "archive_file": "gbc_bios.bin"
       },
       {
         "file_name": "dmg_bios.bin",
         "overrideLocation": "Assets/gb/common/",
-        "archive_zip": "BIOS"
+        "archive_file": "dmg_bios.bin"
       }
     ]
   },
@@ -33,11 +42,11 @@
       },
       {
         "file_name": "000-lo.lo",
-        "archive_zip": "BIOS"
+        "archive_file": "000-lo.lo"
       },
       {
         "file_name": "sfix.sfix",
-        "archive_zip": "BIOS"
+        "archive_file": "sfix.sfix"
       }
     ]
   },
@@ -70,7 +79,7 @@
       },
       {
         "file_name": "silkwrmj.rom",
-        "archive_name": "silkwrmj.rom"
+        "archive_file": "silkwrmj.rom"
       }
     ]
   },
@@ -274,7 +283,7 @@
         "file_name": "pooyaiag.rom",
         "archive_zip": "Arcade_Roms"
       },
-	  {
+      {
         "file_name": "pooyans.rom",
         "archive_zip": "Arcade_Roms"
       },
@@ -294,6 +303,52 @@
       {
         "file_name": "combh.rom",
         "archive_file": "combh.rom"
+      }
+    ]
+  },
+  "ericlewis.DonkeyKong": {
+    "location": "Assets/donkeykong/common/",
+    "files": [
+      {
+        "file_name": "dkong.rom",
+        "archive_file": "dkong.rom"
+      }
+    ]
+  },
+  "ericlewis.QBert": {
+    "location": "Assets/qbert/common/",
+    "files": [
+      {
+        "file_name": "qbert.rom",
+        "archive_file": "qbert.rom"
+      }
+    ]
+  },
+  "pram0d.snowbros2": {
+    "location": "Assets/snowbros2/common/",
+    "files": [
+      {
+        "file_name": "snowbro2.rom",
+        "archive_file": "snowbro2.rom"
+      }
+    ]
+  },
+  "pram0d.garegga": {
+    "location": "Assets/garegga/common/",
+    "files": [
+      {
+        "file_name": "garegga.rom",
+        "archive_file": "bgaregga.rom"
+      },
+      {
+        "file_name": "kingdmgp.rom",
+        "archive_file": "kingdmgp.rom",
+        "overrideLocation": "Assets/kingdmgp/common/"
+      },
+      {
+        "file_name": "sstriker.rom",
+        "archive_file": "sstriker.rom",
+        "overrideLocation": "Assets/sstriker/common/"
       }
     ]
   }

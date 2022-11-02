@@ -13,13 +13,16 @@ jobs:
         include:
           - kind: macOS
             os: macos-latest
-            target: osx-x64
+            target: osx
+            arm: true
           - kind: windows
             os: windows-latest
-            target: win-x64
+            target: win
+            arm: false
           - kind: linux
             os: ubuntu-latest
-            target: linux-x64
+            target: linux
+            arm: false
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -37,14 +40,23 @@ jobs:
           release_name="App-$tag-${{ matrix.target }}"
 
           # Build everything
-          dotnet publish pocket_updater.csproj -r ${{ matrix.target }} --self-contained true -c Release -o "$release_name"
+          dotnet publish pocket_updater.csproj -r ${{ matrix.target }}-x64 --self-contained true -c Release -o "$release_name"
+          if ${{ matrix.arm }}; then
+            mv ${release_name}/pocket_updater ${release_name}/pocket_updater_x64
+            dotnet publish pocket_updater.csproj -r ${{ matrix.target }}-arm64 --self-contained true -c Release -o "$release_name"
+            mv ${release_name}/pocket_updater ${release_name}/pocket_updater_arm 
+          fi
 
           # Pack files
-          if [ "${{ matrix.target }}" == "win-x64" ]; then
+          if [ "${{ matrix.target }}" == "win" ]; then
             # Pack to zip for Windows
             7z a -tzip "pocket_updater_win.zip" "./${release_name}/pocket_updater.exe"
-          elif [ "${{ matrix.target }}" == "osx-x64" ]; then
-            cd $release_name; zip "../pocket_updater_mac.zip" "pocket_updater"; cd ..;
+          elif [ "${{ matrix.target }}" == "osx" ]; then
+            cd $release_name
+            lipo -create -output pocket_updater pocket_updater_arm pocket_updater_x64
+            rm pocket_updater_arm
+            rm pocket_updater_x64
+            zip "../pocket_updater_mac.zip" "pocket_updater"; cd ..;
           else
             cd $release_name; zip "../pocket_updater_linux.zip" "pocket_updater"; cd ..;
           fi

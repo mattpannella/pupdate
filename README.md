@@ -18,19 +18,18 @@ The updater currently accepts 4 command line parameters. I will probably add mor
  -p, --path      Absolute path to install location
  -a, --all       Extract all release assets, instead of just ones containing openFPGA cores.
  -c, --coreselector    Run the core selector.
- -i, --images          Preserve the images directory, so custom images aren't
-                        overwritten by updates.
+ -f, --platformsfolder   Preserve the Platforms folder, so customizations aren't overwritten by updates
 ```
 example:
 `
-/path/to/pocket_updater -c -p /path/to/sdcard/
+/path/to/pocket_updater -a -p /path/to/sdcard/
 `
 
 #### Core Selector
 On your first run it will prompt you to select the cores you want tracked. After that initial run, you can always run this again by setting core_selector to true in the settings json file, or if running from the cli you can use the paramater -c
 
-#### Ignore pre-release cores
-You can edit your `pocket_updater_settings.json` file and set the `allowPrerelease` flag to false for any core you don't want to be updated until it hits 1.0
+#### Allow pre-release cores
+You can edit your `pocket_updater_settings.json` file and set the `allowPrerelease` flag to `true` for any core want to download, even though it's still pre-release
 
 #### Disable Firmware Downloading
 Set `config.download_firmware` to `false` in your settings file
@@ -38,18 +37,24 @@ Set `config.download_firmware` to `false` in your settings file
 #### Disable Asset Downloading
 Set `config.download_assets` to `false` in your settings file, if you'd like to supply your own BIOS and arcade rom files
 
-#### Preserve Custom Images
-If you have custom images set for your cores, you can use this option to preserve them during the update process.
-Set `config.preserve_images` to `true` in your settings file, or use `-i` as a command line parameter
+#### Preserve Platforms Folder Customizations
+If you have any customizations to the Platforms folder, you can use this option to preserve them during the update process.
+Set `config.preserve_platforms_folder` to `true` in your settings file, or use `-f` as a command line parameter
 
 #### Github Personal Access Token
 If you're running up against the rate limit on the github api, you can provide your personal access token to the updater via the settings.
 Edit your local copy of `pocket_updater_settings.json` and put your token in `config.github_token`
 
+#### Troubleshooting
+If you run the update process and get a message like `Error in framework RS: bridge not responding` when running a core, try to run the updater in a local folder on your pc, and then copy the files over to the sd card afterwards. I'm not entirely sure what the issue is, but I've seen it reported a bunch of times now and running the updater locally seems to help.
+
 ## Submitting new cores ##
 You can submit new cores here https://github.com/joshcampbell191/openfpga-cores-inventory
 
 ## Credits ##
-This is a port of the work initially done by [neil-morrison44](https://github.com/neil-morrison44) here https://gist.github.com/neil-morrison44/34fbb18de90cd9a32ca5bdafb2a812b8 with a few tweaks to suit my needs
 
-Special thanks to [RetroDriven](https://github.com/RetroDriven/) for maintaining the arcade rom archive
+Thanks to [neil-morrison44](https://github.com/neil-morrison44). This is a port built on top of the work originally done by him here https://gist.github.com/neil-morrison44/34fbb18de90cd9a32ca5bdafb2a812b8
+
+Special thanks to [RetroDriven](https://github.com/RetroDriven/) for maintaining the arcade rom archive.
+
+And if you're looking for something with a few more features and a user interface, check out this updater. https://github.com/RetroDriven/Pocket_Updater

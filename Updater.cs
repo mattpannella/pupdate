@@ -10,6 +10,7 @@ public class PocketCoreUpdater
 {
     private const string ARCHIVE_BASE_URL = "https://archive.org/download";
     private static readonly string[] ZIP_TYPES = {"application/x-zip-compressed", "application/zip"};
+    private const string FIRMWARE_FILENAME_PATTERN = "pocket_firmware_*.bin";
     private const string FIRMWARE_URL = "https://www.analogue.co/support/pocket/firmware/latest";
     private const string ZIP_FILE_NAME = "core.zip";
     private static readonly Regex BIN_REGEX = new Regex(@"(?inx)
@@ -546,14 +547,16 @@ public class PocketCoreUpdater
         Firmware current = _settingsManager.GetCurrentFirmware();
         if(current.version != filename) {
             version = filename;
+            var oldfiles = Directory.GetFiles(UpdateDirectory, FIRMWARE_FILENAME_PATTERN);
             _writeMessage("Firmware update found. Downloading...");
             await HttpHelper.DownloadFileAsync(firmwareUrl, Path.Combine(UpdateDirectory, filename));
             _writeMessage("Download Complete");
             _writeMessage(Path.Combine(UpdateDirectory, filename));
-            var oldfile = Path.Combine(UpdateDirectory, current.version);
-            if(File.Exists(oldfile)) {
-                _writeMessage("Deleting old firmware file...");
-                File.Delete(oldfile);
+            foreach (string oldfile in oldfiles) {
+                if (File.Exists(oldfile)) {
+                    _writeMessage("Deleting old firmware file...");
+                    File.Delete(oldfile);
+                }
             }
             _settingsManager.SetFirmwareVersion(filename);
             _writeMessage("To install firmware, restart your Pocket.");

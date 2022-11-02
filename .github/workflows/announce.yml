@@ -1,0 +1,34 @@
+name: Announcements
+on:
+  release:
+    types: [published]
+
+jobs:
+  synthesis:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout Repository"
+        uses: actions/checkout@v3
+
+      - name: "Discord Notification"
+        run: |
+            curl \
+            -H "Content-Type: application/json" \
+            -d '{
+                "username": "mattpannella",
+                "avatar_url": "https://avatars.githubusercontent.com/u/4806679",
+                "content": "BIG NEWS",
+                "embeds": [{
+                    "color": 4819409,
+                    "title": "You are now the corn man. A new Pocket Updater Utility build has been released.",
+                    "fields": [
+                        { "name": "Release Notes", "value": "[Click Me](https://github.com/mattpannella/pocket_core_autoupdate_net/releases/tag/${{ github.event.release.tag_name }})", "inline": true },
+                        { "name": "Version", "value": "${{ github.event.release.tag_name }}", "inline": true },
+                        { "name": "Windows Build", "value": "[Download Me](https://github.com/mattpannella/pocket_core_autoupdate_net/releases/download/${{ github.event.release.tag_name }}/pocket_updater_win.zip)" },
+                        { "name": "macOS Build", "value": "[Or Me](https://github.com/mattpannella/pocket_core_autoupdate_net/releases/download/${{ github.event.release.tag_name }}/pocket_updater_mac.zip)" },
+                        { "name": "Linux Build", "value": "[This is a virus](https://github.com/mattpannella/pocket_core_autoupdate_net/releases/download/${{ github.event.release.tag_name }}/pocket_updater_linux.zip)" }
+                    ]
+                }]
+                }' \
+            ${{ secrets.DISCORD_WEBHOOK }}
