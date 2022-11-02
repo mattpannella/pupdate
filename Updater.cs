@@ -275,7 +275,6 @@ public class PocketCoreUpdater
                         _writeMessage("Downloading core");
                     }
                     
-                    // might need to search for the right zip here if there's more than one
                     //iterate through assets to find the zip release
                     var release = await _fetchRelease(repo.owner, repo.name, tag_name, _githubApiKey);
                     List<Github.Asset> assets = release.assets;
@@ -431,29 +430,6 @@ public class PocketCoreUpdater
         return ARCHIVE_BASE_URL + "/" + archive + "/" + filename;
     }
 
-    private Github.Release _getMostRecentRelease(List<Github.Release> releases, bool allowPrerelease)
-    {
-        foreach(Github.Release release in releases) {
-            if(!release.draft && (allowPrerelease || !release.prerelease)) {
-                return release;
-            }
-        }
-
-        return null;
-    }
-
-    private async Task<List<Github.Release>?> _fetchReleases(string user, string repository, string token = "")
-    {
-        try {
-            var releases = await GithubApi.GetReleases(user, repository, token);
-            return releases;
-        } catch (HttpRequestException e) {
-            _writeMessage("Error communicating with Github API.");
-            _writeMessage(e.Message);
-            return null;
-        }
-    }
-
     private async Task<Github.Release>? _fetchRelease(string user, string repository, string tag_name, string token = "")
     {
         try {
@@ -503,7 +479,7 @@ public class PocketCoreUpdater
     private async Task<bool> _fetchCustomRelease(Core core)
     {
         string zip_name = core.identifier + "_" + core.release.tag_name + ".zip";
-        Github.File file = await GithubApi.GetFile(core.repository.owner, core.repository.name, "releases/" + zip_name);
+        Github.File file = await GithubApi.GetFile(core.repository.owner, core.repository.name, core.release_path + "/" + zip_name);
 
         _writeMessage("Downloading file " + file.download_url + "...");
         string zipPath = Path.Combine(UpdateDirectory, ZIP_FILE_NAME);

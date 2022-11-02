@@ -3,6 +3,7 @@
     "identifier":"pram0d.garegga",
     "platform":"Garegga",
     "mono": true,
+    "release_path": "releases",
     "repository":{
       "platform":"github",
       "owner":"psomashekar",
@@ -24,6 +25,7 @@
     "identifier":"pram0d.snowbros2",
     "platform":"Snow Bros 2",
     "mono": true,
+    "release_path": "releases",
     "repository":{
       "platform":"github",
       "owner":"psomashekar",
