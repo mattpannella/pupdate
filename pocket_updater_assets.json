@@ -351,5 +351,14 @@
         "overrideLocation": "Assets/sstriker/common/"
       }
     ]
+  },
+  "ericlewis.RadarScope": {
+    "location": "Assets/radarscope/common/",
+    "files": [
+      {
+        "file_name": "radarscp.rom",
+        "archive_file": "radarscp.rom"
+      }
+    ]
   }
 }
