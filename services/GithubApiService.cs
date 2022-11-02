@@ -5,11 +5,12 @@ namespace pannella.analoguepocket;
 
 public static class GithubApi
 {
-    private const string END_POINT = "https://api.github.com/repos/{0}/{1}/releases";
+    private const string RELEASES = "https://api.github.com/repos/{0}/{1}/releases";
+    private const string CONTENTS = "https://api.github.com/repos/{0}/{1}/contents/{2}";
 
     public static async Task<List<Github.Release>> GetReleases(string user, string repository, string? token = "")
     {
-        string url = String.Format(END_POINT, user, repository);
+        string url = String.Format(RELEASES, user, repository);
         var responseBody = await CallAPI(url, token);
 
         List<Github.Release>? releases = JsonSerializer.Deserialize<List<Github.Release>>(responseBody);
@@ -23,12 +24,22 @@ public static class GithubApi
 
     public static async Task<Github.Release?> GetRelease(string user, string repository, string tag_name, string? token = "")
     {
-        string url = String.Format(END_POINT, user, repository) + "/tags/" + tag_name;
+        string url = String.Format(RELEASES, user, repository) + "/tags/" + tag_name;
         
         var responseBody = await CallAPI(url, token);
         Github.Release? release = JsonSerializer.Deserialize<Github.Release>(responseBody);
         
         return release;
+    }
+
+    public static async Task<Github.File?> GetFile(string user, string repository, string path, string? token = "")
+    {
+        string url = String.Format(CONTENTS, user, repository, path);
+        
+        var responseBody = await CallAPI(url, token);
+        Github.File? file = JsonSerializer.Deserialize<Github.File>(responseBody);
+        
+        return file;
     }
 
     private static async Task<string> CallAPI(string url, string? token = "")

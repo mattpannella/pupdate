@@ -45,7 +45,7 @@ internal class Program
                     }
                 );
             
-            //path = "/Users/mattpannella/pocket-test/new";
+            //path = "/Users/mattpannella/pocket-test";
 
             ConsoleKey response;
 
