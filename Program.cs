@@ -6,8 +6,8 @@ internal class Program
 {
     private static string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
     private const string USER = "mattpannella";
-    private const string REPOSITORY = "pocket_core_autoupdate_net";
-    private const string RELEASE_URL = "https://github.com/mattpannella/pocket_core_autoupdate_net/releases/download/{0}/pocket_updater_{1}.zip";
+    private const string REPOSITORY = "pocket-updater-utility";
+    private const string RELEASE_URL = "https://github.com/mattpannella/pocket-updater-utility/releases/download/{0}/pocket_updater_{1}.zip";
     private static async Task Main(string[] args)
     {
         try {
