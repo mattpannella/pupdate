@@ -13,7 +13,11 @@ public static class CoresService
         Dictionary<string, List<Core>> parsed = JsonSerializer.Deserialize<Dictionary<string, List<Core>>>(json);
 
         if(parsed.ContainsKey("data")) {
-            return parsed["data"];
+            var others = await GetNonAPICores();
+            var cores = parsed["data"];
+            cores.AddRange(others);
+            return cores;
+            //return parsed["data"];
         } else {
             throw new Exception("Error communicating with openFPGA Cores API");
         }
