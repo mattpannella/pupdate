@@ -377,25 +377,29 @@ public class PocketCoreUpdater
                 if(File.Exists(filePath)) {
                     _writeMessage("Asset already installed: " + file.file_name);
                 } else {
-                    string url = BuildAssetUrl(file);
-                    if(file.zip) {
-                        string zipFile = Path.Combine(path, "roms.zip");
-                        _writeMessage("Downloading zip file...");
-                        await HttpHelper.DownloadFileAsync(url, zipFile);
-                        string extractPath = Path.Combine(UpdateDirectory, "temp");
-                        _writeMessage("Extracting files...");
-                        ZipFile.ExtractToDirectory(zipFile, extractPath, true);
-                        _writeMessage("Moving file: " + file.file_name);
-                        File.Move(Path.Combine(extractPath, file.zip_file), filePath);
-                        _writeMessage("Deleting temp files");
-                        Directory.Delete(extractPath, true);
-                        File.Delete(zipFile);
-                        installed.Add(filePath);
-                    } else {
-                        _writeMessage("Downloading " + file.file_name);
-                        await HttpHelper.DownloadFileAsync(url, filePath);
-                        _writeMessage("Finished downloading " + file.file_name);
-                        installed.Add(filePath);
+                    try {
+                        string url = BuildAssetUrl(file);
+                        if(file.zip) {
+                            string zipFile = Path.Combine(path, "roms.zip");
+                            _writeMessage("Downloading zip file...");
+                            await HttpHelper.DownloadFileAsync(url, zipFile);
+                            string extractPath = Path.Combine(UpdateDirectory, "temp");
+                            _writeMessage("Extracting files...");
+                            ZipFile.ExtractToDirectory(zipFile, extractPath, true);
+                            _writeMessage("Moving file: " + file.file_name);
+                            File.Move(Path.Combine(extractPath, file.zip_file), filePath);
+                            _writeMessage("Deleting temp files");
+                            Directory.Delete(extractPath, true);
+                            File.Delete(zipFile);
+                            installed.Add(filePath);
+                        } else {
+                            _writeMessage("Downloading " + file.file_name);
+                            await HttpHelper.DownloadFileAsync(url, filePath);
+                            _writeMessage("Finished downloading " + file.file_name);
+                            installed.Add(filePath);
+                        }
+                    } catch(Exception e) {
+                        _writeMessage(e.Message);
                     }
                 }
             }
