@@ -72,7 +72,7 @@ public class PocketCoreUpdater
     public async Task LoadCores()
     {
         _cores = await CoresService.GetCores();
-        await LoadNonAPICores();
+       // await LoadNonAPICores();
     }
 
     public async Task LoadNonAPICores()
