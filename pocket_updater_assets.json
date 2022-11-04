@@ -88,7 +88,7 @@
     "files": [
       {
         "file_name": "llander.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "llander.rom"
       }
     ]
   },
@@ -97,7 +97,7 @@
     "files": [
       {
         "file_name": "asteroid.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "asteroid.rom"
       }
     ]
   },
@@ -106,7 +106,7 @@
     "files": [
       {
         "file_name": "sbrkout.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "sbrkout.rom"
       }
     ]
   },
@@ -115,7 +115,7 @@
     "files": [
       {
         "file_name": "dominos.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "ominos.rom"
       }
     ]
   },
@@ -189,43 +189,43 @@
     "files": [
       {
         "file_name": "battles2.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "battles2.rom"
       },
       {
         "file_name": "gaous.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "gaous.rom"
       },
       {
         "file_name": "sxevious.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "sxevious.rom"
       },
       {
         "file_name": "xeviblk.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "xeviblk.rom"
       },
       {
         "file_name": "xevios.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "xevios.rom"
       },
       {
         "file_name": "xevious.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "xevious.rom"
       },
       {
         "file_name": "xevious3.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "xevious3.rom"
       },
       {
         "file_name": "xevious4.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "xevious4.rom"
       },
       {
         "file_name": "xevious5.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "xevious5.rom"
       },
       {
         "file_name": "xevioush.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "xevioush.rom"
       }
     ]
   },
@@ -234,23 +234,23 @@
     "files": [
       {
         "file_name": "digdug.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "digdug.rom"
       },
       {
         "file_name": "digduat1.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "digduat1.rom"
       },
       {
         "file_name": "digdug1.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "digdug1.rom"
       },
       {
         "file_name": "digdugat.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "digdugat.rom"
       },
       {
         "file_name": "digsid.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "digsid.rom"
       }
     ]
   },
@@ -259,15 +259,15 @@
     "files": [
       {
         "file_name": "gberet.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "gberet.rom"
       },
       {
         "file_name": "mrgoemon.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "mrgoemon.rom"
       },
       {
         "file_name": "rushatck.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "rushatck.rom"
       }
     ]
 
@@ -277,19 +277,19 @@
     "files": [
       {
         "file_name": "pooyan.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "pooyan.rom"
       },
       {
         "file_name": "pooyaiag.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "pooyaiag.rom"
       },
       {
         "file_name": "pooyans.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "pooyans.rom"
       },
       {
         "file_name": "pootan.rom",
-        "archive_zip": "Arcade_Roms"
+        "archive_file": "pootan.rom"
       }
     ]
   },
