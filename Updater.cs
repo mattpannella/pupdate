@@ -145,6 +145,7 @@ public class PocketCoreUpdater
         foreach(Core core in _cores) {
             try {
                 if(_settingsManager.GetCoreSettings(core.identifier).skip) {
+                 //   _DeleteCore(core);
                     continue;
                 }
                 //bandaid. just skip these for now
@@ -484,7 +485,7 @@ public class PocketCoreUpdater
     private async Task<bool> _fetchCustomRelease(Core core)
     {
         string zip_name = core.identifier + "_" + core.release.tag_name + ".zip";
-        Github.File file = await GithubApi.GetFile(core.repository.owner, core.repository.name, core.release_path + "/" + zip_name);
+        Github.File file = await GithubApi.GetFile(core.repository.owner, core.repository.name, core.release_path + "/" + zip_name, _githubApiKey);
 
         _writeMessage("Downloading file " + file.download_url + "...");
         string zipPath = Path.Combine(UpdateDirectory, ZIP_FILE_NAME);
@@ -574,6 +575,22 @@ public class PocketCoreUpdater
     public void ExtractAll(bool value)
     {
         _extractAll = value;
+    }
+
+    private void _DeleteCore(Core core)
+    {
+       // if(!_settingsManager.GetConfig().delete_skipped_cores) {
+       //     return;
+      //  }
+
+      //  if(core.release.assets.Count > 0) {
+            //Assets/core.release.assets[0].platform
+            //delete me
+      //  }
+        //delete Cores/core.identifier
+
+        //delete Platforms/need platform name somehow
+       // Directory.Delete
     }
 
     /// <summary>
