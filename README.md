@@ -26,7 +26,7 @@ example:
 `
 
 #### Core Selector
-On your first run it will prompt you to select the cores you want tracked. After that initial run, you can always run this again by setting core_selector to true in the settings json file, or if running from the cli you can use the paramater -c
+On your first run it will prompt you to select the cores you want tracked. After that initial run, you can always run this again by setting `config.core_selector` to `true` in the settings json file, or if running from the cli you can use the paramater -c
 
 #### Allow pre-release cores
 You can edit your `pocket_updater_settings.json` file and set the `allowPrerelease` flag to `true` for any core want to download, even though it's still pre-release
