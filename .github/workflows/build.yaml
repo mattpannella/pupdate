@@ -40,10 +40,10 @@ jobs:
           release_name="App-$tag-${{ matrix.target }}"
 
           # Build everything
-          dotnet publish pocket_updater.csproj -r ${{ matrix.target }}-x64 --self-contained true -c Release -o "$release_name"
+          dotnet publish pocket_updater.csproj -r ${{ matrix.target }}-x64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly
           if ${{ matrix.arm }}; then
             mv ${release_name}/pocket_updater ${release_name}/pocket_updater_x64
-            dotnet publish pocket_updater.csproj -r ${{ matrix.target }}-arm64 --self-contained true -c Release -o "$release_name"
+            dotnet publish pocket_updater.csproj -r ${{ matrix.target }}-arm64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly
             mv ${release_name}/pocket_updater ${release_name}/pocket_updater_arm 
           fi
 
