@@ -27,7 +27,7 @@ public class PocketCoreUpdater
 
     private bool _extractAll = false;
     private bool _downloadFirmare = true;
-
+    private bool _deleteSkippedCores = true;
     private bool _useConsole = false;
     /// <summary>
     /// The directory where fpga cores will be installed and updated into
@@ -145,7 +145,7 @@ public class PocketCoreUpdater
         foreach(Core core in _cores) {
             try {
                 if(_settingsManager.GetCoreSettings(core.identifier).skip) {
-                 //   _DeleteCore(core);
+                    _DeleteCore(core);
                     continue;
                 }
                 //bandaid. just skip these for now
@@ -577,20 +577,25 @@ public class PocketCoreUpdater
         _extractAll = value;
     }
 
+    public void DeleteSkippedCores(bool value)
+    {
+        _deleteSkippedCores = value;
+    }
+
     private void _DeleteCore(Core core)
     {
-       // if(!_settingsManager.GetConfig().delete_skipped_cores) {
-       //     return;
-      //  }
-
-      //  if(core.release.assets.Count > 0) {
-            //Assets/core.release.assets[0].platform
-            //delete me
-      //  }
-        //delete Cores/core.identifier
-
-        //delete Platforms/need platform name somehow
-       // Directory.Delete
+        if(!_deleteSkippedCores) {
+            return;
+        }
+        List<string> folders = new List<string>{"Cores", "Presets"};
+        foreach(string folder in folders) {
+            string path = Path.Combine(UpdateDirectory, folder, core.identifier);
+            if(Directory.Exists(path)) {
+                _writeMessage("Uninstalling " + path);
+                Directory.Delete(path, true);
+                Divide();
+            }
+        }
     }
 
     /// <summary>

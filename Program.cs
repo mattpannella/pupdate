@@ -74,7 +74,7 @@ internal class Program
             }
 
             updater.ExtractAll(extractAll);
-            
+            updater.DeleteSkippedCores(settings.GetConfig().delete_skipped_cores);
             updater.SetGithubApiKey(settings.GetConfig().github_token);
             updater.DownloadFirmware(settings.GetConfig().download_firmware);
             updater.StatusUpdated += updater_StatusUpdated;
