@@ -360,5 +360,154 @@
         "archive_file": "radarscp.rom"
       }
     ]
+  },
+  "Spiritualized.SuperGB": {
+    "location": "Assets/sgb/Spiritualized.SuperGB/",
+    "files": [
+      {
+        "file_name": "sgb_boot.bin",
+        "archive_file": "sgb_boot.bin"
+      },
+      {
+        "file_name": "sgb_snes.smc",
+        "archive_file": "sgb_snes.smc"
+      }
+    ]
+  },
+  "Spiritualized.Videobrain": {
+    "location": "Assets/videobrain/Spiritualized.Videobrain/",
+    "files": [
+      {
+        "file_name": "uvres1.bin",
+        "archive_file": "uvres1.bin"
+      },
+      {
+        "file_name": "uvres2.bin",
+        "archive_file": "uvres2.bin"
+      }
+    ]
+  },
+  "Spiritualized.Studio2": {
+    "location": "Assets/studio2/Spiritualized.Studio2/",
+    "files": [
+      {
+        "file_name": "rca2bios.bin",
+        "archive_file": "rca2bios.bin"
+      }
+    ]
+  },
+  "Spiritualized.Odyssey2": {
+    "location": "Assets/odyssey2/Spiritualized.Odyssey2/",
+    "files": [
+      {
+        "file_name": "o2bios.bin",
+        "archive_file": "o2bios.bin"
+      },
+      {
+        "file_name": "SP128_03.BIN",
+        "archive_file": "SP128_03.BIN"
+      },
+      {
+        "file_name": "SP128_04.BIN",
+        "archive_file": "SP128_04.BIN"
+      }
+    ]
+  },
+  "Spiritualized.Intv": {
+    "location": "Assets/intv/Spiritualized.Intv/",
+    "files": [
+      {
+        "file_name": "exec.intv",
+        "archive_file": "exec.intv"
+      },
+      {
+        "file_name": "012.BIN",
+        "archive_file": "012.BIN"
+      }
+    ]
+  },
+  "Spiritualized.Gameking": {
+    "location": "Assets/game_king/Spiritualized.Gameking/",
+    "files": [
+      {
+        "file_name": "gkbios.bin",
+        "archive_file": "gkbios.bin"
+      }
+    ]
+  },
+  "Spiritualized.Gamate": {
+    "location": "Assets/gamate/Spiritualized.Gamate/",
+    "files": [
+      {
+        "file_name": "gmbios.bin",
+        "archive_file": "gmbios.bin"
+      }
+    ]
+  },
+  "Spiritualized.Creativision": {
+    "location": "Assets/creativision/Spiritualized.Creativision/",
+    "files": [
+      {
+        "file_name": "crbios.bin",
+        "archive_file": "crbios.bin"
+      }
+    ]
+  },
+  "Spiritualized.Coleco": {
+    "location": "Assets/coleco/Spiritualized.Coleco/",
+    "files": [
+      {
+        "file_name": "coleco.bin",
+        "archive_file": "coleco.bin"
+      }
+    ]
+  },
+  "Spiritualized.ChannelF": {
+    "location": "Assets/channel_f/common/",
+    "files": [
+      {
+        "file_name": "cfbios.bin",
+        "archive_file": "cfbios.bin"
+      }
+    ]
+  },
+  "Spiritualized.7800": {
+    "location": "Assets/7800/common/",
+    "files": [
+      {
+        "file_name": "7800bios.bin",
+        "archive_file": "7800bios.bin"
+      }
+    ]
+  },
+  "Spiritualized.Adventurevision": {
+    "location": "Assets/avision/Spiritualized.Adventurevision/",
+    "files": [
+      {
+        "file_name": "avbios.bin",
+        "archive_file": "avbios.bin"
+      },
+      {
+        "file_name": "avsound.bin",
+        "archive_file": "avsound.bin"
+      }
+    ]
+  },
+  "Spiritualized.2600": {
+    "location": "Assets/2600/Spiritualized.2600/",
+    "files": [
+      {
+        "file_name": "scbios.bin",
+        "archive_file": "scbios.bin"
+      },
+      {
+        "file_name": "avoxrom.bin",
+        "archive_file": "avoxrom.bin"
+      },
+      {
+        "file_name": "avoxee.bin",
+        "archive_file": "avoxee.bin"
+      }
+    ]
   }
 }
