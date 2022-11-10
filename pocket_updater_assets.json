@@ -499,14 +499,6 @@
       {
         "file_name": "scbios.bin",
         "archive_file": "scbios.bin"
-      },
-      {
-        "file_name": "avoxrom.bin",
-        "archive_file": "avoxrom.bin"
-      },
-      {
-        "file_name": "avoxee.bin",
-        "archive_file": "avoxee.bin"
       }
     ]
   }
