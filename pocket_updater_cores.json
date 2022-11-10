@@ -22,50 +22,6 @@
     }
   },
   {
-    "identifier":"pram0d.kingdmgp",
-    "platform":"Kingdom Grandprix",
-    "mono":true,
-    "release_path":"releases",
-    "repository":{
-      "platform":"github",
-      "owner":"psomashekar",
-      "name":"pram0d-pocket-dist-public"
-    },
-    "release":{
-      "tag_name":"20221029",
-      "release_date":"20221029",
-      "platform":{
-        "category":"Arcade",
-        "name":"Kingdom Grandprix",
-        "manufacturer":"",
-        "year":1868
-      },
-      "assets":[]
-    }
-  },
-  {
-    "identifier":"pram0d.sstriker",
-    "platform":"Sorcer Striker",
-    "mono":true,
-    "release_path":"releases",
-    "repository":{
-      "platform":"github",
-      "owner":"psomashekar",
-      "name":"pram0d-pocket-dist-public"
-    },
-    "release":{
-      "tag_name":"20221029",
-      "release_date":"20221029",
-      "platform":{
-        "category":"Arcade",
-        "name":"Sorcer Striker",
-        "manufacturer":"",
-        "year":1868
-      },
-      "assets":[]
-    }
-  },
-  {
     "identifier":"pram0d.snowbros2",
     "platform":"Snow Bros 2",
     "mono":true,
