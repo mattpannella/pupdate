@@ -374,8 +374,8 @@
       }
     ]
   },
-  "Spiritualized.Videobrain": {
-    "location": "Assets/videobrain/Spiritualized.Videobrain/",
+  "Spiritualized.VideoBrain": {
+    "location": "Assets/videobrain/Spiritualized.VideoBrain/",
     "files": [
       {
         "file_name": "uvres1.bin",
