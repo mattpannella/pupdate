@@ -501,5 +501,18 @@
         "archive_file": "scbios.bin"
       }
     ]
+  },
+  "boogermann.congo": {
+    "location": "Assets/congo/common/",
+    "files": [
+      {
+        "file_name": "congo.rom",
+        "archive_file": "congo.rom"
+      },
+      {
+        "file_name": "tiptop.rom",
+        "archive_file": "tiptop.rom"
+      }
+    ]
   }
 }
