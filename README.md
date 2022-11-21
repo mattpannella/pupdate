@@ -58,3 +58,5 @@ Thanks to [neil-morrison44](https://github.com/neil-morrison44). This is a port 
 Special thanks to [RetroDriven](https://github.com/RetroDriven/) for maintaining the arcade rom archive.
 
 And if you're looking for something with a few more features and a user interface, check out this updater. https://github.com/RetroDriven/Pocket_Updater
+
+Or if you want something cross platform that will run on a mac or linux: https://github.com/neil-morrison44/pocket-sync
