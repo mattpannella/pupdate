@@ -17,6 +17,7 @@ internal class Program
             bool extractAll = false;
             bool coreSelector = false;
             bool preservePlatformsFolder = false;
+            bool forceUpdate = false;
 
             Parser.Default.ParseArguments<Options>(args)
                 .WithParsed<Options>(o =>
@@ -33,6 +34,9 @@ internal class Program
                     }
                     if(o.PreservePlatformsFolder) {
                         preservePlatformsFolder = true;
+                    }
+                    if(o.ForceUpdate) {
+                        forceUpdate = true;
                     }
                 }
                 ).WithNotParsed<Options>(o => 
@@ -83,27 +87,29 @@ internal class Program
                 RunCoreSelector(settings, cores);
             }
 
-            int choice = DisplayMenu();
+            if(!forceUpdate) {
+                int choice = DisplayMenu();
 
-            switch(choice) {
-                case 1:
-                    await updater.UpdateFirmware();
-                    Environment.Exit(1);
-                    break;
-                case 2:
-                    List<Core> cores =  await CoresService.GetCores();
-                    RunCoreSelector(settings, cores);
-                    Environment.Exit(1);
-                    break;
-                case 3:
-                    await ImagePackSelector(path);
-                    Environment.Exit(1);
-                    break;
-                case 4:
-                    Environment.Exit(1);
-                    break;
-                default:
-                    break;
+                switch(choice) {
+                    case 1:
+                        await updater.UpdateFirmware();
+                        Environment.Exit(1);
+                        break;
+                    case 2:
+                        List<Core> cores =  await CoresService.GetCores();
+                        RunCoreSelector(settings, cores);
+                        Environment.Exit(1);
+                        break;
+                    case 3:
+                        await ImagePackSelector(path);
+                        Environment.Exit(1);
+                        break;
+                    case 4:
+                        Environment.Exit(1);
+                        break;
+                    default:
+                        break;
+                }
             }
 
             Console.WriteLine("Starting update process...");
@@ -331,6 +337,8 @@ internal class Program
 
 public class Options
 {
+    [Option('u', "update", HelpText = "Force updater to just run update process, instead of displaying the menu.", Required = false)]
+    public bool ForceUpdate { get; set; }
     [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
     public string? InstallPath { get; set; }
 
