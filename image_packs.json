@@ -1,0 +1,29 @@
+[
+    {
+        "owner": "spiritualized1997",
+        "repository": "openFPGA-Platform-Art-Set"
+    },
+    {
+        "owner": "terminator2k2",
+        "repository": "Analogue-Pocket-Core-Art"
+    },
+    {
+        "owner": "dyreschlock",
+        "repository": "pocket-platform-images"
+    },
+    {
+        "owner": "MegaZXretro",
+        "repository": "Analogue-Pocket-Custom-Platform-Art",
+        "variant": "JAPAN"
+    },
+    {
+        "owner": "MegaZXretro",
+        "repository": "Analogue-Pocket-Custom-Platform-Art",
+        "variant": "PAL-EU"
+    },
+    {
+        "owner": "MegaZXretro",
+        "repository": "Analogue-Pocket-Custom-Platform-Art",
+        "variant": "USA"
+    }
+]

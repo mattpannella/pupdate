@@ -47,7 +47,7 @@ internal class Program
             
             //path = "/Users/mattpannella/pocket-test";
 
-            ConsoleKey response;
+                        ConsoleKey response;
 
             Console.WriteLine("Analogue Pocket Core Updater v" + version);
             Console.WriteLine("Checking for updates...");
@@ -64,11 +64,6 @@ internal class Program
             PocketCoreUpdater updater = new PocketCoreUpdater(path);
             SettingsManager settings = new SettingsManager(path);
 
-            if(coreSelector || settings.GetConfig().core_selector) {
-                List<Core> cores =  await CoresService.GetCores();
-                RunCoreSelector(settings, cores);
-            }
-
             if(preservePlatformsFolder || settings.GetConfig().preserve_platforms_folder) {
                 updater.PreservePlatformsFolder(true);
             }
@@ -81,6 +76,33 @@ internal class Program
             updater.UpdateProcessComplete += updater_UpdateProcessComplete;
             updater.DownloadAssets(settings.GetConfig().download_assets);
             await updater.Initialize();
+
+            if(coreSelector || settings.GetConfig().core_selector) {
+                List<Core> cores =  await CoresService.GetCores();
+                RunCoreSelector(settings, cores);
+            }
+
+            int choice = DisplayMenu();
+
+            switch(choice) {
+                case 1:
+                    await updater.UpdateFirmware();
+                    Environment.Exit(1);
+                    break;
+                case 2:
+                    List<Core> cores =  await CoresService.GetCores();
+                    RunCoreSelector(settings, cores);
+                    break;
+                case 3:
+                    Console.WriteLine("Image Pack Thing");
+                    Environment.Exit(1);
+                    break;
+                case 4:
+                    Environment.Exit(1);
+                    break;
+                default:
+                    break;
+            }
 
             Console.WriteLine("Starting update process...");
 
@@ -185,6 +207,40 @@ internal class Program
 
         return "";
     }
+
+    private static int DisplayMenu()
+    {
+        string welcome = @"
+ __          __  _                            _          ______ _                         _______                  
+ \ \        / / | |                          | |        |  ____| |                       |__   __|                 
+  \ \  /\  / /__| | ___ ___  _ __ ___   ___  | |_ ___   | |__  | | __ ___   _____  _ __     | | _____      ___ __  
+   \ \/  \/ / _ \ |/ __/ _ \| '_ ` _ \ / _ \ | __/ _ \  |  __| | |/ _` \ \ / / _ \| '__|    | |/ _ \ \ /\ / / '_ \ 
+    \  /\  /  __/ | (_| (_) | | | | | |  __/ | || (_) | | |    | | (_| |\ V / (_) | |       | | (_) \ V  V /| | | |
+     \/  \/ \___|_|\___\___/|_| |_| |_|\___|  \__\___/  |_|    |_|\__,_| \_/ \___/|_|       |_|\___/ \_/\_/ |_| |_|
+                                                                                                                   
+                                                                                                                   
+                                                                                                                   ";
+        Console.WriteLine(welcome);
+        
+        foreach(var(item, index) in menuItems.WithIndex()) {
+            Console.WriteLine($"{index}) {item}");
+        }
+        Console.Write("So, what'll it be?: ");
+        int choice;
+        bool result = int.TryParse(Console.ReadLine(), out choice);
+        if (result) {
+            return choice;
+        }
+        return 0;
+    }
+
+    private static string[] menuItems = {
+        "Update All",
+        "Update Firmware",
+        "Select Cores",
+        "Image Packs",
+        "Get me out of here"
+    };
 }
 
 public class Options
@@ -200,4 +256,9 @@ public class Options
 
     [Option ('f', "platformsfolder", Required = false, HelpText = "Preserve the Platforms folder, so customizations aren't overwritten by updates.")]
     public bool PreservePlatformsFolder { get; set; }
+}
+
+public static class EnumExtension {
+    public static IEnumerable<(T item, int index)> WithIndex<T>(this IEnumerable<T> self)       
+       => self.Select((item, index) => (item, index));
 }
