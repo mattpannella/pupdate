@@ -1,6 +1,7 @@
 using pannella.analoguepocket;
 using System.Runtime.InteropServices;
 using CommandLine;
+using System.IO.Compression;
 
 internal class Program
 {
@@ -45,9 +46,9 @@ internal class Program
                     }
                 );
             
-            path = "/Users/mattpannella/pocket-test";
+            //path = "/Users/mattpannella/pocket-test";
 
-                        ConsoleKey response;
+            ConsoleKey response;
 
             Console.WriteLine("Analogue Pocket Core Updater v" + version);
             Console.WriteLine("Checking for updates...");
@@ -92,9 +93,10 @@ internal class Program
                 case 2:
                     List<Core> cores =  await CoresService.GetCores();
                     RunCoreSelector(settings, cores);
+                    Environment.Exit(1);
                     break;
                 case 3:
-                    Console.WriteLine("Image Pack Thing");
+                    await ImagePackSelector(path);
                     Environment.Exit(1);
                     break;
                 case 4:
@@ -118,7 +120,7 @@ internal class Program
     static void RunCoreSelector(SettingsManager settings, List<Core> cores)
     {
         ConsoleKey response;
-        Console.WriteLine("Select your cores! The available cores will be listed 1 at a time. For each one, hit 'n' if you don't want it installed, or just hit enter if you want it. Ok you've got this. Here we go...");
+        Console.WriteLine("\nSelect your cores! The available cores will be listed 1 at a time. For each one, hit 'n' if you don't want it installed, or just hit enter if you want it. Ok you've got this. Here we go...\n");
         foreach(Core core in cores) {
             Console.Write(core.identifier + "?[Y/n] ");
             response = Console.ReadKey(false).Key;
@@ -210,6 +212,7 @@ internal class Program
 
     private static int DisplayMenu()
     {
+        Console.Clear();
         string welcome = @"
  __          __  _                            _          ______ _                         _______                  
  \ \        / / | |                          | |        |  ____| |                       |__   __|                 
@@ -225,7 +228,7 @@ internal class Program
         foreach(var(item, index) in menuItems.WithIndex()) {
             Console.WriteLine($"{index}) {item}");
         }
-        Console.Write("So, what'll it be?: ");
+        Console.Write("\nChoose your destiny: ");
         int choice;
         bool result = int.TryParse(Console.ReadLine(), out choice);
         if (result) {
@@ -234,21 +237,87 @@ internal class Program
         return 0;
     }
 
-    private static async void ImagePackSelector()
+    private static async Task ImagePackSelector(string path)
     {
         Console.Clear();
-        Console.WriteLine("Checking for image packs...");
+        Console.WriteLine("Checking for image packs...\n");
         ImagePack[] packs = await AssetsService.GetImagePacks(); 
         if(packs.Length > 0) {
             foreach(var(pack, index) in packs.WithIndex()) {
-                Console.WriteLine($"index) {pack.owner}: {pack.repository}");
+                Console.WriteLine($"{index}) {pack.owner}: {pack.repository} {pack.variant}");
             }
-            Console.Write("So, what'll it be?: ");
+            Console.Write("\nSo, what'll it be?: ");
             int choice;
             bool result = int.TryParse(Console.ReadLine(), out choice);
+            if (result && choice < packs.Length && choice >= 0) {
+                await InstallImagePack(path, packs[choice]);
+            } else {
+                Console.WriteLine("you fucked up");
+            }
         } else {
             Console.WriteLine("None found. Have a nice day");
         }
+    }
+
+    private static async Task InstallImagePack(string path, ImagePack pack)
+    {
+        string filepath = await fetchImagePack(path, pack);
+        await installImagePack(path, filepath);
+    }
+
+    private static async Task<string> fetchImagePack(string path, ImagePack pack)
+    {
+        Github.Release release = await GithubApi.GetLatestRelease(pack.owner, pack.repository);
+        string localFile = Path.Combine(path, "imagepack.zip");
+        string downloadUrl = "";
+        if(release.assets == null) {
+            throw new Exception("Github Release contains no assets");
+        }
+        if(pack.variant == null) {
+            downloadUrl = release.assets[0].browser_download_url;
+        } else {
+            foreach(Github.Asset asset in release.assets) {
+                if(asset.name.Contains(pack.variant)) {
+                    downloadUrl = asset.browser_download_url;
+                }
+            }
+        }
+        if(downloadUrl != "") {
+            Console.WriteLine("Downloading image pack...");
+            await HttpHelper.DownloadFileAsync(downloadUrl, localFile);
+            Console.WriteLine("Download complete.");
+            return localFile;
+        }
+        return "";
+    }
+
+    private static async Task installImagePack(string path, string filepath)
+    {
+        Console.WriteLine("Installing...");
+        string extractPath = Path.Combine(path, "temp");
+        ZipFile.ExtractToDirectory(filepath, extractPath, true);
+        string imagePack = FindImagePack(extractPath);
+        string target = Path.Combine(path, "Platforms", "_images");
+        Util.CopyDirectory(imagePack, target, false, true);
+        Directory.Delete(extractPath, true);
+        File.Delete(filepath);
+        Console.WriteLine("All Done");
+    }
+
+    private static string FindImagePack(string temp)
+    {
+        string path = Path.Combine(temp, "Platforms", "_images");
+        if(Directory.Exists(path)) {
+            return path;
+        }
+
+        foreach(string d in Directory.EnumerateDirectories(temp)) {
+            path = Path.Combine(d, "Platforms", "_images");
+            if(Directory.Exists(path)) {
+                return path;
+            }
+        }
+        throw new Exception("Can't find image pack");
     }
 
     private static string[] menuItems = {
