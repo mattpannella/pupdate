@@ -45,7 +45,7 @@ internal class Program
                     }
                 );
             
-            //path = "/Users/mattpannella/pocket-test";
+            path = "/Users/mattpannella/pocket-test";
 
                         ConsoleKey response;
 
@@ -232,6 +232,23 @@ internal class Program
             return choice;
         }
         return 0;
+    }
+
+    private static async void ImagePackSelector()
+    {
+        Console.Clear();
+        Console.WriteLine("Checking for image packs...");
+        ImagePack[] packs = await AssetsService.GetImagePacks(); 
+        if(packs.Length > 0) {
+            foreach(var(pack, index) in packs.WithIndex()) {
+                Console.WriteLine($"index) {pack.owner}: {pack.repository}");
+            }
+            Console.Write("So, what'll it be?: ");
+            int choice;
+            bool result = int.TryParse(Console.ReadLine(), out choice);
+        } else {
+            Console.WriteLine("None found. Have a nice day");
+        }
     }
 
     private static string[] menuItems = {
