@@ -37,7 +37,7 @@ public class Util
         return true;
     }
 
-    static void CopyDirectory(string sourceDir, string destinationDir, bool recursive, bool overwrite)
+    public static void CopyDirectory(string sourceDir, string destinationDir, bool recursive, bool overwrite)
     {
         // Get information about the source directory
         var dir = new DirectoryInfo(sourceDir);

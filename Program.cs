@@ -1,6 +1,7 @@
 using pannella.analoguepocket;
 using System.Runtime.InteropServices;
 using CommandLine;
+using System.IO.Compression;
 
 internal class Program
 {
@@ -16,6 +17,7 @@ internal class Program
             bool extractAll = false;
             bool coreSelector = false;
             bool preservePlatformsFolder = false;
+            bool forceUpdate = false;
 
             Parser.Default.ParseArguments<Options>(args)
                 .WithParsed<Options>(o =>
@@ -32,6 +34,9 @@ internal class Program
                     }
                     if(o.PreservePlatformsFolder) {
                         preservePlatformsFolder = true;
+                    }
+                    if(o.ForceUpdate) {
+                        forceUpdate = true;
                     }
                 }
                 ).WithNotParsed<Options>(o => 
@@ -64,11 +69,6 @@ internal class Program
             PocketCoreUpdater updater = new PocketCoreUpdater(path);
             SettingsManager settings = new SettingsManager(path);
 
-            if(coreSelector || settings.GetConfig().core_selector) {
-                List<Core> cores =  await CoresService.GetCores();
-                RunCoreSelector(settings, cores);
-            }
-
             if(preservePlatformsFolder || settings.GetConfig().preserve_platforms_folder) {
                 updater.PreservePlatformsFolder(true);
             }
@@ -81,6 +81,36 @@ internal class Program
             updater.UpdateProcessComplete += updater_UpdateProcessComplete;
             updater.DownloadAssets(settings.GetConfig().download_assets);
             await updater.Initialize();
+
+            if(coreSelector || settings.GetConfig().core_selector) {
+                List<Core> cores =  await CoresService.GetCores();
+                RunCoreSelector(settings, cores);
+            }
+
+            if(!forceUpdate) {
+                int choice = DisplayMenu();
+
+                switch(choice) {
+                    case 1:
+                        await updater.UpdateFirmware();
+                        Environment.Exit(1);
+                        break;
+                    case 2:
+                        List<Core> cores =  await CoresService.GetCores();
+                        RunCoreSelector(settings, cores);
+                        Environment.Exit(1);
+                        break;
+                    case 3:
+                        await ImagePackSelector(path);
+                        Environment.Exit(1);
+                        break;
+                    case 4:
+                        Environment.Exit(1);
+                        break;
+                    default:
+                        break;
+                }
+            }
 
             Console.WriteLine("Starting update process...");
 
@@ -96,7 +126,7 @@ internal class Program
     static void RunCoreSelector(SettingsManager settings, List<Core> cores)
     {
         ConsoleKey response;
-        Console.WriteLine("Select your cores! The available cores will be listed 1 at a time. For each one, hit 'n' if you don't want it installed, or just hit enter if you want it. Ok you've got this. Here we go...");
+        Console.WriteLine("\nSelect your cores! The available cores will be listed 1 at a time. For each one, hit 'n' if you don't want it installed, or just hit enter if you want it. Ok you've got this. Here we go...\n");
         foreach(Core core in cores) {
             Console.Write(core.identifier + "?[Y/n] ");
             response = Console.ReadKey(false).Key;
@@ -185,10 +215,130 @@ internal class Program
 
         return "";
     }
+
+    private static int DisplayMenu()
+    {
+        Console.Clear();
+        string welcome = @"
+ __          __  _                            _          ______ _                         _______                  
+ \ \        / / | |                          | |        |  ____| |                       |__   __|                 
+  \ \  /\  / /__| | ___ ___  _ __ ___   ___  | |_ ___   | |__  | | __ ___   _____  _ __     | | _____      ___ __  
+   \ \/  \/ / _ \ |/ __/ _ \| '_ ` _ \ / _ \ | __/ _ \  |  __| | |/ _` \ \ / / _ \| '__|    | |/ _ \ \ /\ / / '_ \ 
+    \  /\  /  __/ | (_| (_) | | | | | |  __/ | || (_) | | |    | | (_| |\ V / (_) | |       | | (_) \ V  V /| | | |
+     \/  \/ \___|_|\___\___/|_| |_| |_|\___|  \__\___/  |_|    |_|\__,_| \_/ \___/|_|       |_|\___/ \_/\_/ |_| |_|
+                                                                                                                   
+                                                                                                                   
+                                                                                                                   ";
+        Console.WriteLine(welcome);
+        
+        foreach(var(item, index) in menuItems.WithIndex()) {
+            Console.WriteLine($"{index}) {item}");
+        }
+        Console.Write("\nChoose your destiny: ");
+        int choice;
+        bool result = int.TryParse(Console.ReadLine(), out choice);
+        if (result) {
+            return choice;
+        }
+        return 0;
+    }
+
+    private static async Task ImagePackSelector(string path)
+    {
+        Console.Clear();
+        Console.WriteLine("Checking for image packs...\n");
+        ImagePack[] packs = await AssetsService.GetImagePacks(); 
+        if(packs.Length > 0) {
+            foreach(var(pack, index) in packs.WithIndex()) {
+                Console.WriteLine($"{index}) {pack.owner}: {pack.repository} {pack.variant}");
+            }
+            Console.Write("\nSo, what'll it be?: ");
+            int choice;
+            bool result = int.TryParse(Console.ReadLine(), out choice);
+            if (result && choice < packs.Length && choice >= 0) {
+                await InstallImagePack(path, packs[choice]);
+            } else {
+                Console.WriteLine("you fucked up");
+            }
+        } else {
+            Console.WriteLine("None found. Have a nice day");
+        }
+    }
+
+    private static async Task InstallImagePack(string path, ImagePack pack)
+    {
+        string filepath = await fetchImagePack(path, pack);
+        await installImagePack(path, filepath);
+    }
+
+    private static async Task<string> fetchImagePack(string path, ImagePack pack)
+    {
+        Github.Release release = await GithubApi.GetLatestRelease(pack.owner, pack.repository);
+        string localFile = Path.Combine(path, "imagepack.zip");
+        string downloadUrl = "";
+        if(release.assets == null) {
+            throw new Exception("Github Release contains no assets");
+        }
+        if(pack.variant == null) {
+            downloadUrl = release.assets[0].browser_download_url;
+        } else {
+            foreach(Github.Asset asset in release.assets) {
+                if(asset.name.Contains(pack.variant)) {
+                    downloadUrl = asset.browser_download_url;
+                }
+            }
+        }
+        if(downloadUrl != "") {
+            Console.WriteLine("Downloading image pack...");
+            await HttpHelper.DownloadFileAsync(downloadUrl, localFile);
+            Console.WriteLine("Download complete.");
+            return localFile;
+        }
+        return "";
+    }
+
+    private static async Task installImagePack(string path, string filepath)
+    {
+        Console.WriteLine("Installing...");
+        string extractPath = Path.Combine(path, "temp");
+        ZipFile.ExtractToDirectory(filepath, extractPath, true);
+        string imagePack = FindImagePack(extractPath);
+        string target = Path.Combine(path, "Platforms", "_images");
+        Util.CopyDirectory(imagePack, target, false, true);
+        Directory.Delete(extractPath, true);
+        File.Delete(filepath);
+        Console.WriteLine("All Done");
+    }
+
+    private static string FindImagePack(string temp)
+    {
+        string path = Path.Combine(temp, "Platforms", "_images");
+        if(Directory.Exists(path)) {
+            return path;
+        }
+
+        foreach(string d in Directory.EnumerateDirectories(temp)) {
+            path = Path.Combine(d, "Platforms", "_images");
+            if(Directory.Exists(path)) {
+                return path;
+            }
+        }
+        throw new Exception("Can't find image pack");
+    }
+
+    private static string[] menuItems = {
+        "Update All",
+        "Update Firmware",
+        "Select Cores",
+        "Image Packs",
+        "Get me out of here"
+    };
 }
 
 public class Options
 {
+    [Option('u', "update", HelpText = "Force updater to just run update process, instead of displaying the menu.", Required = false)]
+    public bool ForceUpdate { get; set; }
     [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
     public string? InstallPath { get; set; }
 
@@ -200,4 +350,9 @@ public class Options
 
     [Option ('f', "platformsfolder", Required = false, HelpText = "Preserve the Platforms folder, so customizations aren't overwritten by updates.")]
     public bool PreservePlatformsFolder { get; set; }
+}
+
+public static class EnumExtension {
+    public static IEnumerable<(T item, int index)> WithIndex<T>(this IEnumerable<T> self)       
+       => self.Select((item, index) => (item, index));
 }

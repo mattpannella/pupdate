@@ -32,6 +32,16 @@ public static class GithubApi
         return release;
     }
 
+    public static async Task<Github.Release?> GetLatestRelease(string user, string repository, string? token = "")
+    {
+        string url = String.Format(RELEASES, user, repository) + "/latest";
+        
+        var responseBody = await CallAPI(url, token);
+        Github.Release? release = JsonSerializer.Deserialize<Github.Release>(responseBody);
+        
+        return release;
+    }
+
     public static async Task<Github.File?> GetFile(string user, string repository, string path, string? token = "")
     {
         string url = String.Format(CONTENTS, user, repository, path);
