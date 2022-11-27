@@ -118,11 +118,12 @@ internal class Program
             } else {
                 Console.WriteLine("Starting update process...");
                 await updater.RunUpdates();
+                Pause();
             }
         } catch (Exception e) {
             Console.WriteLine("Well, something went wrong. Sorry about that.");
             Console.WriteLine(e.Message);
-            Console.ReadLine(); 
+            Pause();
         }
     }
 
