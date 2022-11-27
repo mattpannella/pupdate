@@ -251,7 +251,7 @@ internal class Program
     {
         Console.Clear();
         Console.WriteLine("Checking for image packs...\n");
-        ImagePack[] packs = await AssetsService.GetImagePacks(); 
+        ImagePack[] packs = await ImagePacksService.GetImagePacks(); 
         if(packs.Length > 0) {
             foreach(var(pack, index) in packs.WithIndex()) {
                 Console.WriteLine($"{index}) {pack.owner}: {pack.repository} {pack.variant}");
@@ -277,63 +277,9 @@ internal class Program
 
     private static async Task InstallImagePack(string path, ImagePack pack)
     {
-        string filepath = await fetchImagePack(path, pack);
-        await installImagePack(path, filepath);
-    }
-
-    private static async Task<string> fetchImagePack(string path, ImagePack pack)
-    {
-        Github.Release release = await GithubApi.GetLatestRelease(pack.owner, pack.repository);
-        string localFile = Path.Combine(path, "imagepack.zip");
-        string downloadUrl = "";
-        if(release.assets == null) {
-            throw new Exception("Github Release contains no assets");
-        }
-        if(pack.variant == null) {
-            downloadUrl = release.assets[0].browser_download_url;
-        } else {
-            foreach(Github.Asset asset in release.assets) {
-                if(asset.name.Contains(pack.variant)) {
-                    downloadUrl = asset.browser_download_url;
-                }
-            }
-        }
-        if(downloadUrl != "") {
-            Console.WriteLine("Downloading image pack...");
-            await HttpHelper.DownloadFileAsync(downloadUrl, localFile);
-            Console.WriteLine("Download complete.");
-            return localFile;
-        }
-        return "";
-    }
-
-    private static async Task installImagePack(string path, string filepath)
-    {
-        Console.WriteLine("Installing...");
-        string extractPath = Path.Combine(path, "temp");
-        ZipFile.ExtractToDirectory(filepath, extractPath, true);
-        string imagePack = FindImagePack(extractPath);
-        string target = Path.Combine(path, "Platforms", "_images");
-        Util.CopyDirectory(imagePack, target, false, true);
-        Directory.Delete(extractPath, true);
-        File.Delete(filepath);
-        Console.WriteLine("All Done");
-    }
-
-    private static string FindImagePack(string temp)
-    {
-        string path = Path.Combine(temp, "Platforms", "_images");
-        if(Directory.Exists(path)) {
-            return path;
-        }
-
-        foreach(string d in Directory.EnumerateDirectories(temp)) {
-            path = Path.Combine(d, "Platforms", "_images");
-            if(Directory.Exists(path)) {
-                return path;
-            }
-        }
-        throw new Exception("Can't find image pack");
+        pack.Install(path);
+        //string filepath = await fetchImagePack(path, pack);
+        //await installImagePack(path, filepath);
     }
 
     private static void PauseExit()
