@@ -1,4 +1,4 @@
-using pannella.analoguepocket;
+﻿using pannella.analoguepocket;
 using System.Runtime.InteropServices;
 using CommandLine;
 using System.IO.Compression;
@@ -61,8 +61,7 @@ internal class Program
                 response = Console.ReadKey(false).Key;
                 if (response == ConsoleKey.N) {
                     Console.WriteLine("Come again soon");
-                    Console.ReadLine(); //wait for input so the console doesn't auto close in windows
-                    Environment.Exit(1);
+                    PauseExit();
                 }
             }
 
@@ -88,39 +87,43 @@ internal class Program
             }
 
             if(!forceUpdate) {
-                int choice = DisplayMenu();
+                bool flag = true;
+                while(flag) {
+                    int choice = DisplayMenu();
 
-                switch(choice) {
-                    case 1:
-                        await updater.UpdateFirmware();
-                        Environment.Exit(1);
-                        break;
-                    case 2:
-                        List<Core> cores =  await CoresService.GetCores();
-                        RunCoreSelector(settings, cores);
-                        Environment.Exit(1);
-                        break;
-                    case 3:
-                        await ImagePackSelector(path);
-                        Environment.Exit(1);
-                        break;
-                    case 4:
-                        Environment.Exit(1);
-                        break;
-                    default:
-                        break;
+                    switch(choice) {
+                        case 1:
+                            await updater.UpdateFirmware();
+                            Pause();
+                            break;
+                        case 2:
+                            List<Core> cores =  await CoresService.GetCores();
+                            RunCoreSelector(settings, cores);
+                            Pause();
+                            break;
+                        case 3:
+                            await ImagePackSelector(path);
+                            break;
+                        case 4:
+                            flag = false;
+                            break;
+                        case 0:
+                        default:
+                            Console.WriteLine("Starting update process...");
+                            await updater.RunUpdates();
+                            Pause();
+                            break;
+                    }
                 }
+            } else {
+                Console.WriteLine("Starting update process...");
+                await updater.RunUpdates();
             }
-
-            Console.WriteLine("Starting update process...");
-
-            await updater.RunUpdates();
         } catch (Exception e) {
             Console.WriteLine("Well, something went wrong. Sorry about that.");
             Console.WriteLine(e.Message);
+            Console.ReadLine(); 
         }
-        
-        Console.ReadLine(); //wait for input so the console doesn't auto close in windows
     }
 
     static void RunCoreSelector(SettingsManager settings, List<Core> cores)
@@ -252,16 +255,22 @@ internal class Program
             foreach(var(pack, index) in packs.WithIndex()) {
                 Console.WriteLine($"{index}) {pack.owner}: {pack.repository} {pack.variant}");
             }
+            Console.WriteLine($"{packs.Length}) Go back");
             Console.Write("\nSo, what'll it be?: ");
             int choice;
             bool result = int.TryParse(Console.ReadLine(), out choice);
             if (result && choice < packs.Length && choice >= 0) {
                 await InstallImagePack(path, packs[choice]);
+                Pause();
+            } else if(choice == packs.Length) {
+                return;
             } else {
                 Console.WriteLine("you fucked up");
+                Pause();
             }
         } else {
             Console.WriteLine("None found. Have a nice day");
+            Pause();
         }
     }
 
@@ -326,12 +335,23 @@ internal class Program
         throw new Exception("Can't find image pack");
     }
 
+    private static void PauseExit()
+    {
+        Console.ReadLine(); //wait for input so the console doesn't auto close in windows
+        Environment.Exit(1);
+    }
+
+    private static void Pause()
+    {
+        Console.ReadLine();
+    }
+
     private static string[] menuItems = {
         "Update All",
         "Update Firmware",
         "Select Cores",
-        "Image Packs",
-        "Get me out of here"
+        "Download Image Packs",
+        "Exit"
     };
 }
 
