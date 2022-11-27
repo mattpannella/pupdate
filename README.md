@@ -19,14 +19,17 @@ The updater currently accepts 4 command line parameters. I will probably add mor
  -a, --all       Extract all release assets, instead of just ones containing openFPGA cores.
  -c, --coreselector    Run the core selector.
  -f, --platformsfolder   Preserve the Platforms folder, so customizations aren't overwritten by updates
+ -u, --update    SKip the main menu and just run the update process automatically
 ```
 example:
 `
 /path/to/pocket_updater -a -p /path/to/sdcard/
 `
+#### Download Image Packs
+This will present you with a list of available image packs and automatically download and extract it to the Platforms/_images directory for you
 
 #### Core Selector
-On your first run it will prompt you to select the cores you want tracked. After that initial run, you can always run this again by setting `config.core_selector` to `true` in the settings json file, or if running from the cli you can use the paramater -c
+On your first run it will prompt you to select the cores you want tracked. After that initial run, you can run it again any time via the main menu. Or you can always run this again by setting `config.core_selector` to `true` in the settings json file, or if running from the cli you can use the paramater -c
 
 #### Allow pre-release cores
 You can edit your `pocket_updater_settings.json` file and set the `allowPrerelease` flag to `true` for any core want to download, even though it's still pre-release
