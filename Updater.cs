@@ -70,6 +70,9 @@ public class PocketCoreUpdater : Base
     public async Task LoadCores()
     {
         _cores = await CoresService.GetCores();
+        foreach(Core core in _cores) {
+            core.StatusUpdated += updater_StatusUpdated; //attach handler to bubble event up
+        }
        // await LoadNonAPICores();
     }
 
@@ -142,7 +145,6 @@ public class PocketCoreUpdater : Base
         string json;
         foreach(Core core in _cores) {
             try {
-                core.StatusUpdated += updater_StatusUpdated; //attach handler to bubble event up
                 if(_settingsManager.GetCoreSettings(core.identifier).skip) {
                     _DeleteCore(core);
                     continue;
