@@ -156,7 +156,6 @@ public class PocketCoreUpdater : Base
                         _writeMessage("Core Name is required. Skipping.");
                         continue;
                     }
-                    Repo? repo = core.repository;
                     _writeMessage("Checking Core: " + name);
 
                     var mostRecentRelease = core.release;
@@ -218,10 +217,9 @@ public class PocketCoreUpdater : Base
                         _writeMessage("Core Name is required. Skipping.");
                         continue;
                     }
-                    Repo? repo = core.repository;
+
                     _writeMessage("Checking Core: " + name);
                     bool allowPrerelease = _settingsManager.GetCoreSettings(core.identifier).allowPrerelease;
-
                     var mostRecentRelease = core.release;
 
                     if(allowPrerelease && core.prerelease != null) {
