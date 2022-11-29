@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace pannella.analoguepocket;
 
-public class PocketCoreUpdater
+public class PocketCoreUpdater : Base
 {
     private const string ARCHIVE_BASE_URL = "https://archive.org/download";
     private static readonly string[] ZIP_TYPES = {"application/x-zip-compressed", "application/zip"};
@@ -144,6 +144,7 @@ public class PocketCoreUpdater
         string json;
         foreach(Core core in _cores) {
             try {
+                core.StatusUpdated += updater_StatusUpdated; //attach handler to bubble event up
                 if(_settingsManager.GetCoreSettings(core.identifier).skip) {
                     _DeleteCore(core);
                     continue;
@@ -239,8 +240,6 @@ public class PocketCoreUpdater
                     string localCoreFile = Path.Combine(UpdateDirectory, "Cores/"+name+"/core.json");
                     bool fileExists = File.Exists(localCoreFile);
 
-                    bool foundZip = false;
-
                     if (fileExists) {
                         json = File.ReadAllText(localCoreFile);
                         
@@ -277,28 +276,12 @@ public class PocketCoreUpdater
                         _writeMessage("Downloading core");
                     }
                     
-                    //iterate through assets to find the zip release
-                    var release = await _fetchRelease(repo.owner, repo.name, tag_name, _githubApiKey);
-                    List<Github.Asset> assets = release.assets;
-                    foreach(Github.Asset asset in assets) {
-                        if(!ZIP_TYPES.Contains(asset.content_type)) {
-                            //not a zip file. move on
-                            continue;
-                        }
-                        foundZip = true;
-                        if(await _getAsset(asset.browser_download_url, core.identifier)) {
-                            Dictionary<string, string> summary = new Dictionary<string, string>();
-                            summary.Add("version", releaseSemver);
-                            summary.Add("core", core.identifier);
-                            summary.Add("platform", core.platform);
-                            installed.Add(summary);
-                        }
-                    }
-
-                    if(!foundZip) {
-                        _writeMessage("No zip file found for release. Skipping");
-                        Divide();
-                        continue;
+                    if(await core.Install(UpdateDirectory, tag_name, _githubApiKey, _extractAll)) {
+                        Dictionary<string, string> summary = new Dictionary<string, string>();
+                        summary.Add("version", releaseSemver);
+                        summary.Add("core", core.identifier);
+                        summary.Add("platform", core.platform);
+                        installed.Add(summary);
                     }
                     if(_assets.ContainsKey(core.identifier)) {
                         var list = await _DownloadAssets(_assets[core.identifier]);
@@ -500,28 +483,9 @@ public class PocketCoreUpdater
         return true;
     }
 
-    private void _writeMessage(string message)
-    {
-        if(_useConsole) {
-            Console.WriteLine(message);
-        }
-        StatusUpdatedEventArgs args = new StatusUpdatedEventArgs();
-        args.Message = message;
-        OnStatusUpdated(args);
-    }
-
     public void SetGithubApiKey(string key)
     {
         _githubApiKey = key;
-    }
-
-    protected virtual void OnStatusUpdated(StatusUpdatedEventArgs e)
-    {
-        EventHandler<StatusUpdatedEventArgs> handler = StatusUpdated;
-        if(handler != null)
-        {
-            handler(this, e);
-        }
     }
 
     protected virtual void OnUpdateProcessComplete(UpdateProcessCompleteEventArgs e)
@@ -587,30 +551,15 @@ public class PocketCoreUpdater
         if(!_deleteSkippedCores) {
             return;
         }
-        List<string> folders = new List<string>{"Cores", "Presets"};
-        foreach(string folder in folders) {
-            string path = Path.Combine(UpdateDirectory, folder, core.identifier);
-            if(Directory.Exists(path)) {
-                _writeMessage("Uninstalling " + path);
-                Directory.Delete(path, true);
-                Divide();
-            }
-        }
+
+        core.Uninstall(UpdateDirectory);
     }
 
-    /// <summary>
-    /// Event is raised every time the updater prints a progress update
-    /// </summary>
-    public event EventHandler<StatusUpdatedEventArgs>? StatusUpdated;
+    private void updater_StatusUpdated(object sender, StatusUpdatedEventArgs e)
+    {
+        this.OnStatusUpdated(e);
+    }
     public event EventHandler<UpdateProcessCompleteEventArgs>? UpdateProcessComplete;
-}
-
-public class StatusUpdatedEventArgs : EventArgs
-{
-    /// <summary>
-    /// Contains the message from the updater
-    /// </summary>
-    public string Message { get; set; }
 }
 
 public class UpdateProcessCompleteEventArgs : EventArgs

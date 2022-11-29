@@ -84,6 +84,7 @@ internal class Program
             if(coreSelector || settings.GetConfig().core_selector) {
                 List<Core> cores =  await CoresService.GetCores();
                 RunCoreSelector(settings, cores);
+                updater.LoadSettings();
             }
 
             if(!forceUpdate) {
@@ -99,6 +100,7 @@ internal class Program
                         case 2:
                             List<Core> cores =  await CoresService.GetCores();
                             RunCoreSelector(settings, cores);
+                            updater.LoadSettings();
                             Pause();
                             break;
                         case 3:
