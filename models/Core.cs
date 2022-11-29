@@ -27,25 +27,28 @@ public class Core : Base
     {
         this.UpdateDirectory = UpdateDirectory;
         this._extractAll = extractAll;
-        //iterate through assets to find the zip release
-        var release = await _fetchRelease(this.repository.owner, this.repository.name, tag_name, _githubApiKey);
-        bool foundZip = false;
-        List<Github.Asset> assets = release.assets;
-        foreach(Github.Asset asset in assets) {
-            if(!ZIP_TYPES.Contains(asset.content_type)) {
-                //not a zip file. move on
-                continue;
+        if(this.mono) {
+            await _fetchCustomRelease();
+        } else {
+            //iterate through assets to find the zip release
+            var release = await _fetchRelease(this.repository.owner, this.repository.name, tag_name, _githubApiKey);
+            bool foundZip = false;
+            List<Github.Asset> assets = release.assets;
+            foreach(Github.Asset asset in assets) {
+                if(!ZIP_TYPES.Contains(asset.content_type)) {
+                    //not a zip file. move on
+                    continue;
+                }
+                foundZip = true;
+                await _installAsset(asset.browser_download_url, this.identifier);
             }
-            foundZip = true;
-            await _installAsset(asset.browser_download_url, this.identifier);
-        }
 
-        if(!foundZip) {
-            _writeMessage("No zip file found for release. Skipping");
-            Divide();
-            return false;
+            if(!foundZip) {
+                _writeMessage("No zip file found for release. Skipping");
+                Divide();
+                return false;
+            }
         }
-
         return true;
     }
 
@@ -59,6 +62,24 @@ public class Core : Base
             _writeMessage(e.Message);
             return null;
         }
+    }
+
+    private async Task<bool> _fetchCustomRelease()
+    {
+        string zip_name = this.identifier + "_" + this.release.tag_name + ".zip";
+        Github.File file = await GithubApi.GetFile(this.repository.owner, this.repository.name, this.release_path + "/" + zip_name);
+
+        _writeMessage("Downloading file " + file.download_url + "...");
+        string zipPath = Path.Combine(this.UpdateDirectory, ZIP_FILE_NAME);
+        string extractPath = this.UpdateDirectory;
+        await HttpHelper.DownloadFileAsync(file.download_url, zipPath);
+
+        _writeMessage("Extracting...");
+        ZipFile.ExtractToDirectory(zipPath, extractPath, true);
+        
+        File.Delete(zipPath);
+
+        return true;
     }
 
     private async Task<bool> _installAsset(string downloadLink, string coreName)

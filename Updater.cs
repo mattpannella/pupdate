@@ -9,10 +9,8 @@ namespace pannella.analoguepocket;
 public class PocketCoreUpdater : Base
 {
     private const string ARCHIVE_BASE_URL = "https://archive.org/download";
-    private static readonly string[] ZIP_TYPES = {"application/x-zip-compressed", "application/zip"};
     private const string FIRMWARE_FILENAME_PATTERN = "pocket_firmware_*.bin";
     private const string FIRMWARE_URL = "https://www.analogue.co/support/pocket/firmware/latest";
-    private const string ZIP_FILE_NAME = "core.zip";
     private static readonly Regex BIN_REGEX = new Regex(@"(?inx)
         <a \s [^>]*
             href \s* = \s*
@@ -198,7 +196,7 @@ public class PocketCoreUpdater : Base
                         _writeMessage("Downloading core");
                     }
                     
-                    await _fetchCustomRelease(core);
+                    await core.Install(UpdateDirectory, date.ToString("yyyyMMdd"));
                     Dictionary<string, string> summary = new Dictionary<string, string>();
                     summary.Add("version", date.ToString("yyyyMMdd"));
                     summary.Add("core", core.identifier);
@@ -417,70 +415,6 @@ public class PocketCoreUpdater : Base
     {
         string archive = _settingsManager.GetConfig().archive_name;
         return ARCHIVE_BASE_URL + "/" + archive + "/" + filename;
-    }
-
-    private async Task<Github.Release>? _fetchRelease(string user, string repository, string tag_name, string token = "")
-    {
-        try {
-            var release = await GithubApi.GetRelease(user, repository, tag_name, token);
-            return release;
-        } catch (HttpRequestException e) {
-            _writeMessage("Error communicating with Github API.");
-            _writeMessage(e.Message);
-            return null;
-        }
-    }
-
-    private async Task<bool> _getAsset(string downloadLink, string coreName)
-    {
-        bool updated = false;
-        _writeMessage("Downloading file " + downloadLink + "...");
-        string zipPath = Path.Combine(UpdateDirectory, ZIP_FILE_NAME);
-        string extractPath = UpdateDirectory;
-        await HttpHelper.DownloadFileAsync(downloadLink, zipPath);
-
-        bool isCore = _extractAll;
-
-        if(!isCore) {
-            var zip = ZipFile.OpenRead(zipPath);
-            foreach(ZipArchiveEntry entry in zip.Entries) {
-                string[] parts = entry.FullName.Split('/');
-                if(parts.Contains("Cores")) {
-                    isCore = true;
-                    break;
-                }
-            }
-            zip.Dispose();
-        }
-
-        if(!isCore) {
-            _writeMessage("Zip does not contain openFPGA core. Skipping. Please use -a if you'd like to extract all zips.");
-        } else {
-            _writeMessage("Extracting...");
-            ZipFile.ExtractToDirectory(zipPath, extractPath, true);
-            updated = true;
-        }
-        File.Delete(zipPath);
-
-        return updated;
-    }
-
-    private async Task<bool> _fetchCustomRelease(Core core)
-    {
-        string zip_name = core.identifier + "_" + core.release.tag_name + ".zip";
-        Github.File file = await GithubApi.GetFile(core.repository.owner, core.repository.name, core.release_path + "/" + zip_name, _githubApiKey);
-
-        _writeMessage("Downloading file " + file.download_url + "...");
-        string zipPath = Path.Combine(UpdateDirectory, ZIP_FILE_NAME);
-        string extractPath = UpdateDirectory;
-        await HttpHelper.DownloadFileAsync(file.download_url, zipPath);
-
-        _writeMessage("Extracting...");
-        ZipFile.ExtractToDirectory(zipPath, extractPath, true);
-        
-        File.Delete(zipPath);
-
-        return true;
     }
 
     public void SetGithubApiKey(string key)
