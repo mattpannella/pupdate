@@ -31,7 +31,7 @@ public class Core : Base
             await _fetchCustomRelease();
         } else {
             //iterate through assets to find the zip release
-            var release = await _fetchRelease(this.repository.owner, this.repository.name, tag_name, _githubApiKey);
+            var release = await _fetchRelease(tag_name, _githubApiKey);
             bool foundZip = false;
             List<Github.Asset> assets = release.assets;
             foreach(Github.Asset asset in assets) {
@@ -52,10 +52,10 @@ public class Core : Base
         return true;
     }
 
-    private async Task<Github.Release>? _fetchRelease(string user, string repository, string tag_name, string token = "")
+    private async Task<Github.Release>? _fetchRelease(string tag_name, string token = "")
     {
         try {
-            var release = await GithubApi.GetRelease(user, repository, tag_name, token);
+            var release = await GithubApi.GetRelease(this.repository.owner, this.repository.name, tag_name, token);
             return release;
         } catch (HttpRequestException e) {
             _writeMessage("Error communicating with Github API.");
