@@ -1,7 +1,6 @@
 ﻿using pannella.analoguepocket;
 using System.Runtime.InteropServices;
 using CommandLine;
-using System.IO.Compression;
 
 internal class Program
 {
@@ -50,7 +49,7 @@ internal class Program
                     }
                 );
             
-            //path = "/Users/mattpannella/pocket-test";
+           // path = "/Users/mattpannella/pocket-test";
 
             ConsoleKey response;
 
@@ -299,7 +298,7 @@ internal class Program
         "Update All",
         "Update Firmware",
         "Select Cores",
-        "Download Image Packs",
+        "Download Platform Image Packs",
         "Exit"
     };
 }
