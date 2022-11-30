@@ -25,9 +25,9 @@ jobs:
                     "fields": [
                         { "name": "Release Notes", "value": "[Click Me](https://github.com/mattpannella/pocket-updater-utility/releases/tag/${{ github.event.release.tag_name }})", "inline": true },
                         { "name": "Version", "value": "${{ github.event.release.tag_name }}", "inline": true },
-                        { "name": "Windows Build", "value": "[Download Me](https://github.com/mattpannella/pocket-updater-utility/releases/download/${{ github.event.release.tag_name }}/pocket_updater_win.zip)" },
-                        { "name": "macOS Build", "value": "[Or Me](https://github.com/mattpannella/pocket-updater-utility/releases/download/${{ github.event.release.tag_name }}/pocket_updater_mac.zip)" },
-                        { "name": "Linux Build", "value": "[This is a virus](https://github.com/mattpannella/pocket-updater-utility/releases/download/${{ github.event.release.tag_name }}/pocket_updater_linux.zip)" }
+                        { "name": "macOS Build", "value": "[Download Me](https://github.com/mattpannella/pocket-updater-utility/releases/download/${{ github.event.release.tag_name }}/pocket_updater_mac.zip)" },
+                        { "name": "Linux Build", "value": "[Or Me](https://github.com/mattpannella/pocket-updater-utility/releases/download/${{ github.event.release.tag_name }}/pocket_updater_linux.zip)" },
+                        { "name": "Windows Build", "value": "[This is a virus](https://github.com/mattpannella/pocket-updater-utility/releases/download/${{ github.event.release.tag_name }}/pocket_updater_win.zip)" }
                     ]
                 }]
                 }' \
