@@ -800,5 +800,18 @@
                 "archive_file": "yiear2.rom"
             }
         ]
+    },
+    "jotego.jtpang": {
+        "location": "Assets/jtpang/common/",
+        "files": [
+            {
+                "file_name": "pang.rom",
+                "archive_file": "pang.rom"
+            },
+            {
+                "file_name": "pompingw.rom",
+                "archive_file": "pompingw.rom"
+            }
+        ]
     }
 }
