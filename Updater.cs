@@ -1,7 +1,6 @@
 using System;
 using System.IO.Compression;
 using System.Text.Json;
-using System.Net.Http.Headers; 
 using System.Text.RegularExpressions;
 
 namespace pannella.analoguepocket;
