@@ -1,0 +1,25 @@
+name: Rebuild cores.json
+run-name: ${{ github.actor }} is  doing someting
+on: 
+  #schedule:
+   # - cron:  '0 8 * * *'
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Run PHP script
+        shell: bash
+        run: |
+          php -f .github/update_cores.php ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit zips
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Updating releases
+          file_pattern: 'pocket_updater_cores.json'
