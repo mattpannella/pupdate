@@ -120,6 +120,8 @@ internal class Program
                         RunCoreSelector(settings, updater.GetMissingCores());
                         break;
                 }
+
+                updater.LoadSettings();
             }
 
             if(!forceUpdate) {
