@@ -345,7 +345,7 @@ internal class Program
         while(settings.GetConfig().download_new_cores == null || force) {
             force = false;
 
-            Console.WriteLine("Would you like to download all available cores? [Y]es, [N]o, [A]sk for each:");
+            Console.WriteLine("Would you like to, by default, install new cores? [Y]es, [N]o, [A]sk for each:");
             ConsoleKey response = Console.ReadKey(false).Key;
             settings.GetConfig().download_new_cores = response switch
             {
