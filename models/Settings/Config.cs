@@ -9,6 +9,7 @@ public class Config
     public bool core_selector { get; set; }
     public bool preserve_platforms_folder { get; set; }
     public bool delete_skipped_cores { get; set; }
+    public string? download_new_cores { get; set; }
 
     public Config()
     {
@@ -18,5 +19,6 @@ public class Config
         core_selector = true;
         preserve_platforms_folder = false;
         delete_skipped_cores = true;
+        download_new_cores = null;
     }
 }
