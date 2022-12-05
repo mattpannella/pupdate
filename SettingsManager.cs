@@ -53,7 +53,6 @@ public class SettingsManager
         {
             if(!_settings.coreSettings.ContainsKey(core.identifier)) {
                 _newCores.Add(core);
-                //EnableCore(core.identifier);
             }
         }
     }
@@ -69,7 +68,6 @@ public class SettingsManager
         foreach (var core in cores)
             DisableCore(core.identifier);
     }
-    public void ClearNewCores() => _newCores.Clear();
 
     public bool SaveSettings()
     {

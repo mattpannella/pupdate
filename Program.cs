@@ -118,7 +118,6 @@ internal class Program
                     default:
                     case "ask":
                         RunCoreSelector(settings, updater.GetMissingCores());
-                        settings.ClearNewCores();
                         break;
                 }
             }
