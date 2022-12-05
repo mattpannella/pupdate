@@ -337,7 +337,7 @@
         "location": "Assets/garegga/common/",
         "files": [
             {
-                "file_name": "garegga.rom",
+                "file_name": "bgaregga.rom",
                 "archive_file": "bgaregga.rom"
             },
             {
