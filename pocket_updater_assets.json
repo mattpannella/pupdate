@@ -631,6 +631,10 @@
         "location": "Assets/jtkicker/common/",
         "files": [
             {
+                "file_name": "kicker.rom",
+                "archive_file": "kicker.rom"
+            },
+            {
                 "file_name": "shaolinb.rom",
                 "archive_file": "shaolinb.rom"
             },
@@ -656,6 +660,10 @@
     "jotego.jtmikie": {
         "location": "Assets/jtmikie/common/",
         "files": [
+            {
+                "file_name": "mikie.rom",
+                "archive_file": "mikie.rom"
+            },
             {
                 "file_name": "mikiehs.rom",
                 "archive_file": "mikiehs.rom"
