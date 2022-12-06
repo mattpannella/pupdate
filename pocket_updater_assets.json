@@ -337,7 +337,7 @@
         "location": "Assets/garegga/common/",
         "files": [
             {
-                "file_name": "garegga.rom",
+                "file_name": "bgaregga.rom",
                 "archive_file": "bgaregga.rom"
             },
             {
@@ -594,6 +594,10 @@
         "location": "Assets/jtgng/common/",
         "files": [
             {
+                "file_name": "diamond.rom",
+                "archive_file": "diamond.rom"
+            },
+            {
                 "file_name": "gng.rom",
                 "archive_file": "gng.rom"
             },
@@ -631,6 +635,10 @@
         "location": "Assets/jtkicker/common/",
         "files": [
             {
+                "file_name": "kicker.rom",
+                "archive_file": "kicker.rom"
+            },
+            {
                 "file_name": "shaolinb.rom",
                 "archive_file": "shaolinb.rom"
             },
@@ -656,6 +664,10 @@
     "jotego.jtmikie": {
         "location": "Assets/jtmikie/common/",
         "files": [
+            {
+                "file_name": "mikie.rom",
+                "archive_file": "mikie.rom"
+            },
             {
                 "file_name": "mikiehs.rom",
                 "archive_file": "mikiehs.rom"
