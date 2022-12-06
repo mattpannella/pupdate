@@ -102,7 +102,7 @@ internal class Program
 
                         settings.EnableMissingCores(updater.GetMissingCores());
                         settings.SaveSettings();
-                        Console.WriteLine("Press ENTER to continue.");
+                        Console.WriteLine("\nPress ENTER to continue.");
                         Pause();
                         break;
                     case "no":
