@@ -81,8 +81,46 @@ internal class Program
             await updater.Initialize();
 
             if(coreSelector || settings.GetConfig().core_selector) {
+                settings.EnableMissingCores(updater.GetMissingCores());
                 List<Core> cores =  await CoresService.GetCores();
+                AskAboutNewCores(settings, true);
                 RunCoreSelector(settings, cores);
+                updater.LoadSettings();
+            }
+
+            // If we have any missing cores, handle them.
+            if(updater.GetMissingCores().Any()) {
+                Console.WriteLine("\nNew cores found since the last run.");
+                AskAboutNewCores(settings);
+
+                string? download_new_cores = settings.GetConfig().download_new_cores?.ToLowerInvariant();
+                switch (download_new_cores) {
+                    case "yes":
+                        Console.WriteLine("The following cores have been enabled:");
+                        foreach(Core core in updater.GetMissingCores())
+                            Console.WriteLine($"- {core.identifier}");
+
+                        settings.EnableMissingCores(updater.GetMissingCores());
+                        settings.SaveSettings();
+                        Console.WriteLine("Press ENTER to continue.");
+                        Pause();
+                        break;
+                    case "no":
+                        Console.WriteLine("The following cores have been disabled:");
+                        foreach(Core core in updater.GetMissingCores())
+                            Console.WriteLine($"- {core.identifier}");
+
+                        settings.DisableMissingCores(updater.GetMissingCores());
+                        settings.SaveSettings();
+                        Console.WriteLine("\nPress ENTER to continue.");
+                        Pause();
+                        break;
+                    default:
+                    case "ask":
+                        RunCoreSelector(settings, updater.GetMissingCores());
+                        break;
+                }
+
                 updater.LoadSettings();
             }
 
@@ -98,8 +136,11 @@ internal class Program
                             break;
                         case 2:
                             List<Core> cores =  await CoresService.GetCores();
+                            AskAboutNewCores(settings, true);
                             RunCoreSelector(settings, cores);
                             updater.LoadSettings();
+
+                            Console.WriteLine("\nDone!  Press ENTER to continue.");
                             Pause();
                             break;
                         case 3:
@@ -130,17 +171,22 @@ internal class Program
 
     static void RunCoreSelector(SettingsManager settings, List<Core> cores)
     {
-        ConsoleKey response;
-        Console.WriteLine("\nSelect your cores! The available cores will be listed 1 at a time. For each one, hit 'n' if you don't want it installed, or just hit enter if you want it. Ok you've got this. Here we go...\n");
-        foreach(Core core in cores) {
-            Console.Write(core.identifier + "?[Y/n] ");
-            response = Console.ReadKey(false).Key;
-            if (response == ConsoleKey.N) {
-                settings.DisableCore(core.identifier);
-            } else {
+        if(settings.GetConfig().download_new_cores?.ToLowerInvariant() == "yes") {
+            foreach(Core core in cores)
                 settings.EnableCore(core.identifier);
+        } else {
+            ConsoleKey response;
+            Console.WriteLine("\nSelect your cores! The available cores will be listed 1 at a time. For each one, hit 'n' if you don't want it installed, or just hit enter if you want it. Ok you've got this. Here we go...\n");
+            foreach(Core core in cores) {
+                Console.Write(core.identifier + "?[Y/n] ");
+                response = Console.ReadKey(false).Key;
+                if (response == ConsoleKey.N) {
+                    settings.DisableCore(core.identifier);
+                } else {
+                    settings.EnableCore(core.identifier);
+                }
+                Console.WriteLine("");
             }
-            Console.WriteLine("");
         }
         settings.GetConfig().core_selector = false;
         settings.SaveSettings();
@@ -292,6 +338,23 @@ internal class Program
     private static void Pause()
     {
         Console.ReadLine();
+    }
+
+    private static void AskAboutNewCores(SettingsManager settings, bool force = false)
+    {
+        while(settings.GetConfig().download_new_cores == null || force) {
+            force = false;
+
+            Console.WriteLine("Would you like to, by default, install new cores? [Y]es, [N]o, [A]sk for each:");
+            ConsoleKey response = Console.ReadKey(false).Key;
+            settings.GetConfig().download_new_cores = response switch
+            {
+                ConsoleKey.Y => "yes",
+                ConsoleKey.N => "no",
+                ConsoleKey.A => "ask",
+                _ => null
+            };
+        }
     }
 
     private static string[] menuItems = {

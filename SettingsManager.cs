@@ -8,6 +8,7 @@ public class SettingsManager
 {
     private Settings _settings;
     private string _settingsFile;
+    private List<Core> _newCores = new();
 
     private const string OLD_DEFAULT = "pocket-roms";
     private const string NEW_DEFAULT = "openFPGA-Files";
@@ -51,9 +52,21 @@ public class SettingsManager
         foreach(Core core in cores)
         {
             if(!_settings.coreSettings.ContainsKey(core.identifier)) {
-                EnableCore(core.identifier);
+                _newCores.Add(core);
             }
         }
+    }
+
+    public List<Core> GetMissingCores() => _newCores;
+    public void EnableMissingCores(List<Core> cores)
+    {
+        foreach (var core in cores)
+            EnableCore(core.identifier);
+    }
+    public void DisableMissingCores(List<Core> cores)
+    {
+        foreach (var core in cores)
+            DisableCore(core.identifier);
     }
 
     public bool SaveSettings()
