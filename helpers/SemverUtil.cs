@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 public class SemverUtil
 {
-    private const string SEMVER_FINDER = @"\D*(\d(\.\d)*\.\d)\D*";
+    private const string SEMVER_FINDER = @"\D*(\d+(\.\d+)*\.\d+)\D*";
 
     public static string? FindSemver(string input)
     {
