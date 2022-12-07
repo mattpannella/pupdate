@@ -199,7 +199,7 @@ public class PocketCoreUpdater : Base
                         _writeMessage("Downloading core");
                     }
                     
-                    await core.Install(UpdateDirectory, date.ToString("yyyyMMdd"));
+                    await core.Install(UpdateDirectory, date.ToString("yyyyMMdd"), _githubApiKey);
                     Dictionary<string, string> summary = new Dictionary<string, string>();
                     summary.Add("version", date.ToString("yyyyMMdd"));
                     summary.Add("core", core.identifier);
