@@ -11,7 +11,7 @@ A complete list of available cores can also be found here: https://joshcampbell1
 
 ## Instructions ##
 If you just want to use this utility, do not clone the source repository. Just
-download the [latest release](/mattpannella/pocket-updater-utility/releases/latest/). Unzip it, put the executable file for your platform (windows, mac os, or linux) in the root of your sd card, and run the program.
+download the [latest release](https://github.com/mattpannella/pocket-updater-utility/releases/latest/). Unzip it, put the executable file for your platform (windows, mac os, or linux) in the root of your sd card, and run the program.
 
 #### Advanced Usage
 The updater currently accepts 4 command line parameters. I will probably add more options in the future
