@@ -594,10 +594,6 @@
         "location": "Assets/jtgng/common/",
         "files": [
             {
-                "file_name": "diamond.rom",
-                "archive_file": "diamond.rom"
-            },
-            {
                 "file_name": "gng.rom",
                 "archive_file": "gng.rom"
             },

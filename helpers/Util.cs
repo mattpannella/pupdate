@@ -4,6 +4,7 @@ public class Util
 {
     private static string _platformsDirectory = "Platforms";
     private static string _temp = "imagesbackup";
+    private static readonly string[] BAD_DIRS = { "__MACOSX" };
     public static bool BackupPlatformsDirectory(string rootPath)
     {
         string fullPath = Path.Combine(rootPath, _platformsDirectory);
@@ -67,6 +68,39 @@ public class Util
                 string newDestinationDir = Path.Combine(destinationDir, subDir.Name);
                 CopyDirectory(subDir.FullName, newDestinationDir, true, overwrite);
             }
+        }
+    }
+
+    public static void CleanDir(string source)
+    {
+        // Clean up any bad directories (like Mac OS directories).
+        foreach(var dir in BAD_DIRS) {
+            try {
+                Directory.Delete(Path.Combine(source, dir), true);
+            }
+            catch { }
+        }
+
+        // Clean files.
+        var files = Directory.EnumerateFiles(source).Where(file => isBadFile(Path.GetFileName(file)));
+        foreach(var file in files) {
+            try {
+                File.Delete(file);
+            }
+            catch { }
+        }
+
+        // Recurse through subdirectories.
+        var dirs = Directory.GetDirectories(source);
+        foreach(var dir in dirs) {
+            CleanDir(Path.Combine(source, Path.GetFileName(dir)));
+        }
+
+        static bool isBadFile(string name)
+        {
+            if (name.StartsWith('.')) return true;
+            if (name.EndsWith(".mra")) return true;
+            return false;
         }
     }
 }

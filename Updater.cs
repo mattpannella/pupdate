@@ -1,7 +1,6 @@
 using System;
 using System.IO.Compression;
 using System.Text.Json;
-using System.Net.Http.Headers; 
 using System.Text.RegularExpressions;
 
 namespace pannella.analoguepocket;
@@ -39,6 +38,7 @@ public class PocketCoreUpdater : Base
     private List<Core>? _cores;
 
     private Dictionary<string, Dependency>? _assets;
+
     /// <summary>
     /// Constructor
     /// </summary>
@@ -85,6 +85,8 @@ public class PocketCoreUpdater : Base
     {
          _settingsManager = new SettingsManager(SettingsPath, _cores);
     }
+
+    public List<Core> GetMissingCores() => _settingsManager?.GetMissingCores() ?? new List<Core>();
 
     /// <summary>
     /// Turn on/off printing progress messages to the console

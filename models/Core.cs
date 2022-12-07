@@ -15,6 +15,7 @@ public class Core : Base
 
     private static readonly string[] ZIP_TYPES = {"application/x-zip-compressed", "application/zip"};
     private const string ZIP_FILE_NAME = "core.zip";
+
     private string UpdateDirectory;
     private bool _extractAll = false;
 
@@ -75,8 +76,23 @@ public class Core : Base
         await HttpHelper.DownloadFileAsync(file.download_url, zipPath);
 
         _writeMessage("Extracting...");
-        ZipFile.ExtractToDirectory(zipPath, extractPath, true);
-        
+
+        string tempDir = Path.Combine(extractPath, "temp", identifier ?? release.tag_name);
+        ZipFile.ExtractToDirectory(zipPath, tempDir, true);
+
+        // Clean problematic directories and files.
+        Util.CleanDir(tempDir);
+
+        // Move the files into place and delete our core's temp directory.
+        _writeMessage("Installing...");
+        Util.CopyDirectory(tempDir, extractPath, true, true);
+        Directory.Delete(tempDir, true);
+
+        // See if the temp directory itself can be removed.
+        // Probably not needed if we aren't going to multithread this, but this is an async function so let's future proof.
+        if(!Directory.GetFiles(Path.Combine(extractPath, "temp")).Any())
+            Directory.Delete(Path.Combine(extractPath, "temp"));
+
         File.Delete(zipPath);
 
         return true;
@@ -108,7 +124,22 @@ public class Core : Base
             _writeMessage("Zip does not contain openFPGA core. Skipping. Please use -a if you'd like to extract all zips.");
         } else {
             _writeMessage("Extracting...");
-            ZipFile.ExtractToDirectory(zipPath, extractPath, true);
+            string tempDir = Path.Combine(extractPath, "temp", coreName);
+            ZipFile.ExtractToDirectory(zipPath, tempDir, true);
+
+            // Clean problematic directories and files.
+            Util.CleanDir(tempDir);
+
+            // Move the files into place and delete our core's temp directory.
+            _writeMessage("Installing...");
+            Util.CopyDirectory(tempDir, extractPath, true, true);
+            Directory.Delete(tempDir, true);
+
+            // See if the temp directory itself can be removed.
+            // Probably not needed if we aren't going to multithread this, but this is an async function so let's future proof.
+            if (!Directory.GetFiles(Path.Combine(extractPath, "temp")).Any())
+                Directory.Delete(Path.Combine(extractPath, "temp"));
+
             updated = true;
         }
         File.Delete(zipPath);
