@@ -81,25 +81,26 @@ public class Util
             catch { }
         }
 
-        // Clean up any Linux hidden files.
-        foreach(var file in Directory.EnumerateFiles(source, ".*", SearchOption.TopDirectoryOnly)) {
+        // Clean files.
+        var files = Directory.EnumerateFiles(source).Where(file => isBadFile(Path.GetFileName(file)));
+        foreach(var file in files) {
             try {
                 File.Delete(file);
             }
             catch { }
         }
 
-        // Get rid of mras
-        foreach(var file in Directory.EnumerateFiles(source, "*.mra", SearchOption.TopDirectoryOnly)) {
-            try {
-                File.Delete(file);
-            }
-            catch { }
-        }
-
+        // Recurse through subdirectories.
         var dirs = Directory.GetDirectories(source);
-        foreach (var dir in dirs) {
+        foreach(var dir in dirs) {
             CleanDir(Path.Combine(source, Path.GetFileName(dir)));
+        }
+
+        static bool isBadFile(string name)
+        {
+            if (name.StartsWith('.')) return true;
+            if (name.EndsWith(".mra")) return true;
+            return false;
         }
     }
 }
