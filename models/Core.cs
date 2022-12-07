@@ -16,8 +16,6 @@ public class Core : Base
     private static readonly string[] ZIP_TYPES = {"application/x-zip-compressed", "application/zip"};
     private const string ZIP_FILE_NAME = "core.zip";
 
-    private static readonly string[] BAD_DIRS = { "__MACOSX" };
-
     private string UpdateDirectory;
     private bool _extractAll = false;
 
@@ -83,11 +81,11 @@ public class Core : Base
         ZipFile.ExtractToDirectory(zipPath, tempDir, true);
 
         // Clean problematic directories and files.
-        CleanDir(tempDir);
+        Util.CleanDir(tempDir);
 
         // Move the files into place and delete our core's temp directory.
         _writeMessage("Installing...");
-        MoveToDir(tempDir, extractPath);
+        Util.CopyDirectory(tempDir, extractPath, true, true);
         Directory.Delete(tempDir, true);
 
         // See if the temp directory itself can be removed.
@@ -130,11 +128,11 @@ public class Core : Base
             ZipFile.ExtractToDirectory(zipPath, tempDir, true);
 
             // Clean problematic directories and files.
-            CleanDir(tempDir);
+            Util.CleanDir(tempDir);
 
             // Move the files into place and delete our core's temp directory.
             _writeMessage("Installing...");
-            MoveToDir(tempDir, extractPath);
+            Util.CopyDirectory(tempDir, extractPath, true, true);
             Directory.Delete(tempDir, true);
 
             // See if the temp directory itself can be removed.
@@ -147,44 +145,6 @@ public class Core : Base
         File.Delete(zipPath);
 
         return updated;
-    }
-
-    private void CleanDir(string source)
-    {
-        // Clean up any bad directories (like Mac OS directories).
-        foreach(var dir in BAD_DIRS) {
-            try {
-                Directory.Delete(Path.Combine(source, dir), true);
-            }
-            catch { }
-        }
-
-        // Clean up any Linux hidden files.
-        foreach(var file in Directory.EnumerateFiles(source, ".*", SearchOption.TopDirectoryOnly)) {
-            try {
-                File.Delete(file);
-            }
-            catch { }
-        }
-
-        var dirs = Directory.GetDirectories(source);
-        foreach (var dir in dirs) {
-            CleanDir(Path.Combine(source, Path.GetFileName(dir)));
-        }
-    }
-
-    private void MoveToDir(string source, string destination)
-    {
-        if (!Directory.Exists(destination))
-            Directory.CreateDirectory(destination);
-
-        var files = Directory.GetFiles(source);
-        foreach (var file in files)
-            File.Move(file, Path.Combine(destination, Path.GetFileName(file)));
-
-        var dirs = Directory.GetDirectories(source);
-        foreach (var dir in dirs)
-            MoveToDir(dir, Path.Combine(destination, Path.GetFileName(dir)));
     }
 
     public void Uninstall(string UpdateDirectory)
