@@ -31,6 +31,15 @@
             }
         ]
     },
+    "Mazamars312.Amiga": {
+        "location": "Assets/amiga/common/",
+        "files": [
+            {
+                "file_name": "kickstart.rom",
+                "archive_file": "kickstart.rom"
+            }
+        ]
+    },
     "Mazamars312.NeoGeo": {
         "location": "Assets/ng/common",
         "files": [
