@@ -31,8 +31,8 @@
             }
         ]
     },
-    "Mazamars312.Amiga": {
-        "location": "Assets/amiga/common",
+    "Mazamars312.amiga": {
+        "location": "Assets/amiga/common/",
         "files": [
             {
                 "file_name": "kickstart.rom",
