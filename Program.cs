@@ -55,14 +55,8 @@ internal class Program
 
             Console.WriteLine("Analogue Pocket Core Updater v" + version);
             Console.WriteLine("Checking for updates...");
-            if(await CheckVersion(path)) {
-                Console.WriteLine("Would you like to continue anyway? [Y/n]:");
-                response = Console.ReadKey(false).Key;
-                if (response == ConsoleKey.N) {
-                    Console.WriteLine("Come again soon");
-                    PauseExit();
-                }
-            }
+
+            await CheckVersion(path);
 
             PocketCoreUpdater updater = new PocketCoreUpdater(path);
             SettingsManager settings = new SettingsManager(path);
@@ -223,32 +217,87 @@ internal class Program
         Console.WriteLine("we did it, come again soon");
     }
 
-    //return true if newer version is available
-    async static Task<bool> CheckVersion(string path)
+    // Check if a newer version is available
+    async static Task CheckVersion(string path)
     {
         try {
-            List<Github.Release> releases = await GithubApi.GetReleases(USER, REPOSITORY);
+            string tempExecutable = Path.Combine(path, "update_temp.exe");
 
-            string tag_name = releases[0].tag_name;
-            string? v = SemverUtil.FindSemver(tag_name);
-            if(v != null) {
-                bool check = SemverUtil.SemverCompare(v, version);
-                if(check) {
-                    Console.WriteLine("A new version is available. Downloading now...");
-                    string platform = GetPlatform();
-                    string url = String.Format(RELEASE_URL, tag_name, platform);
-                    string saveLocation = Path.Combine(path, "pocket_updater.zip");
-                    await HttpHelper.DownloadFileAsync(url, saveLocation);
-                    Console.WriteLine("Download complete.");
-                    Console.WriteLine(saveLocation);
-                    Console.WriteLine("Go to " + releases[0].html_url + " for a change log");
-                }
-                return check;
+            // In case we failed to delete this last time
+            if (File.Exists(tempExecutable)) {
+                File.Delete(tempExecutable);
             }
 
-            return false;
-        } catch (HttpRequestException e) {
-            return false;
+            string? tagName, updateVersion, htmlUrl;
+
+            // Get the available updates
+            try
+            {
+                List<Github.Release> releases = await GithubApi.GetReleases(USER, REPOSITORY);
+
+                tagName = releases[0].tag_name;
+                updateVersion = SemverUtil.FindSemver(tagName);
+                htmlUrl = releases[0].html_url;
+
+                if (tagName == null || updateVersion == null || htmlUrl == null) {
+                    throw new Exception();
+                }
+            } catch {
+                Console.WriteLine("Unable to find updates on GitHub, continuing with original version.");
+                return;
+            }
+
+            // Check if we actually need to update
+            if (!SemverUtil.SemverCompare(updateVersion, version)) {
+                Console.WriteLine("No new version found.");
+                return;
+            }
+
+            Console.WriteLine("A new version is available. Downloading now...");
+
+            string url = String.Format(RELEASE_URL, tagName, GetPlatform());
+            string saveLocation = Path.Combine(path, "pocket_updater.zip");
+
+            // Download the update
+            try {
+                await HttpHelper.DownloadFileAsync(url, saveLocation);
+            } catch {
+                Console.WriteLine("Failed to download update, continuing with original version.");
+                return;
+            }
+
+            Console.WriteLine("Download complete.");
+            Console.WriteLine("Go to " + htmlUrl + " for a changelog");
+            Console.WriteLine("Updating...");
+
+            // Replace the current executable with the updated one
+            string currentExecutable = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+            string updatedExecutable = Path.Combine(path, GetPlatform() == "win" ? "pocket_updater.exe" : "pocket_updater");
+
+            File.Move(currentExecutable, tempExecutable);
+
+            // Replace the executable with the updated version from the ZIP file
+            try {
+                System.IO.Compression.ZipFile.ExtractToDirectory(saveLocation, path);
+
+                if (!File.Exists(updatedExecutable)) {
+                    throw new Exception();
+                }
+            } catch {
+                // Undo the move and continue
+                File.Move(tempExecutable, currentExecutable);
+                Console.WriteLine("Something went wrong unzipping the update, continuing with original version.");
+                return;
+            }
+
+            Console.WriteLine("Update complete, restarting...");
+
+            // Start the updated executable and exit this one
+            System.Diagnostics.Process.Start(updatedExecutable);
+            Environment.Exit(0);
+        } catch {
+            Console.WriteLine("Something went wrong with the update process, continuing with original version.");
+            return;
         }
     }
 
