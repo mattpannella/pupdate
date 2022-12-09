@@ -223,7 +223,7 @@ internal class Program
         try {
             string tempExecutable = Path.Combine(path, "update_temp.exe");
 
-            // In case we failed to delete this last time
+            // We can only delete after the old one is done running.
             if (File.Exists(tempExecutable)) {
                 File.Delete(tempExecutable);
             }
@@ -255,7 +255,8 @@ internal class Program
 
             Console.WriteLine("A new version is available. Downloading now...");
 
-            string url = String.Format(RELEASE_URL, tagName, GetPlatform());
+            string platform = GetPlatform();
+            string url = String.Format(RELEASE_URL, tagName, platform);
             string saveLocation = Path.Combine(path, "pocket_updater.zip");
 
             // Download the update
@@ -272,7 +273,7 @@ internal class Program
 
             // Replace the current executable with the updated one
             string currentExecutable = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
-            string updatedExecutable = Path.Combine(path, GetPlatform() == "win" ? "pocket_updater.exe" : "pocket_updater");
+            string updatedExecutable = Path.Combine(path, platform == "win" ? "pocket_updater.exe" : "pocket_updater");
 
             File.Move(currentExecutable, tempExecutable);
 
@@ -292,8 +293,17 @@ internal class Program
 
             Console.WriteLine("Update complete, restarting...");
 
-            // Start the updated executable and exit this one
-            System.Diagnostics.Process.Start(updatedExecutable);
+            // Start the updated executable
+            var process = System.Diagnostics.Process.Start(updatedExecutable);
+
+            // stdin only stays connected on Windows, wait on other platforms
+            if (platform != "win")
+            {
+                // Can't do this on Windows because then deleting the old executable from the new one will fail
+                process.WaitForExit();
+            }
+
+            // Terminate the old executable. Immediately on Windows, after the updated one finishes on other platforms.
             Environment.Exit(0);
         } catch {
             Console.WriteLine("Something went wrong with the update process, continuing with original version.");
