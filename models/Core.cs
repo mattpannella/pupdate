@@ -24,15 +24,15 @@ public class Core : Base
         return platform;
     }
 
-    public async Task<bool> Install(string UpdateDirectory, string tag_name, string _githubApiKey = "", bool extractAll = false)
+    public async Task<bool> Install(string UpdateDirectory, string tag_name, string githubApiKey = "", bool extractAll = false)
     {
         this.UpdateDirectory = UpdateDirectory;
         this._extractAll = extractAll;
         if(this.mono) {
-            await _fetchCustomRelease();
+            await _fetchCustomRelease(githubApiKey);
         } else {
             //iterate through assets to find the zip release
-            var release = await _fetchRelease(tag_name, _githubApiKey);
+            var release = await _fetchRelease(tag_name, githubApiKey);
             bool foundZip = false;
             List<Github.Asset> assets = release.assets;
             foreach(Github.Asset asset in assets) {
@@ -65,10 +65,10 @@ public class Core : Base
         }
     }
 
-    private async Task<bool> _fetchCustomRelease()
+    private async Task<bool> _fetchCustomRelease(string githubApiKey)
     {
         string zip_name = this.identifier + "_" + this.release.tag_name + ".zip";
-        Github.File file = await GithubApi.GetFile(this.repository.owner, this.repository.name, this.release_path + "/" + zip_name);
+        Github.File file = await GithubApi.GetFile(this.repository.owner, this.repository.name, this.release_path + "/" + zip_name, githubApiKey);
 
         _writeMessage("Downloading file " + file.download_url + "...");
         string zipPath = Path.Combine(this.UpdateDirectory, ZIP_FILE_NAME);

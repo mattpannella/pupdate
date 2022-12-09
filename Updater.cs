@@ -199,7 +199,7 @@ public class PocketCoreUpdater : Base
                         _writeMessage("Downloading core");
                     }
                     
-                    await core.Install(UpdateDirectory, date.ToString("yyyyMMdd"));
+                    await core.Install(UpdateDirectory, date.ToString("yyyyMMdd"), _githubApiKey);
                     Dictionary<string, string> summary = new Dictionary<string, string>();
                     summary.Add("version", date.ToString("yyyyMMdd"));
                     summary.Add("core", core.identifier);
@@ -232,11 +232,9 @@ public class PocketCoreUpdater : Base
                         _writeMessage("No releases found. Skipping");
                         continue;
                     }
-                    string tag_name = mostRecentRelease.tag_name;
+                    string version = mostRecentRelease.version;
 
-                    string releaseSemver = SemverUtil.FindSemver(tag_name);
-
-                    _writeMessage(tag_name + " is the most recent release, checking local core...");
+                    _writeMessage(version + " is the most recent release, checking local core...");
                     string localCoreFile = Path.Combine(UpdateDirectory, "Cores/"+name+"/core.json");
                     bool fileExists = File.Exists(localCoreFile);
 
@@ -245,22 +243,13 @@ public class PocketCoreUpdater : Base
                         
                         Analogue.Config? config = JsonSerializer.Deserialize<Analogue.Config>(json);
                         Analogue.Core localCore = config.core;
-                        string ver_string = localCore.metadata.version;
-                        string localSemver = SemverUtil.FindSemver(ver_string);
+                        string localVersion = localCore.metadata.version;
                         
-                        if(localSemver != null) {
-                            _writeMessage("local core found: v" + localSemver);
+                        if(localVersion != null) {
+                            _writeMessage("local core found: v" + localVersion);
                         }
-                        //HACK TIME
-                        if(core.identifier == "Spiritualized.GG" && localSemver == "1.2.0") {
-                            Hacks.GamegearFix(UpdateDirectory);
-                            localSemver = "1.3.0";
-                        }
-                        //HACK TIME
 
-                        if (!SemverUtil.IsActuallySemver(localSemver) || !SemverUtil.IsActuallySemver(releaseSemver)) {
-                            _writeMessage("downloading core anyway");
-                        } else if (SemverUtil.SemverCompare(releaseSemver, localSemver)){
+                        if (version != localVersion){
                             _writeMessage("Updating core");
                         } else {
                             if(_assets.ContainsKey(core.identifier)) {
@@ -276,9 +265,9 @@ public class PocketCoreUpdater : Base
                         _writeMessage("Downloading core");
                     }
                     
-                    if(await core.Install(UpdateDirectory, tag_name, _githubApiKey, _extractAll)) {
+                    if(await core.Install(UpdateDirectory, mostRecentRelease.tag_name, _githubApiKey, _extractAll)) {
                         Dictionary<string, string> summary = new Dictionary<string, string>();
-                        summary.Add("version", releaseSemver);
+                        summary.Add("version", version);
                         summary.Add("core", core.identifier);
                         summary.Add("platform", core.platform);
                         installed.Add(summary);
