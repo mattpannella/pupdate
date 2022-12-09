@@ -98,8 +98,8 @@
             "name": "jtmirror"
         },
         "release": {
-            "tag_name": "20221202",
-            "release_date": "20221202",
+            "tag_name": "20221207",
+            "release_date": "20221207",
             "platform": {
                 "category": "Arcade",
                 "name": "Ghosts n Goblins",
@@ -340,8 +340,8 @@
             "name": "jtmirror"
         },
         "release": {
-            "tag_name": "20221012",
-            "release_date": "20221012",
+            "tag_name": "20221207",
+            "release_date": "20221207",
             "platform": {
                 "category": "Arcade",
                 "name": "jtpang",
