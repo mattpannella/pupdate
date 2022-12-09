@@ -1,8 +1,8 @@
 name: Rebuild cores.json
 run-name: ${{ github.actor }} is  doing someting
 on: 
-  schedule:
-    - cron:  '0 * * * *'
+  #schedule:
+    #- cron:  '0 * * * *'
   workflow_dispatch:
 jobs:
   build:
