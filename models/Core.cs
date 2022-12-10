@@ -12,6 +12,7 @@ public class Core : Base
     public bool mono { get; set; }
     public Sponsor? sponsor { get; set; }
     public string? release_path { get; set; }
+    public string version_type { get; set; } = "date";
 
     private static readonly string[] ZIP_TYPES = {"application/x-zip-compressed", "application/zip"};
     private const string ZIP_FILE_NAME = "core.zip";

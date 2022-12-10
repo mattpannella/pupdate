@@ -152,7 +152,7 @@ public class PocketCoreUpdater : Base
                     continue;
                 }
                 //bandaid. just skip these for now
-                if(core.mono) {
+                if(false) {
                     string name = core.identifier;
                     if(name == null) {
                         _writeMessage("Core Name is required. Skipping.");
