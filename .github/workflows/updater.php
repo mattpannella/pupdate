@@ -1,7 +1,7 @@
 <?php
 class Updater
 {
-    private const END_POINT = "https://api.github.com/repos/%s/%s/contents/%s?ref=testing";
+    private const END_POINT = "https://api.github.com/repos/%s/%s/contents/%s";
     private const CORES_FILE = "pocket_updater_cores.json";
     private const REGEX = "/%s_([a-zA-Z0-9]*)\.zip/";
     private $token;
