@@ -53,7 +53,7 @@
       "identifier":"jotego.jtdd",
       "platform":"jtdd",
       "mono":true,
-      "release_path":"releases",
+      "release_path":"",
       "version_type":"hash",
       "repository":{
         "platform":"github",
@@ -78,7 +78,7 @@
       "identifier":"jotego.jtdd2",
       "platform":"jtdd2",
       "mono":true,
-      "release_path":"releases",
+      "release_path":"",
       "version_type":"hash",
       "repository":{
         "platform":"github",
@@ -103,7 +103,7 @@
       "identifier":"jotego.jtgng",
       "platform":"jtgng",
       "mono":true,
-      "release_path":"releases",
+      "release_path":"",
       "version_type":"hash",
       "repository":{
         "platform":"github",
@@ -128,7 +128,7 @@
       "identifier":"jotego.jtkicker",
       "platform":"jtkicker",
       "mono":true,
-      "release_path":"releases",
+      "release_path":"",
       "version_type":"hash",
       "repository":{
         "platform":"github",
@@ -153,7 +153,7 @@
       "identifier":"jotego.jtkunio",
       "platform":"jtkunio",
       "mono":true,
-      "release_path":"releases",
+      "release_path":"",
       "version_type":"hash",
       "repository":{
         "platform":"github",
@@ -178,7 +178,7 @@
       "identifier":"jotego.jtmikie",
       "platform":"jtmikie",
       "mono":true,
-      "release_path":"releases",
+      "release_path":"",
       "version_type":"hash",
       "repository":{
         "platform":"github",
@@ -203,7 +203,7 @@
       "identifier":"jotego.jtpinpon",
       "platform":"jtpinpon",
       "mono":true,
-      "release_path":"releases",
+      "release_path":"",
       "version_type":"hash",
       "repository":{
         "platform":"github",
@@ -228,7 +228,7 @@
       "identifier":"jotego.jtroadf",
       "platform":"jtroadf",
       "mono":true,
-      "release_path":"releases",
+      "release_path":"",
       "version_type":"hash",
       "repository":{
         "platform":"github",
@@ -253,7 +253,7 @@
       "identifier":"jotego.jtroc",
       "platform":"jtroc",
       "mono":true,
-      "release_path":"releases",
+      "release_path":"",
       "version_type":"hash",
       "repository":{
         "platform":"github",
@@ -278,7 +278,7 @@
       "identifier":"jotego.jtsbaskt",
       "platform":"jtsbaskt",
       "mono":true,
-      "release_path":"releases",
+      "release_path":"",
       "version_type":"hash",
       "repository":{
         "platform":"github",
@@ -303,7 +303,7 @@
       "identifier":"jotego.jttrack",
       "platform":"jttrack",
       "mono":true,
-      "release_path":"releases",
+      "release_path":"",
       "version_type":"hash",
       "repository":{
         "platform":"github",
@@ -328,7 +328,7 @@
       "identifier":"jotego.jtvigil",
       "platform":"jtvigil",
       "mono":true,
-      "release_path":"releases",
+      "release_path":"",
       "version_type":"hash",
       "repository":{
         "platform":"github",
@@ -353,7 +353,7 @@
       "identifier":"jotego.jtyiear",
       "platform":"jtyiear",
       "mono":true,
-      "release_path":"releases",
+      "release_path":"",
       "version_type":"hash",
       "repository":{
         "platform":"github",
@@ -378,7 +378,7 @@
       "identifier":"jotego.jtpang",
       "platform":"jtpang",
       "mono":true,
-      "release_path":"releases",
+      "release_path":"",
       "version_type":"hash",
       "repository":{
         "platform":"github",
