@@ -65,7 +65,7 @@ class Updater
                 $flag = true;
                 echo "we found an update to {$core->identifier} {$new}";
                 $this->cores[$i]->release->tag_name = $new;
-                $this->cores[$i]->release->release_date = $new;
+                $this->cores[$i]->release->version = $new;
             }
         }
 
