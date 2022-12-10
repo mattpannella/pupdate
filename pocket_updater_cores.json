@@ -107,7 +107,7 @@
             "name": "jtmirror"
         },
         "release": {
-            "tag_name": "20221207",
+            "tag_name": "f375dc3",
             "release_date": "20221207",
             "platform": {
                 "category": "Arcade",
@@ -116,7 +116,7 @@
                 "year": 1492
             },
             "assets": [],
-            "version": "20221207"
+            "version": "f375dc3"
         }
     },
     {
@@ -371,7 +371,7 @@
             "name": "jtmirror"
         },
         "release": {
-            "tag_name": "20221207",
+            "tag_name": "b39b780",
             "release_date": "20221207",
             "platform": {
                 "category": "Arcade",
@@ -380,7 +380,7 @@
                 "year": 1492
             },
             "assets": [],
-            "version": "20221207"
+            "version": "b39b780"
         }
     }
 ]
