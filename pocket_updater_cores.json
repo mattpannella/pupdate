@@ -13,6 +13,7 @@
         "release": {
             "tag_name": "20221030",
             "release_date": "20221030",
+            "version": "20221030",
             "platform": {
                 "category": "Arcade",
                 "name": "Garegga",
@@ -36,6 +37,7 @@
         "release": {
             "tag_name": "20221019",
             "release_date": "20221019",
+            "version": "20221019",
             "platform": {
                 "category": "Arcade",
                 "name": "Snow Bros 2",
