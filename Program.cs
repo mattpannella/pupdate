@@ -56,7 +56,14 @@ internal class Program
             Console.WriteLine("Analogue Pocket Core Updater v" + version);
             Console.WriteLine("Checking for updates...");
 
-            await CheckVersion(path);
+            if(await CheckVersion(path)) {
+                Console.WriteLine("Would you like to continue anyway? [Y/n]:");
+                response = Console.ReadKey(false).Key;
+                if (response == ConsoleKey.N) {
+                    Console.WriteLine("Come again soon");
+                    PauseExit();
+                }
+            }
 
             PocketCoreUpdater updater = new PocketCoreUpdater(path);
             SettingsManager settings = new SettingsManager(path);
@@ -217,8 +224,37 @@ internal class Program
         Console.WriteLine("we did it, come again soon");
     }
 
+        //return true if newer version is available
+    async static Task<bool> CheckVersion(string path)
+    {
+        try {
+            List<Github.Release> releases = await GithubApi.GetReleases(USER, REPOSITORY);
+
+            string tag_name = releases[0].tag_name;
+            string? v = SemverUtil.FindSemver(tag_name);
+            if(v != null) {
+                bool check = SemverUtil.SemverCompare(v, version);
+                if(check) {
+                    Console.WriteLine("A new version is available. Downloading now...");
+                    string platform = GetPlatform();
+                    string url = String.Format(RELEASE_URL, tag_name, platform);
+                    string saveLocation = Path.Combine(path, "pocket_updater.zip");
+                    await HttpHelper.DownloadFileAsync(url, saveLocation);
+                    Console.WriteLine("Download complete.");
+                    Console.WriteLine(saveLocation);
+                    Console.WriteLine("Go to " + releases[0].html_url + " for a change log");
+                }
+                return check;
+            }
+
+            return false;
+        } catch (HttpRequestException e) {
+            return false;
+        }
+    }
+
     // Check if a newer version is available
-    async static Task CheckVersion(string path)
+    async static Task AutoUpdateCheckVersion(string path)
     {
         try {
             string tempExecutable = Path.Combine(path, "update_temp.exe");
