@@ -152,7 +152,7 @@ public class PocketCoreUpdater : Base
                     continue;
                 }
                 //bandaid. just skip these for now
-                if(false) {
+                if(core.mono && core.version_type == "date") {
                     string name = core.identifier;
                     if(name == null) {
                         _writeMessage("Core Name is required. Skipping.");
@@ -246,7 +246,7 @@ public class PocketCoreUpdater : Base
                         string localVersion = localCore.metadata.version;
                         
                         if(localVersion != null) {
-                            _writeMessage("local core found: v" + localVersion);
+                            _writeMessage("local core found: " + localVersion);
                         }
 
                         if (version != localVersion){
