@@ -3,7 +3,7 @@ class Updater
 {
     private const END_POINT = "https://api.github.com/repos/%s/%s/contents/%s";
     private const CORES_FILE = "pocket_updater_cores.json";
-    private const REGEX = "/%s_(\d*)\.zip/";
+    private const REGEX = "/%s_([a-zA-Z0-9]*)\.zip/";
     private $token;
     private $cores = [];
 
@@ -55,7 +55,12 @@ class Updater
             }
 
             $files = $this->fetchFiles($core->repository->owner, $core->repository->name, $core->release_path);
-            $new = $this->checkFiles($files, $core->identifier, $core->release->tag_name);
+            if($core->version_type == "hash") {
+                $multifile = false;
+            } else {
+                $multifile = true;
+            }
+            $new = $this->checkFiles($files, $core->identifier, $core->release->tag_name, $multifile);
             if($new) {
                 $flag = true;
                 echo "we found an update to {$core->identifier} {$new}";
@@ -75,7 +80,7 @@ class Updater
         file_put_contents(self::CORES_FILE, $data);
     }
 
-    private function checkFiles($files, $basename, $current)
+    private function checkFiles($files, $basename, $current, $multifile)
     {
         $found = false;
         foreach($files as $file) {
@@ -83,7 +88,9 @@ class Updater
             $regex = sprintf(self::REGEX, preg_quote($basename));
             if(preg_match_all($regex, $name, $matches)) {
                 $version = $matches[1][0];
-                if($version > $current) {
+                if($multifile && $version > $current) {
+                    $found = $version;
+                } else if (!$multifile && $version != $current) {
                     $found = $version;
                 }
             }
