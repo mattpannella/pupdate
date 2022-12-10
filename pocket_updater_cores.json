@@ -1,402 +1,370 @@
 [
     {
-      "identifier":"pram0d.garegga",
-      "platform":"Battle Garegga",
-      "mono":true,
-      "release_path":"releases",
-      "version_type":"date",
-      "repository":{
-        "platform":"github",
-        "owner":"psomashekar",
-        "name":"pram0d-pocket-dist-public"
-      },
-      "release":{
-        "tag_name":"20221030",
-        "release_date":"20221030",
-        "platform":{
-          "category":"Arcade",
-          "name":"Garegga",
-          "manufacturer":"",
-          "year":1868
+        "identifier": "pram0d.garegga",
+        "platform": "Battle Garegga",
+        "mono": true,
+        "release_path": "releases",
+        "version_type": "date",
+        "repository": {
+            "platform": "github",
+            "owner": "psomashekar",
+            "name": "pram0d-pocket-dist-public"
         },
-        "assets":[
-          
-        ]
-      }
+        "release": {
+            "tag_name": "20221030",
+            "release_date": "20221030",
+            "platform": {
+                "category": "Arcade",
+                "name": "Garegga",
+                "manufacturer": "",
+                "year": 1868
+            },
+            "assets": []
+        }
     },
     {
-      "identifier":"pram0d.snowbros2",
-      "platform":"Snow Bros 2",
-      "mono":true,
-      "release_path":"releases",
-      "version_type":"date",
-      "repository":{
-        "platform":"github",
-        "owner":"psomashekar",
-        "name":"pram0d-pocket-dist-public"
-      },
-      "release":{
-        "tag_name":"20221019",
-        "release_date":"20221019",
-        "platform":{
-          "category":"Arcade",
-          "name":"Snow Bros 2",
-          "manufacturer":"",
-          "year":1492
+        "identifier": "pram0d.snowbros2",
+        "platform": "Snow Bros 2",
+        "mono": true,
+        "release_path": "releases",
+        "version_type": "date",
+        "repository": {
+            "platform": "github",
+            "owner": "psomashekar",
+            "name": "pram0d-pocket-dist-public"
         },
-        "assets":[
-          
-        ]
-      }
+        "release": {
+            "tag_name": "20221019",
+            "release_date": "20221019",
+            "platform": {
+                "category": "Arcade",
+                "name": "Snow Bros 2",
+                "manufacturer": "",
+                "year": 1492
+            },
+            "assets": []
+        }
     },
     {
-      "identifier":"jotego.jtdd",
-      "platform":"jtdd",
-      "mono":true,
-      "release_path":"",
-      "version_type":"hash",
-      "repository":{
-        "platform":"github",
-        "owner":"mattpannella",
-        "name":"jtmirror"
-      },
-      "release":{
-        "tag_name":"20221128",
-        "release_date":"20221128",
-        "platform":{
-          "category":"Arcade",
-          "name":"jtdd",
-          "manufacturer":"",
-          "year":1492
+        "identifier": "jotego.jtdd",
+        "platform": "jtdd",
+        "mono": true,
+        "release_path": "",
+        "version_type": "hash",
+        "repository": {
+            "platform": "github",
+            "owner": "mattpannella",
+            "name": "jtmirror"
         },
-        "assets":[
-          
-        ]
-      }
+        "release": {
+            "tag_name": "ebf83ce",
+            "release_date": "ebf83ce",
+            "platform": {
+                "category": "Arcade",
+                "name": "jtdd",
+                "manufacturer": "",
+                "year": 1492
+            },
+            "assets": []
+        }
     },
     {
-      "identifier":"jotego.jtdd2",
-      "platform":"jtdd2",
-      "mono":true,
-      "release_path":"",
-      "version_type":"hash",
-      "repository":{
-        "platform":"github",
-        "owner":"mattpannella",
-        "name":"jtmirror"
-      },
-      "release":{
-        "tag_name":"20221128",
-        "release_date":"20221128",
-        "platform":{
-          "category":"Arcade",
-          "name":"jtdd2",
-          "manufacturer":"",
-          "year":1492
+        "identifier": "jotego.jtdd2",
+        "platform": "jtdd2",
+        "mono": true,
+        "release_path": "",
+        "version_type": "hash",
+        "repository": {
+            "platform": "github",
+            "owner": "mattpannella",
+            "name": "jtmirror"
         },
-        "assets":[
-          
-        ]
-      }
+        "release": {
+            "tag_name": "ebf83ce",
+            "release_date": "ebf83ce",
+            "platform": {
+                "category": "Arcade",
+                "name": "jtdd2",
+                "manufacturer": "",
+                "year": 1492
+            },
+            "assets": []
+        }
     },
     {
-      "identifier":"jotego.jtgng",
-      "platform":"jtgng",
-      "mono":true,
-      "release_path":"",
-      "version_type":"hash",
-      "repository":{
-        "platform":"github",
-        "owner":"mattpannella",
-        "name":"jtmirror"
-      },
-      "release":{
-        "tag_name":"20221207",
-        "release_date":"20221207",
-        "platform":{
-          "category":"Arcade",
-          "name":"Ghosts n Goblins",
-          "manufacturer":"",
-          "year":1492
+        "identifier": "jotego.jtgng",
+        "platform": "jtgng",
+        "mono": true,
+        "release_path": "",
+        "version_type": "hash",
+        "repository": {
+            "platform": "github",
+            "owner": "mattpannella",
+            "name": "jtmirror"
         },
-        "assets":[
-          
-        ]
-      }
+        "release": {
+            "tag_name": "f375dc3",
+            "release_date": "f375dc3",
+            "platform": {
+                "category": "Arcade",
+                "name": "Ghosts n Goblins",
+                "manufacturer": "",
+                "year": 1492
+            },
+            "assets": []
+        }
     },
     {
-      "identifier":"jotego.jtkicker",
-      "platform":"jtkicker",
-      "mono":true,
-      "release_path":"",
-      "version_type":"hash",
-      "repository":{
-        "platform":"github",
-        "owner":"mattpannella",
-        "name":"jtmirror"
-      },
-      "release":{
-        "tag_name":"20221202",
-        "release_date":"20221202",
-        "platform":{
-          "category":"Arcade",
-          "name":"jtkicker",
-          "manufacturer":"",
-          "year":1492
+        "identifier": "jotego.jtkicker",
+        "platform": "jtkicker",
+        "mono": true,
+        "release_path": "",
+        "version_type": "hash",
+        "repository": {
+            "platform": "github",
+            "owner": "mattpannella",
+            "name": "jtmirror"
         },
-        "assets":[
-          
-        ]
-      }
+        "release": {
+            "tag_name": "ebf83ce",
+            "release_date": "ebf83ce",
+            "platform": {
+                "category": "Arcade",
+                "name": "jtkicker",
+                "manufacturer": "",
+                "year": 1492
+            },
+            "assets": []
+        }
     },
     {
-      "identifier":"jotego.jtkunio",
-      "platform":"jtkunio",
-      "mono":true,
-      "release_path":"",
-      "version_type":"hash",
-      "repository":{
-        "platform":"github",
-        "owner":"mattpannella",
-        "name":"jtmirror"
-      },
-      "release":{
-        "tag_name":"20221128",
-        "release_date":"20221128",
-        "platform":{
-          "category":"Arcade",
-          "name":"Kunio",
-          "manufacturer":"",
-          "year":1492
+        "identifier": "jotego.jtkunio",
+        "platform": "jtkunio",
+        "mono": true,
+        "release_path": "",
+        "version_type": "hash",
+        "repository": {
+            "platform": "github",
+            "owner": "mattpannella",
+            "name": "jtmirror"
         },
-        "assets":[
-          
-        ]
-      }
+        "release": {
+            "tag_name": "ebf83ce",
+            "release_date": "ebf83ce",
+            "platform": {
+                "category": "Arcade",
+                "name": "Kunio",
+                "manufacturer": "",
+                "year": 1492
+            },
+            "assets": []
+        }
     },
     {
-      "identifier":"jotego.jtmikie",
-      "platform":"jtmikie",
-      "mono":true,
-      "release_path":"",
-      "version_type":"hash",
-      "repository":{
-        "platform":"github",
-        "owner":"mattpannella",
-        "name":"jtmirror"
-      },
-      "release":{
-        "tag_name":"20221202",
-        "release_date":"20221202",
-        "platform":{
-          "category":"Arcade",
-          "name":"jtmikie",
-          "manufacturer":"",
-          "year":1492
+        "identifier": "jotego.jtmikie",
+        "platform": "jtmikie",
+        "mono": true,
+        "release_path": "",
+        "version_type": "hash",
+        "repository": {
+            "platform": "github",
+            "owner": "mattpannella",
+            "name": "jtmirror"
         },
-        "assets":[
-          
-        ]
-      }
+        "release": {
+            "tag_name": "ebf83ce",
+            "release_date": "ebf83ce",
+            "platform": {
+                "category": "Arcade",
+                "name": "jtmikie",
+                "manufacturer": "",
+                "year": 1492
+            },
+            "assets": []
+        }
     },
     {
-      "identifier":"jotego.jtpinpon",
-      "platform":"jtpinpon",
-      "mono":true,
-      "release_path":"",
-      "version_type":"hash",
-      "repository":{
-        "platform":"github",
-        "owner":"mattpannella",
-        "name":"jtmirror"
-      },
-      "release":{
-        "tag_name":"20221202",
-        "release_date":"20221202",
-        "platform":{
-          "category":"Arcade",
-          "name":"jtpinpon",
-          "manufacturer":"",
-          "year":1492
+        "identifier": "jotego.jtpinpon",
+        "platform": "jtpinpon",
+        "mono": true,
+        "release_path": "",
+        "version_type": "hash",
+        "repository": {
+            "platform": "github",
+            "owner": "mattpannella",
+            "name": "jtmirror"
         },
-        "assets":[
-          
-        ]
-      }
+        "release": {
+            "tag_name": "ebf83ce",
+            "release_date": "ebf83ce",
+            "platform": {
+                "category": "Arcade",
+                "name": "jtpinpon",
+                "manufacturer": "",
+                "year": 1492
+            },
+            "assets": []
+        }
     },
     {
-      "identifier":"jotego.jtroadf",
-      "platform":"jtroadf",
-      "mono":true,
-      "release_path":"",
-      "version_type":"hash",
-      "repository":{
-        "platform":"github",
-        "owner":"mattpannella",
-        "name":"jtmirror"
-      },
-      "release":{
-        "tag_name":"20221202",
-        "release_date":"20221202",
-        "platform":{
-          "category":"Arcade",
-          "name":"jtroadf",
-          "manufacturer":"",
-          "year":1492
+        "identifier": "jotego.jtroadf",
+        "platform": "jtroadf",
+        "mono": true,
+        "release_path": "",
+        "version_type": "hash",
+        "repository": {
+            "platform": "github",
+            "owner": "mattpannella",
+            "name": "jtmirror"
         },
-        "assets":[
-          
-        ]
-      }
+        "release": {
+            "tag_name": "ebf83ce",
+            "release_date": "ebf83ce",
+            "platform": {
+                "category": "Arcade",
+                "name": "jtroadf",
+                "manufacturer": "",
+                "year": 1492
+            },
+            "assets": []
+        }
     },
     {
-      "identifier":"jotego.jtroc",
-      "platform":"jtroc",
-      "mono":true,
-      "release_path":"",
-      "version_type":"hash",
-      "repository":{
-        "platform":"github",
-        "owner":"mattpannella",
-        "name":"jtmirror"
-      },
-      "release":{
-        "tag_name":"20221202",
-        "release_date":"20221202",
-        "platform":{
-          "category":"Arcade",
-          "name":"jtroc",
-          "manufacturer":"",
-          "year":1492
+        "identifier": "jotego.jtroc",
+        "platform": "jtroc",
+        "mono": true,
+        "release_path": "",
+        "version_type": "hash",
+        "repository": {
+            "platform": "github",
+            "owner": "mattpannella",
+            "name": "jtmirror"
         },
-        "assets":[
-          
-        ]
-      }
+        "release": {
+            "tag_name": "ebf83ce",
+            "release_date": "ebf83ce",
+            "platform": {
+                "category": "Arcade",
+                "name": "jtroc",
+                "manufacturer": "",
+                "year": 1492
+            },
+            "assets": []
+        }
     },
     {
-      "identifier":"jotego.jtsbaskt",
-      "platform":"jtsbaskt",
-      "mono":true,
-      "release_path":"",
-      "version_type":"hash",
-      "repository":{
-        "platform":"github",
-        "owner":"mattpannella",
-        "name":"jtmirror"
-      },
-      "release":{
-        "tag_name":"20221202",
-        "release_date":"20221202",
-        "platform":{
-          "category":"Arcade",
-          "name":"jtsbaskt",
-          "manufacturer":"",
-          "year":1492
+        "identifier": "jotego.jtsbaskt",
+        "platform": "jtsbaskt",
+        "mono": true,
+        "release_path": "",
+        "version_type": "hash",
+        "repository": {
+            "platform": "github",
+            "owner": "mattpannella",
+            "name": "jtmirror"
         },
-        "assets":[
-          
-        ]
-      }
+        "release": {
+            "tag_name": "ebf83ce",
+            "release_date": "ebf83ce",
+            "platform": {
+                "category": "Arcade",
+                "name": "jtsbaskt",
+                "manufacturer": "",
+                "year": 1492
+            },
+            "assets": []
+        }
     },
     {
-      "identifier":"jotego.jttrack",
-      "platform":"jttrack",
-      "mono":true,
-      "release_path":"",
-      "version_type":"hash",
-      "repository":{
-        "platform":"github",
-        "owner":"mattpannella",
-        "name":"jtmirror"
-      },
-      "release":{
-        "tag_name":"20221202",
-        "release_date":"20221202",
-        "platform":{
-          "category":"Arcade",
-          "name":"jttrack",
-          "manufacturer":"",
-          "year":1492
+        "identifier": "jotego.jttrack",
+        "platform": "jttrack",
+        "mono": true,
+        "release_path": "",
+        "version_type": "hash",
+        "repository": {
+            "platform": "github",
+            "owner": "mattpannella",
+            "name": "jtmirror"
         },
-        "assets":[
-          
-        ]
-      }
+        "release": {
+            "tag_name": "ebf83ce",
+            "release_date": "ebf83ce",
+            "platform": {
+                "category": "Arcade",
+                "name": "jttrack",
+                "manufacturer": "",
+                "year": 1492
+            },
+            "assets": []
+        }
     },
     {
-      "identifier":"jotego.jtvigil",
-      "platform":"jtvigil",
-      "mono":true,
-      "release_path":"",
-      "version_type":"hash",
-      "repository":{
-        "platform":"github",
-        "owner":"mattpannella",
-        "name":"jtmirror"
-      },
-      "release":{
-        "tag_name":"20221202",
-        "release_date":"20221202",
-        "platform":{
-          "category":"Arcade",
-          "name":"jtvigil",
-          "manufacturer":"",
-          "year":1492
+        "identifier": "jotego.jtvigil",
+        "platform": "jtvigil",
+        "mono": true,
+        "release_path": "",
+        "version_type": "hash",
+        "repository": {
+            "platform": "github",
+            "owner": "mattpannella",
+            "name": "jtmirror"
         },
-        "assets":[
-          
-        ]
-      }
+        "release": {
+            "tag_name": "0783957",
+            "release_date": "0783957",
+            "platform": {
+                "category": "Arcade",
+                "name": "jtvigil",
+                "manufacturer": "",
+                "year": 1492
+            },
+            "assets": []
+        }
     },
     {
-      "identifier":"jotego.jtyiear",
-      "platform":"jtyiear",
-      "mono":true,
-      "release_path":"",
-      "version_type":"hash",
-      "repository":{
-        "platform":"github",
-        "owner":"mattpannella",
-        "name":"jtmirror"
-      },
-      "release":{
-        "tag_name":"20221202",
-        "release_date":"20221202",
-        "platform":{
-          "category":"Arcade",
-          "name":"jtyiear",
-          "manufacturer":"",
-          "year":1492
+        "identifier": "jotego.jtyiear",
+        "platform": "jtyiear",
+        "mono": true,
+        "release_path": "",
+        "version_type": "hash",
+        "repository": {
+            "platform": "github",
+            "owner": "mattpannella",
+            "name": "jtmirror"
         },
-        "assets":[
-          
-        ]
-      }
+        "release": {
+            "tag_name": "ebf83ce",
+            "release_date": "ebf83ce",
+            "platform": {
+                "category": "Arcade",
+                "name": "jtyiear",
+                "manufacturer": "",
+                "year": 1492
+            },
+            "assets": []
+        }
     },
     {
-      "identifier":"jotego.jtpang",
-      "platform":"jtpang",
-      "mono":true,
-      "release_path":"",
-      "version_type":"hash",
-      "repository":{
-        "platform":"github",
-        "owner":"mattpannella",
-        "name":"jtmirror"
-      },
-      "release":{
-        "tag_name":"20221207",
-        "release_date":"20221207",
-        "platform":{
-          "category":"Arcade",
-          "name":"jtpang",
-          "manufacturer":"",
-          "year":1492
+        "identifier": "jotego.jtpang",
+        "platform": "jtpang",
+        "mono": true,
+        "release_path": "",
+        "version_type": "hash",
+        "repository": {
+            "platform": "github",
+            "owner": "mattpannella",
+            "name": "jtmirror"
         },
-        "assets":[
-          
-        ]
-      }
+        "release": {
+            "tag_name": "b39b780",
+            "release_date": "b39b780",
+            "platform": {
+                "category": "Arcade",
+                "name": "jtpang",
+                "manufacturer": "",
+                "year": 1492
+            },
+            "assets": []
+        }
     }
-  ]
+]
