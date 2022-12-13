@@ -382,5 +382,29 @@
             "assets": [],
             "version": "99a6fb4"
         }
+    },
+    {
+        "identifier": "jotego.jtcontra",
+        "platform": "jtcontra",
+        "mono": true,
+        "release_path": "",
+        "version_type": "hash",
+        "repository": {
+            "platform": "github",
+            "owner": "mattpannella",
+            "name": "jtmirror"
+        },
+        "release": {
+            "tag_name": "99a6fb4",
+            "release_date": "20221207",
+            "platform": {
+                "category": "Arcade",
+                "name": "jtcontra",
+                "manufacturer": "",
+                "year": 1492
+            },
+            "assets": [],
+            "version": "99a6fb4"
+        }
     }
 ]
