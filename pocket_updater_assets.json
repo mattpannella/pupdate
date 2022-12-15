@@ -828,6 +828,26 @@
             {
                 "file_name": "pompingw.rom",
                 "archive_file": "pompingw.rom"
+            },
+            {
+                "file_name": "bbros.rom",
+                "archive_file": "bbros.rom"
+            },
+            {
+                "file_name": "dokaben.rom",
+                "archive_file": "dokaben.rom"
+            },
+            {
+                "file_name": "sbbros.rom",
+                "archive_file": "sbbros.rom"
+            },
+            {
+                "file_name": "spang.rom",
+                "archive_file": "spang.rom"
+            },
+            {
+                "file_name": "spangj.rom",
+                "archive_file": "spangj.rom"
             }
         ]
     }
