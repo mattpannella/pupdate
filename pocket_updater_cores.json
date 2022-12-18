@@ -1,7 +1,7 @@
 [
     {
         "identifier": "pram0d.bakraid",
-        "platform": "Bakraid",
+        "platform": "Battle Bakraid",
         "mono": true,
         "release_path": "releases",
         "version_type": "date",
