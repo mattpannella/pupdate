@@ -850,5 +850,23 @@
                 "archive_file": "spangj.rom"
             }
         ]
+    },
+    "pram0d.bakraid": {
+        "location": "Assets/bakraid/common/",
+        "files": [
+            {
+                "file_name": "bbakraid.rom",
+                "archive_file": "bbakraid.rom"
+            }
+        ]
+    },
+    "pram0d.batrider": {
+        "location": "Assets/batrider/common/",
+        "files": [
+            {
+                "file_name": "batrider.rom",
+                "archive_file": "batrider.rom"
+            }
+        ]
     }
 }
