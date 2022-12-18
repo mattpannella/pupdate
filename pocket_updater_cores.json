@@ -1,5 +1,53 @@
 [
     {
+        "identifier": "pram0d.bakraid",
+        "platform": "Bakraid",
+        "mono": true,
+        "release_path": "releases",
+        "version_type": "date",
+        "repository": {
+            "platform": "github",
+            "owner": "psomashekar",
+            "name": "pram0d-pocket-dist-public"
+        },
+        "release": {
+            "tag_name": "20221218",
+            "release_date": "20221218",
+            "version": "20221218",
+            "platform": {
+                "category": "Arcade",
+                "name": "Bakraid",
+                "manufacturer": "",
+                "year": 1868
+            },
+            "assets": []
+        }
+    },
+    {
+        "identifier": "pram0d.batrider",
+        "platform": "Batrider",
+        "mono": true,
+        "release_path": "releases",
+        "version_type": "date",
+        "repository": {
+            "platform": "github",
+            "owner": "psomashekar",
+            "name": "pram0d-pocket-dist-public"
+        },
+        "release": {
+            "tag_name": "20221218",
+            "release_date": "20221218",
+            "version": "20221218",
+            "platform": {
+                "category": "Arcade",
+                "name": "Batrider",
+                "manufacturer": "",
+                "year": 1868
+            },
+            "assets": []
+        }
+    },
+    {
         "identifier": "pram0d.garegga",
         "platform": "Battle Garegga",
         "mono": true,
