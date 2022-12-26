@@ -443,7 +443,7 @@
             "name": "jtmirror"
         },
         "release": {
-            "tag_name": "6430b0b9",
+            "tag_name": "a683ccaa",
             "release_date": "20221207",
             "platform": {
                 "category": "Arcade",
@@ -452,7 +452,7 @@
                 "year": 1492
             },
             "assets": [],
-            "version": "6430b0b9"
+            "version": "a683ccaa"
         }
     }
 ]
