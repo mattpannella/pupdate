@@ -146,6 +146,7 @@ public class PocketCoreUpdater : Base
         }
         string json;
         foreach(Core core in _cores) {
+            core.UpdateDirectory = UpdateDirectory;
             try {
                 if(_settingsManager.GetCoreSettings(core.identifier).skip) {
                     _DeleteCore(core);
@@ -174,9 +175,7 @@ public class PocketCoreUpdater : Base
 
                     _writeMessage(mostRecentRelease.tag_name + " is the most recent release, checking local core...");
                     string localCoreFile = Path.Combine(UpdateDirectory, "Cores", name);
-                    bool fileExists = Directory.Exists(localCoreFile);
-
-                    if (fileExists) {
+                    if (core.isInstalled()) {
                         DateTime localDate = Directory.GetLastWriteTime(localCoreFile);
                         
                         if(localDate != null) {
@@ -235,14 +234,8 @@ public class PocketCoreUpdater : Base
                     string version = mostRecentRelease.version;
 
                     _writeMessage(version + " is the most recent release, checking local core...");
-                    string localCoreFile = Path.Combine(UpdateDirectory, "Cores/"+name+"/core.json");
-                    bool fileExists = File.Exists(localCoreFile);
-
-                    if (fileExists) {
-                        json = File.ReadAllText(localCoreFile);
-                        
-                        Analogue.Config? config = JsonSerializer.Deserialize<Analogue.Config>(json);
-                        Analogue.Core localCore = config.core;
+                    if (core.isInstalled()) {
+                        Analogue.Core localCore = core.getConfig().core;
                         string localVersion = localCore.metadata.version;
                         
                         if(localVersion != null) {

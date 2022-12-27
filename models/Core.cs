@@ -1,6 +1,7 @@
 namespace pannella.analoguepocket;
 
 using System.IO.Compression;
+using System.Text.Json;
 
 public class Core : Base
 {
@@ -17,7 +18,7 @@ public class Core : Base
     private static readonly string[] ZIP_TYPES = {"application/x-zip-compressed", "application/zip"};
     private const string ZIP_FILE_NAME = "core.zip";
 
-    private string UpdateDirectory;
+    public string UpdateDirectory { get; set; };
     private bool _extractAll = false;
 
     public override string ToString()
@@ -148,6 +149,18 @@ public class Core : Base
         return updated;
     }
 
+    private bool checkUpdateDirectory()
+    {
+        if(this.UpdateDirectory == null) {
+            throw new Exception("Didn't set an update directory");
+        }
+        if(!Directory.Exists(this.UpdateDirectory)) {
+            throw new Exception("Unable to access update directory");
+        }
+
+        return true;
+    }
+
     public void Uninstall(string UpdateDirectory)
     {
         List<string> folders = new List<string>{"Cores", "Presets"};
@@ -159,5 +172,32 @@ public class Core : Base
                 Divide();
             }
         }
+    }
+
+    public void CheckAssets()
+    {
+        checkUpdateDirectory();
+        Analogue.Core info = this.getConfig().core;
+        string coreDirectory = Path.Combine(UpdateDirectory, "Cores", this.identifier);
+        string instancesDirectory = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0], this.identifier);
+
+        
+    }
+
+    public Analogue.Config? getConfig()
+    {
+        checkUpdateDirectory();
+        string file = Path.Combine(UpdateDirectory, "Cores", this.identifier, "core.json");
+        string json = File.ReadAllText(file);
+        Analogue.Config? config = JsonSerializer.Deserialize<Analogue.Config>(json);
+
+        return config;
+    }
+
+    public bool isInstalled()
+    {
+        checkUpdateDirectory();
+        string localCoreFile = Path.Combine(UpdateDirectory, "Cores", this.identifier, "core.json");
+        return File.Exists(localCoreFile);
     }
 }
