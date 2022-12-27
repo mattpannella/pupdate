@@ -5,7 +5,13 @@
     },
     {
         "owner": "dyreschlock",
-        "repository": "pocket-platform-images"
+        "repository": "pocket-platform-images",
+        "variant": "home"
+    },
+    {
+        "owner": "dyreschlock",
+        "repository": "pocket-platform-images",
+        "variant": "arcade"
     },
     {
         "owner": "terminator2k2",
