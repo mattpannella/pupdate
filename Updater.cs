@@ -147,6 +147,7 @@ public class PocketCoreUpdater : Base
         foreach(Core core in _cores) {
             core.UpdateDirectory = UpdateDirectory;
             core.archive = _settingsManager.GetConfig().archive_name;
+            core.downloadAssets = _downloadAssets;
             try {
                 if(_settingsManager.GetCoreSettings(core.identifier).skip) {
                     _DeleteCore(core);
@@ -185,11 +186,7 @@ public class PocketCoreUpdater : Base
                         if (DateTime.Compare(localDate, date) < 0){
                             _writeMessage("Updating core");
                         } else {
-                            if(_assets.ContainsKey(core.identifier)) {
-                                var list = await _DownloadAssets(_assets[core.identifier]); //check for roms even if core isn't updating
-                                //var list = await _DownloadAssetsNew(core.identifier, mostRecentRelease.assets);
-                                installedAssets.AddRange(list);
-                            }
+                            installedAssets.AddRange(await core.DownloadAssets());
                             _writeMessage("Up to date. Skipping core");
                             Divide();
                             continue;
@@ -205,13 +202,7 @@ public class PocketCoreUpdater : Base
                     summary.Add("platform", core.platform);
                     installed.Add(summary);
 
-                    if(_assets.ContainsKey(core.identifier)) {
-                        List<string> list = new List<string>();
-                        await core.CheckAssets(); //REMOVE THIS
-                        //var list = await _DownloadAssets(_assets[core.identifier]);
-                        //var list = await _DownloadAssetsNew(core.identifier, mostRecentRelease.assets);
-                        installedAssets.AddRange(list);
-                    }
+                    installedAssets.AddRange(await core.DownloadAssets());
                     _writeMessage("Installation complete.");
                     Divide();
                 } else {
@@ -247,13 +238,7 @@ public class PocketCoreUpdater : Base
                         if (version != localVersion){
                             _writeMessage("Updating core");
                         } else {
-                            if(_assets.ContainsKey(core.identifier)) {
-                                List<string> list = new List<string>();
-                                await core.CheckAssets(); //REMOVE THIS
-                                //var list = await _DownloadAssets(_assets[core.identifier]); //check for roms even if core isn't updating
-                                //var list = await _DownloadAssetsNew(core.identifier, mostRecentRelease.assets);
-                                installedAssets.AddRange(list);
-                            }
+                            installedAssets.AddRange(await core.DownloadAssets());
                             _writeMessage("Up to date. Skipping core");
                             Divide();
                             continue;
@@ -269,13 +254,7 @@ public class PocketCoreUpdater : Base
                         summary.Add("platform", core.platform);
                         installed.Add(summary);
                     }
-                    if(_assets.ContainsKey(core.identifier)) {
-                        List<string> list = new List<string>();
-                        await core.CheckAssets(); //REMOVE THIS
-                        //var list = await _DownloadAssets(_assets[core.identifier]);
-                        //var list = await _DownloadAssetsNew(core.identifier, mostRecentRelease.assets);
-                        installedAssets.AddRange(list);
-                    }
+                    installedAssets.AddRange(await core.DownloadAssets());
                     _writeMessage("Installation complete.");
                     Divide();
                 }

@@ -21,6 +21,7 @@ public class Core : Base
     public string UpdateDirectory { get; set; }
     public string archive { get; set; }
     private bool _extractAll = false;
+    public bool downloadAssets { get; set; } = true;
 
     public override string ToString()
     {
@@ -175,9 +176,12 @@ public class Core : Base
         }
     }
 
-    public async Task<List<string>> CheckAssets()
+    public async Task<List<string>> DownloadAssets()
     {
         List<string> installed = new List<string>();
+        if(!downloadAssets) {
+            return installed;
+        }
         checkUpdateDirectory();
         _writeMessage("Looking for Assets");
         Analogue.Core info = this.getConfig().core;
