@@ -144,6 +144,12 @@ public class PocketCoreUpdater : Base
             Divide();
             imagesBacked = true;
         }
+        List<Core> cores = _cores;
+        List<Core> local = await GetLocalCores();
+        foreach(Core core in local) {
+            core.StatusUpdated += updater_StatusUpdated; //attach handler to bubble event up
+        }
+        cores.AddRange(local);
         string json;
         foreach(Core core in _cores) {
             core.UpdateDirectory = UpdateDirectory;
@@ -223,6 +229,8 @@ public class PocketCoreUpdater : Base
 
                     if(mostRecentRelease == null) {
                         _writeMessage("No releases found. Skipping");
+                        installedAssets.AddRange(await core.DownloadAssets());
+                        Divide();
                         continue;
                     }
                     string version = mostRecentRelease.version;
@@ -385,6 +393,25 @@ public class PocketCoreUpdater : Base
     {
         string archive = _settingsManager.GetConfig().archive_name;
         return ARCHIVE_BASE_URL + "/" + archive + "/" + filename;
+    }
+
+    public async Task<List<Core>> GetLocalCores()
+    {
+        string coresDirectory = Path.Combine(UpdateDirectory, "Cores");
+        string[] directories = Directory.GetDirectories(coresDirectory,"*", SearchOption.TopDirectoryOnly);
+        List<Core> all = new List<Core>();
+        foreach(string name in directories) {
+            string n = Path.GetFileName(name);
+            var matches = _cores.Where(i=>i.identifier == n);
+            if(matches.Count<Core>() == 0) {
+                Core c = new Core {
+                    identifier = n
+                };
+                all.Add(c);
+            }
+        }
+
+        return all;
     }
 
     public void SetGithubApiKey(string key)

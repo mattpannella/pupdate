@@ -32,6 +32,10 @@ public class Core : Base
 
     public async Task<bool> Install(string UpdateDirectory, string tag_name, string githubApiKey = "", bool extractAll = false)
     {
+        if(this.repository == null) {
+            _writeMessage("Core installed manually. Skipping.");
+            return false;
+        }
         this.UpdateDirectory = UpdateDirectory;
         this._extractAll = extractAll;
         if(this.mono) {
