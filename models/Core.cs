@@ -175,8 +175,9 @@ public class Core : Base
         }
     }
 
-    public async Task CheckAssets()
+    public async Task<List<string>> CheckAssets()
     {
+        List<string> installed = new List<string>();
         checkUpdateDirectory();
         _writeMessage("Looking for Assets");
         Analogue.Core info = this.getConfig().core;
@@ -203,8 +204,9 @@ public class Core : Base
                     if(File.Exists(path)) {
                         _writeMessage("Already installed: " + slot.filename);
                     } else {
-                        await DownloadAsset(slot.filename, path);
-                        //installed.Add(filePath);
+                        if(await DownloadAsset(slot.filename, path)) {
+                            installed.Add(path);
+                        }
                     }
                     
                 }
@@ -213,7 +215,7 @@ public class Core : Base
         //else
           //  _writeMessage("no slots");
         if(this.identifier == "Mazamars312.NeoGeo") {
-            return; //nah
+            return installed; //nah
         }
         if(Directory.Exists(instancesDirectory)) {
             string[] files = Directory.GetFiles(instancesDirectory,"*.json", SearchOption.AllDirectories);
@@ -226,12 +228,16 @@ public class Core : Base
                         if(File.Exists(path)) {
                             _writeMessage("Already installed: " + slot.filename);
                         } else {
-                            await DownloadAsset(slot.filename, path);
+                            if(await DownloadAsset(slot.filename, path)) {
+                                installed.Add(path);
+                            }
                         }
                     }
                 }
             }
         }
+
+        return installed;
     }
 
     public Analogue.Config? getConfig()
@@ -251,7 +257,7 @@ public class Core : Base
         return File.Exists(localCoreFile);
     }
 
-    private async Task DownloadAsset(string filename, string destination)
+    private async Task<bool> DownloadAsset(string filename, string destination)
     {
         try {
             string url = BuildAssetUrl(filename);
@@ -264,7 +270,11 @@ public class Core : Base
             } else {
                 _writeMessage("There was a problem downloading " + filename);
             }
+
+            return false;
         }
+
+        return true;
     }
 
     private string BuildAssetUrl(string filename)
