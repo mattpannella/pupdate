@@ -1,6 +1,9 @@
 namespace pannella.analoguepocket;
 
+using System.IO;
 using System.IO.Compression;
+using System.Net.Http;
+using System.Text.Json;
 
 public class Core : Base
 {
@@ -17,8 +20,10 @@ public class Core : Base
     private static readonly string[] ZIP_TYPES = {"application/x-zip-compressed", "application/zip"};
     private const string ZIP_FILE_NAME = "core.zip";
 
-    private string UpdateDirectory;
+    public string UpdateDirectory { get; set; }
+    public string archive { get; set; }
     private bool _extractAll = false;
+    public bool downloadAssets { get; set; } = true;
 
     public override string ToString()
     {
@@ -27,6 +32,10 @@ public class Core : Base
 
     public async Task<bool> Install(string UpdateDirectory, string tag_name, string githubApiKey = "", bool extractAll = false)
     {
+        if(this.repository == null) {
+            _writeMessage("Core installed manually. Skipping.");
+            return false;
+        }
         this.UpdateDirectory = UpdateDirectory;
         this._extractAll = extractAll;
         if(this.mono) {
@@ -42,7 +51,7 @@ public class Core : Base
                     continue;
                 }
                 foundZip = true;
-                await _installAsset(asset.browser_download_url, this.identifier);
+                await _installGithubAsset(asset.browser_download_url, this.identifier);
             }
 
             if(!foundZip) {
@@ -99,7 +108,7 @@ public class Core : Base
         return true;
     }
 
-    private async Task<bool> _installAsset(string downloadLink, string coreName)
+    private async Task<bool> _installGithubAsset(string downloadLink, string coreName)
     {
         bool updated = false;
         _writeMessage("Downloading file " + downloadLink + "...");
@@ -148,6 +157,18 @@ public class Core : Base
         return updated;
     }
 
+    private bool checkUpdateDirectory()
+    {
+        if(this.UpdateDirectory == null) {
+            throw new Exception("Didn't set an update directory");
+        }
+        if(!Directory.Exists(this.UpdateDirectory)) {
+            throw new Exception("Unable to access update directory");
+        }
+
+        return true;
+    }
+
     public void Uninstall(string UpdateDirectory)
     {
         List<string> folders = new List<string>{"Cores", "Presets"};
@@ -159,5 +180,115 @@ public class Core : Base
                 Divide();
             }
         }
+    }
+
+    public async Task<List<string>> DownloadAssets()
+    {
+        List<string> installed = new List<string>();
+        if(!downloadAssets) {
+            return installed;
+        }
+        checkUpdateDirectory();
+        _writeMessage("Looking for Assets");
+        Analogue.Core info = this.getConfig().core;
+        string coreDirectory = Path.Combine(UpdateDirectory, "Cores", this.identifier);
+        //cores with multiple platforms won't work...not sure any exist right now?
+        string instancesDirectory = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0], this.identifier);
+
+        string dataFile = Path.Combine(coreDirectory, "data.json");
+        var options = new JsonSerializerOptions
+        {
+            Converters = { new StringConverter() }
+        };
+
+        Analogue.DataJSON data = JsonSerializer.Deserialize<Analogue.DataJSON>(File.ReadAllText(dataFile), options);
+        if(data.data.data_slots.Length > 0) {
+            foreach(Analogue.DataSlot slot in data.data.data_slots) {
+                if(slot.filename != null) {
+                    string path = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0]);
+                    if(slot.isCoreSpecific()) {
+                        path = Path.Combine(path, this.identifier);
+                    } else {
+                        path = Path.Combine(path, "common");
+                    }
+                    path = Path.Combine(path, slot.filename);
+                    if(File.Exists(path)) {
+                        _writeMessage("Already installed: " + slot.filename);
+                    } else {
+                        if(await DownloadAsset(slot.filename, path)) {
+                            installed.Add(path);
+                        }
+                    }
+                    
+                }
+            }
+        }
+
+        if(this.identifier == "Mazamars312.NeoGeo") {
+            return installed; //nah
+        }
+        if(Directory.Exists(instancesDirectory)) {
+            string[] files = Directory.GetFiles(instancesDirectory,"*.json", SearchOption.AllDirectories);
+            foreach(string file in files) {
+                Analogue.InstanceJSON instance = JsonSerializer.Deserialize<Analogue.InstanceJSON>(File.ReadAllText(file), options);
+                if(instance.instance.data_slots.Length > 0) {
+                    string data_path = instance.instance.data_path;
+                    foreach(Analogue.DataSlot slot in instance.instance.data_slots) {
+                        string path = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0], "common", data_path, slot.filename);
+                        if(File.Exists(path)) {
+                            _writeMessage("Already installed: " + slot.filename);
+                        } else {
+                            if(await DownloadAsset(slot.filename, path)) {
+                                installed.Add(path);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return installed;
+    }
+
+    public Analogue.Config? getConfig()
+    {
+        checkUpdateDirectory();
+        string file = Path.Combine(UpdateDirectory, "Cores", this.identifier, "core.json");
+        string json = File.ReadAllText(file);
+        Analogue.Config? config = JsonSerializer.Deserialize<Analogue.Config>(json);
+
+        return config;
+    }
+
+    public bool isInstalled()
+    {
+        checkUpdateDirectory();
+        string localCoreFile = Path.Combine(UpdateDirectory, "Cores", this.identifier, "core.json");
+        return File.Exists(localCoreFile);
+    }
+
+    private async Task<bool> DownloadAsset(string filename, string destination)
+    {
+        try {
+            string url = BuildAssetUrl(filename);
+            _writeMessage("Downloading " + filename);
+            await HttpHelper.DownloadFileAsync(url, destination);
+            _writeMessage("Finished downloading " + filename);
+        } catch(HttpRequestException e) {
+            if(e.StatusCode == System.Net.HttpStatusCode.NotFound) {
+                _writeMessage("Unable to find " + filename + " in archive");
+            } else {
+                _writeMessage("There was a problem downloading " + filename);
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private string BuildAssetUrl(string filename)
+    {
+        return ARCHIVE_BASE_URL + "/" + archive + "/" + filename;
     }
 }

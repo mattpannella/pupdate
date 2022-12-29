@@ -1,4 +1,5 @@
 namespace pannella.analoguepocket;
+using System.IO;
 using System.IO.Compression;
 
 public class ImagePack

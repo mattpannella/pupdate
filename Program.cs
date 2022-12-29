@@ -8,6 +8,8 @@ internal class Program
     private const string USER = "mattpannella";
     private const string REPOSITORY = "pocket-updater-utility";
     private const string RELEASE_URL = "https://github.com/mattpannella/pocket-updater-utility/releases/download/{0}/pocket_updater_{1}.zip";
+
+    private static bool cliMode = false;
     private static async Task Main(string[] args)
     {
         try {
@@ -24,18 +26,23 @@ internal class Program
                     if(o.InstallPath != null && o.InstallPath != "") {
                         Console.WriteLine("path: " + o.InstallPath);
                         path = o.InstallPath;
+                        cliMode = true;
                     }
                     if(o.ExtractAll) {
                         extractAll = true;
+                        cliMode = true;
                     }
                     if(o.CoreSelector) {
                         coreSelector = true;
+                        cliMode = true;
                     }
                     if(o.PreservePlatformsFolder) {
                         preservePlatformsFolder = true;
+                        cliMode = true;
                     }
                     if(o.ForceUpdate) {
                         forceUpdate = true;
+                        cliMode = true;
                     }
                 }
                 ).WithNotParsed<Options>(o => 
@@ -432,6 +439,7 @@ internal class Program
 
     private static void Pause()
     {
+        if(cliMode) return;
         Console.ReadLine();
     }
 

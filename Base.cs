@@ -2,6 +2,7 @@ namespace pannella.analoguepocket;
 
 public class Base
 {
+    protected const string ARCHIVE_BASE_URL = "https://archive.org/download";
     public event EventHandler<StatusUpdatedEventArgs>? StatusUpdated;
     protected void Divide()
     {

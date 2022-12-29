@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.IO.Compression;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -7,7 +8,6 @@ namespace pannella.analoguepocket;
 
 public class PocketCoreUpdater : Base
 {
-    private const string ARCHIVE_BASE_URL = "https://archive.org/download";
     private const string FIRMWARE_FILENAME_PATTERN = "pocket_firmware_*.bin";
     private const string FIRMWARE_URL = "https://www.analogue.co/support/pocket/firmware/latest";
     private static readonly Regex BIN_REGEX = new Regex(@"(?inx)
@@ -58,7 +58,7 @@ public class PocketCoreUpdater : Base
     public async Task Initialize()
     {
         await LoadCores();
-        await LoadDependencies();
+       // await LoadDependencies();
         LoadSettings();
     }
 
@@ -144,8 +144,17 @@ public class PocketCoreUpdater : Base
             Divide();
             imagesBacked = true;
         }
+        List<Core> cores = _cores;
+        List<Core> local = await GetLocalCores();
+        foreach(Core core in local) {
+            core.StatusUpdated += updater_StatusUpdated; //attach handler to bubble event up
+        }
+        cores.AddRange(local);
         string json;
         foreach(Core core in _cores) {
+            core.UpdateDirectory = UpdateDirectory;
+            core.archive = _settingsManager.GetConfig().archive_name;
+            core.downloadAssets = _downloadAssets;
             try {
                 if(_settingsManager.GetCoreSettings(core.identifier).skip) {
                     _DeleteCore(core);
@@ -174,9 +183,7 @@ public class PocketCoreUpdater : Base
 
                     _writeMessage(mostRecentRelease.tag_name + " is the most recent release, checking local core...");
                     string localCoreFile = Path.Combine(UpdateDirectory, "Cores", name);
-                    bool fileExists = Directory.Exists(localCoreFile);
-
-                    if (fileExists) {
+                    if (core.isInstalled()) {
                         DateTime localDate = Directory.GetLastWriteTime(localCoreFile);
                         
                         if(localDate != null) {
@@ -186,11 +193,7 @@ public class PocketCoreUpdater : Base
                         if (DateTime.Compare(localDate, date) < 0){
                             _writeMessage("Updating core");
                         } else {
-                            if(_assets.ContainsKey(core.identifier)) {
-                                var list = await _DownloadAssets(_assets[core.identifier]); //check for roms even if core isn't updating
-                                //var list = await _DownloadAssetsNew(core.identifier, mostRecentRelease.assets);
-                                installedAssets.AddRange(list);
-                            }
+                            installedAssets.AddRange(await core.DownloadAssets());
                             _writeMessage("Up to date. Skipping core");
                             Divide();
                             continue;
@@ -206,11 +209,7 @@ public class PocketCoreUpdater : Base
                     summary.Add("platform", core.platform);
                     installed.Add(summary);
 
-                    if(_assets.ContainsKey(core.identifier)) {
-                        var list = await _DownloadAssets(_assets[core.identifier]);
-                        //var list = await _DownloadAssetsNew(core.identifier, mostRecentRelease.assets);
-                        installedAssets.AddRange(list);
-                    }
+                    installedAssets.AddRange(await core.DownloadAssets());
                     _writeMessage("Installation complete.");
                     Divide();
                 } else {
@@ -230,19 +229,15 @@ public class PocketCoreUpdater : Base
 
                     if(mostRecentRelease == null) {
                         _writeMessage("No releases found. Skipping");
+                        installedAssets.AddRange(await core.DownloadAssets());
+                        Divide();
                         continue;
                     }
                     string version = mostRecentRelease.version;
 
                     _writeMessage(version + " is the most recent release, checking local core...");
-                    string localCoreFile = Path.Combine(UpdateDirectory, "Cores/"+name+"/core.json");
-                    bool fileExists = File.Exists(localCoreFile);
-
-                    if (fileExists) {
-                        json = File.ReadAllText(localCoreFile);
-                        
-                        Analogue.Config? config = JsonSerializer.Deserialize<Analogue.Config>(json);
-                        Analogue.Core localCore = config.core;
+                    if (core.isInstalled()) {
+                        Analogue.Core localCore = core.getConfig().core;
                         string localVersion = localCore.metadata.version;
                         
                         if(localVersion != null) {
@@ -252,11 +247,7 @@ public class PocketCoreUpdater : Base
                         if (version != localVersion){
                             _writeMessage("Updating core");
                         } else {
-                            if(_assets.ContainsKey(core.identifier)) {
-                                var list = await _DownloadAssets(_assets[core.identifier]); //check for roms even if core isn't updating
-                                //var list = await _DownloadAssetsNew(core.identifier, mostRecentRelease.assets);
-                                installedAssets.AddRange(list);
-                            }
+                            installedAssets.AddRange(await core.DownloadAssets());
                             _writeMessage("Up to date. Skipping core");
                             Divide();
                             continue;
@@ -272,11 +263,7 @@ public class PocketCoreUpdater : Base
                         summary.Add("platform", core.platform);
                         installed.Add(summary);
                     }
-                    if(_assets.ContainsKey(core.identifier)) {
-                        var list = await _DownloadAssets(_assets[core.identifier]);
-                        //var list = await _DownloadAssetsNew(core.identifier, mostRecentRelease.assets);
-                        installedAssets.AddRange(list);
-                    }
+                    installedAssets.AddRange(await core.DownloadAssets());
                     _writeMessage("Installation complete.");
                     Divide();
                 }
@@ -406,6 +393,25 @@ public class PocketCoreUpdater : Base
     {
         string archive = _settingsManager.GetConfig().archive_name;
         return ARCHIVE_BASE_URL + "/" + archive + "/" + filename;
+    }
+
+    public async Task<List<Core>> GetLocalCores()
+    {
+        string coresDirectory = Path.Combine(UpdateDirectory, "Cores");
+        string[] directories = Directory.GetDirectories(coresDirectory,"*", SearchOption.TopDirectoryOnly);
+        List<Core> all = new List<Core>();
+        foreach(string name in directories) {
+            string n = Path.GetFileName(name);
+            var matches = _cores.Where(i=>i.identifier == n);
+            if(matches.Count<Core>() == 0) {
+                Core c = new Core {
+                    identifier = n
+                };
+                all.Add(c);
+            }
+        }
+
+        return all;
     }
 
     public void SetGithubApiKey(string key)
