@@ -186,6 +186,7 @@ public class Core : Base
         _writeMessage("Looking for Assets");
         Analogue.Core info = this.getConfig().core;
         string coreDirectory = Path.Combine(UpdateDirectory, "Cores", this.identifier);
+        //cores with multiple platforms won't work...not sure any exist right now?
         string instancesDirectory = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0], this.identifier);
 
         string dataFile = Path.Combine(coreDirectory, "data.json");
@@ -216,8 +217,7 @@ public class Core : Base
                 }
             }
         }
-        //else
-          //  _writeMessage("no slots");
+
         if(this.identifier == "Mazamars312.NeoGeo") {
             return installed; //nah
         }
