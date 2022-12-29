@@ -1,6 +1,8 @@
 namespace pannella.analoguepocket;
 
+using System.IO;
 using System.IO.Compression;
+using System.Net.Http;
 using System.Text.Json;
 
 public class Core : Base
