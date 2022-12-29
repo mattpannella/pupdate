@@ -45,7 +45,7 @@ public class Core : Base
                     continue;
                 }
                 foundZip = true;
-                await _installAsset(asset.browser_download_url, this.identifier);
+                await _installGithubAsset(asset.browser_download_url, this.identifier);
             }
 
             if(!foundZip) {
@@ -102,7 +102,7 @@ public class Core : Base
         return true;
     }
 
-    private async Task<bool> _installAsset(string downloadLink, string coreName)
+    private async Task<bool> _installGithubAsset(string downloadLink, string coreName)
     {
         bool updated = false;
         _writeMessage("Downloading file " + downloadLink + "...");
