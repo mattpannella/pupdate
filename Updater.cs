@@ -7,7 +7,6 @@ namespace pannella.analoguepocket;
 
 public class PocketCoreUpdater : Base
 {
-    private const string ARCHIVE_BASE_URL = "https://archive.org/download";
     private const string FIRMWARE_FILENAME_PATTERN = "pocket_firmware_*.bin";
     private const string FIRMWARE_URL = "https://www.analogue.co/support/pocket/firmware/latest";
     private static readonly Regex BIN_REGEX = new Regex(@"(?inx)
@@ -147,8 +146,8 @@ public class PocketCoreUpdater : Base
         string json;
         foreach(Core core in _cores) {
             core.UpdateDirectory = UpdateDirectory;
+            core.archive = _settingsManager.GetConfig().archive_name;
             try {
-                core.CheckAssets(); //REMOVE THIS
                 if(_settingsManager.GetCoreSettings(core.identifier).skip) {
                     _DeleteCore(core);
                     continue;
@@ -207,7 +206,9 @@ public class PocketCoreUpdater : Base
                     installed.Add(summary);
 
                     if(_assets.ContainsKey(core.identifier)) {
-                        var list = await _DownloadAssets(_assets[core.identifier]);
+                        List<string> list = new List<string>();
+                        await core.CheckAssets(); //REMOVE THIS
+                        //var list = await _DownloadAssets(_assets[core.identifier]);
                         //var list = await _DownloadAssetsNew(core.identifier, mostRecentRelease.assets);
                         installedAssets.AddRange(list);
                     }
@@ -247,7 +248,9 @@ public class PocketCoreUpdater : Base
                             _writeMessage("Updating core");
                         } else {
                             if(_assets.ContainsKey(core.identifier)) {
-                                var list = await _DownloadAssets(_assets[core.identifier]); //check for roms even if core isn't updating
+                                List<string> list = new List<string>();
+                                await core.CheckAssets(); //REMOVE THIS
+                                //var list = await _DownloadAssets(_assets[core.identifier]); //check for roms even if core isn't updating
                                 //var list = await _DownloadAssetsNew(core.identifier, mostRecentRelease.assets);
                                 installedAssets.AddRange(list);
                             }
@@ -267,7 +270,9 @@ public class PocketCoreUpdater : Base
                         installed.Add(summary);
                     }
                     if(_assets.ContainsKey(core.identifier)) {
-                        var list = await _DownloadAssets(_assets[core.identifier]);
+                        List<string> list = new List<string>();
+                        await core.CheckAssets(); //REMOVE THIS
+                        //var list = await _DownloadAssets(_assets[core.identifier]);
                         //var list = await _DownloadAssetsNew(core.identifier, mostRecentRelease.assets);
                         installedAssets.AddRange(list);
                     }

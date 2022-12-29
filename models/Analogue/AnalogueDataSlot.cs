@@ -10,7 +10,6 @@ public class DataSlot
     public string parameters { get; set; }
 
     public string? filename { get; set; }
-    public string? data_path { get; set; }
 
     public bool isCoreSpecific()
     {

@@ -19,6 +19,7 @@ public class Core : Base
     private const string ZIP_FILE_NAME = "core.zip";
 
     public string UpdateDirectory { get; set; }
+    public string archive { get; set; }
     private bool _extractAll = false;
 
     public override string ToString()
@@ -174,9 +175,10 @@ public class Core : Base
         }
     }
 
-    public void CheckAssets()
+    public async Task CheckAssets()
     {
         checkUpdateDirectory();
+        _writeMessage("Looking for Assets");
         Analogue.Core info = this.getConfig().core;
         string coreDirectory = Path.Combine(UpdateDirectory, "Cores", this.identifier);
         string instancesDirectory = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0], this.identifier);
@@ -191,20 +193,41 @@ public class Core : Base
         if(data.data.data_slots.Length > 0) {
             foreach(Analogue.DataSlot slot in data.data.data_slots) {
                 if(slot.filename != null) {
-                    _writeMessage(slot.filename + " core specific: " + slot.isCoreSpecific().ToString());
+                    string path = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0]);
+                    if(slot.isCoreSpecific()) {
+                        path = Path.Combine(path, this.identifier);
+                    } else {
+                        path = Path.Combine(path, "common");
+                    }
+                    path = Path.Combine(path, slot.filename);
+                    if(File.Exists(path)) {
+                        _writeMessage("Already installed: " + slot.filename);
+                    } else {
+                        await DownloadAsset(slot.filename, path);
+                        //installed.Add(filePath);
+                    }
+                    
                 }
             }
         }
-        else
-            _writeMessage("no slots");
-
+        //else
+          //  _writeMessage("no slots");
+        if(this.identifier == "Mazamars312.NeoGeo") {
+            return; //nah
+        }
         if(Directory.Exists(instancesDirectory)) {
             string[] files = Directory.GetFiles(instancesDirectory,"*.json", SearchOption.AllDirectories);
             foreach(string file in files) {
                 Analogue.InstanceJSON instance = JsonSerializer.Deserialize<Analogue.InstanceJSON>(File.ReadAllText(file), options);
                 if(instance.instance.data_slots.Length > 0) {
+                    string data_path = instance.instance.data_path;
                     foreach(Analogue.DataSlot slot in instance.instance.data_slots) {
-                        _writeMessage(slot.filename);
+                        string path = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0], "common", data_path, slot.filename);
+                        if(File.Exists(path)) {
+                            _writeMessage("Already installed: " + slot.filename);
+                        } else {
+                            await DownloadAsset(slot.filename, path);
+                        }
                     }
                 }
             }
@@ -226,5 +249,26 @@ public class Core : Base
         checkUpdateDirectory();
         string localCoreFile = Path.Combine(UpdateDirectory, "Cores", this.identifier, "core.json");
         return File.Exists(localCoreFile);
+    }
+
+    private async Task DownloadAsset(string filename, string destination)
+    {
+        try {
+            string url = BuildAssetUrl(filename);
+            _writeMessage("Downloading " + filename);
+            await HttpHelper.DownloadFileAsync(url, destination);
+            _writeMessage("Finished downloading " + filename);
+        } catch(HttpRequestException e) {
+            if(e.StatusCode == System.Net.HttpStatusCode.NotFound) {
+                _writeMessage("Unable to find " + filename + " in archive");
+            } else {
+                _writeMessage("There was a problem downloading " + filename);
+            }
+        }
+    }
+
+    private string BuildAssetUrl(string filename)
+    {
+        return ARCHIVE_BASE_URL + "/" + archive + "/" + filename;
     }
 }
