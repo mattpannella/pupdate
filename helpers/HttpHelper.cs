@@ -1,3 +1,6 @@
+using System.IO;
+using System.Net.Http;
+
 namespace pannella.analoguepocket;
 
 public static class HttpHelper
