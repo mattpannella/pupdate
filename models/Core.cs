@@ -18,7 +18,7 @@ public class Core : Base
     private static readonly string[] ZIP_TYPES = {"application/x-zip-compressed", "application/zip"};
     private const string ZIP_FILE_NAME = "core.zip";
 
-    public string UpdateDirectory { get; set; };
+    public string UpdateDirectory { get; set; }
     private bool _extractAll = false;
 
     public override string ToString()
@@ -181,7 +181,34 @@ public class Core : Base
         string coreDirectory = Path.Combine(UpdateDirectory, "Cores", this.identifier);
         string instancesDirectory = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0], this.identifier);
 
-        
+        string dataFile = Path.Combine(coreDirectory, "data.json");
+        var options = new JsonSerializerOptions
+        {
+            Converters = { new StringConverter() }
+        };
+
+        Analogue.DataJSON data = JsonSerializer.Deserialize<Analogue.DataJSON>(File.ReadAllText(dataFile), options);
+        if(data.data.data_slots.Length > 0) {
+            foreach(Analogue.DataSlot slot in data.data.data_slots) {
+                if(slot.filename != null) {
+                    _writeMessage(slot.filename + " core specific: " + slot.isCoreSpecific().ToString());
+                }
+            }
+        }
+        else
+            _writeMessage("no slots");
+
+        if(Directory.Exists(instancesDirectory)) {
+            string[] files = Directory.GetFiles(instancesDirectory,"*.json", SearchOption.AllDirectories);
+            foreach(string file in files) {
+                Analogue.InstanceJSON instance = JsonSerializer.Deserialize<Analogue.InstanceJSON>(File.ReadAllText(file), options);
+                if(instance.instance.data_slots.Length > 0) {
+                    foreach(Analogue.DataSlot slot in instance.instance.data_slots) {
+                        _writeMessage(slot.filename);
+                    }
+                }
+            }
+        }
     }
 
     public Analogue.Config? getConfig()

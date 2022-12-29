@@ -148,6 +148,7 @@ public class PocketCoreUpdater : Base
         foreach(Core core in _cores) {
             core.UpdateDirectory = UpdateDirectory;
             try {
+                core.CheckAssets(); //REMOVE THIS
                 if(_settingsManager.GetCoreSettings(core.identifier).skip) {
                     _DeleteCore(core);
                     continue;
