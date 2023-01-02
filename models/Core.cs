@@ -230,19 +230,24 @@ public class Core : Base
         if(Directory.Exists(instancesDirectory)) {
             string[] files = Directory.GetFiles(instancesDirectory,"*.json", SearchOption.AllDirectories);
             foreach(string file in files) {
-                Analogue.InstanceJSON instance = JsonSerializer.Deserialize<Analogue.InstanceJSON>(File.ReadAllText(file), options);
-                if(instance.instance.data_slots.Length > 0) {
-                    string data_path = instance.instance.data_path;
-                    foreach(Analogue.DataSlot slot in instance.instance.data_slots) {
-                        string path = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0], "common", data_path, slot.filename);
-                        if(File.Exists(path)) {
-                            _writeMessage("Already installed: " + slot.filename);
-                        } else {
-                            if(await DownloadAsset(slot.filename, path)) {
-                                installed.Add(path);
+                try {
+                    Analogue.InstanceJSON instance = JsonSerializer.Deserialize<Analogue.InstanceJSON>(File.ReadAllText(file), options);
+                    if(instance.instance.data_slots.Length > 0) {
+                        string data_path = instance.instance.data_path;
+                        foreach(Analogue.DataSlot slot in instance.instance.data_slots) {
+                            string path = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0], "common", data_path, slot.filename);
+                            if(File.Exists(path)) {
+                                _writeMessage("Already installed: " + slot.filename);
+                            } else {
+                                if(await DownloadAsset(slot.filename, path)) {
+                                    installed.Add(path);
+                                }
                             }
                         }
                     }
+                } catch (Exception e) {
+                    _writeMessage("Unable to read " + file);
+                    _writeMessage(e.Message);
                 }
             }
         }
