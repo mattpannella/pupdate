@@ -231,6 +231,10 @@ public class Core : Base
             string[] files = Directory.GetFiles(instancesDirectory,"*.json", SearchOption.AllDirectories);
             foreach(string file in files) {
                 try {
+                    //skip mac ._ files
+                    if(File.GetAttributes(file).HasFlag(FileAttributes.Hidden)) {
+                        continue;
+                    }
                     Analogue.InstanceJSON instance = JsonSerializer.Deserialize<Analogue.InstanceJSON>(File.ReadAllText(file), options);
                     if(instance.instance.data_slots.Length > 0) {
                         string data_path = instance.instance.data_path;
