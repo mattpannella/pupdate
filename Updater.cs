@@ -47,6 +47,7 @@ public class PocketCoreUpdater : Base
     public PocketCoreUpdater(string updateDirectory, string? settingsPath = null)
     {
         UpdateDirectory = updateDirectory;
+        Directory.CreateDirectory(Path.Combine(UpdateDirectory, "Cores"));
 
         if(settingsPath != null) {
             SettingsPath = settingsPath;
