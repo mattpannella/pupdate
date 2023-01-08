@@ -6,7 +6,7 @@ A free utility for updating the openFPGA cores, and firmware, on your Analogue P
 The update process will check for pocket firmware updates, openfpga core updates, and install any required BIOS files and arcade ROMS. You're on your own when it comes to console ROMs. 
 
 
-A complete list of available cores can also be found here: https://joshcampbell191.github.io/openfpga-cores-inventory/analogue-pocket
+A complete list of available cores can also be found here: https://openfpga-cores-inventory.github.io/analogue-pocket/
 
 
 ## Instructions ##
@@ -53,7 +53,7 @@ Edit your local copy of `pocket_updater_settings.json` and put your token in `co
 If you run the update process and get a message like `Error in framework RS: bridge not responding` when running a core, try to run the updater in a local folder on your pc, and then copy the files over to the sd card afterwards. I'm not entirely sure what the issue is, but I've seen it reported a bunch of times now and running the updater locally seems to help.
 
 ## Submitting new cores ##
-You can submit new cores here https://github.com/joshcampbell191/openfpga-cores-inventory
+You can submit new cores here https://github.com/openfpga-cores-inventory/analogue-pocket
 
 ## Credits ##
 
