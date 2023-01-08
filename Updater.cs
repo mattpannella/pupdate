@@ -62,6 +62,8 @@ public class PocketCoreUpdater : Base
        // await LoadDependencies();
         LoadSettings();
         archiveorg.Archive data = await ArchiveService.GetFiles(this._settingsManager.GetConfig().archive_name);
+        
+        archiveorg.File file = data.GetFile("3wondrsu.rom");
     }
 
     public async Task LoadDependencies()
