@@ -61,6 +61,7 @@ public class PocketCoreUpdater : Base
         await LoadCores();
        // await LoadDependencies();
         LoadSettings();
+        archiveorg.Archive data = await ArchiveService.GetFiles(this._settingsManager.GetConfig().archive_name);
     }
 
     public async Task LoadDependencies()
