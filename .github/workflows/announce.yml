@@ -18,10 +18,10 @@ jobs:
             -d '{
                 "username": "mattpannella",
                 "avatar_url": "https://avatars.githubusercontent.com/u/4806679",
-                "content": "BIG NEWS",
+                "content": "Pocket Updater Utility Release",
                 "embeds": [{
                     "color": 4819409,
-                    "title": "You are now the corn man. A new Pocket Updater Utility build has been released.",
+                    "title": "${{ github.event.release.name }}",
                     "fields": [
                         { "name": "Release Notes", "value": "[Click Me](https://github.com/mattpannella/pocket-updater-utility/releases/tag/${{ github.event.release.tag_name }})", "inline": true },
                         { "name": "Version", "value": "${{ github.event.release.tag_name }}", "inline": true },
