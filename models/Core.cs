@@ -224,7 +224,7 @@ public class Core : Base
             }
         }
 
-        if(this.identifier == "Mazamars312.NeoGeo") {
+        if(this.identifier == "Mazamars312.NeoGeo" || this.identifier == "Mazamars312.NeoGeo_Overdrive") {
             return installed; //nah
         }
         if(Directory.Exists(instancesDirectory)) {
