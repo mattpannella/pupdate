@@ -446,7 +446,7 @@ public class PocketCoreUpdater : Base
         string filename = parts[parts.Length-1];
 
         Firmware current = _settingsManager.GetCurrentFirmware();
-        if(current.version != filename) {
+        if(current.version != filename || !File.Exists(Path.Combine(UpdateDirectory, filename))) {
             version = filename;
             var oldfiles = Directory.GetFiles(UpdateDirectory, FIRMWARE_FILENAME_PATTERN);
             _writeMessage("Firmware update found. Downloading...");
@@ -454,7 +454,7 @@ public class PocketCoreUpdater : Base
             _writeMessage("Download Complete");
             _writeMessage(Path.Combine(UpdateDirectory, filename));
             foreach (string oldfile in oldfiles) {
-                if (File.Exists(oldfile)) {
+                if (File.Exists(oldfile) && Path.GetFileName(oldfile) != filename) {
                     _writeMessage("Deleting old firmware file...");
                     File.Delete(oldfile);
                 }
