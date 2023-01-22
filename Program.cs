@@ -223,6 +223,13 @@ internal class Program
             }
             Console.WriteLine("");
         }
+        if(e.SkippedAssets.Count > 0) {
+            Console.WriteLine("Assets Not Found:");
+            foreach(string asset in e.SkippedAssets) {
+                Console.WriteLine(asset);
+            }
+            Console.WriteLine("");
+        }
         if(e.FirmwareUpdated != "") {
             Console.WriteLine("New Firmware was downloaded. Restart your Pocket to install");
             Console.WriteLine(e.FirmwareUpdated);

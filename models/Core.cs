@@ -24,6 +24,8 @@ public class Core : Base
     public string archive { get; set; }
     private bool _extractAll = false;
     public bool downloadAssets { get; set; } = true;
+    public archiveorg.Archive archiveFiles { get; set; }
+    public string[] blacklist { get; set; }
 
     public override string ToString()
     {
@@ -182,11 +184,15 @@ public class Core : Base
         }
     }
 
-    public async Task<List<string>> DownloadAssets()
+    public async Task<Dictionary<string, List<string>>> DownloadAssets()
     {
         List<string> installed = new List<string>();
+        List<string> skipped = new List<string>();
         if(!downloadAssets) {
-            return installed;
+            return new Dictionary<string, List<string>>{
+                {"installed", installed },
+                {"skipped", skipped }
+            };
         }
         checkUpdateDirectory();
         _writeMessage("Looking for Assets");
@@ -204,7 +210,7 @@ public class Core : Base
         Analogue.DataJSON data = JsonSerializer.Deserialize<Analogue.DataJSON>(File.ReadAllText(dataFile), options);
         if(data.data.data_slots.Length > 0) {
             foreach(Analogue.DataSlot slot in data.data.data_slots) {
-                if(slot.filename != null) {
+                if(slot.filename != null && !blacklist.Contains(slot.filename)) {
                     string path = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0]);
                     if(slot.isCoreSpecific()) {
                         path = Path.Combine(path, this.identifier);
@@ -216,7 +222,9 @@ public class Core : Base
                         _writeMessage("Already installed: " + slot.filename);
                     } else {
                         if(await DownloadAsset(slot.filename, path)) {
-                            installed.Add(path);
+                            installed.Add(path.Replace(UpdateDirectory, ""));
+                        } else {
+                            skipped.Add(path.Replace(UpdateDirectory, ""));
                         }
                     }
                     
@@ -225,7 +233,10 @@ public class Core : Base
         }
 
         if(this.identifier == "Mazamars312.NeoGeo" || this.identifier == "Mazamars312.NeoGeo_Overdrive") {
-            return installed; //nah
+            return new Dictionary<string, List<string>>{
+                {"installed", installed },
+                {"skipped", skipped }
+            }; //nah
         }
         if(Directory.Exists(instancesDirectory)) {
             string[] files = Directory.GetFiles(instancesDirectory,"*.json", SearchOption.AllDirectories);
@@ -239,12 +250,16 @@ public class Core : Base
                     if(instance.instance.data_slots.Length > 0) {
                         string data_path = instance.instance.data_path;
                         foreach(Analogue.DataSlot slot in instance.instance.data_slots) {
-                            string path = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0], "common", data_path, slot.filename);
-                            if(File.Exists(path)) {
-                                _writeMessage("Already installed: " + slot.filename);
-                            } else {
-                                if(await DownloadAsset(slot.filename, path)) {
-                                    installed.Add(path);
+                            if(!blacklist.Contains(slot.filename)) {
+                                string path = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0], "common", data_path, slot.filename);
+                                if(File.Exists(path)) {
+                                    _writeMessage("Already installed: " + slot.filename);
+                                } else {
+                                    if(await DownloadAsset(slot.filename, path)) {
+                                        installed.Add(path.Replace(UpdateDirectory, ""));
+                                    } else {
+                                        skipped.Add(path.Replace(UpdateDirectory, ""));
+                                    }
                                 }
                             }
                         }
@@ -255,8 +270,11 @@ public class Core : Base
                 }
             }
         }
-
-        return installed;
+        Dictionary<string, List<string>> results = new Dictionary<string, List<string>>{
+            {"installed", installed },
+            {"skipped", skipped }
+        };
+        return results;
     }
 
     public Analogue.Config? getConfig()
@@ -278,6 +296,14 @@ public class Core : Base
 
     private async Task<bool> DownloadAsset(string filename, string destination)
     {
+        if(archiveFiles != null) {
+            archiveorg.File? file = archiveFiles.GetFile(filename);
+            if(file == null) {
+                _writeMessage("Unable to find " + filename + " in archive");
+                return false;
+            }
+        }
+
         try {
             string url = BuildAssetUrl(filename);
             _writeMessage("Downloading " + filename);
