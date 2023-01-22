@@ -40,6 +40,7 @@ public class PocketCoreUpdater : Base
     private Dictionary<string, Dependency>? _assets;
 
     private archiveorg.Archive _archiveFiles;
+    private string[] _blacklist;
 
     /// <summary>
     /// Constructor
@@ -65,6 +66,7 @@ public class PocketCoreUpdater : Base
        // await LoadDependencies();
         LoadSettings();
         await LoadArchive();
+        await LoadBlacklist();
     }
 
     private async Task LoadArchive()
@@ -75,6 +77,10 @@ public class PocketCoreUpdater : Base
     public async Task LoadDependencies()
     {
         _assets = await AssetsService.GetAssets();
+    }
+    private async Task LoadBlacklist()
+    {
+        _blacklist = await AssetsService.GetBlacklist();
     }
 
     public async Task LoadCores()
@@ -168,6 +174,7 @@ public class PocketCoreUpdater : Base
             core.archive = _settingsManager.GetConfig().archive_name;
             core.downloadAssets = _downloadAssets;
             core.archiveFiles = _archiveFiles;
+            core.blacklist = _blacklist;
             try {
                 if(_settingsManager.GetCoreSettings(core.identifier).skip) {
                     _DeleteCore(core);

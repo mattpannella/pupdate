@@ -25,6 +25,7 @@ public class Core : Base
     private bool _extractAll = false;
     public bool downloadAssets { get; set; } = true;
     public archiveorg.Archive archiveFiles { get; set; }
+    public string[] blacklist { get; set; }
 
     public override string ToString()
     {
@@ -209,7 +210,7 @@ public class Core : Base
         Analogue.DataJSON data = JsonSerializer.Deserialize<Analogue.DataJSON>(File.ReadAllText(dataFile), options);
         if(data.data.data_slots.Length > 0) {
             foreach(Analogue.DataSlot slot in data.data.data_slots) {
-                if(slot.filename != null) {
+                if(slot.filename != null && !blacklist.Contains(slot.filename)) {
                     string path = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0]);
                     if(slot.isCoreSpecific()) {
                         path = Path.Combine(path, this.identifier);
@@ -249,14 +250,16 @@ public class Core : Base
                     if(instance.instance.data_slots.Length > 0) {
                         string data_path = instance.instance.data_path;
                         foreach(Analogue.DataSlot slot in instance.instance.data_slots) {
-                            string path = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0], "common", data_path, slot.filename);
-                            if(File.Exists(path)) {
-                                _writeMessage("Already installed: " + slot.filename);
-                            } else {
-                                if(await DownloadAsset(slot.filename, path)) {
-                                    installed.Add(path.Replace(UpdateDirectory, ""));
+                            if(!blacklist.Contains(slot.filename)) {
+                                string path = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0], "common", data_path, slot.filename);
+                                if(File.Exists(path)) {
+                                    _writeMessage("Already installed: " + slot.filename);
                                 } else {
-                                    skipped.Add(path.Replace(UpdateDirectory, ""));
+                                    if(await DownloadAsset(slot.filename, path)) {
+                                        installed.Add(path.Replace(UpdateDirectory, ""));
+                                    } else {
+                                        skipped.Add(path.Replace(UpdateDirectory, ""));
+                                    }
                                 }
                             }
                         }
