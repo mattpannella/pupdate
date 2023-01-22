@@ -39,6 +39,8 @@ public class PocketCoreUpdater : Base
 
     private Dictionary<string, Dependency>? _assets;
 
+    private archiveorg.Archive _archiveFiles;
+
     /// <summary>
     /// Constructor
     /// </summary>
@@ -58,12 +60,16 @@ public class PocketCoreUpdater : Base
 
     public async Task Initialize()
     {
+        
         await LoadCores();
        // await LoadDependencies();
         LoadSettings();
-        archiveorg.Archive data = await ArchiveService.GetFiles(this._settingsManager.GetConfig().archive_name);
-        
-        archiveorg.File file = data.GetFile("3wondrsu.rom");
+        await LoadArchive();
+    }
+
+    private async Task LoadArchive()
+    {
+        _archiveFiles = await ArchiveService.GetFiles(this._settingsManager.GetConfig().archive_name);
     }
 
     public async Task LoadDependencies()
@@ -131,6 +137,8 @@ public class PocketCoreUpdater : Base
     {
         List<Dictionary<string, string>> installed = new List<Dictionary<string, string>>();
         List<string> installedAssets = new List<string>();
+        List<string> skippedAssets = new List<string>();
+        Dictionary<string, List<string>> results = new Dictionary<string, List<string>>();
         bool imagesBacked = false;
         string firmwareDownloaded = "";
         if(_cores == null) {
@@ -159,6 +167,7 @@ public class PocketCoreUpdater : Base
             core.UpdateDirectory = UpdateDirectory;
             core.archive = _settingsManager.GetConfig().archive_name;
             core.downloadAssets = _downloadAssets;
+            core.archiveFiles = _archiveFiles;
             try {
                 if(_settingsManager.GetCoreSettings(core.identifier).skip) {
                     _DeleteCore(core);
@@ -197,7 +206,9 @@ public class PocketCoreUpdater : Base
                         if (DateTime.Compare(localDate, date) < 0){
                             _writeMessage("Updating core");
                         } else {
-                            installedAssets.AddRange(await core.DownloadAssets());
+                            results = await core.DownloadAssets();
+                            installedAssets.AddRange(results["installed"]);
+                            skippedAssets.AddRange(results["skipped"]);
                             _writeMessage("Up to date. Skipping core");
                             Divide();
                             continue;
@@ -213,7 +224,9 @@ public class PocketCoreUpdater : Base
                     summary.Add("platform", core.platform);
                     installed.Add(summary);
 
-                    installedAssets.AddRange(await core.DownloadAssets());
+                    results = await core.DownloadAssets();
+                    installedAssets.AddRange(results["installed"]);
+                    skippedAssets.AddRange(results["skipped"]);
                     _writeMessage("Installation complete.");
                     Divide();
                 } else {
@@ -233,7 +246,9 @@ public class PocketCoreUpdater : Base
 
                     if(mostRecentRelease == null) {
                         _writeMessage("No releases found. Skipping");
-                        installedAssets.AddRange(await core.DownloadAssets());
+                        results = await core.DownloadAssets();
+                        installedAssets.AddRange(results["installed"]);
+                        skippedAssets.AddRange(results["skipped"]);
                         Divide();
                         continue;
                     }
@@ -251,7 +266,9 @@ public class PocketCoreUpdater : Base
                         if (version != localVersion){
                             _writeMessage("Updating core");
                         } else {
-                            installedAssets.AddRange(await core.DownloadAssets());
+                            results = await core.DownloadAssets();
+                            installedAssets.AddRange(results["installed"]);
+                            skippedAssets.AddRange(results["skipped"]);
                             _writeMessage("Up to date. Skipping core");
                             Divide();
                             continue;
@@ -267,7 +284,9 @@ public class PocketCoreUpdater : Base
                         summary.Add("platform", core.platform);
                         installed.Add(summary);
                     }
-                    installedAssets.AddRange(await core.DownloadAssets());
+                    results = await core.DownloadAssets();
+                    installedAssets.AddRange(results["installed"]);
+                    skippedAssets.AddRange(results["skipped"]);
                     _writeMessage("Installation complete.");
                     Divide();
                 }
@@ -286,6 +305,7 @@ public class PocketCoreUpdater : Base
         args.Message = "Update Process Complete";
         args.InstalledCores = installed;
         args.InstalledAssets = installedAssets;
+        args.SkippedAssets = skippedAssets;
         args.FirmwareUpdated = firmwareDownloaded;
         OnUpdateProcessComplete(args);
     }
@@ -505,5 +525,6 @@ public class UpdateProcessCompleteEventArgs : EventArgs
     public string Message { get; set; }
     public List<Dictionary<string, string>> InstalledCores { get; set; }
     public List<string> InstalledAssets { get; set; }
+    public List<string> SkippedAssets { get; set; }
     public string FirmwareUpdated { get; set; } = "";
 }
