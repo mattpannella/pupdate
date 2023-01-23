@@ -307,9 +307,13 @@ public class Core : Base
 
         try {
             string url = BuildAssetUrl(filename);
-            _writeMessage("Downloading " + filename);
-            await HttpHelper.DownloadFileAsync(url, destination);
-            _writeMessage("Finished downloading " + filename);
+            int count = 0;
+            do {
+                _writeMessage("Downloading " + filename);
+                await HttpHelper.DownloadFileAsync(url, destination);
+                _writeMessage("Finished downloading " + filename);
+                count++;
+            } while(count < 3 && !CheckCRC(destination));
         } catch(HttpRequestException e) {
             if(e.StatusCode == System.Net.HttpStatusCode.NotFound) {
                 _writeMessage("Unable to find " + filename + " in archive");
@@ -340,6 +344,8 @@ public class Core : Base
         if(checksum.ToString("x8").Equals(file.crc32, StringComparison.CurrentCultureIgnoreCase)) {
             return true;
         }
+
+        _writeMessage("Bad checksum!");
         return false;
     }
 }
