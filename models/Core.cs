@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Text.Json;
+using Force.Crc32;
 
 public class Core : Base
 {
@@ -218,7 +219,7 @@ public class Core : Base
                         path = Path.Combine(path, "common");
                     }
                     path = Path.Combine(path, slot.filename);
-                    if(File.Exists(path)) {
+                    if(File.Exists(path) && CheckCRC(path)) {
                         _writeMessage("Already installed: " + slot.filename);
                     } else {
                         if(await DownloadAsset(slot.filename, path)) {
@@ -252,7 +253,7 @@ public class Core : Base
                         foreach(Analogue.DataSlot slot in instance.instance.data_slots) {
                             if(!blacklist.Contains(slot.filename)) {
                                 string path = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0], "common", data_path, slot.filename);
-                                if(File.Exists(path)) {
+                                if(File.Exists(path) && CheckCRC(path)) {
                                     _writeMessage("Already installed: " + slot.filename);
                                 } else {
                                     if(await DownloadAsset(slot.filename, path)) {
@@ -306,9 +307,13 @@ public class Core : Base
 
         try {
             string url = BuildAssetUrl(filename);
-            _writeMessage("Downloading " + filename);
-            await HttpHelper.DownloadFileAsync(url, destination);
-            _writeMessage("Finished downloading " + filename);
+            int count = 0;
+            do {
+                _writeMessage("Downloading " + filename);
+                await HttpHelper.DownloadFileAsync(url, destination);
+                _writeMessage("Finished downloading " + filename);
+                count++;
+            } while(count < 3 && !CheckCRC(destination));
         } catch(HttpRequestException e) {
             if(e.StatusCode == System.Net.HttpStatusCode.NotFound) {
                 _writeMessage("Unable to find " + filename + " in archive");
@@ -325,5 +330,22 @@ public class Core : Base
     private string BuildAssetUrl(string filename)
     {
         return ARCHIVE_BASE_URL + "/" + archive + "/" + filename;
+    }
+
+    private bool CheckCRC(string filepath)
+    {
+        string filename = Path.GetFileName(filepath);
+        archiveorg.File? file = archiveFiles.GetFile(filename);
+        if(file == null) {
+            return true; //no checksum to compare to
+        }
+        //_writeMessage("Checking crc for " + filename);
+        var checksum = Crc32Algorithm.Compute(File.ReadAllBytes(filepath));
+        if(checksum.ToString("x8").Equals(file.crc32, StringComparison.CurrentCultureIgnoreCase)) {
+            return true;
+        }
+
+        _writeMessage("Bad checksum!");
+        return false;
     }
 }
