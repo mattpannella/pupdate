@@ -454,5 +454,29 @@
             "assets": [],
             "version": "a683ccaa"
         }
+    },
+    {
+        "identifier": "jotego.jtkarnov",
+        "platform": "Karnov",
+        "mono": true,
+        "release_path": "",
+        "version_type": "hash",
+        "repository": {
+            "platform": "github",
+            "owner": "mattpannella",
+            "name": "jtmirror"
+        },
+        "release": {
+            "tag_name": "a683ccaa",
+            "release_date": "20221207",
+            "platform": {
+                "category": "Arcade",
+                "name": "Karnov",
+                "manufacturer": "",
+                "year": 1492
+            },
+            "assets": [],
+            "version": "985595e"
+        }
     }
 ]
