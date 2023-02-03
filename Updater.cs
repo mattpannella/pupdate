@@ -3,6 +3,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Collections;
 
 namespace pannella.analoguepocket;
 
@@ -517,6 +518,57 @@ public class PocketCoreUpdater : Base
         core.Uninstall(UpdateDirectory);
     }
 
+    private void BuildInstanceJSONs(Core core)
+    {
+        string instancePackagerFile = Path.Combine(UpdateDirectory, "Cores", core.identifier, "instance-packager.json");
+        if(!File.Exists(instancePackagerFile)) {
+            return;
+        }
+        InstancePackager packager = JsonSerializer.Deserialize<InstancePackager>(File.ReadAllText(instancePackagerFile));
+        string outputDir = Path.Combine(UpdateDirectory, packager.output);
+
+        foreach(string dir in Directory.GetDirectories(Path.Combine(UpdateDirectory, core.platform, "common"))) {
+            Analogue.InstanceJSON instancejson = new Analogue.InstanceJSON();
+            Analogue.Instance instance = new Analogue.Instance();
+            string dirName = Path.GetDirectoryName(dir);
+            instance.data_path = dirName;
+            List<Analogue.DataSlot> slots = new List<Analogue.DataSlot>();
+            string jsonFileName = dirName;
+            foreach(DataSlot slot in packager.data_slots) {
+                Analogue.DataSlot current = new Analogue.DataSlot();
+                string[] files = Directory.GetFiles(dir, slot.filename);
+                int index = slot.id;
+                switch(slot.sort) {
+                    case "single":
+                    case "ascending":
+                        Array.Sort(files);
+                        break;
+                    case "descending":
+                        IComparer myComparer = new myReverserClass();
+                        Array.Sort(files, myComparer);
+                        break;
+                }
+                foreach(string file in files) {
+                    string filename = Path.GetFileName(file);
+                    if(slot.as_filename) {
+                        jsonFileName = filename;
+                    }
+                    current.id = index.ToString();
+                    current.filename = filename;
+                    index++;
+                }
+                slots.Add(current);
+            }
+            instance.data_slots = slots.ToArray();
+            instancejson.instance = instance;
+            string json = JsonSerializer.Serialize<Analogue.InstanceJSON>(instancejson);
+            File.WriteAllText(Path.Combine(packager.output, jsonFileName), json);
+        }
+        //read instance packager.json from /Cores/core.name/instance-packager.json
+        //loop through every sub directory of /Assets/core.platform/common
+        //inside each dir use the data_slots of the instance packager to find files 
+    }
+
     private void updater_StatusUpdated(object sender, StatusUpdatedEventArgs e)
     {
         this.OnStatusUpdated(e);
@@ -535,3 +587,11 @@ public class UpdateProcessCompleteEventArgs : EventArgs
     public List<string> SkippedAssets { get; set; }
     public string FirmwareUpdated { get; set; } = "";
 }
+
+public class myReverserClass : IComparer  {
+
+      // Calls CaseInsensitiveComparer.Compare with the parameters reversed.
+      int IComparer.Compare( Object x, Object y )  {
+          return( (new CaseInsensitiveComparer()).Compare( y, x ) );
+      }
+   }
