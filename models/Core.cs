@@ -373,7 +373,7 @@ public class Core : Base
         _writeMessage("Checking for games to build instance jsons");
         InstancePackager packager = JsonSerializer.Deserialize<InstancePackager>(File.ReadAllText(instancePackagerFile));
         string outputDir = Path.Combine(UpdateDirectory, packager.output);
-
+        bool warning = false;
         foreach(string dir in Directory.GetDirectories(Path.Combine(UpdateDirectory, "Assets", packager.platform_id, "common"))) {
             Analogue.SimpleInstanceJSON instancejson = new Analogue.SimpleInstanceJSON();
             Analogue.SimpleInstance instance = new Analogue.SimpleInstance();
@@ -406,6 +406,12 @@ public class Core : Base
                     slots.Add(current);
                 }
             }
+            var limit = (JsonElement)packager.slot_limit["count"];
+            if (packager.slot_limit != null && slots.Count > limit.GetInt32()) {
+                _writeMessage("Unable to build " + jsonFileName);
+                warning = true;
+                continue;
+            }
             instance.data_slots = slots.ToArray();
             instancejson.instance = instance;
             var options = new JsonSerializerOptions()
@@ -415,6 +421,10 @@ public class Core : Base
             string json = JsonSerializer.Serialize<Analogue.SimpleInstanceJSON>(instancejson, options);
             _writeMessage("Saving " + jsonFileName);
             File.WriteAllText(Path.Combine(UpdateDirectory, packager.output, jsonFileName), json);
+        }
+        if (warning) {
+            var message = (JsonElement)packager.slot_limit["message"];
+            _writeMessage(message.GetString());
         }
         _writeMessage("Finished");
     }
