@@ -422,9 +422,13 @@ public class Core : Base
                 {
                     WriteIndented = true
                 };
-                string json = JsonSerializer.Serialize<Analogue.SimpleInstanceJSON>(instancejson, options);
-                _writeMessage("Saving " + jsonFileName);
-                File.WriteAllText(Path.Combine(UpdateDirectory, packager.output, jsonFileName), json);
+                if(File.Exists(Path.Combine(UpdateDirectory, packager.output, jsonFileName))) {
+                    _writeMessage(jsonFileName + " already exists.");
+                } else {
+                    string json = JsonSerializer.Serialize<Analogue.SimpleInstanceJSON>(instancejson, options);
+                    _writeMessage("Saving " + jsonFileName);
+                    File.WriteAllText(Path.Combine(UpdateDirectory, packager.output, jsonFileName), json);
+                }
             } catch(Exception e) {
                 _writeMessage("Unable to build " + dirName);
             }
