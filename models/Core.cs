@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Net.Http;
 using System.Text.Json;
 using Force.Crc32;
+using System.Collections;
 
 public class Core : Base
 {
@@ -239,6 +240,16 @@ public class Core : Base
                 {"skipped", skipped }
             }; //nah
         }
+
+        string instancePackagerFile = Path.Combine(UpdateDirectory, "Cores", this.identifier, "instance-packager.json");
+        if(File.Exists(instancePackagerFile)) {
+            BuildInstanceJSONs();
+            return new Dictionary<string, List<string>>{
+                {"installed", installed },
+                {"skipped", skipped }
+            };
+        }
+        
         if(Directory.Exists(instancesDirectory)) {
             string[] files = Directory.GetFiles(instancesDirectory,"*.json", SearchOption.AllDirectories);
             foreach(string file in files) {
@@ -283,7 +294,11 @@ public class Core : Base
         checkUpdateDirectory();
         string file = Path.Combine(UpdateDirectory, "Cores", this.identifier, "core.json");
         string json = File.ReadAllText(file);
-        Analogue.Config? config = JsonSerializer.Deserialize<Analogue.Config>(json);
+        var options = new JsonSerializerOptions()
+        {
+            AllowTrailingCommas = true
+        };
+        Analogue.Config? config = JsonSerializer.Deserialize<Analogue.Config>(json, options);
 
         return config;
     }
@@ -348,4 +363,83 @@ public class Core : Base
         _writeMessage("Bad checksum!");
         return false;
     }
+
+    private void BuildInstanceJSONs(bool overwrite = true)
+    {
+        string instancePackagerFile = Path.Combine(UpdateDirectory, "Cores", this.identifier, "instance-packager.json");
+        if(!File.Exists(instancePackagerFile)) {
+            return;
+        }
+        _writeMessage("Building instance json files.");
+        InstancePackager packager = JsonSerializer.Deserialize<InstancePackager>(File.ReadAllText(instancePackagerFile));
+        string outputDir = Path.Combine(UpdateDirectory, packager.output);
+        bool warning = false;
+        foreach(string dir in Directory.GetDirectories(Path.Combine(UpdateDirectory, "Assets", packager.platform_id, "common"))) {
+            Analogue.SimpleInstanceJSON instancejson = new Analogue.SimpleInstanceJSON();
+            Analogue.SimpleInstance instance = new Analogue.SimpleInstance();
+            string dirName = Path.GetFileName(dir);
+            try {
+                instance.data_path = dirName + "/";
+                List<Analogue.InstanceDataSlot> slots = new List<Analogue.InstanceDataSlot>();
+                string jsonFileName = dirName + ".json";
+                foreach(DataSlot slot in packager.data_slots) {
+                    string[] files = Directory.GetFiles(dir, slot.filename);
+                    int index = slot.id;
+                    switch(slot.sort) {
+                        case "single":
+                        case "ascending":
+                            Array.Sort(files);
+                            break;
+                        case "descending":
+                            IComparer myComparer = new myReverserClass();
+                            Array.Sort(files, myComparer);
+                            break;
+                    }
+                    if(slot.required && files.Count() == 0) {
+                        throw new Exception("Missing required files.");
+                    }
+                    foreach(string file in files) {
+                        Analogue.InstanceDataSlot current = new Analogue.InstanceDataSlot();
+                        string filename = Path.GetFileName(file);
+                        if(slot.as_filename) {
+                            jsonFileName = Path.GetFileNameWithoutExtension(file) + ".json";
+                        }
+                        current.id = index.ToString();
+                        current.filename = filename;
+                        index++;
+                        slots.Add(current);
+                    }
+                }
+                var limit = (JsonElement)packager.slot_limit["count"];
+                if (slots.Count == 0 || (packager.slot_limit != null && slots.Count > limit.GetInt32())) {
+                    _writeMessage("Unable to build " + jsonFileName);
+                    warning = true;
+                    continue;
+                }
+                instance.data_slots = slots.ToArray();
+                instancejson.instance = instance;
+                var options = new JsonSerializerOptions()
+                {
+                    WriteIndented = true
+                };
+                string json = JsonSerializer.Serialize<Analogue.SimpleInstanceJSON>(instancejson, options);
+                _writeMessage("Saving " + jsonFileName);
+                File.WriteAllText(Path.Combine(UpdateDirectory, packager.output, jsonFileName), json);
+            } catch(Exception e) {
+                _writeMessage("Unable to build " + dirName);
+            }
+        }
+        if (warning) {
+            var message = (JsonElement)packager.slot_limit["message"];
+            _writeMessage(message.GetString());
+        }
+        _writeMessage("Finished");
+    }
 }
+public class myReverserClass : IComparer  {
+
+      // Calls CaseInsensitiveComparer.Compare with the parameters reversed.
+      int IComparer.Compare( Object x, Object y )  {
+          return( (new CaseInsensitiveComparer()).Compare( y, x ) );
+      }
+   }
