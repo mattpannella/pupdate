@@ -370,7 +370,7 @@ public class Core : Base
         if(!File.Exists(instancePackagerFile)) {
             return;
         }
-        _writeMessage("Checking for games to build instance jsons");
+        _writeMessage("Building instance json files.");
         InstancePackager packager = JsonSerializer.Deserialize<InstancePackager>(File.ReadAllText(instancePackagerFile));
         string outputDir = Path.Combine(UpdateDirectory, packager.output);
         bool warning = false;
@@ -378,49 +378,56 @@ public class Core : Base
             Analogue.SimpleInstanceJSON instancejson = new Analogue.SimpleInstanceJSON();
             Analogue.SimpleInstance instance = new Analogue.SimpleInstance();
             string dirName = Path.GetFileName(dir);
-            instance.data_path = dirName + "/";
-            List<Analogue.InstanceDataSlot> slots = new List<Analogue.InstanceDataSlot>();
-            string jsonFileName = dirName + ".json";
-            foreach(DataSlot slot in packager.data_slots) {
-                string[] files = Directory.GetFiles(dir, slot.filename);
-                int index = slot.id;
-                switch(slot.sort) {
-                    case "single":
-                    case "ascending":
-                        Array.Sort(files);
-                        break;
-                    case "descending":
-                        IComparer myComparer = new myReverserClass();
-                        Array.Sort(files, myComparer);
-                        break;
-                }
-                foreach(string file in files) {
-                    Analogue.InstanceDataSlot current = new Analogue.InstanceDataSlot();
-                    string filename = Path.GetFileName(file);
-                    if(slot.as_filename) {
-                        jsonFileName = Path.GetFileNameWithoutExtension(file) + ".json";
+            try {
+                instance.data_path = dirName + "/";
+                List<Analogue.InstanceDataSlot> slots = new List<Analogue.InstanceDataSlot>();
+                string jsonFileName = dirName + ".json";
+                foreach(DataSlot slot in packager.data_slots) {
+                    string[] files = Directory.GetFiles(dir, slot.filename);
+                    int index = slot.id;
+                    switch(slot.sort) {
+                        case "single":
+                        case "ascending":
+                            Array.Sort(files);
+                            break;
+                        case "descending":
+                            IComparer myComparer = new myReverserClass();
+                            Array.Sort(files, myComparer);
+                            break;
                     }
-                    current.id = index.ToString();
-                    current.filename = filename;
-                    index++;
-                    slots.Add(current);
+                    if(slot.required && files.Count() == 0) {
+                        throw new Exception("Missing required files.");
+                    }
+                    foreach(string file in files) {
+                        Analogue.InstanceDataSlot current = new Analogue.InstanceDataSlot();
+                        string filename = Path.GetFileName(file);
+                        if(slot.as_filename) {
+                            jsonFileName = Path.GetFileNameWithoutExtension(file) + ".json";
+                        }
+                        current.id = index.ToString();
+                        current.filename = filename;
+                        index++;
+                        slots.Add(current);
+                    }
                 }
+                var limit = (JsonElement)packager.slot_limit["count"];
+                if (slots.Count == 0 || (packager.slot_limit != null && slots.Count > limit.GetInt32())) {
+                    _writeMessage("Unable to build " + jsonFileName);
+                    warning = true;
+                    continue;
+                }
+                instance.data_slots = slots.ToArray();
+                instancejson.instance = instance;
+                var options = new JsonSerializerOptions()
+                {
+                    WriteIndented = true
+                };
+                string json = JsonSerializer.Serialize<Analogue.SimpleInstanceJSON>(instancejson, options);
+                _writeMessage("Saving " + jsonFileName);
+                File.WriteAllText(Path.Combine(UpdateDirectory, packager.output, jsonFileName), json);
+            } catch(Exception e) {
+                _writeMessage("Unable to build " + dirName);
             }
-            var limit = (JsonElement)packager.slot_limit["count"];
-            if (packager.slot_limit != null && slots.Count > limit.GetInt32()) {
-                _writeMessage("Unable to build " + jsonFileName);
-                warning = true;
-                continue;
-            }
-            instance.data_slots = slots.ToArray();
-            instancejson.instance = instance;
-            var options = new JsonSerializerOptions()
-            {
-                WriteIndented = true
-            };
-            string json = JsonSerializer.Serialize<Analogue.SimpleInstanceJSON>(instancejson, options);
-            _writeMessage("Saving " + jsonFileName);
-            File.WriteAllText(Path.Combine(UpdateDirectory, packager.output, jsonFileName), json);
         }
         if (warning) {
             var message = (JsonElement)packager.slot_limit["message"];
