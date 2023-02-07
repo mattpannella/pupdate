@@ -149,12 +149,12 @@ public class PocketCoreUpdater : Base
         return cores;
     }
 
-    public async Task BuildInstanceJSON(bool overwrite = false, string corename = null)
+    public async Task BuildInstanceJSON(bool overwrite = false, string? corename = null)
     {
         List<Core> cores = await getAllCores();
         foreach(Core core in _cores) {
             core.UpdateDirectory = UpdateDirectory;
-            if(core.CheckInstancePackager()) {
+            if(core.CheckInstancePackager() && (corename == null || corename == core.identifier)) {
                 _writeMessage(core.identifier);
                 core.BuildInstanceJSONs(overwrite);
                 Divide();
@@ -196,6 +196,7 @@ public class PocketCoreUpdater : Base
             core.downloadAssets = _downloadAssets;
             core.archiveFiles = _archiveFiles;
             core.blacklist = _blacklist;
+            core.buildInstances = _settingsManager.GetConfig().build_instance_jsons;
             try {
                 if(_settingsManager.GetCoreSettings(core.identifier).skip) {
                     _DeleteCore(core);

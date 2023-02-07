@@ -10,6 +10,7 @@ public class Config
     public bool preserve_platforms_folder { get; set; }
     public bool delete_skipped_cores { get; set; }
     public string? download_new_cores { get; set; }
+    public bool build_instance_jsons { get; set; }
 
     public Config()
     {
@@ -20,5 +21,6 @@ public class Config
         preserve_platforms_folder = false;
         delete_skipped_cores = true;
         download_new_cores = null;
+        build_instance_jsons = true;
     }
 }

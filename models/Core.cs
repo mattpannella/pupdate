@@ -28,6 +28,7 @@ public class Core : Base
     public bool downloadAssets { get; set; } = true;
     public archiveorg.Archive archiveFiles { get; set; }
     public string[] blacklist { get; set; }
+    public bool buildInstances { get; set; } = true;
 
     public override string ToString()
     {
@@ -365,6 +366,9 @@ public class Core : Base
 
     public void BuildInstanceJSONs(bool overwrite = true)
     {
+        if(!this.buildInstances) {
+            return;
+        }
         string instancePackagerFile = Path.Combine(UpdateDirectory, "Cores", this.identifier, "instance-packager.json");
         if(!File.Exists(instancePackagerFile)) {
             return;
