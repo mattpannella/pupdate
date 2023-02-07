@@ -399,6 +399,9 @@ public class Core : Base
                         throw new Exception("Missing required files.");
                     }
                     foreach(string file in files) {
+                        if(File.GetAttributes(file).HasFlag(FileAttributes.Hidden)) {
+                            continue;
+                        }
                         Analogue.InstanceDataSlot current = new Analogue.InstanceDataSlot();
                         string filename = Path.GetFileName(file);
                         if(slot.as_filename) {
