@@ -33,24 +33,32 @@ This will present you with a list of available image packs and automatically dow
 #### Core Selector
 On your first run it will prompt you to select the cores you want tracked. After that initial run, you can run it again any time via the main menu. Or you can always run this again by setting `config.core_selector` to `true` in the settings json file, or if running from the cli you can use the paramater -c
 
-#### Allow pre-release cores
-You can edit your `pocket_updater_settings.json` file and set the `allowPrerelease` flag to `true` for any core want to download, even though it's still pre-release
+### Settings
+#### All settings can be modified in your `pocket_updater_settings.json` file
+
+#### Allow pre-release cores 
+ - `allowPrerelease`  
+ Set to `true` for any core want to download, even though it's still pre-release
 
 #### Disable Firmware Downloading
-Set `config.download_firmware` to `false` in your settings file
+ - `config.download_firmware`  
+Set to `false` if you don't want `Update All` to check for firmware updates
 
 #### Disable Asset Downloading
-Set `config.download_assets` to `false` in your settings file, if you'd like to supply your own BIOS and arcade rom files
+ - `config.download_assets`  
+Set to `false` if you'd like to supply your own BIOS and arcade rom files, and don't want `Update All` to handle this.
 
 #### Preserve Platforms Folder Customizations
+ - `config.preserve_platforms_folder`  
 If you have any customizations to the Platforms folder, you can use this option to preserve them during the update process.
-Set `config.preserve_platforms_folder` to `true` in your settings file, or use `-f` as a command line parameter
+Set to `true` in your settings file, or use `-f` as a command line parameter
 
 #### Github Personal Access Token
+ - `config.github_token`  
 If you're running up against the rate limit on the github api, you can provide your personal access token to the updater via the settings.
-Edit your local copy of `pocket_updater_settings.json` and put your token in `config.github_token`
 
 #### Generating Instance JSON Files
+ - `config.github_token`
  - Only supported by PC Engine CD, currently
  - Put your games in /Assets/{platform}/common
  - Each game needs to be in its own directory (and be sure to name the directory the full title of the game)
