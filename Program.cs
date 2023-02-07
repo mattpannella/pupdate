@@ -19,6 +19,7 @@ internal class Program
             bool coreSelector = false;
             bool preservePlatformsFolder = false;
             bool forceUpdate = false;
+            bool forceInstanceGenerator = false;
 
             Parser.Default.ParseArguments<Options>(args)
                 .WithParsed<Options>(o =>
@@ -42,6 +43,10 @@ internal class Program
                     }
                     if(o.ForceUpdate) {
                         forceUpdate = true;
+                        cliMode = true;
+                    }
+                    if(o.ForceInstanceGenerator) {
+                        forceInstanceGenerator = true;
                         cliMode = true;
                     }
                 }
@@ -131,8 +136,13 @@ internal class Program
 
                 updater.LoadSettings();
             }
-
-            if(!forceUpdate) {
+            if(forceUpdate) {
+                Console.WriteLine("Starting update process...");
+                await updater.RunUpdates();
+                Pause();
+            } else if(forceInstanceGenerator) {
+                await RunInstanceGenerator(updater, true);
+            } else {
                 bool flag = true;
                 while(flag) {
                     int choice = DisplayMenu();
@@ -155,6 +165,10 @@ internal class Program
                             await ImagePackSelector(path);
                             break;
                         case 4:
+                            await RunInstanceGenerator(updater);
+                            Pause();
+                            break;
+                        case 5:
                             flag = false;
                             break;
                         case 0:
@@ -165,16 +179,26 @@ internal class Program
                             break;
                     }
                 }
-            } else {
-                Console.WriteLine("Starting update process...");
-                await updater.RunUpdates();
-                Pause();
             }
         } catch (Exception e) {
             Console.WriteLine("Well, something went wrong. Sorry about that.");
             Console.WriteLine(e.Message);
             Pause();
         }
+    }
+
+    static async Task RunInstanceGenerator(PocketCoreUpdater updater, bool force = false)
+    {
+        if(!force) {
+            ConsoleKey response;
+            Console.Write("Do you want to overwrite existing json files? [y/N] ");
+            Console.WriteLine("");
+            response = Console.ReadKey(false).Key;
+            if (response == ConsoleKey.Y) {
+                force = true;
+            }
+        }
+        await updater.BuildInstanceJSON(force);
     }
 
     static void RunCoreSelector(SettingsManager settings, List<Core> cores)
@@ -472,6 +496,7 @@ internal class Program
         "Update Firmware",
         "Select Cores",
         "Download Platform Image Packs",
+        "Generate Instance JSON Files",
         "Exit"
     };
 }
@@ -491,6 +516,9 @@ public class Options
 
     [Option ('f', "platformsfolder", Required = false, HelpText = "Preserve the Platforms folder, so customizations aren't overwritten by updates.")]
     public bool PreservePlatformsFolder { get; set; }
+
+    [Option('i', "instancegenerator", HelpText = "Force updater to just run instance json generator, instead of displaying the menu.", Required = false)]
+    public bool ForceInstanceGenerator { get; set; }
 }
 
 public static class EnumExtension {
