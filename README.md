@@ -33,6 +33,17 @@ This will present you with a list of available image packs and automatically dow
 #### Core Selector
 On your first run it will prompt you to select the cores you want tracked. After that initial run, you can run it again any time via the main menu. Or you can always run this again by setting `config.core_selector` to `true` in the settings json file, or if running from the cli you can use the paramater -c
 
+#### Generating Instance JSON Files
+ - Only supported by PC Engine CD, currently
+ - Put your games in /Assets/{platform}/common
+ - Each game needs to be in its own directory (and be sure to name the directory the full title of the game)
+    - Example: /Assets/pcecd/common/Rondo of Blood
+    - /Assets/pcecd/common/Bonk
+    - etc
+ - All games (for PC Engine CD) must be in cue/bin format. The generated json file will be saved using the same filename as the cue file, so be sure to also name that with the full title of the game
+ - When you run the `Generate Instance JSON Files` or `Update All` menu items, it will search through every directory in common and create a json file that can be launched by the core
+ - You can disable this process in Update All by setting `build_instance_jsons` to `false` in your settings file, if you don't want it to run every time you update.
+
 ### Settings
 #### All settings can be modified in your `pocket_updater_settings.json` file
 
@@ -57,17 +68,10 @@ Set to `true` in your settings file, or use `-f` as a command line parameter
  - `config.github_token`  
 If you're running up against the rate limit on the github api, you can provide your personal access token to the updater via the settings.
 
-#### Generating Instance JSON Files
- - `config.github_token`
- - Only supported by PC Engine CD, currently
- - Put your games in /Assets/{platform}/common
- - Each game needs to be in its own directory (and be sure to name the directory the full title of the game)
-    - Example: /Assets/pcecd/common/Rondo of Blood
-    - /Assets/pcecd/common/Bonk
-    - etc
- - All games (for PC Engine CD) must be in cue/bin format. The generated json file will be saved using the same filename as the cue file, so be sure to also name that with the full title of the game
- - When you run the `Generate Instance JSON Files` or `Update All` menu items, it will search through every directory in common and create a json file that can be launched by the core
- - You can disable this process in Update All by setting `build_instance_jsons` to `false` in your settings file, if you don't want it to run every time you update.
+#### Disable Instance JSON Builder
+ - `config.build_instance_jsons`
+Set this to `false` id you don't want `Update All` to build instance JSON files.
+
 
 #### Troubleshooting
 If you run the update process and get a message like `Error in framework RS: bridge not responding` when running a core, try to run the updater in a local folder on your pc, and then copy the files over to the sd card afterwards. I'm not entirely sure what the issue is, but I've seen it reported a bunch of times now and running the updater locally seems to help.
