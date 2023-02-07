@@ -14,7 +14,7 @@ If you just want to use this utility, do not clone the source repository. Just
 download the [latest release](https://github.com/mattpannella/pocket-updater-utility/releases/latest/). Unzip it, put the executable file for your platform (windows, mac os, or linux) in the root of your sd card, and run the program.
 
 #### Advanced Usage
-The updater currently accepts 4 command line parameters. I will probably add more options in the future
+CLI Parameters
 ```
  -p, --path      Absolute path to install location
  -a, --all       Extract all release assets, instead of just ones containing openFPGA cores.
