@@ -155,6 +155,10 @@ internal class Program
                             await ImagePackSelector(path);
                             break;
                         case 4:
+                            await updater.BuildInstanceJSON(false);
+                            Pause();
+                            break;
+                        case 5:
                             flag = false;
                             break;
                         case 0:
@@ -472,6 +476,7 @@ internal class Program
         "Update Firmware",
         "Select Cores",
         "Download Platform Image Packs",
+        "Generate Instance JSON Files",
         "Exit"
     };
 }

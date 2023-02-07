@@ -241,8 +241,7 @@ public class Core : Base
             }; //nah
         }
 
-        string instancePackagerFile = Path.Combine(UpdateDirectory, "Cores", this.identifier, "instance-packager.json");
-        if(File.Exists(instancePackagerFile)) {
+        if(CheckInstancePackager()) {
             BuildInstanceJSONs();
             return new Dictionary<string, List<string>>{
                 {"installed", installed },
@@ -364,7 +363,7 @@ public class Core : Base
         return false;
     }
 
-    private void BuildInstanceJSONs(bool overwrite = true)
+    public void BuildInstanceJSONs(bool overwrite = true)
     {
         string instancePackagerFile = Path.Combine(UpdateDirectory, "Cores", this.identifier, "instance-packager.json");
         if(!File.Exists(instancePackagerFile)) {
@@ -425,7 +424,7 @@ public class Core : Base
                 {
                     WriteIndented = true
                 };
-                if(File.Exists(Path.Combine(UpdateDirectory, packager.output, jsonFileName))) {
+                if(!overwrite && File.Exists(Path.Combine(UpdateDirectory, packager.output, jsonFileName))) {
                     _writeMessage(jsonFileName + " already exists.");
                 } else {
                     string json = JsonSerializer.Serialize<Analogue.SimpleInstanceJSON>(instancejson, options);
@@ -441,6 +440,12 @@ public class Core : Base
             _writeMessage(message.GetString());
         }
         _writeMessage("Finished");
+    }
+
+    public bool CheckInstancePackager()
+    {
+        string instancePackagerFile = Path.Combine(UpdateDirectory, "Cores", this.identifier, "instance-packager.json");
+        return File.Exists(instancePackagerFile);
     }
 }
 public class myReverserClass : IComparer  {

@@ -136,6 +136,32 @@ public class PocketCoreUpdater : Base
         _downloadFirmare = set;
     }
 
+    //get api and local cores
+    private async Task<List<Core>> getAllCores()
+    {
+        List<Core> cores = _cores;
+        List<Core> local = await GetLocalCores();
+        foreach(Core core in local) {
+            core.StatusUpdated += updater_StatusUpdated; //attach handler to bubble event up
+        }
+        cores.AddRange(local);
+
+        return cores;
+    }
+
+    public async Task BuildInstanceJSON(bool overwrite = false, string corename = null)
+    {
+        List<Core> cores = await getAllCores();
+        foreach(Core core in _cores) {
+            core.UpdateDirectory = UpdateDirectory;
+            if(core.CheckInstancePackager()) {
+                _writeMessage(core.identifier);
+                core.BuildInstanceJSONs(overwrite);
+                Divide();
+            }
+        }
+    }
+
     /// <summary>
     /// Run the full openFPGA core download and update process
     /// </summary>
@@ -162,12 +188,7 @@ public class PocketCoreUpdater : Base
             Divide();
             imagesBacked = true;
         }
-        List<Core> cores = _cores;
-        List<Core> local = await GetLocalCores();
-        foreach(Core core in local) {
-            core.StatusUpdated += updater_StatusUpdated; //attach handler to bubble event up
-        }
-        cores.AddRange(local);
+        List<Core> cores = await getAllCores();
         string json;
         foreach(Core core in _cores) {
             core.UpdateDirectory = UpdateDirectory;
