@@ -47,31 +47,14 @@ On your first run it will prompt you to select the cores you want tracked. After
 ### Settings
 #### All settings can be modified in your `pocket_updater_settings.json` file
 
-#### Allow pre-release cores 
- - `allowPrerelease`  
- Set to `true` for any core want to download, even though it's still pre-release
-
-#### Disable Firmware Downloading
- - `config.download_firmware`  
-Set to `false` if you don't want `Update All` to check for firmware updates
-
-#### Disable Asset Downloading
- - `config.download_assets`  
-Set to `false` if you'd like to supply your own BIOS and arcade rom files, and don't want `Update All` to handle this.
-
-#### Preserve Platforms Folder Customizations
- - `config.preserve_platforms_folder`  
-If you have any customizations to the Platforms folder, you can use this option to preserve them during the update process.
-Set to `true` in your settings file, or use `-f` as a command line parameter
-
-#### Github Personal Access Token
- - `config.github_token`  
-If you're running up against the rate limit on the github api, you can provide your personal access token to the updater via the settings.
-
-#### Disable Instance JSON Builder
- - `config.build_instance_jsons`
-Set this to `false` id you don't want `Update All` to build instance JSON files.
-
+|                                          |                                  |                                                                                                                                                                                                      |
+|------------------------------------------|----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Allow pre-release cores                  | coreSettings.{corename}.allowPrerelease                  | Set to `true` for any core want to download, even though it's still pre-release                                                                                                                        |
+| Disable Firmware Downloading             | config.download_firmware         | Set to `false` if you don't want Update All to check for firmware updates                                                                                                                              |
+| Disable Asset Downloading                | config.download_assets           | Set to `false` if you'd like to supply your own BIOS and arcade rom files, and don't want Update All to handle this.                                                                                   |
+| Preserve Platforms Folder Customizations | config.preserve_platforms_folder | If you have any customizations to the Platforms folder, you can use this option to preserve them during the update process. Set to `true` in your settings file, or use `-f` as a command line parameter |
+| Github Personal Access Token             | config.github_token              | If you're running up against the rate limit on the github api, you can provide your personal access token to the updater via the settings.                                                           |
+| Disable Instance JSON Builder            | config.build_instance_jsons      | Set this to `false` if you don't want Update All to build instance JSON files.           
 
 #### Troubleshooting
 If you run the update process and get a message like `Error in framework RS: bridge not responding` when running a core, try to run the updater in a local folder on your pc, and then copy the files over to the sd card afterwards. I'm not entirely sure what the issue is, but I've seen it reported a bunch of times now and running the updater locally seems to help.
