@@ -220,17 +220,23 @@ public class Core : Base
                     } else {
                         path = Path.Combine(path, "common");
                     }
-                    path = Path.Combine(path, slot.filename);
-                    if(File.Exists(path) && CheckCRC(path)) {
-                        _writeMessage("Already installed: " + slot.filename);
-                    } else {
-                        if(await DownloadAsset(slot.filename, path)) {
-                            installed.Add(path.Replace(UpdateDirectory, ""));
+                    List<string> files = new List<string>();
+                    files.Add(slot.filename);
+                    if (slot.alternate_filenames != null) {
+                        files.AddRange(slot.alternate_filenames);
+                    }
+                    foreach (string f in files) {
+                        string filepath = Path.Combine(path, f);
+                        if(File.Exists(filepath) && CheckCRC(filepath)) {
+                            _writeMessage("Already installed: " + f);
                         } else {
-                            skipped.Add(path.Replace(UpdateDirectory, ""));
+                            if(await DownloadAsset(f, filepath)) {
+                                installed.Add(filepath.Replace(UpdateDirectory, ""));
+                            } else {
+                                skipped.Add(filepath.Replace(UpdateDirectory, ""));
+                            }
                         }
                     }
-                    
                 }
             }
         }

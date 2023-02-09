@@ -11,6 +11,8 @@ public class DataSlot
 
     public string? filename { get; set; }
 
+    public string[]? alternate_filenames{ get; set; }
+
     public bool isCoreSpecific()
     {
         int p = 0;
