@@ -381,14 +381,15 @@ public class Core : Base
         }
         _writeMessage("Building instance json files.");
         InstancePackager packager = JsonSerializer.Deserialize<InstancePackager>(File.ReadAllText(instancePackagerFile));
+        string commonPath = Path.Combine(UpdateDirectory, "Assets", packager.platform_id, "common");
         string outputDir = Path.Combine(UpdateDirectory, packager.output);
         bool warning = false;
-        foreach(string dir in Directory.GetDirectories(Path.Combine(UpdateDirectory, "Assets", packager.platform_id, "common"))) {
+        foreach(string dir in Directory.GetDirectories(commonPath, "*", SearchOption.AllDirectories)) {
             Analogue.SimpleInstanceJSON instancejson = new Analogue.SimpleInstanceJSON();
             Analogue.SimpleInstance instance = new Analogue.SimpleInstance();
             string dirName = Path.GetFileName(dir);
             try {
-                instance.data_path = dirName + "/";
+                instance.data_path = dir.Replace(commonPath + "/", "") + "/";
                 List<Analogue.InstanceDataSlot> slots = new List<Analogue.InstanceDataSlot>();
                 string jsonFileName = dirName + ".json";
                 foreach(DataSlot slot in packager.data_slots) {
@@ -442,7 +443,7 @@ public class Core : Base
                     File.WriteAllText(Path.Combine(UpdateDirectory, packager.output, jsonFileName), json);
                 }
             } catch(Exception e) {
-                _writeMessage("Unable to build " + dirName);
+                //_writeMessage("Unable to build " + dirName);
             }
         }
         if (warning) {
