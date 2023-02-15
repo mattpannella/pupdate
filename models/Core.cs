@@ -389,7 +389,7 @@ public class Core : Base
             Analogue.SimpleInstance instance = new Analogue.SimpleInstance();
             string dirName = Path.GetFileName(dir);
             try {
-                instance.data_path = dir.Replace(commonPath + "/", "") + "/";
+                instance.data_path = dir.Replace(commonPath + Path.DirectorySeparatorChar, "") + "/";
                 List<Analogue.InstanceDataSlot> slots = new List<Analogue.InstanceDataSlot>();
                 string jsonFileName = dirName + ".json";
                 foreach(DataSlot slot in packager.data_slots) {
