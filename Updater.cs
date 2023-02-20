@@ -338,6 +338,47 @@ public class PocketCoreUpdater : Base
         args.FirmwareUpdated = firmwareDownloaded;
         OnUpdateProcessComplete(args);
     }
+
+    public async Task DownloadAssets(string? id = null)
+    {
+        List<string> installedAssets = new List<string>();
+        List<string> skippedAssets = new List<string>();
+        Dictionary<string, List<string>> results = new Dictionary<string, List<string>>();
+        if(_cores == null) {
+            throw new Exception("Must initialize updater before running update process");
+        }
+        List<Core> cores = await getAllCores();
+        foreach(Core core in _cores) {
+            if(id != null && core.identifier != id) {
+                continue;
+            }
+            core.UpdateDirectory = UpdateDirectory;
+            core.archive = _settingsManager.GetConfig().archive_name;
+            core.archiveFiles = _archiveFiles;
+            core.blacklist = _blacklist;
+            try {
+                string name = core.identifier;
+                if(name == null) {
+                    _writeMessage("Core Name is required. Skipping.");
+                    continue;
+                }
+                _writeMessage(core.identifier);
+                results = await core.DownloadAssets();
+                installedAssets.AddRange(results["installed"]);
+                skippedAssets.AddRange(results["skipped"]);
+                Divide();
+            } catch(Exception e) {
+                _writeMessage("Uh oh something went wrong.");
+                _writeMessage(e.Message);
+            }
+        } 
+
+        UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs();
+        args.Message = "All Done";
+        args.InstalledAssets = installedAssets;
+        args.SkippedAssets = skippedAssets;
+        OnUpdateProcessComplete(args);
+    }
     private async Task<List<string>> _DownloadAssetsNew(string id, List<Asset> assets)
     {
         List<string> installed = new List<string>();
