@@ -153,6 +153,11 @@ internal class Program
                             Pause();
                             break;
                         case 2:
+                            Console.WriteLine("Checking for requied files...");
+                            await updater.DownloadAssets();
+                            Pause();
+                            break;
+                        case 3:
                             List<Core> cores =  await CoresService.GetCores();
                             AskAboutNewCores(settings, true);
                             RunCoreSelector(settings, cores);
@@ -161,14 +166,14 @@ internal class Program
                             Console.WriteLine("\nDone!  Press ENTER to continue.");
                             Pause();
                             break;
-                        case 3:
+                        case 4:
                             await ImagePackSelector(path);
                             break;
-                        case 4:
+                        case 5:
                             await RunInstanceGenerator(updater);
                             Pause();
                             break;
-                        case 5:
+                        case 6:
                             flag = false;
                             break;
                         case 0:
@@ -233,7 +238,7 @@ internal class Program
     {
         Console.WriteLine("-------------");
         Console.WriteLine(e.Message);
-        if(e.InstalledCores.Count > 0) {
+        if(e.InstalledCores != null && e.InstalledCores.Count > 0) {
             Console.WriteLine("Cores Updated:");
             foreach(Dictionary<string, string> core in e.InstalledCores) {
                 Console.WriteLine(core["core"] + " " + core["version"]);
@@ -494,6 +499,7 @@ internal class Program
     private static string[] menuItems = {
         "Update All",
         "Update Firmware",
+        "Download Required Assets",
         "Select Cores",
         "Download Platform Image Packs",
         "Generate Instance JSON Files",
