@@ -202,123 +202,62 @@ public class PocketCoreUpdater : Base
                     _DeleteCore(core);
                     continue;
                 }
-                //bandaid. just skip these for now
-                if(core.mono && core.version_type == "date") {
-                    string name = core.identifier;
-                    if(name == null) {
-                        _writeMessage("Core Name is required. Skipping.");
-                        continue;
-                    }
-                    _writeMessage("Checking Core: " + name);
+                
+                string name = core.identifier;
+                if(name == null) {
+                    _writeMessage("Core Name is required. Skipping.");
+                    continue;
+                }
 
-                    var mostRecentRelease = core.release;
+                _writeMessage("Checking Core: " + name);
+                bool allowPrerelease = _settingsManager.GetCoreSettings(core.identifier).allowPrerelease;
+                var mostRecentRelease = core.version;
 
-                    if(mostRecentRelease == null) {
-                        _writeMessage("No releases found. Skipping");
-                        continue;
-                    }
-                    DateTime date;
-
-                    DateTime.TryParseExact(mostRecentRelease.tag_name, "yyyyMMdd", 
-                                System.Globalization.CultureInfo.InvariantCulture,
-                            System.Globalization.DateTimeStyles.None, out date);
-
-                    _writeMessage(mostRecentRelease.tag_name + " is the most recent release, checking local core...");
-                    string localCoreFile = Path.Combine(UpdateDirectory, "Cores", name);
-                    if (core.isInstalled()) {
-                        DateTime localDate = Directory.GetLastWriteTime(localCoreFile);
-                        
-                        if(localDate != null) {
-                            _writeMessage("local core found: " + localDate.ToString("yyyyMMdd"));
-                        }
-                        
-                        if (DateTime.Compare(localDate, date) < 0){
-                            _writeMessage("Updating core");
-                        } else {
-                            results = await core.DownloadAssets();
-                            installedAssets.AddRange(results["installed"]);
-                            skippedAssets.AddRange(results["skipped"]);
-                            _writeMessage("Up to date. Skipping core");
-                            Divide();
-                            continue;
-                        }
-                    } else {
-                        _writeMessage("Downloading core");
-                    }
-                    
-                    await core.Install(UpdateDirectory, date.ToString("yyyyMMdd"), _githubApiKey);
-                    Dictionary<string, string> summary = new Dictionary<string, string>();
-                    summary.Add("version", date.ToString("yyyyMMdd"));
-                    summary.Add("core", core.identifier);
-                    summary.Add("platform", core.platform);
-                    installed.Add(summary);
-
+                if(mostRecentRelease == null) {
+                    _writeMessage("No releases found. Skipping");
                     results = await core.DownloadAssets();
                     installedAssets.AddRange(results["installed"]);
                     skippedAssets.AddRange(results["skipped"]);
-                    _writeMessage("Installation complete.");
                     Divide();
-                } else {
-                    string name = core.identifier;
-                    if(name == null) {
-                        _writeMessage("Core Name is required. Skipping.");
-                        continue;
+                    continue;
+                }
+
+                _writeMessage(mostRecentRelease + " is the most recent release, checking local core...");
+                if (core.isInstalled()) {
+                    Analogue.Core localCore = core.getConfig().core;
+                    string localVersion = localCore.metadata.version;
+                    
+                    if(localVersion != null) {
+                        _writeMessage("local core found: " + localVersion);
                     }
 
-                    _writeMessage("Checking Core: " + name);
-                    bool allowPrerelease = _settingsManager.GetCoreSettings(core.identifier).allowPrerelease;
-                    var mostRecentRelease = core.release;
-
-                    if(allowPrerelease && core.prerelease != null) {
-                        mostRecentRelease = core.prerelease;
-                    }
-
-                    if(mostRecentRelease == null) {
-                        _writeMessage("No releases found. Skipping");
+                    if (mostRecentRelease != localVersion){
+                        _writeMessage("Updating core");
+                    } else {
                         results = await core.DownloadAssets();
                         installedAssets.AddRange(results["installed"]);
                         skippedAssets.AddRange(results["skipped"]);
+                        _writeMessage("Up to date. Skipping core");
                         Divide();
                         continue;
                     }
-                    string version = mostRecentRelease.version;
-
-                    _writeMessage(version + " is the most recent release, checking local core...");
-                    if (core.isInstalled()) {
-                        Analogue.Core localCore = core.getConfig().core;
-                        string localVersion = localCore.metadata.version;
-                        
-                        if(localVersion != null) {
-                            _writeMessage("local core found: " + localVersion);
-                        }
-
-                        if (version != localVersion){
-                            _writeMessage("Updating core");
-                        } else {
-                            results = await core.DownloadAssets();
-                            installedAssets.AddRange(results["installed"]);
-                            skippedAssets.AddRange(results["skipped"]);
-                            _writeMessage("Up to date. Skipping core");
-                            Divide();
-                            continue;
-                        }
-                    } else {
-                        _writeMessage("Downloading core");
-                    }
-                    
-                    if(await core.Install(UpdateDirectory, mostRecentRelease.tag_name, _githubApiKey, _extractAll)) {
-                        Dictionary<string, string> summary = new Dictionary<string, string>();
-                        summary.Add("version", version);
-                        summary.Add("core", core.identifier);
-                        summary.Add("platform", core.platform);
-                        installed.Add(summary);
-                    }
-                    results = await core.DownloadAssets();
-                    installedAssets.AddRange(results["installed"]);
-                    skippedAssets.AddRange(results["skipped"]);
-                    _writeMessage("Installation complete.");
-                    Divide();
+                } else {
+                    _writeMessage("Downloading core");
                 }
+                
+                if(await core.Install(UpdateDirectory, _githubApiKey)) {
+                    Dictionary<string, string> summary = new Dictionary<string, string>();
+                    summary.Add("version", mostRecentRelease);
+                    summary.Add("core", core.identifier);
+                    summary.Add("platform", core.platform.name);
+                    installed.Add(summary);
+                }
+                results = await core.DownloadAssets();
+                installedAssets.AddRange(results["installed"]);
+                skippedAssets.AddRange(results["skipped"]);
+                _writeMessage("Installation complete.");
+                Divide();
+                
             } catch(Exception e) {
                 _writeMessage("Uh oh something went wrong.");
                 _writeMessage(e.Message);

@@ -4,7 +4,7 @@ namespace pannella.analoguepocket;
 
 public static class CoresService
 {
-    private const string END_POINT = "https://openfpga-cores-inventory.github.io/analogue-pocket/api/v1/cores.json";
+    private const string END_POINT = "https://openfpga-cores-inventory.github.io/analogue-pocket/api/v2/cores.json";
     private const string OTHER = "https://raw.githubusercontent.com/mattpannella/pocket-updater-utility/main/pocket_updater_cores.json";
 
     public static async Task<List<Core>> GetCores()
@@ -13,9 +13,9 @@ public static class CoresService
         Dictionary<string, List<Core>> parsed = JsonSerializer.Deserialize<Dictionary<string, List<Core>>>(json);
 
         if(parsed.ContainsKey("data")) {
-            var others = await GetNonAPICores();
+        //    var others = await GetNonAPICores();
             var cores = parsed["data"];
-            cores.AddRange(others);
+          //  cores.AddRange(others);
             return cores;
             //return parsed["data"];
         } else {
