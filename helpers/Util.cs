@@ -102,6 +102,7 @@ public class Util
         {
             if (name.StartsWith('.')) return true;
             if (name.EndsWith(".mra")) return true;
+            if (name.EndsWith(".txt")) return true;
             return false;
         }
     }

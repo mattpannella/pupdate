@@ -13,8 +13,8 @@ public class Core : Base
     public Repo? repository { get; set; }
     public Platform? platform { get; set; }
     public Sponsor? sponsor { get; set; }
-    public string? release_url { get; set; }
-    public string? release_date { get; set; }
+    public string? download_url { get; set; }
+    public string? date_release { get; set; }
     public string? version { get; set; }
     public List<Asset> assets { get; set; }
 
@@ -42,63 +42,20 @@ public class Core : Base
         }
         this.UpdateDirectory = UpdateDirectory;
         //iterate through assets to find the zip release
-        await _installGithubAsset();
-        
-        return true;
+        return await _installGithubAsset();
     }
-
-    private async Task<Github.Release>? _fetchRelease(string tag_name, string token = "")
-    {
-        try {
-            var release = await GithubApi.GetRelease(this.repository.owner, this.repository.name, tag_name, token);
-            return release;
-        } catch (HttpRequestException e) {
-            _writeMessage("Error communicating with Github API.");
-            _writeMessage(e.Message);
-            return null;
-        }
-    }
-
-    /*private async Task<bool> _fetchCustomRelease(string githubApiKey)
-    {
-        string zip_name = this.identifier + "_" + this.version + ".zip";
-        Github.File file = await GithubApi.GetFile(this.repository.owner, this.repository.name, this.release_path + "/" + zip_name, githubApiKey);
-
-        _writeMessage("Downloading file " + file.download_url + "...");
-        string zipPath = Path.Combine(this.UpdateDirectory, ZIP_FILE_NAME);
-        string extractPath = this.UpdateDirectory;
-        await HttpHelper.DownloadFileAsync(file.download_url, zipPath);
-
-        _writeMessage("Extracting...");
-
-        string tempDir = Path.Combine(extractPath, "temp", identifier ?? release.tag_name);
-        ZipFile.ExtractToDirectory(zipPath, tempDir, true);
-
-        // Clean problematic directories and files.
-        Util.CleanDir(tempDir);
-
-        // Move the files into place and delete our core's temp directory.
-        _writeMessage("Installing...");
-        Util.CopyDirectory(tempDir, extractPath, true, true);
-        Directory.Delete(tempDir, true);
-
-        // See if the temp directory itself can be removed.
-        // Probably not needed if we aren't going to multithread this, but this is an async function so let's future proof.
-        if(!Directory.GetFiles(Path.Combine(extractPath, "temp")).Any())
-            Directory.Delete(Path.Combine(extractPath, "temp"));
-
-        File.Delete(zipPath);
-
-        return true;
-    }*/
 
     private async Task<bool> _installGithubAsset()
     {
         bool updated = false;
-        _writeMessage("Downloading file " + this.release_url + "...");
+        if (this.download_url == null) {
+            _writeMessage("No release URL found...");
+            return updated;
+        }
+        _writeMessage("Downloading file " + this.download_url + "...");
         string zipPath = Path.Combine(UpdateDirectory, ZIP_FILE_NAME);
         string extractPath = UpdateDirectory;
-        await HttpHelper.DownloadFileAsync(this.release_url, zipPath);
+        await HttpHelper.DownloadFileAsync(this.download_url, zipPath);
 
         _writeMessage("Extracting...");
         string tempDir = Path.Combine(extractPath, "temp", this.identifier);
