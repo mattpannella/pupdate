@@ -154,7 +154,7 @@ internal class Program
                             break;
                         case 2:
                             Console.WriteLine("Checking for requied files...");
-                            await updater.DownloadAssets();
+                            await updater.RunAssetDownloader();
                             Pause();
                             break;
                         case 3:

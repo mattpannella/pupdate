@@ -278,7 +278,7 @@ public class PocketCoreUpdater : Base
         OnUpdateProcessComplete(args);
     }
 
-    public async Task DownloadAssets(string? id = null)
+    public async Task RunAssetDownloader(string? id = null)
     {
         List<string> installedAssets = new List<string>();
         List<string> skippedAssets = new List<string>();
@@ -317,88 +317,6 @@ public class PocketCoreUpdater : Base
         args.InstalledAssets = installedAssets;
         args.SkippedAssets = skippedAssets;
         OnUpdateProcessComplete(args);
-    }
-    private async Task<List<string>> _DownloadAssetsNew(string id, List<Asset> assets)
-    {
-        List<string> installed = new List<string>();
-
-        if(_downloadAssets && assets != null) {
-            _writeMessage("Looking for Assets");
-            foreach(Asset asset in assets) {
-                if(asset.filename != null) {
-                    string path = Path.Combine(UpdateDirectory, "Assets", asset.platform);
-                    if(asset.core_specific) {
-                        path = Path.Combine(path, id);
-                    } else {
-                        path = Path.Combine(path, "common");
-                    }
-                    path = Path.Combine(path, asset.filename);
-                    if(File.Exists(path)) {
-                        _writeMessage("Asset already installed: " + asset.filename);
-                    } else {
-                        string url = BuildAssetUrlNew(asset.filename);
-                        _writeMessage("Downloading " + asset.filename);
-                        await HttpHelper.DownloadFileAsync(url, path);
-                        _writeMessage("Finished downloading " + asset.filename);
-                        installed.Add(path);
-                    }
-                }
-            }
-        }
-        
-        return installed; 
-    }
-
-    private async Task<List<string>> _DownloadAssets(Dependency assets)
-    {
-        List<string> installed = new List<string>();
-        if(_downloadAssets && assets != null) {
-            _writeMessage("Looking for Assets");
-            string path = Path.Combine(UpdateDirectory, assets.location);
-            if(!Directory.Exists(path)) {
-                Directory.CreateDirectory(path);
-            }
-            string filePath;
-            foreach(DependencyFile file in assets.files) {
-                if(file.overrideLocation != null) { //we have a location override
-                    //ensure directory is there. hack to fix gb/gbc issue
-                    Directory.CreateDirectory(Path.Combine(UpdateDirectory, file.overrideLocation));
-                    filePath = Path.Combine(UpdateDirectory, file.overrideLocation, file.file_name);
-                } else {
-                    filePath = Path.Combine(path, file.file_name);
-                }
-                if(File.Exists(filePath)) {
-                    _writeMessage("Asset already installed: " + file.file_name);
-                } else {
-                    try {
-                        string url = BuildAssetUrl(file);
-                        if(file.zip) {
-                            string zipFile = Path.Combine(path, "roms.zip");
-                            _writeMessage("Downloading zip file...");
-                            await HttpHelper.DownloadFileAsync(url, zipFile);
-                            string extractPath = Path.Combine(UpdateDirectory, "temp");
-                            _writeMessage("Extracting files...");
-                            ZipFile.ExtractToDirectory(zipFile, extractPath, true);
-                            _writeMessage("Moving file: " + file.file_name);
-                            File.Move(Path.Combine(extractPath, file.zip_file), filePath);
-                            _writeMessage("Deleting temp files");
-                            Directory.Delete(extractPath, true);
-                            File.Delete(zipFile);
-                            installed.Add(filePath);
-                        } else {
-                            _writeMessage("Downloading " + file.file_name);
-                            await HttpHelper.DownloadFileAsync(url, filePath);
-                            _writeMessage("Finished downloading " + file.file_name);
-                            installed.Add(filePath);
-                        }
-                    } catch(Exception e) {
-                        _writeMessage(e.Message);
-                    }
-                }
-            }
-        }
-
-        return installed;
     }
 
     private void Divide()
