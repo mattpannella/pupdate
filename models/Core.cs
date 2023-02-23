@@ -12,6 +12,7 @@ public class Core : Base
     public string identifier { get; set; }
     public Repo? repository { get; set; }
     public Platform? platform { get; set; }
+    public string platform_id { get; set; }
     public Sponsor? sponsor { get; set; }
     public string? download_url { get; set; }
     public string? date_release { get; set; }
