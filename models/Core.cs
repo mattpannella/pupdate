@@ -9,22 +9,22 @@ using System.Collections;
 
 public class Core : Base
 {
-    public string? identifier { get; set; }
+    public string identifier { get; set; }
     public Repo? repository { get; set; }
-    public string? platform { get; set; }
-    public Release release { get; set; }
-    public Release? prerelease { get; set; }
-    public bool mono { get; set; }
+    public Platform? platform { get; set; }
+    public string platform_id { get; set; }
     public Sponsor? sponsor { get; set; }
-    public string? release_path { get; set; }
-    public string version_type { get; set; } = "date";
+    public string? download_url { get; set; }
+    public string? date_release { get; set; }
+    public string? version { get; set; }
+    public List<Asset> assets { get; set; }
+
 
     private static readonly string[] ZIP_TYPES = {"application/x-zip-compressed", "application/zip"};
     private const string ZIP_FILE_NAME = "core.zip";
 
     public string UpdateDirectory { get; set; }
     public string archive { get; set; }
-    private bool _extractAll = false;
     public bool downloadAssets { get; set; } = true;
     public archiveorg.Archive archiveFiles { get; set; }
     public string[] blacklist { get; set; }
@@ -32,67 +32,34 @@ public class Core : Base
 
     public override string ToString()
     {
-        return platform;
+        return platform.name;
     }
 
-    public async Task<bool> Install(string UpdateDirectory, string tag_name, string githubApiKey = "", bool extractAll = false)
+    public async Task<bool> Install(string UpdateDirectory, string githubApiKey = "")
     {
         if(this.repository == null) {
             _writeMessage("Core installed manually. Skipping.");
             return false;
         }
         this.UpdateDirectory = UpdateDirectory;
-        this._extractAll = extractAll;
-        if(this.mono) {
-            await _fetchCustomRelease(githubApiKey);
-        } else {
-            //iterate through assets to find the zip release
-            var release = await _fetchRelease(tag_name, githubApiKey);
-            bool foundZip = false;
-            List<Github.Asset> assets = release.assets;
-            foreach(Github.Asset asset in assets) {
-                if(!ZIP_TYPES.Contains(asset.content_type)) {
-                    //not a zip file. move on
-                    continue;
-                }
-                foundZip = true;
-                await _installGithubAsset(asset.browser_download_url, this.identifier);
-            }
-
-            if(!foundZip) {
-                _writeMessage("No zip file found for release. Skipping");
-                Divide();
-                return false;
-            }
-        }
-        return true;
+        //iterate through assets to find the zip release
+        return await _installGithubAsset();
     }
 
-    private async Task<Github.Release>? _fetchRelease(string tag_name, string token = "")
+    private async Task<bool> _installGithubAsset()
     {
-        try {
-            var release = await GithubApi.GetRelease(this.repository.owner, this.repository.name, tag_name, token);
-            return release;
-        } catch (HttpRequestException e) {
-            _writeMessage("Error communicating with Github API.");
-            _writeMessage(e.Message);
-            return null;
+        bool updated = false;
+        if (this.download_url == null) {
+            _writeMessage("No release URL found...");
+            return updated;
         }
-    }
-
-    private async Task<bool> _fetchCustomRelease(string githubApiKey)
-    {
-        string zip_name = this.identifier + "_" + this.release.tag_name + ".zip";
-        Github.File file = await GithubApi.GetFile(this.repository.owner, this.repository.name, this.release_path + "/" + zip_name, githubApiKey);
-
-        _writeMessage("Downloading file " + file.download_url + "...");
-        string zipPath = Path.Combine(this.UpdateDirectory, ZIP_FILE_NAME);
-        string extractPath = this.UpdateDirectory;
-        await HttpHelper.DownloadFileAsync(file.download_url, zipPath);
+        _writeMessage("Downloading file " + this.download_url + "...");
+        string zipPath = Path.Combine(UpdateDirectory, ZIP_FILE_NAME);
+        string extractPath = UpdateDirectory;
+        await HttpHelper.DownloadFileAsync(this.download_url, zipPath);
 
         _writeMessage("Extracting...");
-
-        string tempDir = Path.Combine(extractPath, "temp", identifier ?? release.tag_name);
+        string tempDir = Path.Combine(extractPath, "temp", this.identifier);
         ZipFile.ExtractToDirectory(zipPath, tempDir, true);
 
         // Clean problematic directories and files.
@@ -105,58 +72,11 @@ public class Core : Base
 
         // See if the temp directory itself can be removed.
         // Probably not needed if we aren't going to multithread this, but this is an async function so let's future proof.
-        if(!Directory.GetFiles(Path.Combine(extractPath, "temp")).Any())
+        if (!Directory.GetFiles(Path.Combine(extractPath, "temp")).Any())
             Directory.Delete(Path.Combine(extractPath, "temp"));
 
-        File.Delete(zipPath);
-
-        return true;
-    }
-
-    private async Task<bool> _installGithubAsset(string downloadLink, string coreName)
-    {
-        bool updated = false;
-        _writeMessage("Downloading file " + downloadLink + "...");
-        string zipPath = Path.Combine(UpdateDirectory, ZIP_FILE_NAME);
-        string extractPath = UpdateDirectory;
-        await HttpHelper.DownloadFileAsync(downloadLink, zipPath);
-
-        bool isCore = _extractAll;
-
-        if(!isCore) {
-            var zip = ZipFile.OpenRead(zipPath);
-            foreach(ZipArchiveEntry entry in zip.Entries) {
-                string[] parts = entry.FullName.Split('/');
-                if(parts.Contains("Cores")) {
-                    isCore = true;
-                    break;
-                }
-            }
-            zip.Dispose();
-        }
-
-        if(!isCore) {
-            _writeMessage("Zip does not contain openFPGA core. Skipping. Please use -a if you'd like to extract all zips.");
-        } else {
-            _writeMessage("Extracting...");
-            string tempDir = Path.Combine(extractPath, "temp", coreName);
-            ZipFile.ExtractToDirectory(zipPath, tempDir, true);
-
-            // Clean problematic directories and files.
-            Util.CleanDir(tempDir);
-
-            // Move the files into place and delete our core's temp directory.
-            _writeMessage("Installing...");
-            Util.CopyDirectory(tempDir, extractPath, true, true);
-            Directory.Delete(tempDir, true);
-
-            // See if the temp directory itself can be removed.
-            // Probably not needed if we aren't going to multithread this, but this is an async function so let's future proof.
-            if (!Directory.GetFiles(Path.Combine(extractPath, "temp")).Any())
-                Directory.Delete(Path.Combine(extractPath, "temp"));
-
-            updated = true;
-        }
+        updated = true;
+        
         File.Delete(zipPath);
 
         return updated;

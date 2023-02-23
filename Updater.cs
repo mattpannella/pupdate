@@ -202,123 +202,62 @@ public class PocketCoreUpdater : Base
                     _DeleteCore(core);
                     continue;
                 }
-                //bandaid. just skip these for now
-                if(core.mono && core.version_type == "date") {
-                    string name = core.identifier;
-                    if(name == null) {
-                        _writeMessage("Core Name is required. Skipping.");
-                        continue;
-                    }
-                    _writeMessage("Checking Core: " + name);
+                
+                string name = core.identifier;
+                if(name == null) {
+                    _writeMessage("Core Name is required. Skipping.");
+                    continue;
+                }
 
-                    var mostRecentRelease = core.release;
+                _writeMessage("Checking Core: " + name);
+                bool allowPrerelease = _settingsManager.GetCoreSettings(core.identifier).allowPrerelease;
+                var mostRecentRelease = core.version;
 
-                    if(mostRecentRelease == null) {
-                        _writeMessage("No releases found. Skipping");
-                        continue;
-                    }
-                    DateTime date;
-
-                    DateTime.TryParseExact(mostRecentRelease.tag_name, "yyyyMMdd", 
-                                System.Globalization.CultureInfo.InvariantCulture,
-                            System.Globalization.DateTimeStyles.None, out date);
-
-                    _writeMessage(mostRecentRelease.tag_name + " is the most recent release, checking local core...");
-                    string localCoreFile = Path.Combine(UpdateDirectory, "Cores", name);
-                    if (core.isInstalled()) {
-                        DateTime localDate = Directory.GetLastWriteTime(localCoreFile);
-                        
-                        if(localDate != null) {
-                            _writeMessage("local core found: " + localDate.ToString("yyyyMMdd"));
-                        }
-                        
-                        if (DateTime.Compare(localDate, date) < 0){
-                            _writeMessage("Updating core");
-                        } else {
-                            results = await core.DownloadAssets();
-                            installedAssets.AddRange(results["installed"]);
-                            skippedAssets.AddRange(results["skipped"]);
-                            _writeMessage("Up to date. Skipping core");
-                            Divide();
-                            continue;
-                        }
-                    } else {
-                        _writeMessage("Downloading core");
-                    }
-                    
-                    await core.Install(UpdateDirectory, date.ToString("yyyyMMdd"), _githubApiKey);
-                    Dictionary<string, string> summary = new Dictionary<string, string>();
-                    summary.Add("version", date.ToString("yyyyMMdd"));
-                    summary.Add("core", core.identifier);
-                    summary.Add("platform", core.platform);
-                    installed.Add(summary);
-
+                if(mostRecentRelease == null) {
+                    _writeMessage("No releases found. Skipping");
                     results = await core.DownloadAssets();
                     installedAssets.AddRange(results["installed"]);
                     skippedAssets.AddRange(results["skipped"]);
-                    _writeMessage("Installation complete.");
                     Divide();
-                } else {
-                    string name = core.identifier;
-                    if(name == null) {
-                        _writeMessage("Core Name is required. Skipping.");
-                        continue;
+                    continue;
+                }
+
+                _writeMessage(mostRecentRelease + " is the most recent release, checking local core...");
+                if (core.isInstalled()) {
+                    Analogue.Core localCore = core.getConfig().core;
+                    string localVersion = localCore.metadata.version;
+                    
+                    if(localVersion != null) {
+                        _writeMessage("local core found: " + localVersion);
                     }
 
-                    _writeMessage("Checking Core: " + name);
-                    bool allowPrerelease = _settingsManager.GetCoreSettings(core.identifier).allowPrerelease;
-                    var mostRecentRelease = core.release;
-
-                    if(allowPrerelease && core.prerelease != null) {
-                        mostRecentRelease = core.prerelease;
-                    }
-
-                    if(mostRecentRelease == null) {
-                        _writeMessage("No releases found. Skipping");
+                    if (mostRecentRelease != localVersion){
+                        _writeMessage("Updating core");
+                    } else {
                         results = await core.DownloadAssets();
                         installedAssets.AddRange(results["installed"]);
                         skippedAssets.AddRange(results["skipped"]);
+                        _writeMessage("Up to date. Skipping core");
                         Divide();
                         continue;
                     }
-                    string version = mostRecentRelease.version;
-
-                    _writeMessage(version + " is the most recent release, checking local core...");
-                    if (core.isInstalled()) {
-                        Analogue.Core localCore = core.getConfig().core;
-                        string localVersion = localCore.metadata.version;
-                        
-                        if(localVersion != null) {
-                            _writeMessage("local core found: " + localVersion);
-                        }
-
-                        if (version != localVersion){
-                            _writeMessage("Updating core");
-                        } else {
-                            results = await core.DownloadAssets();
-                            installedAssets.AddRange(results["installed"]);
-                            skippedAssets.AddRange(results["skipped"]);
-                            _writeMessage("Up to date. Skipping core");
-                            Divide();
-                            continue;
-                        }
-                    } else {
-                        _writeMessage("Downloading core");
-                    }
-                    
-                    if(await core.Install(UpdateDirectory, mostRecentRelease.tag_name, _githubApiKey, _extractAll)) {
-                        Dictionary<string, string> summary = new Dictionary<string, string>();
-                        summary.Add("version", version);
-                        summary.Add("core", core.identifier);
-                        summary.Add("platform", core.platform);
-                        installed.Add(summary);
-                    }
-                    results = await core.DownloadAssets();
-                    installedAssets.AddRange(results["installed"]);
-                    skippedAssets.AddRange(results["skipped"]);
-                    _writeMessage("Installation complete.");
-                    Divide();
+                } else {
+                    _writeMessage("Downloading core");
                 }
+                
+                if(await core.Install(UpdateDirectory, _githubApiKey)) {
+                    Dictionary<string, string> summary = new Dictionary<string, string>();
+                    summary.Add("version", mostRecentRelease);
+                    summary.Add("core", core.identifier);
+                    summary.Add("platform", core.platform.name);
+                    installed.Add(summary);
+                }
+                results = await core.DownloadAssets();
+                installedAssets.AddRange(results["installed"]);
+                skippedAssets.AddRange(results["skipped"]);
+                _writeMessage("Installation complete.");
+                Divide();
+                
             } catch(Exception e) {
                 _writeMessage("Uh oh something went wrong.");
                 _writeMessage(e.Message);
@@ -339,7 +278,7 @@ public class PocketCoreUpdater : Base
         OnUpdateProcessComplete(args);
     }
 
-    public async Task DownloadAssets(string? id = null)
+    public async Task RunAssetDownloader(string? id = null)
     {
         List<string> installedAssets = new List<string>();
         List<string> skippedAssets = new List<string>();
@@ -378,88 +317,6 @@ public class PocketCoreUpdater : Base
         args.InstalledAssets = installedAssets;
         args.SkippedAssets = skippedAssets;
         OnUpdateProcessComplete(args);
-    }
-    private async Task<List<string>> _DownloadAssetsNew(string id, List<Asset> assets)
-    {
-        List<string> installed = new List<string>();
-
-        if(_downloadAssets && assets != null) {
-            _writeMessage("Looking for Assets");
-            foreach(Asset asset in assets) {
-                if(asset.filename != null) {
-                    string path = Path.Combine(UpdateDirectory, "Assets", asset.platform);
-                    if(asset.core_specific) {
-                        path = Path.Combine(path, id);
-                    } else {
-                        path = Path.Combine(path, "common");
-                    }
-                    path = Path.Combine(path, asset.filename);
-                    if(File.Exists(path)) {
-                        _writeMessage("Asset already installed: " + asset.filename);
-                    } else {
-                        string url = BuildAssetUrlNew(asset.filename);
-                        _writeMessage("Downloading " + asset.filename);
-                        await HttpHelper.DownloadFileAsync(url, path);
-                        _writeMessage("Finished downloading " + asset.filename);
-                        installed.Add(path);
-                    }
-                }
-            }
-        }
-        
-        return installed; 
-    }
-
-    private async Task<List<string>> _DownloadAssets(Dependency assets)
-    {
-        List<string> installed = new List<string>();
-        if(_downloadAssets && assets != null) {
-            _writeMessage("Looking for Assets");
-            string path = Path.Combine(UpdateDirectory, assets.location);
-            if(!Directory.Exists(path)) {
-                Directory.CreateDirectory(path);
-            }
-            string filePath;
-            foreach(DependencyFile file in assets.files) {
-                if(file.overrideLocation != null) { //we have a location override
-                    //ensure directory is there. hack to fix gb/gbc issue
-                    Directory.CreateDirectory(Path.Combine(UpdateDirectory, file.overrideLocation));
-                    filePath = Path.Combine(UpdateDirectory, file.overrideLocation, file.file_name);
-                } else {
-                    filePath = Path.Combine(path, file.file_name);
-                }
-                if(File.Exists(filePath)) {
-                    _writeMessage("Asset already installed: " + file.file_name);
-                } else {
-                    try {
-                        string url = BuildAssetUrl(file);
-                        if(file.zip) {
-                            string zipFile = Path.Combine(path, "roms.zip");
-                            _writeMessage("Downloading zip file...");
-                            await HttpHelper.DownloadFileAsync(url, zipFile);
-                            string extractPath = Path.Combine(UpdateDirectory, "temp");
-                            _writeMessage("Extracting files...");
-                            ZipFile.ExtractToDirectory(zipFile, extractPath, true);
-                            _writeMessage("Moving file: " + file.file_name);
-                            File.Move(Path.Combine(extractPath, file.zip_file), filePath);
-                            _writeMessage("Deleting temp files");
-                            Directory.Delete(extractPath, true);
-                            File.Delete(zipFile);
-                            installed.Add(filePath);
-                        } else {
-                            _writeMessage("Downloading " + file.file_name);
-                            await HttpHelper.DownloadFileAsync(url, filePath);
-                            _writeMessage("Finished downloading " + file.file_name);
-                            installed.Add(filePath);
-                        }
-                    } catch(Exception e) {
-                        _writeMessage(e.Message);
-                    }
-                }
-            }
-        }
-
-        return installed;
     }
 
     private void Divide()
