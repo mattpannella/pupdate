@@ -296,6 +296,7 @@ public class PocketCoreUpdater : Base
                 continue;
             }
 
+            core.downloadAssets = true;
             core.UpdateDirectory = UpdateDirectory;
             core.archive = _settingsManager.GetConfig().archive_name;
             core.archiveFiles = _archiveFiles;
