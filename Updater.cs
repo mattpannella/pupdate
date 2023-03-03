@@ -22,7 +22,6 @@ public class PocketCoreUpdater : Base
 
     private string _githubApiKey = "";
 
-    private bool _extractAll = false;
     private bool _downloadFirmare = true;
     private bool _deleteSkippedCores = true;
     private bool _useConsole = false;
@@ -197,6 +196,7 @@ public class PocketCoreUpdater : Base
             core.archiveFiles = _archiveFiles;
             core.blacklist = _blacklist;
             core.buildInstances = _settingsManager.GetConfig().build_instance_jsons;
+            core.useCRC = _settingsManager.GetConfig().crc_check;
             try {
                 if(_settingsManager.GetCoreSettings(core.identifier).skip) {
                     _DeleteCore(core);
@@ -416,11 +416,6 @@ public class PocketCoreUpdater : Base
         }
         Divide();
         return version;
-    }
-
-    public void ExtractAll(bool value)
-    {
-        _extractAll = value;
     }
 
     public void DeleteSkippedCores(bool value)

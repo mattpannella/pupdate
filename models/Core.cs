@@ -29,6 +29,7 @@ public class Core : Base
     public archiveorg.Archive archiveFiles { get; set; }
     public string[] blacklist { get; set; }
     public bool buildInstances { get; set; } = true;
+    public bool useCRC { get; set; } = true;
 
     public override string ToString()
     {
@@ -275,6 +276,9 @@ public class Core : Base
 
     private bool CheckCRC(string filepath)
     {
+        if(!useCRC) {
+            return true;
+        }
         string filename = Path.GetFileName(filepath);
         archiveorg.File? file = archiveFiles.GetFile(filename);
         if(file == null) {

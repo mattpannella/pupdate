@@ -11,6 +11,7 @@ public class Config
     public bool delete_skipped_cores { get; set; }
     public string? download_new_cores { get; set; }
     public bool build_instance_jsons { get; set; }
+    public bool crc_check { get; set; }
 
     public Config()
     {
@@ -22,5 +23,6 @@ public class Config
         delete_skipped_cores = true;
         download_new_cores = null;
         build_instance_jsons = true;
+        crc_check = true;
     }
 }
