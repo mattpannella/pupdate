@@ -84,7 +84,6 @@ internal class Program
                 updater.PreservePlatformsFolder(true);
             }
 
-            updater.ExtractAll(extractAll);
             updater.DeleteSkippedCores(settings.GetConfig().delete_skipped_cores);
             updater.SetGithubApiKey(settings.GetConfig().github_token);
             updater.DownloadFirmware(settings.GetConfig().download_firmware);
@@ -96,15 +95,15 @@ internal class Program
             if(coreSelector || settings.GetConfig().core_selector) {
                 settings.EnableMissingCores(updater.GetMissingCores());
                 List<Core> cores =  await CoresService.GetCores();
-                AskAboutNewCores(settings, true);
-                RunCoreSelector(settings, cores);
+                AskAboutNewCores(ref settings, true);
+                RunCoreSelector(ref settings, cores);
                 updater.LoadSettings();
             }
 
             // If we have any missing cores, handle them.
             if(updater.GetMissingCores().Any()) {
                 Console.WriteLine("\nNew cores found since the last run.");
-                AskAboutNewCores(settings);
+                AskAboutNewCores(ref settings);
 
                 string? download_new_cores = settings.GetConfig().download_new_cores?.ToLowerInvariant();
                 switch (download_new_cores) {
@@ -130,7 +129,7 @@ internal class Program
                         break;
                     default:
                     case "ask":
-                        RunCoreSelector(settings, updater.GetMissingCores());
+                        RunCoreSelector(ref settings, updater.GetMissingCores());
                         break;
                 }
 
@@ -159,8 +158,8 @@ internal class Program
                             break;
                         case 3:
                             List<Core> cores =  await CoresService.GetCores();
-                            AskAboutNewCores(settings, true);
-                            RunCoreSelector(settings, cores);
+                            AskAboutNewCores(ref settings, true);
+                            RunCoreSelector(ref settings, cores);
                             updater.LoadSettings();
 
                             Console.WriteLine("\nDone!  Press ENTER to continue.");
@@ -174,6 +173,11 @@ internal class Program
                             Pause();
                             break;
                         case 6:
+                            RunConfigWizard(ref settings);
+                            SetUpdaterFlags(ref updater, ref settings);
+                            Pause();
+                            break;
+                        case 7:
                             flag = false;
                             break;
                         case 0:
@@ -192,6 +196,14 @@ internal class Program
         }
     }
 
+    static void SetUpdaterFlags(ref PocketCoreUpdater updater, ref SettingsManager settings)
+    {
+        updater.DeleteSkippedCores(settings.GetConfig().delete_skipped_cores);
+        updater.SetGithubApiKey(settings.GetConfig().github_token);
+        updater.DownloadFirmware(settings.GetConfig().download_firmware);
+        updater.DownloadAssets(settings.GetConfig().download_assets);
+    }
+
     static async Task RunInstanceGenerator(PocketCoreUpdater updater, bool force = false)
     {
         if(!force) {
@@ -206,7 +218,7 @@ internal class Program
         await updater.BuildInstanceJSON(force);
     }
 
-    static void RunCoreSelector(SettingsManager settings, List<Core> cores)
+    static void RunCoreSelector(ref SettingsManager settings, List<Core> cores)
     {
         if(settings.GetConfig().download_new_cores?.ToLowerInvariant() == "yes") {
             foreach(Core core in cores)
@@ -226,6 +238,78 @@ internal class Program
             }
         }
         settings.GetConfig().core_selector = false;
+        settings.SaveSettings();
+    }
+
+    static void RunConfigWizard(ref SettingsManager settings)
+    {
+        ConsoleKey response;
+        bool valid = false;
+        while(!valid) {
+            Console.Write("\nDownload Firmware Updates during 'Update All'?[Y/n] ");
+            response = Console.ReadKey(false).Key;
+            if (response == ConsoleKey.N) {
+                settings.GetConfig().download_firmware = false;
+                valid = true;
+            } else if (response == ConsoleKey.Y || response == ConsoleKey.Enter) {
+                settings.GetConfig().download_firmware = true;
+                valid = true;
+            }
+        }
+        Console.WriteLine("");
+        valid = false;
+        while(!valid) {
+            Console.Write("\nDownload Missing Assets (ROMs and BIOS Files) during 'Update All'?[Y/n] ");
+            response = Console.ReadKey(false).Key;
+            if (response == ConsoleKey.N) {
+                settings.GetConfig().download_assets = false;
+                valid = true;
+            } else if (response == ConsoleKey.Y || response == ConsoleKey.Enter) {
+                settings.GetConfig().download_assets = true;
+                valid = true;
+            }
+        }
+        Console.WriteLine("");
+        valid = false;
+        while(!valid) {
+            Console.Write("\nBuild game JSON files for supported cores during 'Update All'?[Y/n] ");
+            response = Console.ReadKey(false).Key;
+            if (response == ConsoleKey.N) {
+                settings.GetConfig().build_instance_jsons = false;
+                valid = true;
+            } else if (response == ConsoleKey.Y || response == ConsoleKey.Enter) {
+                settings.GetConfig().build_instance_jsons = true;
+                valid = true;
+            }
+        }
+        Console.WriteLine("");
+        valid = false;
+        while(!valid) {
+            Console.Write("\nDelete untracked cores during 'Update All'?[Y/n] ");
+            response = Console.ReadKey(false).Key;
+            if (response == ConsoleKey.N) {
+                settings.GetConfig().delete_skipped_cores = false;
+                valid = true;
+            } else if (response == ConsoleKey.Y || response == ConsoleKey.Enter) {
+                settings.GetConfig().delete_skipped_cores = true;
+                valid = true;
+            }
+        }
+        Console.WriteLine("");
+        valid = false;
+        while(!valid) {
+            Console.Write("\nPreserve 'Platforms' folder during 'Update All'?[y/N] ");
+            response = Console.ReadKey(false).Key;
+            if (response == ConsoleKey.N || response == ConsoleKey.Enter) {
+                settings.GetConfig().preserve_platforms_folder = false;
+                valid = true;
+            } else if (response == ConsoleKey.Y) {
+                settings.GetConfig().preserve_platforms_folder = true;
+                valid = true;
+            }
+        }
+        Console.WriteLine("");
+        Console.WriteLine("Settings saved!");
         settings.SaveSettings();
     }
 
@@ -479,7 +563,7 @@ internal class Program
         Console.ReadLine();
     }
 
-    private static void AskAboutNewCores(SettingsManager settings, bool force = false)
+    private static void AskAboutNewCores(ref SettingsManager settings, bool force = false)
     {
         while(settings.GetConfig().download_new_cores == null || force) {
             force = false;
@@ -503,6 +587,7 @@ internal class Program
         "Select Cores",
         "Download Platform Image Packs",
         "Generate Instance JSON Files",
+        "Configuration Wizard",
         "Exit"
     };
 }
