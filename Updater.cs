@@ -291,6 +291,11 @@ public class PocketCoreUpdater : Base
             if(id != null && core.identifier != id) {
                 continue;
             }
+
+            if(_settingsManager.GetCoreSettings(core.identifier).skip) {
+                continue;
+            }
+
             core.UpdateDirectory = UpdateDirectory;
             core.archive = _settingsManager.GetConfig().archive_name;
             core.archiveFiles = _archiveFiles;
