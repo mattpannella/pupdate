@@ -1,6 +1,10 @@
-﻿using pannella.analoguepocket;
+﻿using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using CommandLine;
+using pannella.analoguepocket;
 
 internal class Program
 {
@@ -50,17 +54,17 @@ internal class Program
                         cliMode = true;
                     }
                 }
-                ).WithNotParsed<Options>(o => 
-                    {
-                        if(o.IsHelp()) {
-                            Environment.Exit(1);
-                        }
-                        if(o.IsVersion()) {
-                            Environment.Exit(1);
-                        }
+                ).WithNotParsed<Options>(o =>
+                {
+                    if(o.IsHelp()) {
+                        Environment.Exit(1);
                     }
+                    if(o.IsVersion()) {
+                        Environment.Exit(1);
+                    }
+                }
                 );
-            
+
             //path = "/Users/mattpannella/pocket-test";
 
             ConsoleKey response;
@@ -69,11 +73,26 @@ internal class Program
             Console.WriteLine("Checking for updates...");
 
             if(await CheckVersion(path)) {
-                Console.WriteLine("Would you like to continue anyway? [Y/n]:");
-                response = Console.ReadKey(false).Key;
-                if (response == ConsoleKey.N) {
-                    Console.WriteLine("Come again soon");
-                    PauseExit();
+                ConsoleKey[] acceptedInputs = new[] { ConsoleKey.I, ConsoleKey.C, ConsoleKey.Q };
+                do {
+                    Console.Write("Would you like to [i]nstall the update, [c]ontinue with the current version, or [q]uit? [i/c/q]: ");
+                    response = Console.ReadKey(false).Key;
+                    Console.WriteLine();
+                } while(!acceptedInputs.Contains(response));
+
+                switch(response) {
+                    case ConsoleKey.I:
+                        int result = UpdateSelfAndRun(path, args);
+                        Environment.Exit(result);
+                        break;
+
+                    case ConsoleKey.C:
+                        break;
+
+                    case ConsoleKey.Q:
+                        Console.WriteLine("Come again soon");
+                        PauseExit();
+                        break;
                 }
             }
 
@@ -94,7 +113,7 @@ internal class Program
 
             if(coreSelector || settings.GetConfig().core_selector) {
                 settings.EnableMissingCores(updater.GetMissingCores());
-                List<Core> cores =  await CoresService.GetCores();
+                List<Core> cores = await CoresService.GetCores();
                 AskAboutNewCores(ref settings, true);
                 RunCoreSelector(ref settings, cores);
                 updater.LoadSettings();
@@ -106,7 +125,7 @@ internal class Program
                 AskAboutNewCores(ref settings);
 
                 string? download_new_cores = settings.GetConfig().download_new_cores?.ToLowerInvariant();
-                switch (download_new_cores) {
+                switch(download_new_cores) {
                     case "yes":
                         Console.WriteLine("The following cores have been enabled:");
                         foreach(Core core in updater.GetMissingCores())
@@ -157,7 +176,7 @@ internal class Program
                             Pause();
                             break;
                         case 3:
-                            List<Core> cores =  await CoresService.GetCores();
+                            List<Core> cores = await CoresService.GetCores();
                             AskAboutNewCores(ref settings, true);
                             RunCoreSelector(ref settings, cores);
                             updater.LoadSettings();
@@ -189,11 +208,51 @@ internal class Program
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch(Exception e) {
             Console.WriteLine("Well, something went wrong. Sorry about that.");
             Console.WriteLine(e.Message);
             Pause();
         }
+    }
+
+    private static int UpdateSelfAndRun(string directory, string[] updaterArgs)
+    {
+        string execName = "pocket_updater.exe";
+        string execLocation = Path.Combine(directory, execName);
+        string backupName = $"{execName}.backup";
+        string backupLocation = Path.Combine(directory, backupName);
+        string updateName = "pocket_updater.zip";
+        string updateLocation = Path.Combine(directory, updateName);
+
+        int exitcode = int.MinValue;
+
+        try {
+            // Load System.IO.Compression now
+            Assembly.Load("System.IO.Compression");
+
+            // Move current process file
+            Console.WriteLine($"Renaming {execLocation} to {backupLocation}");
+            File.Move(execLocation, backupLocation, true);
+
+            // Extract update
+            Console.WriteLine($"Extracting {updateLocation} to {directory}");
+            ZipFile.ExtractToDirectory(updateLocation, directory, true);
+
+            // Execute
+            Console.WriteLine($"Executing {execLocation}");
+            ProcessStartInfo pInfo = new ProcessStartInfo(execLocation) {
+                Arguments = string.Join(' ', updaterArgs),
+                UseShellExecute = false
+            };
+
+            Process p = Process.Start(pInfo);
+            p.WaitForExit();
+            exitcode = p.ExitCode;
+        } catch(Exception e) {
+            Console.Error.WriteLine($"An error occurred: {e.GetType().Name}:{e.ToString()}");
+        }
+
+        return exitcode;
     }
 
     static void SetUpdaterFlags(ref PocketCoreUpdater updater, ref SettingsManager settings)
@@ -211,7 +270,7 @@ internal class Program
             Console.Write("Do you want to overwrite existing json files? [y/N] ");
             Console.WriteLine("");
             response = Console.ReadKey(false).Key;
-            if (response == ConsoleKey.Y) {
+            if(response == ConsoleKey.Y) {
                 force = true;
             }
         }
@@ -229,7 +288,7 @@ internal class Program
             foreach(Core core in cores) {
                 Console.Write(core.identifier + "?[Y/n] ");
                 response = Console.ReadKey(false).Key;
-                if (response == ConsoleKey.N) {
+                if(response == ConsoleKey.N) {
                     settings.DisableCore(core.identifier);
                 } else {
                     settings.EnableCore(core.identifier);
@@ -248,10 +307,10 @@ internal class Program
         while(!valid) {
             Console.Write("\nDownload Firmware Updates during 'Update All'?[Y/n] ");
             response = Console.ReadKey(false).Key;
-            if (response == ConsoleKey.N) {
+            if(response == ConsoleKey.N) {
                 settings.GetConfig().download_firmware = false;
                 valid = true;
-            } else if (response == ConsoleKey.Y || response == ConsoleKey.Enter) {
+            } else if(response == ConsoleKey.Y || response == ConsoleKey.Enter) {
                 settings.GetConfig().download_firmware = true;
                 valid = true;
             }
@@ -261,10 +320,10 @@ internal class Program
         while(!valid) {
             Console.Write("\nDownload Missing Assets (ROMs and BIOS Files) during 'Update All'?[Y/n] ");
             response = Console.ReadKey(false).Key;
-            if (response == ConsoleKey.N) {
+            if(response == ConsoleKey.N) {
                 settings.GetConfig().download_assets = false;
                 valid = true;
-            } else if (response == ConsoleKey.Y || response == ConsoleKey.Enter) {
+            } else if(response == ConsoleKey.Y || response == ConsoleKey.Enter) {
                 settings.GetConfig().download_assets = true;
                 valid = true;
             }
@@ -274,10 +333,10 @@ internal class Program
         while(!valid) {
             Console.Write("\nBuild game JSON files for supported cores during 'Update All'?[Y/n] ");
             response = Console.ReadKey(false).Key;
-            if (response == ConsoleKey.N) {
+            if(response == ConsoleKey.N) {
                 settings.GetConfig().build_instance_jsons = false;
                 valid = true;
-            } else if (response == ConsoleKey.Y || response == ConsoleKey.Enter) {
+            } else if(response == ConsoleKey.Y || response == ConsoleKey.Enter) {
                 settings.GetConfig().build_instance_jsons = true;
                 valid = true;
             }
@@ -287,10 +346,10 @@ internal class Program
         while(!valid) {
             Console.Write("\nDelete untracked cores during 'Update All'?[Y/n] ");
             response = Console.ReadKey(false).Key;
-            if (response == ConsoleKey.N) {
+            if(response == ConsoleKey.N) {
                 settings.GetConfig().delete_skipped_cores = false;
                 valid = true;
-            } else if (response == ConsoleKey.Y || response == ConsoleKey.Enter) {
+            } else if(response == ConsoleKey.Y || response == ConsoleKey.Enter) {
                 settings.GetConfig().delete_skipped_cores = true;
                 valid = true;
             }
@@ -300,10 +359,10 @@ internal class Program
         while(!valid) {
             Console.Write("\nPreserve 'Platforms' folder during 'Update All'?[y/N] ");
             response = Console.ReadKey(false).Key;
-            if (response == ConsoleKey.N || response == ConsoleKey.Enter) {
+            if(response == ConsoleKey.N || response == ConsoleKey.Enter) {
                 settings.GetConfig().preserve_platforms_folder = false;
                 valid = true;
-            } else if (response == ConsoleKey.Y) {
+            } else if(response == ConsoleKey.Y) {
                 settings.GetConfig().preserve_platforms_folder = true;
                 valid = true;
             }
@@ -351,7 +410,7 @@ internal class Program
         Console.WriteLine("we did it, come again soon");
     }
 
-        //return true if newer version is available
+    //return true if newer version is available
     async static Task<bool> CheckVersion(string path)
     {
         try {
@@ -375,7 +434,7 @@ internal class Program
             }
 
             return false;
-        } catch (HttpRequestException e) {
+        } catch(HttpRequestException e) {
             return false;
         }
     }
@@ -387,22 +446,21 @@ internal class Program
             string tempExecutable = Path.Combine(path, "update_temp.exe");
 
             // We can only delete after the old one is done running.
-            if (File.Exists(tempExecutable)) {
+            if(File.Exists(tempExecutable)) {
                 File.Delete(tempExecutable);
             }
 
             string? tagName, updateVersion, htmlUrl;
 
             // Get the available updates
-            try
-            {
+            try {
                 List<Github.Release> releases = await GithubApi.GetReleases(USER, REPOSITORY);
 
                 tagName = releases[0].tag_name;
                 updateVersion = SemverUtil.FindSemver(tagName);
                 htmlUrl = releases[0].html_url;
 
-                if (tagName == null || updateVersion == null || htmlUrl == null) {
+                if(tagName == null || updateVersion == null || htmlUrl == null) {
                     throw new Exception();
                 }
             } catch {
@@ -411,7 +469,7 @@ internal class Program
             }
 
             // Check if we actually need to update
-            if (!SemverUtil.SemverCompare(updateVersion, version)) {
+            if(!SemverUtil.SemverCompare(updateVersion, version)) {
                 Console.WriteLine("No new version found.");
                 return;
             }
@@ -444,7 +502,7 @@ internal class Program
             try {
                 System.IO.Compression.ZipFile.ExtractToDirectory(saveLocation, path);
 
-                if (!File.Exists(updatedExecutable)) {
+                if(!File.Exists(updatedExecutable)) {
                     throw new Exception();
                 }
             } catch {
@@ -460,8 +518,7 @@ internal class Program
             var process = System.Diagnostics.Process.Start(updatedExecutable);
 
             // stdin only stays connected on Windows, wait on other platforms
-            if (platform != "win")
-            {
+            if(platform != "win") {
                 // Can't do this on Windows because then deleting the old executable from the new one will fail
                 process.WaitForExit();
             }
@@ -503,14 +560,14 @@ internal class Program
                                                                                                                    
                                                                                                                    ";
         Console.WriteLine(welcome);
-        
-        foreach(var(item, index) in menuItems.WithIndex()) {
+
+        foreach(var (item, index) in menuItems.WithIndex()) {
             Console.WriteLine($"{index}) {item}");
         }
         Console.Write("\nChoose your destiny: ");
         int choice;
         bool result = int.TryParse(Console.ReadLine(), out choice);
-        if (result) {
+        if(result) {
             return choice;
         }
         return 0;
@@ -520,16 +577,16 @@ internal class Program
     {
         Console.Clear();
         Console.WriteLine("Checking for image packs...\n");
-        ImagePack[] packs = await ImagePacksService.GetImagePacks(); 
+        ImagePack[] packs = await ImagePacksService.GetImagePacks();
         if(packs.Length > 0) {
-            foreach(var(pack, index) in packs.WithIndex()) {
+            foreach(var (pack, index) in packs.WithIndex()) {
                 Console.WriteLine($"{index}) {pack.owner}: {pack.repository} {pack.variant}");
             }
             Console.WriteLine($"{packs.Length}) Go back");
             Console.Write("\nSo, what'll it be?: ");
             int choice;
             bool result = int.TryParse(Console.ReadLine(), out choice);
-            if (result && choice < packs.Length && choice >= 0) {
+            if(result && choice < packs.Length && choice >= 0) {
                 await InstallImagePack(path, packs[choice]);
                 Pause();
             } else if(choice == packs.Length) {
@@ -551,10 +608,10 @@ internal class Program
         //await installImagePack(path, filepath);
     }
 
-    private static void PauseExit()
+    private static void PauseExit(int exitcode = 0)
     {
         Console.ReadLine(); //wait for input so the console doesn't auto close in windows
-        Environment.Exit(1);
+        Environment.Exit(exitcode);
     }
 
     private static void Pause()
@@ -570,8 +627,7 @@ internal class Program
 
             Console.WriteLine("Would you like to, by default, install new cores? [Y]es, [N]o, [A]sk for each:");
             ConsoleKey response = Console.ReadKey(false).Key;
-            settings.GetConfig().download_new_cores = response switch
-            {
+            settings.GetConfig().download_new_cores = response switch {
                 ConsoleKey.Y => "yes",
                 ConsoleKey.N => "no",
                 ConsoleKey.A => "ask",
@@ -599,20 +655,21 @@ public class Options
     [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
     public string? InstallPath { get; set; }
 
-    [Option ('a', "all", Required = false, HelpText = "Extract all release assets, instead of just ones containing openFPGA cores.")]
+    [Option('a', "all", Required = false, HelpText = "Extract all release assets, instead of just ones containing openFPGA cores.")]
     public bool ExtractAll { get; set; }
 
-    [Option ('c', "coreselector", Required = false, HelpText = "Run the core selector.")]
+    [Option('c', "coreselector", Required = false, HelpText = "Run the core selector.")]
     public bool CoreSelector { get; set; }
 
-    [Option ('f', "platformsfolder", Required = false, HelpText = "Preserve the Platforms folder, so customizations aren't overwritten by updates.")]
+    [Option('f', "platformsfolder", Required = false, HelpText = "Preserve the Platforms folder, so customizations aren't overwritten by updates.")]
     public bool PreservePlatformsFolder { get; set; }
 
     [Option('i', "instancegenerator", HelpText = "Force updater to just run instance json generator, instead of displaying the menu.", Required = false)]
     public bool ForceInstanceGenerator { get; set; }
 }
 
-public static class EnumExtension {
-    public static IEnumerable<(T item, int index)> WithIndex<T>(this IEnumerable<T> self)       
+public static class EnumExtension
+{
+    public static IEnumerable<(T item, int index)> WithIndex<T>(this IEnumerable<T> self)
        => self.Select((item, index) => (item, index));
 }
