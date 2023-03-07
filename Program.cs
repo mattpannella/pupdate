@@ -1,6 +1,10 @@
-﻿using pannella.analoguepocket;
+﻿using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using CommandLine;
+using pannella.analoguepocket;
 
 internal class Program
 {
@@ -51,14 +55,14 @@ internal class Program
                     }
                 }
                 ).WithNotParsed<Options>(o =>
-                    {
-                        if(o.IsHelp()) {
-                            Environment.Exit(1);
-                        }
-                        if(o.IsVersion()) {
-                            Environment.Exit(1);
-                        }
+                {
+                    if(o.IsHelp()) {
+                        Environment.Exit(1);
                     }
+                    if(o.IsVersion()) {
+                        Environment.Exit(1);
+                    }
+                }
                 );
 
             //path = "/Users/mattpannella/pocket-test";
@@ -69,11 +73,26 @@ internal class Program
             Console.WriteLine("Checking for updates...");
 
             if(await CheckVersion(path)) {
-                Console.WriteLine("Would you like to continue anyway? [Y/n]:");
-                response = Console.ReadKey(false).Key;
-                if(response == ConsoleKey.N) {
-                    Console.WriteLine("Come again soon");
-                    PauseExit();
+                ConsoleKey[] acceptedInputs = new[] { ConsoleKey.I, ConsoleKey.C, ConsoleKey.Q };
+                do {
+                    Console.Write("Would you like to [i]nstall the update, [c]ontinue with the current version, or [q]uit? [i/c/q]: ");
+                    response = Console.ReadKey(false).Key;
+                    Console.WriteLine();
+                } while(!acceptedInputs.Contains(response));
+
+                switch(response) {
+                    case ConsoleKey.I:
+                        int result = UpdateSelfAndRun(path, args);
+                        Environment.Exit(result);
+                        break;
+
+                    case ConsoleKey.C:
+                        break;
+
+                    case ConsoleKey.Q:
+                        Console.WriteLine("Come again soon");
+                        PauseExit();
+                        break;
                 }
             }
 
@@ -194,6 +213,46 @@ internal class Program
             Console.WriteLine(e.Message);
             Pause();
         }
+    }
+
+    private static int UpdateSelfAndRun(string directory, string[] updaterArgs)
+    {
+        string execName = "pocket_updater.exe";
+        string execLocation = Path.Combine(directory, execName);
+        string backupName = $"{execName}.backup";
+        string backupLocation = Path.Combine(directory, backupName);
+        string updateName = "pocket_updater.zip";
+        string updateLocation = Path.Combine(directory, updateName);
+
+        int exitcode = int.MinValue;
+
+        try {
+            // Load System.IO.Compression now
+            Assembly.Load("System.IO.Compression");
+
+            // Move current process file
+            Console.WriteLine($"Renaming {execLocation} to {backupLocation}");
+            File.Move(execLocation, backupLocation, true);
+
+            // Extract update
+            Console.WriteLine($"Extracting {updateLocation} to {directory}");
+            ZipFile.ExtractToDirectory(updateLocation, directory, true);
+
+            // Execute
+            Console.WriteLine($"Executing {execLocation}");
+            ProcessStartInfo pInfo = new ProcessStartInfo(execLocation) {
+                Arguments = string.Join(' ', updaterArgs),
+                UseShellExecute = false
+            };
+
+            Process p = Process.Start(pInfo);
+            p.WaitForExit();
+            exitcode = p.ExitCode;
+        } catch(Exception e) {
+            Console.Error.WriteLine($"An error occurred: {e.GetType().Name}:{e.ToString()}");
+        }
+
+        return exitcode;
     }
 
     static void SetUpdaterFlags(ref PocketCoreUpdater updater, ref SettingsManager settings)
@@ -549,10 +608,10 @@ internal class Program
         //await installImagePack(path, filepath);
     }
 
-    private static void PauseExit()
+    private static void PauseExit(int exitcode = 0)
     {
         Console.ReadLine(); //wait for input so the console doesn't auto close in windows
-        Environment.Exit(1);
+        Environment.Exit(exitcode);
     }
 
     private static void Pause()
