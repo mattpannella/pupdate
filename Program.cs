@@ -217,7 +217,10 @@ internal class Program
 
     private static int UpdateSelfAndRun(string directory, string[] updaterArgs)
     {
-        string execName = "pocket_updater.exe";
+        string execName = "pocket_updater";
+        if(GetPlatform() == "win") {
+            execName += ".exe";
+        }
         string execLocation = Path.Combine(directory, execName);
         string backupName = $"{execName}.backup";
         string backupLocation = Path.Combine(directory, backupName);
