@@ -8,6 +8,7 @@ The update process will check for pocket firmware updates, openfpga core updates
 
 A complete list of available cores can also be found here: https://openfpga-cores-inventory.github.io/analogue-pocket/
 
+I can't (and don't want to) support old versions, so please make sure you download the latest release before submitting any issues.
 
 ## Instructions ##
 If you just want to use this utility, do not clone the source repository. Just
