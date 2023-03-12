@@ -20,7 +20,6 @@ At the main menu run `Configuration Wizard` to have it walk through the availabl
 CLI Parameters
 ```
  -p, --path      Absolute path to install location
- -a, --all       Extract all release assets, instead of just ones containing openFPGA cores.
  -c, --coreselector    Run the core selector.
  -f, --platformsfolder   Preserve the Platforms folder, so customizations aren't overwritten by updates
  -u, --update    Skip the main menu and just run the update process automatically
