@@ -29,10 +29,6 @@ internal class Program
                         path = o.InstallPath;
                         cliMode = true;
                     }
-                    if(o.ExtractAll) {
-                        extractAll = true;
-                        cliMode = true;
-                    }
                     if(o.CoreSelector) {
                         coreSelector = true;
                         cliMode = true;
@@ -613,9 +609,6 @@ public class Options
     public bool ForceUpdate { get; set; }
     [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
     public string? InstallPath { get; set; }
-
-    [Option ('a', "all", Required = false, HelpText = "Extract all release assets, instead of just ones containing openFPGA cores.")]
-    public bool ExtractAll { get; set; }
 
     [Option ('c', "coreselector", Required = false, HelpText = "Run the core selector.")]
     public bool CoreSelector { get; set; }
