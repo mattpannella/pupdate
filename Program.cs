@@ -15,11 +15,11 @@ internal class Program
         try {
             string location = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
             string? path = Path.GetDirectoryName(location);
-            bool extractAll = false;
             bool coreSelector = false;
             bool preservePlatformsFolder = false;
             bool forceUpdate = false;
             bool forceInstanceGenerator = false;
+
 
             Parser.Default.ParseArguments<Options>(args)
                 .WithParsed<Options>(o =>
@@ -27,10 +27,6 @@ internal class Program
                     if(o.InstallPath != null && o.InstallPath != "") {
                         Console.WriteLine("path: " + o.InstallPath);
                         path = o.InstallPath;
-                        cliMode = true;
-                    }
-                    if(o.ExtractAll) {
-                        extractAll = true;
                         cliMode = true;
                     }
                     if(o.CoreSelector) {
@@ -87,6 +83,7 @@ internal class Program
             updater.DeleteSkippedCores(settings.GetConfig().delete_skipped_cores);
             updater.SetGithubApiKey(settings.GetConfig().github_token);
             updater.DownloadFirmware(settings.GetConfig().download_firmware);
+            updater.RenameJotegoCores(settings.GetConfig().fix_jt_names);
             updater.StatusUpdated += updater_StatusUpdated;
             updater.UpdateProcessComplete += updater_UpdateProcessComplete;
             updater.DownloadAssets(settings.GetConfig().download_assets);
@@ -202,6 +199,7 @@ internal class Program
         updater.SetGithubApiKey(settings.GetConfig().github_token);
         updater.DownloadFirmware(settings.GetConfig().download_firmware);
         updater.DownloadAssets(settings.GetConfig().download_assets);
+        updater.RenameJotegoCores(settings.GetConfig().fix_jt_names);
     }
 
     static async Task RunInstanceGenerator(PocketCoreUpdater updater, bool force = false)
@@ -292,6 +290,19 @@ internal class Program
                 valid = true;
             } else if (response == ConsoleKey.Y || response == ConsoleKey.Enter) {
                 settings.GetConfig().delete_skipped_cores = true;
+                valid = true;
+            }
+        }
+        Console.WriteLine("");
+        valid = false;
+        while(!valid) {
+            Console.Write("\nAutomatically rename Jotego cores during 'Update All'?[Y/n] ");
+            response = Console.ReadKey(false).Key;
+            if (response == ConsoleKey.N) {
+                settings.GetConfig().fix_jt_names = false;
+                valid = true;
+            } else if (response == ConsoleKey.Y || response == ConsoleKey.Enter) {
+                settings.GetConfig().fix_jt_names = true;
                 valid = true;
             }
         }
@@ -587,7 +598,7 @@ internal class Program
         "Select Cores",
         "Download Platform Image Packs",
         "Generate Instance JSON Files",
-        "Configuration Wizard",
+        "Settings",
         "Exit"
     };
 }
@@ -598,9 +609,6 @@ public class Options
     public bool ForceUpdate { get; set; }
     [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
     public string? InstallPath { get; set; }
-
-    [Option ('a', "all", Required = false, HelpText = "Extract all release assets, instead of just ones containing openFPGA cores.")]
-    public bool ExtractAll { get; set; }
 
     [Option ('c', "coreselector", Required = false, HelpText = "Run the core selector.")]
     public bool CoreSelector { get; set; }

@@ -25,6 +25,7 @@ public class PocketCoreUpdater : Base
     private bool _downloadFirmare = true;
     private bool _deleteSkippedCores = true;
     private bool _useConsole = false;
+    private bool _renameJotegoCores = true;
     /// <summary>
     /// The directory where fpga cores will be installed and updated into
     /// </summary>
@@ -40,6 +41,8 @@ public class PocketCoreUpdater : Base
 
     private archiveorg.Archive _archiveFiles;
     private string[] _blacklist;
+
+    private Dictionary<string, string> _platformFiles = new Dictionary<string, string>();
 
     /// <summary>
     /// Constructor
@@ -60,12 +63,26 @@ public class PocketCoreUpdater : Base
 
     public async Task Initialize()
     {
-        
+        await LoadPlatformFiles();
         await LoadCores();
-       // await LoadDependencies();
         LoadSettings();
         await LoadArchive();
         await LoadBlacklist();
+    }
+
+    private async Task LoadPlatformFiles()
+    {
+        List<Github.File> files = await GithubApi.GetFiles("dyreschlock", "pocket-platform-images", "arcade/Platforms");
+        Dictionary<string, string> platformFiles = new Dictionary<string, string>();
+        foreach(Github.File file in files) {
+            string url = file.download_url;
+            string filename = file.name;
+            if (filename.EndsWith(".json")) {
+                string platform = Path.GetFileNameWithoutExtension(filename);
+                platformFiles.Add(platform, url);
+            }
+        }
+        _platformFiles = platformFiles;
     }
 
     private async Task LoadArchive()
@@ -88,7 +105,6 @@ public class PocketCoreUpdater : Base
         foreach(Core core in _cores) {
             core.StatusUpdated += updater_StatusUpdated; //attach handler to bubble event up
         }
-       // await LoadNonAPICores();
     }
 
     public async Task LoadNonAPICores()
@@ -110,6 +126,11 @@ public class PocketCoreUpdater : Base
     public void PrintToConsole(bool set)
     {
         _useConsole = set;
+    }
+
+    public void RenameJotegoCores(bool set)
+    {
+        _renameJotegoCores = set;
     }
 
     /// <summary>
@@ -218,6 +239,7 @@ public class PocketCoreUpdater : Base
                     results = await core.DownloadAssets();
                     installedAssets.AddRange(results["installed"]);
                     skippedAssets.AddRange(results["skipped"]);
+                    await JotegoRename(core);
                     Divide();
                     continue;
                 }
@@ -235,6 +257,7 @@ public class PocketCoreUpdater : Base
                         _writeMessage("Updating core");
                     } else {
                         results = await core.DownloadAssets();
+                        await JotegoRename(core);
                         installedAssets.AddRange(results["installed"]);
                         skippedAssets.AddRange(results["skipped"]);
                         _writeMessage("Up to date. Skipping core");
@@ -252,6 +275,7 @@ public class PocketCoreUpdater : Base
                     summary.Add("platform", core.platform.name);
                     installed.Add(summary);
                 }
+                await JotegoRename(core);
                 results = await core.DownloadAssets();
                 installedAssets.AddRange(results["installed"]);
                 skippedAssets.AddRange(results["skipped"]);
@@ -276,6 +300,22 @@ public class PocketCoreUpdater : Base
         args.SkippedAssets = skippedAssets;
         args.FirmwareUpdated = firmwareDownloaded;
         OnUpdateProcessComplete(args);
+    }
+
+    private async Task JotegoRename(Core core)
+    {
+        if(_renameJotegoCores && core.identifier.Contains("jotego")) {
+            core.platform_id = core.identifier.Split('.')[1]; //whatever
+            string path = Path.Combine(UpdateDirectory, "Platforms", core.platform_id + ".json");
+            string json = File.ReadAllText(path);
+            Dictionary<string, Platform> data = JsonSerializer.Deserialize<Dictionary<string,Platform>>(json);
+            Platform platform = data["platform"];
+            if(_platformFiles.ContainsKey(core.platform_id) && platform.name == core.platform_id) {
+                _writeMessage("Updating JT Platform Name...");
+                await HttpHelper.DownloadFileAsync(_platformFiles[core.platform_id], path);
+                _writeMessage("Complete");
+            }
+        }
     }
 
     public async Task RunAssetDownloader(string? id = null)
