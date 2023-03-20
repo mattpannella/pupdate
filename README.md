@@ -8,6 +8,7 @@ The update process will check for pocket firmware updates, openfpga core updates
 
 A complete list of available cores can also be found here: https://openfpga-cores-inventory.github.io/analogue-pocket/
 
+I can't (and don't want to) support old versions, so please make sure you download the latest release before submitting any issues.
 
 ## Instructions ##
 If you just want to use this utility, do not clone the source repository. Just
@@ -19,7 +20,6 @@ At the main menu run `Configuration Wizard` to have it walk through the availabl
 CLI Parameters
 ```
  -p, --path      Absolute path to install location
- -a, --all       Extract all release assets, instead of just ones containing openFPGA cores.
  -c, --coreselector    Run the core selector.
  -f, --platformsfolder   Preserve the Platforms folder, so customizations aren't overwritten by updates
  -u, --update    Skip the main menu and just run the update process automatically
