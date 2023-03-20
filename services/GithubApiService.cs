@@ -53,6 +53,16 @@ public static class GithubApi
         return file;
     }
 
+    public static async Task<List<Github.File>?> GetFiles(string user, string repository, string path, string? token = "")
+    {
+        string url = String.Format(CONTENTS, user, repository, path);
+        
+        var responseBody = await CallAPI(url, token);
+        List<Github.File>? files = JsonSerializer.Deserialize<List<Github.File>>(responseBody);
+        
+        return files;
+    }
+
     private static async Task<string> CallAPI(string url, string? token = "")
     {
         var client = new HttpClient();

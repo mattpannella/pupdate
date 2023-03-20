@@ -12,6 +12,7 @@ public class Config
     public string? download_new_cores { get; set; }
     public bool build_instance_jsons { get; set; }
     public bool crc_check { get; set; }
+    public bool fix_jt_names { get; set; }
 
     public Config()
     {
@@ -24,5 +25,6 @@ public class Config
         download_new_cores = null;
         build_instance_jsons = true;
         crc_check = true;
+        fix_jt_names = true;
     }
 }
