@@ -69,9 +69,14 @@ internal class Program
             Console.WriteLine("Checking for updates...");
 
             if(await CheckVersion(path)) {
+                string platform = GetPlatform();
                 ConsoleKey[] acceptedInputs = new[] { ConsoleKey.I, ConsoleKey.C, ConsoleKey.Q };
                 do {
-                    Console.Write("Would you like to [i]nstall the update, [c]ontinue with the current version, or [q]uit? [i/c/q]: ");
+                    if (platform == "win") {
+                        Console.Write("Would you like to [i]nstall the update, [c]ontinue with the current version, or [q]uit? [i/c/q]: ");
+                    } else {
+                        Console.Write("Update downloaded and extracted. Would you like to [c]ontinue with the current version, or [q]uit? [c/q]: ");
+                    }
                     response = Console.ReadKey(false).Key;
                     Console.WriteLine();
                 } while(!acceptedInputs.Contains(response));
