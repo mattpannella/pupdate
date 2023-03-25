@@ -10,7 +10,7 @@ public static class HttpHelper
    public static async Task DownloadFileAsync(string uri, string outputPath, int timeout = 100)
    {
         using var cts = new CancellationTokenSource();
-        cts.CancelAfter(TimeSpan.FromSeconds(100));
+        cts.CancelAfter(TimeSpan.FromSeconds(timeout));
         Uri? uriResult;
 
         if (!Uri.TryCreate(uri, UriKind.Absolute, out uriResult))
