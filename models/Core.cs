@@ -252,7 +252,7 @@ public class Core : Base
             int count = 0;
             do {
                 _writeMessage("Downloading " + filename);
-                await HttpHelper.DownloadFileAsync(url, destination);
+                await HttpHelper.DownloadFileAsync(url, destination, 600);
                 _writeMessage("Finished downloading " + filename);
                 count++;
             } while(count < 3 && !CheckCRC(destination));

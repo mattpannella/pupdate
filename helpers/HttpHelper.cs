@@ -7,26 +7,28 @@ public static class HttpHelper
 {
    private static readonly HttpClient _httpClient = new HttpClient();
 
-   public static async Task DownloadFileAsync(string uri, string outputPath)
+   public static async Task DownloadFileAsync(string uri, string outputPath, int timeout = 100)
    {
-      Uri? uriResult;
+        using var cts = new CancellationTokenSource();
+        cts.CancelAfter(TimeSpan.FromSeconds(100));
+        Uri? uriResult;
 
-      if (!Uri.TryCreate(uri, UriKind.Absolute, out uriResult))
-         throw new InvalidOperationException("URI is invalid.");
+        if (!Uri.TryCreate(uri, UriKind.Absolute, out uriResult))
+            throw new InvalidOperationException("URI is invalid.");
 
-      byte[] fileBytes = await _httpClient.GetByteArrayAsync(uri);
-      File.WriteAllBytes(outputPath, fileBytes);
-   }
+        byte[] fileBytes = await _httpClient.GetByteArrayAsync(uri, cts.Token);
+        File.WriteAllBytes(outputPath, fileBytes);
+    }
 
    public static async Task<String> GetHTML(string uri)
    {
-      Uri? uriResult;
+        Uri? uriResult;
 
-      if (!Uri.TryCreate(uri, UriKind.Absolute, out uriResult))
-         throw new InvalidOperationException("URI is invalid.");
+        if (!Uri.TryCreate(uri, UriKind.Absolute, out uriResult))
+            throw new InvalidOperationException("URI is invalid.");
 
-      string html = await _httpClient.GetStringAsync(uri);
+        string html = await _httpClient.GetStringAsync(uri);
 
-      return html;
+        return html;
    }
 }
