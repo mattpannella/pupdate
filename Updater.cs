@@ -72,17 +72,22 @@ public class PocketCoreUpdater : Base
 
     private async Task LoadPlatformFiles()
     {
-        List<Github.File> files = await GithubApi.GetFiles("dyreschlock", "pocket-platform-images", "arcade/Platforms");
-        Dictionary<string, string> platformFiles = new Dictionary<string, string>();
-        foreach(Github.File file in files) {
-            string url = file.download_url;
-            string filename = file.name;
-            if (filename.EndsWith(".json")) {
-                string platform = Path.GetFileNameWithoutExtension(filename);
-                platformFiles.Add(platform, url);
+        try {
+            List<Github.File> files = await GithubApi.GetFiles("dyreschlock", "pocket-platform-images", "arcade/Platforms");
+            Dictionary<string, string> platformFiles = new Dictionary<string, string>();
+            foreach(Github.File file in files) {
+                string url = file.download_url;
+                string filename = file.name;
+                if (filename.EndsWith(".json")) {
+                    string platform = Path.GetFileNameWithoutExtension(filename);
+                    platformFiles.Add(platform, url);
+                }
             }
+            _platformFiles = platformFiles;
+        } catch (Exception e) {
+            _writeMessage("Unable to retrieve archive contents. Asset download may not work.");
+            _platformFiles = new Dictionary<string, string>();
         }
-        _platformFiles = platformFiles;
     }
 
     private async Task LoadArchive()
@@ -312,7 +317,7 @@ public class PocketCoreUpdater : Base
             Platform platform = data["platform"];
             if(_platformFiles.ContainsKey(core.platform_id) && platform.name == core.platform_id) {
                 _writeMessage("Updating JT Platform Name...");
-                await HttpHelper.DownloadFileAsync(_platformFiles[core.platform_id], path);
+                await HttpHelper.Instance.DownloadFileAsync(_platformFiles[core.platform_id], path);
                 _writeMessage("Complete");
             }
         }
@@ -429,7 +434,7 @@ public class PocketCoreUpdater : Base
     {
         string version = "";
         _writeMessage("Checking for firmware updates...");
-        string html = await HttpHelper.GetHTML(FIRMWARE_URL);
+        string html = await HttpHelper.Instance.GetHTML(FIRMWARE_URL);
         
         MatchCollection matches = BIN_REGEX.Matches(html);
         if(matches.Count != 1) {
@@ -446,7 +451,7 @@ public class PocketCoreUpdater : Base
             version = filename;
             var oldfiles = Directory.GetFiles(UpdateDirectory, FIRMWARE_FILENAME_PATTERN);
             _writeMessage("Firmware update found. Downloading...");
-            await HttpHelper.DownloadFileAsync(firmwareUrl, Path.Combine(UpdateDirectory, filename));
+            await HttpHelper.Instance.DownloadFileAsync(firmwareUrl, Path.Combine(UpdateDirectory, filename));
             _writeMessage("Download Complete");
             _writeMessage(Path.Combine(UpdateDirectory, filename));
             foreach (string oldfile in oldfiles) {

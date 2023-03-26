@@ -10,7 +10,7 @@ public static class AssetsService
 
     public static async Task<Dictionary<string, Dependency>> GetAssets()
     {
-        string json = await HttpHelper.GetHTML(END_POINT);
+        string json = await HttpHelper.Instance.GetHTML(END_POINT);
         Dictionary<string, Dependency>? assets = JsonSerializer.Deserialize<Dictionary<string, Dependency>?>(json);
 
         if(assets != null) {
@@ -22,7 +22,7 @@ public static class AssetsService
 
     public static async Task<ImagePack[]> GetImagePacks()
     {
-        string json = await HttpHelper.GetHTML(IMAGE_PACKS);
+        string json = await HttpHelper.Instance.GetHTML(IMAGE_PACKS);
         ImagePack[] packs = JsonSerializer.Deserialize<ImagePack[]?>(json);
 
         if(packs != null) {
@@ -34,7 +34,7 @@ public static class AssetsService
 
     public static async Task<string[]> GetBlacklist()
     {
-        string json = await HttpHelper.GetHTML(BLACKLIST);
+        string json = await HttpHelper.Instance.GetHTML(BLACKLIST);
         string[] files = JsonSerializer.Deserialize<string[]?>(json);
 
         if(files != null) {

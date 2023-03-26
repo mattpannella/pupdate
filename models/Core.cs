@@ -57,7 +57,7 @@ public class Core : Base
         _writeMessage("Downloading file " + this.download_url + "...");
         string zipPath = Path.Combine(UpdateDirectory, ZIP_FILE_NAME);
         string extractPath = UpdateDirectory;
-        await HttpHelper.DownloadFileAsync(this.download_url, zipPath);
+        await HttpHelper.Instance.DownloadFileAsync(this.download_url, zipPath);
 
         _writeMessage("Extracting...");
         string tempDir = Path.Combine(extractPath, "temp", this.identifier);
@@ -252,7 +252,7 @@ public class Core : Base
             int count = 0;
             do {
                 _writeMessage("Downloading " + filename);
-                await HttpHelper.DownloadFileAsync(url, destination, 600);
+                await HttpHelper.Instance.DownloadFileAsync(url, destination, 600);
                 _writeMessage("Finished downloading " + filename);
                 count++;
             } while(count < 3 && !CheckCRC(destination));
