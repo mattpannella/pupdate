@@ -9,7 +9,7 @@ public static class CoresService
 
     public static async Task<List<Core>> GetCores()
     {
-        string json = await HttpHelper.GetHTML(END_POINT);
+        string json = await HttpHelper.Instance.GetHTML(END_POINT);
         Dictionary<string, List<Core>> parsed = JsonSerializer.Deserialize<Dictionary<string, List<Core>>>(json);
 
         if(parsed.ContainsKey("data")) {
@@ -25,7 +25,7 @@ public static class CoresService
 
     public static async Task<List<Core>> GetNonAPICores()
     {
-        string json = await HttpHelper.GetHTML(OTHER);
+        string json = await HttpHelper.Instance.GetHTML(OTHER);
         List<Core> parsed = JsonSerializer.Deserialize<List<Core>>(json);
 
         return parsed;
