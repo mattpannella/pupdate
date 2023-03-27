@@ -199,7 +199,7 @@ public class Core : Base
                         }
                     }
                 } catch (Exception e) {
-                    _writeMessage("Unable to read " + file);
+                    _writeMessage("Error while processing " + file);
                     _writeMessage(e.Message);
                 }
             }
