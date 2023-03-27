@@ -200,6 +200,7 @@ public class PocketCoreUpdater : Base
             core.downloadAssets = _downloadAssets;
             core.buildInstances = Factory.GetGlobals().SettingsManager.GetConfig().build_instance_jsons;
             core.useCRC = Factory.GetGlobals().SettingsManager.GetConfig().crc_check;
+            core.skipAlts = Factory.GetGlobals().SettingsManager.GetConfig().skip_alternative_assets;
             try {
                 if(Factory.GetGlobals().SettingsManager.GetCoreSettings(core.identifier).skip) {
                     _DeleteCore(core);
@@ -320,6 +321,8 @@ public class PocketCoreUpdater : Base
 
             core.downloadAssets = true;
             core.archive = Factory.GetGlobals().SettingsManager.GetConfig().archive_name;
+            core.useCRC = Factory.GetGlobals().SettingsManager.GetConfig().crc_check;
+            core.skipAlts = Factory.GetGlobals().SettingsManager.GetConfig().skip_alternative_assets;
             try {
                 string name = core.identifier;
                 if(name == null) {

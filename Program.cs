@@ -267,6 +267,7 @@ internal class Program
         updater.DownloadFirmware(settings.GetConfig().download_firmware);
         updater.DownloadAssets(settings.GetConfig().download_assets);
         updater.RenameJotegoCores(settings.GetConfig().fix_jt_names);
+        updater.LoadSettings();
     }
 
     static async Task RunInstanceGenerator(PocketCoreUpdater updater, bool force = false)
@@ -396,6 +397,19 @@ internal class Program
                 valid = true;
             } else if(response == ConsoleKey.Y) {
                 settings.GetConfig().preserve_platforms_folder = true;
+                valid = true;
+            }
+        }
+        Console.WriteLine("");
+        valid = false;
+        while(!valid) {
+            Console.Write("\nInclude alternative roms when downloading assets?[y/N] ");
+            response = Console.ReadKey(false).Key;
+            if(response == ConsoleKey.N || response == ConsoleKey.Enter) {
+                settings.GetConfig().skip_alternative_assets = true;
+                valid = true;
+            } else if(response == ConsoleKey.Y) {
+                settings.GetConfig().skip_alternative_assets = false;
                 valid = true;
             }
         }

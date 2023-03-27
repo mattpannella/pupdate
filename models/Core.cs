@@ -24,6 +24,7 @@ public class Core : Base
     public bool downloadAssets { get; set; } = true;
     public bool buildInstances { get; set; } = true;
     public bool useCRC { get; set; } = true;
+    public bool skipAlts { get; set; } = false;
 
     public override string ToString()
     {
@@ -111,9 +112,10 @@ public class Core : Base
         checkUpdateDirectory();
         _writeMessage("Looking for Assets");
         Analogue.Core info = this.getConfig().core;
-        string coreDirectory = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Cores", this.identifier);
+        string UpdateDirectory = Factory.GetGlobals().UpdateDirectory;
+        string coreDirectory = Path.Combine(UpdateDirectory, "Cores", this.identifier);
         //cores with multiple platforms won't work...not sure any exist right now?
-        string instancesDirectory = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Assets", info.metadata.platform_ids[0], this.identifier);
+        string instancesDirectory = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0], this.identifier);
 
         string dataFile = Path.Combine(coreDirectory, "data.json");
         var options = new JsonSerializerOptions
@@ -125,7 +127,7 @@ public class Core : Base
         if(data.data.data_slots.Length > 0) {
             foreach(Analogue.DataSlot slot in data.data.data_slots) {
                 if(slot.filename != null && !Factory.GetGlobals().Blacklist.Contains(slot.filename)) {
-                    string path = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Assets", info.metadata.platform_ids[0]);
+                    string path = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0]);
                     if(slot.isCoreSpecific()) {
                         path = Path.Combine(path, this.identifier);
                     } else {
@@ -142,9 +144,9 @@ public class Core : Base
                             _writeMessage("Already installed: " + f);
                         } else {
                             if(await DownloadAsset(f, filepath)) {
-                                installed.Add(filepath.Replace(Factory.GetGlobals().UpdateDirectory, ""));
+                                installed.Add(filepath.Replace(UpdateDirectory, ""));
                             } else {
-                                skipped.Add(filepath.Replace(Factory.GetGlobals().UpdateDirectory, ""));
+                                skipped.Add(filepath.Replace(UpdateDirectory, ""));
                             }
                         }
                     }
@@ -175,19 +177,22 @@ public class Core : Base
                     if(File.GetAttributes(file).HasFlag(FileAttributes.Hidden)) {
                         continue;
                     }
+                    if(skipAlts && file.Contains(Path.Combine(instancesDirectory, "_alternatives"))) {
+                        continue;
+                    }
                     Analogue.InstanceJSON instance = JsonSerializer.Deserialize<Analogue.InstanceJSON>(File.ReadAllText(file), options);
                     if(instance.instance.data_slots.Length > 0) {
                         string data_path = instance.instance.data_path;
                         foreach(Analogue.DataSlot slot in instance.instance.data_slots) {
                             if(!Factory.GetGlobals().Blacklist.Contains(slot.filename)) {
-                                string path = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Assets", info.metadata.platform_ids[0], "common", data_path, slot.filename);
+                                string path = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0], "common", data_path, slot.filename);
                                 if(File.Exists(path) && CheckCRC(path)) {
                                     _writeMessage("Already installed: " + slot.filename);
                                 } else {
                                     if(await DownloadAsset(slot.filename, path)) {
-                                        installed.Add(path.Replace(Factory.GetGlobals().UpdateDirectory, ""));
+                                        installed.Add(path.Replace(UpdateDirectory, ""));
                                     } else {
-                                        skipped.Add(path.Replace(Factory.GetGlobals().UpdateDirectory, ""));
+                                        skipped.Add(path.Replace(UpdateDirectory, ""));
                                     }
                                 }
                             }

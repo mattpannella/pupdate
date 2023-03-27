@@ -13,6 +13,7 @@ public class Config
     public bool build_instance_jsons { get; set; }
     public bool crc_check { get; set; }
     public bool fix_jt_names { get; set; }
+    public bool skip_alternative_assets { get; set; }
 
     public Config()
     {
@@ -26,5 +27,6 @@ public class Config
         build_instance_jsons = true;
         crc_check = true;
         fix_jt_names = true;
+        skip_alternative_assets = true;
     }
 }
