@@ -457,7 +457,7 @@ internal class Program
                     string platform = GetPlatform();
                     string url = String.Format(RELEASE_URL, tag_name, platform);
                     string saveLocation = Path.Combine(path, "pocket_updater.zip");
-                    await HttpHelper.Instance.DownloadFileAsync(url, saveLocation);
+                    await Factory.GetHttpHelper().DownloadFileAsync(url, saveLocation);
                     Console.WriteLine("Download complete.");
                     Console.WriteLine(saveLocation);
                     Console.WriteLine("Go to " + releases[0].html_url + " for a change log");
@@ -514,7 +514,7 @@ internal class Program
 
             // Download the update
             try {
-                await HttpHelper.Instance.DownloadFileAsync(url, saveLocation);
+                await Factory.GetHttpHelper().DownloadFileAsync(url, saveLocation);
             } catch {
                 Console.WriteLine("Failed to download update, continuing with original version.");
                 return;
