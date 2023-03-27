@@ -267,6 +267,7 @@ internal class Program
         updater.DownloadFirmware(settings.GetConfig().download_firmware);
         updater.DownloadAssets(settings.GetConfig().download_assets);
         updater.RenameJotegoCores(settings.GetConfig().fix_jt_names);
+        updater.LoadSettings();
     }
 
     static async Task RunInstanceGenerator(PocketCoreUpdater updater, bool force = false)
@@ -400,6 +401,19 @@ internal class Program
             }
         }
         Console.WriteLine("");
+        valid = false;
+        while(!valid) {
+            Console.Write("\nInclude alternative roms when downloading assets?[y/N] ");
+            response = Console.ReadKey(false).Key;
+            if(response == ConsoleKey.N || response == ConsoleKey.Enter) {
+                settings.GetConfig().skip_alternative_assets = true;
+                valid = true;
+            } else if(response == ConsoleKey.Y) {
+                settings.GetConfig().skip_alternative_assets = false;
+                valid = true;
+            }
+        }
+        Console.WriteLine("");
         Console.WriteLine("Settings saved!");
         settings.SaveSettings();
     }
@@ -457,7 +471,7 @@ internal class Program
                     string platform = GetPlatform();
                     string url = String.Format(RELEASE_URL, tag_name, platform);
                     string saveLocation = Path.Combine(path, "pocket_updater.zip");
-                    await HttpHelper.Instance.DownloadFileAsync(url, saveLocation);
+                    await Factory.GetHttpHelper().DownloadFileAsync(url, saveLocation);
                     Console.WriteLine("Download complete.");
                     Console.WriteLine(saveLocation);
                     Console.WriteLine("Go to " + releases[0].html_url + " for a change log");
@@ -514,7 +528,7 @@ internal class Program
 
             // Download the update
             try {
-                await HttpHelper.Instance.DownloadFileAsync(url, saveLocation);
+                await Factory.GetHttpHelper().DownloadFileAsync(url, saveLocation);
             } catch {
                 Console.WriteLine("Failed to download update, continuing with original version.");
                 return;

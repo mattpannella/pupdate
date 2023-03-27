@@ -59,6 +59,7 @@ On your first run it will prompt you to select the cores you want tracked. After
 | Disable Instance JSON Builder            | config.build_instance_jsons      | Set this to `false` if you don't want Update All to build instance JSON files.
 | Delete Untracked Cores           | config.delete_skipped_cores      | `true` by default. Set to `false` if you don't want the updater to remove cores you don't select to track  
 | CRC Check Assets          | config.crc_check      | `true` by default. Set to `false` if you don't want the updater check the CRC hash on your asset files
+| Skip Alternative Assets         | config.skip_alternative_assets      | `true` by default. If a core developer puts any of their rom asset files in a directory named `_alternatives` they won't be downloaded automatically (unless you set this to `false`)
 
 #### Troubleshooting
 If you run the update process and get a message like `Error in framework RS: bridge not responding` when running a core, try to run the updater in a local folder on your pc, and then copy the files over to the sd card afterwards. I'm not entirely sure what the issue is, but I've seen it reported a bunch of times now and running the updater locally seems to help.

@@ -8,7 +8,7 @@ public static class ImagePacksService
 
     public static async Task<ImagePack[]> GetImagePacks()
     {
-        string json = await HttpHelper.Instance.GetHTML(END_POINT);
+        string json = await Factory.GetHttpHelper().GetHTML(END_POINT);
         ImagePack[] packs = JsonSerializer.Deserialize<ImagePack[]?>(json);
 
         if(packs != null) {

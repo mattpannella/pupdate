@@ -26,21 +26,6 @@ public class PocketCoreUpdater : Base
     private bool _deleteSkippedCores = true;
     private bool _useConsole = false;
     private bool _renameJotegoCores = true;
-    /// <summary>
-    /// The directory where fpga cores will be installed and updated into
-    /// </summary>
-    public string UpdateDirectory { get; set; }
-
-    public string SettingsPath { get; set; }
-
-    private SettingsManager? _settingsManager;
-
-    private List<Core>? _cores;
-
-    private Dictionary<string, Dependency>? _assets;
-
-    private archiveorg.Archive _archiveFiles;
-    private string[] _blacklist;
 
     private Dictionary<string, string> _platformFiles = new Dictionary<string, string>();
 
@@ -51,13 +36,13 @@ public class PocketCoreUpdater : Base
     /// <param name="settingsPath">Path to settings json file</param>
     public PocketCoreUpdater(string updateDirectory, string? settingsPath = null)
     {
-        UpdateDirectory = updateDirectory;
-        Directory.CreateDirectory(Path.Combine(UpdateDirectory, "Cores"));
+        Factory.GetGlobals().UpdateDirectory = updateDirectory;
+        Directory.CreateDirectory(Path.Combine(Factory.GetGlobals().UpdateDirectory, "Cores"));
 
         if(settingsPath != null) {
-            SettingsPath = settingsPath;
+            Factory.GetGlobals().SettingsPath = settingsPath;
         } else {
-            SettingsPath = updateDirectory;
+            Factory.GetGlobals().SettingsPath = updateDirectory;
         }
     }
 
@@ -92,37 +77,33 @@ public class PocketCoreUpdater : Base
 
     private async Task LoadArchive()
     {
-        _archiveFiles = await ArchiveService.GetFiles(this._settingsManager.GetConfig().archive_name);
+        Factory.GetGlobals().ArchiveFiles = await ArchiveService.GetFiles(Factory.GetGlobals().SettingsManager.GetConfig().archive_name);
     }
 
-    public async Task LoadDependencies()
-    {
-        _assets = await AssetsService.GetAssets();
-    }
     private async Task LoadBlacklist()
     {
-        _blacklist = await AssetsService.GetBlacklist();
+        Factory.GetGlobals().Blacklist = await AssetsService.GetBlacklist();
     }
 
     public async Task LoadCores()
     {
-        _cores = await CoresService.GetCores();
-        foreach(Core core in _cores) {
+        Factory.GetGlobals().Cores = await CoresService.GetCores();
+        foreach(Core core in Factory.GetGlobals().Cores) {
             core.StatusUpdated += updater_StatusUpdated; //attach handler to bubble event up
         }
     }
 
     public async Task LoadNonAPICores()
     {
-        _cores.AddRange(await CoresService.GetNonAPICores());
+        Factory.GetGlobals().Cores.AddRange(await CoresService.GetNonAPICores());
     }
 
     public void LoadSettings()
     {
-         _settingsManager = new SettingsManager(SettingsPath, _cores);
+         Factory.GetGlobals().SettingsManager = new SettingsManager(Factory.GetGlobals().SettingsPath, Factory.GetGlobals().Cores);
     }
 
-    public List<Core> GetMissingCores() => _settingsManager?.GetMissingCores() ?? new List<Core>();
+    public List<Core> GetMissingCores() => Factory.GetGlobals().SettingsManager?.GetMissingCores() ?? new List<Core>();
 
     /// <summary>
     /// Turn on/off printing progress messages to the console
@@ -164,7 +145,7 @@ public class PocketCoreUpdater : Base
     //get api and local cores
     private async Task<List<Core>> getAllCores()
     {
-        List<Core> cores = _cores;
+        List<Core> cores = Factory.GetGlobals().Cores;
         List<Core> local = await GetLocalCores();
         foreach(Core core in local) {
             core.StatusUpdated += updater_StatusUpdated; //attach handler to bubble event up
@@ -177,8 +158,7 @@ public class PocketCoreUpdater : Base
     public async Task BuildInstanceJSON(bool overwrite = false, string? corename = null)
     {
         List<Core> cores = await getAllCores();
-        foreach(Core core in _cores) {
-            core.UpdateDirectory = UpdateDirectory;
+        foreach(Core core in Factory.GetGlobals().Cores) {
             if(core.CheckInstancePackager() && (corename == null || corename == core.identifier)) {
                 _writeMessage(core.identifier);
                 core.BuildInstanceJSONs(overwrite);
@@ -198,7 +178,7 @@ public class PocketCoreUpdater : Base
         Dictionary<string, List<string>> results = new Dictionary<string, List<string>>();
         bool imagesBacked = false;
         string firmwareDownloaded = "";
-        if(_cores == null) {
+        if(Factory.GetGlobals().Cores == null) {
             throw new Exception("Must initialize updater before running update process");
         }
 
@@ -208,23 +188,21 @@ public class PocketCoreUpdater : Base
 
         if(_preservePlatformsFolder) {
             _writeMessage("Backing up platforms folder");
-            Util.BackupPlatformsDirectory(UpdateDirectory);
+            Util.BackupPlatformsDirectory(Factory.GetGlobals().UpdateDirectory);
             _writeMessage("Finished backing up platforms folder");
             Divide();
             imagesBacked = true;
         }
         List<Core> cores = await getAllCores();
         string json;
-        foreach(Core core in _cores) {
-            core.UpdateDirectory = UpdateDirectory;
-            core.archive = _settingsManager.GetConfig().archive_name;
+        foreach(Core core in Factory.GetGlobals().Cores) {
+            core.archive = Factory.GetGlobals().SettingsManager.GetConfig().archive_name;
             core.downloadAssets = _downloadAssets;
-            core.archiveFiles = _archiveFiles;
-            core.blacklist = _blacklist;
-            core.buildInstances = _settingsManager.GetConfig().build_instance_jsons;
-            core.useCRC = _settingsManager.GetConfig().crc_check;
+            core.buildInstances = Factory.GetGlobals().SettingsManager.GetConfig().build_instance_jsons;
+            core.useCRC = Factory.GetGlobals().SettingsManager.GetConfig().crc_check;
+            core.skipAlts = Factory.GetGlobals().SettingsManager.GetConfig().skip_alternative_assets;
             try {
-                if(_settingsManager.GetCoreSettings(core.identifier).skip) {
+                if(Factory.GetGlobals().SettingsManager.GetCoreSettings(core.identifier).skip) {
                     _DeleteCore(core);
                     continue;
                 }
@@ -236,7 +214,7 @@ public class PocketCoreUpdater : Base
                 }
 
                 _writeMessage("Checking Core: " + name);
-                bool allowPrerelease = _settingsManager.GetCoreSettings(core.identifier).allowPrerelease;
+                bool allowPrerelease = Factory.GetGlobals().SettingsManager.GetCoreSettings(core.identifier).allowPrerelease;
                 var mostRecentRelease = core.version;
 
                 if(mostRecentRelease == null) {
@@ -273,7 +251,7 @@ public class PocketCoreUpdater : Base
                     _writeMessage("Downloading core");
                 }
                 
-                if(await core.Install(UpdateDirectory, _githubApiKey)) {
+                if(await core.Install(_githubApiKey)) {
                     Dictionary<string, string> summary = new Dictionary<string, string>();
                     summary.Add("version", mostRecentRelease);
                     summary.Add("core", core.identifier);
@@ -295,7 +273,7 @@ public class PocketCoreUpdater : Base
 
         if(imagesBacked) {
             _writeMessage("Restoring platforms folder");
-            Util.RestorePlatformsDirectory(UpdateDirectory);
+            Util.RestorePlatformsDirectory(Factory.GetGlobals().UpdateDirectory);
             Divide();
         }
         UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs();
@@ -311,13 +289,13 @@ public class PocketCoreUpdater : Base
     {
         if(_renameJotegoCores && core.identifier.Contains("jotego")) {
             core.platform_id = core.identifier.Split('.')[1]; //whatever
-            string path = Path.Combine(UpdateDirectory, "Platforms", core.platform_id + ".json");
+            string path = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Platforms", core.platform_id + ".json");
             string json = File.ReadAllText(path);
             Dictionary<string, Platform> data = JsonSerializer.Deserialize<Dictionary<string,Platform>>(json);
             Platform platform = data["platform"];
             if(_platformFiles.ContainsKey(core.platform_id) && platform.name == core.platform_id) {
                 _writeMessage("Updating JT Platform Name...");
-                await HttpHelper.Instance.DownloadFileAsync(_platformFiles[core.platform_id], path);
+                await Factory.GetHttpHelper().DownloadFileAsync(_platformFiles[core.platform_id], path);
                 _writeMessage("Complete");
             }
         }
@@ -328,24 +306,23 @@ public class PocketCoreUpdater : Base
         List<string> installedAssets = new List<string>();
         List<string> skippedAssets = new List<string>();
         Dictionary<string, List<string>> results = new Dictionary<string, List<string>>();
-        if(_cores == null) {
+        if(Factory.GetGlobals().Cores == null) {
             throw new Exception("Must initialize updater before running update process");
         }
         List<Core> cores = await getAllCores();
-        foreach(Core core in _cores) {
+        foreach(Core core in Factory.GetGlobals().Cores) {
             if(id != null && core.identifier != id) {
                 continue;
             }
 
-            if(_settingsManager.GetCoreSettings(core.identifier).skip) {
+            if(Factory.GetGlobals().SettingsManager.GetCoreSettings(core.identifier).skip) {
                 continue;
             }
 
             core.downloadAssets = true;
-            core.UpdateDirectory = UpdateDirectory;
-            core.archive = _settingsManager.GetConfig().archive_name;
-            core.archiveFiles = _archiveFiles;
-            core.blacklist = _blacklist;
+            core.archive = Factory.GetGlobals().SettingsManager.GetConfig().archive_name;
+            core.useCRC = Factory.GetGlobals().SettingsManager.GetConfig().crc_check;
+            core.skipAlts = Factory.GetGlobals().SettingsManager.GetConfig().skip_alternative_assets;
             try {
                 string name = core.identifier;
                 if(name == null) {
@@ -377,7 +354,7 @@ public class PocketCoreUpdater : Base
 
     private string BuildAssetUrl(DependencyFile asset)
     {
-        string archive = _settingsManager.GetConfig().archive_name;
+        string archive = Factory.GetGlobals().SettingsManager.GetConfig().archive_name;
         if(asset.file_name != null && asset.archive_zip == null && asset.archive_file == null && !asset.zip) {
             return ARCHIVE_BASE_URL + "/" + archive + "/" + asset.file_name;
         } else if(archive != null && asset.archive_zip != null) {
@@ -393,18 +370,18 @@ public class PocketCoreUpdater : Base
 
     private string BuildAssetUrlNew(string filename)
     {
-        string archive = _settingsManager.GetConfig().archive_name;
+        string archive = Factory.GetGlobals().SettingsManager.GetConfig().archive_name;
         return ARCHIVE_BASE_URL + "/" + archive + "/" + filename;
     }
 
     public async Task<List<Core>> GetLocalCores()
     {
-        string coresDirectory = Path.Combine(UpdateDirectory, "Cores");
+        string coresDirectory = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Cores");
         string[] directories = Directory.GetDirectories(coresDirectory,"*", SearchOption.TopDirectoryOnly);
         List<Core> all = new List<Core>();
         foreach(string name in directories) {
             string n = Path.GetFileName(name);
-            var matches = _cores.Where(i=>i.identifier == n);
+            var matches = Factory.GetGlobals().Cores.Where(i=>i.identifier == n);
             if(matches.Count<Core>() == 0) {
                 Core c = new Core {
                     identifier = n
@@ -434,7 +411,7 @@ public class PocketCoreUpdater : Base
     {
         string version = "";
         _writeMessage("Checking for firmware updates...");
-        string html = await HttpHelper.Instance.GetHTML(FIRMWARE_URL);
+        string html = await Factory.GetHttpHelper().GetHTML(FIRMWARE_URL);
         
         MatchCollection matches = BIN_REGEX.Matches(html);
         if(matches.Count != 1) {
@@ -446,21 +423,21 @@ public class PocketCoreUpdater : Base
         string[] parts = firmwareUrl.Split("/");
         string filename = parts[parts.Length-1];
 
-        Firmware current = _settingsManager.GetCurrentFirmware();
-        if(current.version != filename || !File.Exists(Path.Combine(UpdateDirectory, filename))) {
+        Firmware current = Factory.GetGlobals().SettingsManager.GetCurrentFirmware();
+        if(current.version != filename || !File.Exists(Path.Combine(Factory.GetGlobals().UpdateDirectory, filename))) {
             version = filename;
-            var oldfiles = Directory.GetFiles(UpdateDirectory, FIRMWARE_FILENAME_PATTERN);
+            var oldfiles = Directory.GetFiles(Factory.GetGlobals().UpdateDirectory, FIRMWARE_FILENAME_PATTERN);
             _writeMessage("Firmware update found. Downloading...");
-            await HttpHelper.Instance.DownloadFileAsync(firmwareUrl, Path.Combine(UpdateDirectory, filename));
+            await Factory.GetHttpHelper().DownloadFileAsync(firmwareUrl, Path.Combine(Factory.GetGlobals().UpdateDirectory, filename));
             _writeMessage("Download Complete");
-            _writeMessage(Path.Combine(UpdateDirectory, filename));
+            _writeMessage(Path.Combine(Factory.GetGlobals().UpdateDirectory, filename));
             foreach (string oldfile in oldfiles) {
                 if (File.Exists(oldfile) && Path.GetFileName(oldfile) != filename) {
                     _writeMessage("Deleting old firmware file...");
                     File.Delete(oldfile);
                 }
             }
-            _settingsManager.SetFirmwareVersion(filename);
+            Factory.GetGlobals().SettingsManager.SetFirmwareVersion(filename);
             _writeMessage("To install firmware, restart your Pocket.");
         } else {
             _writeMessage("Firmware up to date.");
@@ -480,7 +457,7 @@ public class PocketCoreUpdater : Base
             return;
         }
 
-        core.Uninstall(UpdateDirectory);
+        core.Uninstall();
     }
 
     private void updater_StatusUpdated(object sender, StatusUpdatedEventArgs e)
