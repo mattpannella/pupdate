@@ -65,6 +65,8 @@ On your first run it will prompt you to select the cores you want tracked. After
 | Custom Archive Index         | config.custom_archive.index      | Relative path to the index of your custom site's files. This is not required, but it's needed for CRC checking. If you have CRC checking enabled, the setting will be ignored unless this provides the necessary format. It must match the output of archive.org's json endpoint. https://archive.org/help/json.php
 
 #### Troubleshooting
+Slow asset downloads? Try toggling `use_custom_archive` to true, in your settings.
+
 If you run the update process and get a message like `Error in framework RS: bridge not responding` when running a core, try to run the updater in a local folder on your pc, and then copy the files over to the sd card afterwards. I'm not entirely sure what the issue is, but I've seen it reported a bunch of times now and running the updater locally seems to help.
 
 ## Submitting new cores ##
