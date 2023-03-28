@@ -16,4 +16,16 @@ public static class ArchiveService
 
         return result;
     }
+
+    public static async Task<Archive?> GetFilesCustom(string url)
+    {
+        try {
+            string json = await Factory.GetHttpHelper().GetHTML(url);
+            Archive result = JsonSerializer.Deserialize<Archive>(json);
+
+            return result;
+        } catch(Exception e) {
+            return null;
+        }
+    }
 }

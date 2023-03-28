@@ -266,12 +266,19 @@ public class Core : Base
 
     private string BuildAssetUrl(string filename)
     {
-        return ARCHIVE_BASE_URL + "/" + archive + "/" + filename;
+        if(Factory.GetGlobals().SettingsManager.GetConfig().use_custom_archive) {
+            var custom = Factory.GetGlobals().SettingsManager.GetConfig().custom_archive;
+            Uri baseUrl = new Uri(custom["url"]);
+            Uri url = new Uri(baseUrl, filename);
+            return url.ToString();
+        } else {
+            return ARCHIVE_BASE_URL + "/" + archive + "/" + filename;
+        }
     }
 
     private bool CheckCRC(string filepath)
     {
-        if(!useCRC) {
+        if(Factory.GetGlobals().ArchiveFiles == null || !useCRC) {
             return true;
         }
         string filename = Path.GetFileName(filepath);

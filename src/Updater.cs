@@ -77,7 +77,15 @@ public class PocketCoreUpdater : Base
 
     private async Task LoadArchive()
     {
-        Factory.GetGlobals().ArchiveFiles = await ArchiveService.GetFiles(Factory.GetGlobals().SettingsManager.GetConfig().archive_name);
+        if(Factory.GetGlobals().SettingsManager.GetConfig().use_custom_archive) {
+            var custom = Factory.GetGlobals().SettingsManager.GetConfig().custom_archive;
+            Uri baseUrl = new Uri(custom["url"]);
+            Uri url = new Uri(baseUrl, custom["index"]);
+        
+            Factory.GetGlobals().ArchiveFiles = await ArchiveService.GetFilesCustom(url.ToString());
+        } else {
+            Factory.GetGlobals().ArchiveFiles = await ArchiveService.GetFiles(Factory.GetGlobals().SettingsManager.GetConfig().archive_name);
+        }
     }
 
     private async Task LoadBlacklist()
