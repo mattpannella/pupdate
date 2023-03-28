@@ -14,6 +14,8 @@ public class Config
     public bool crc_check { get; set; }
     public bool fix_jt_names { get; set; }
     public bool skip_alternative_assets { get; set; }
+    public bool use_custom_archive { get; set; }
+    public Dictionary<string, string> custom_archive { get; set; }
 
     public Config()
     {
@@ -28,5 +30,10 @@ public class Config
         crc_check = true;
         fix_jt_names = true;
         skip_alternative_assets = true;
+        use_custom_archive = false;
+        custom_archive = new Dictionary<string, string>() {
+            {"url", "https://updater.retrodriven.com"},
+            {"index", "index.php"}
+        };
     }
 }

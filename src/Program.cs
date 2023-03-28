@@ -414,6 +414,19 @@ internal class Program
             }
         }
         Console.WriteLine("");
+        valid = false;
+        while(!valid) {
+            Console.Write("\nUse custom asset archive??[y/N] ");
+            response = Console.ReadKey(false).Key;
+            if(response == ConsoleKey.N || response == ConsoleKey.Enter) {
+                settings.GetConfig().use_custom_archive = false;
+                valid = true;
+            } else if(response == ConsoleKey.Y) {
+                settings.GetConfig().use_custom_archive = true;
+                valid = true;
+            }
+        }
+        Console.WriteLine("");
         Console.WriteLine("Settings saved!");
         settings.SaveSettings();
     }
