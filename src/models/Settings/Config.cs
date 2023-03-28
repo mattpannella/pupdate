@@ -33,7 +33,7 @@ public class Config
         use_custom_archive = false;
         custom_archive = new Dictionary<string, string>() {
             {"url", "https://updater.retrodriven.com"},
-            {"index", "index.php"}
+            {"index", "updater.php"}
         };
     }
 }
