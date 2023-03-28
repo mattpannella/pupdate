@@ -62,7 +62,7 @@ On your first run it will prompt you to select the cores you want tracked. After
 | Skip Alternative Assets         | config.skip_alternative_assets      | `true` by default. If a core developer puts any of their rom asset files in a directory named `_alternatives` they won't be downloaded automatically (unless you set this to `false`)
 | Use Custom Archive         | config.use_custom_archive      | `false` by default. Instead of checking the archive site defined in your settings to look for required assets, use a custom site that you can define. (by default this will be a site hosted by RetroDriven)
 | Custom Archive URL         | config.custom_archive.url      | The full url to your custom site
-| Custom Archive Index         | config.custom_archive.index      | Relative path to the index of your custom site's files. This is not required, but it's needed for CRC checking. If you have CRC checking enabled, the setting will be ignored unless this provides the necessary format. It must match the output of archive.org's json endpoint. https://archive.org/help/json.php
+| Custom Archive Index         | config.custom_archive.index      | Relative path to the index of your custom site's files. This is not required, but it's needed for CRC checking. If you have CRC checking enabled, the setting will be ignored unless this provides the necessary format. It must match the output of archive.org's json endpoint. https://archive.org/developers/md-read.html
 
 #### Troubleshooting
 Slow asset downloads? Try toggling `use_custom_archive` to true, in your settings.
