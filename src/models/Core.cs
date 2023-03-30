@@ -332,7 +332,7 @@ public class Core : Base
                             break;
                     }
                     if(slot.required && files.Count() == 0) {
-                        throw new Exception("Missing required files.");
+                        throw new MissingRequiredInstanceFiles("Missing required files.");
                     }
                     foreach(string file in files) {
                         if(File.GetAttributes(file).HasFlag(FileAttributes.Hidden)) {
@@ -361,15 +361,26 @@ public class Core : Base
                 {
                     WriteIndented = true
                 };
-                if(!overwrite && File.Exists(Path.Combine(Factory.GetGlobals().UpdateDirectory, packager.output, jsonFileName))) {
+                string[] parts = dir.Split(commonPath);
+                parts = parts[1].Split(jsonFileName.Remove(jsonFileName.Length - 5));
+                string subdir = "";
+                if(parts[0].Length > 1) {
+                    subdir = parts[0].Trim(Path.DirectorySeparatorChar);
+                }
+                string outputfile = Path.Combine(Factory.GetGlobals().UpdateDirectory, packager.output, subdir, jsonFileName);
+                if(!overwrite && File.Exists(outputfile)) {
                     _writeMessage(jsonFileName + " already exists.");
                 } else {
                     string json = JsonSerializer.Serialize<Analogue.SimpleInstanceJSON>(instancejson, options);
                     _writeMessage("Saving " + jsonFileName);
-                    File.WriteAllText(Path.Combine(Factory.GetGlobals().UpdateDirectory, packager.output, jsonFileName), json);
+                    FileInfo file = new System.IO.FileInfo(outputfile);
+                    file.Directory.Create(); // If the directory already exists, this method does nothing.
+                    File.WriteAllText(outputfile, json);
                 }
+            } catch(MissingRequiredInstanceFiles) {
+                //do nothin
             } catch(Exception e) {
-                //_writeMessage("Unable to build " + dirName);
+                _writeMessage("Unable to build " + dirName);
             }
         }
         if (warning) {
