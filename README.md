@@ -14,7 +14,7 @@ I can't (and don't want to) support old versions, so please make sure you downlo
 If you just want to use this utility, do not clone the source repository. Just
 download the [latest release](https://github.com/mattpannella/pocket-updater-utility/releases/latest/). Unzip it, put the executable file for your platform (windows, mac os, or linux) in the root of your sd card, and run the program.
 
-At the main menu run `Configuration Wizard` to have it walk through the available settings for you.
+At the main menu run `Settings` to have it walk through the available settings for you.
 
 #### Advanced Usage
 CLI Parameters
