@@ -39,8 +39,46 @@ public class HttpHelper
         if (!Uri.TryCreate(uri, UriKind.Absolute, out uriResult))
             throw new InvalidOperationException("URI is invalid.");
 
-        byte[] fileBytes = await this.client.GetByteArrayAsync(uri, cts.Token);
-        File.WriteAllBytes(outputPath, fileBytes);
+        using HttpResponseMessage r = await this.client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cts.Token);
+
+        var totalSize = r.Content.Headers.ContentLength ?? -1L;
+        var readSoFar = 0L;
+        var buffer = new byte[4096];
+        var isMoreToRead = true;
+
+        using var stream = await r.Content.ReadAsStreamAsync();
+        using var fileStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write);
+
+        while (isMoreToRead)
+        {
+            var read = await stream.ReadAsync(buffer, 0, buffer.Length);
+            if (read == 0)
+            {
+                isMoreToRead = false;
+                Console.Write("\r");
+            }
+            else
+            {
+                readSoFar += read;
+                var progress = (double)readSoFar / totalSize;
+                var progressWidth = Console.WindowWidth - 14;
+                var progressBarWidth = (int)(progress * progressWidth);
+                var progressBar = new string('=', progressBarWidth);
+                var emptyProgressBar = new string(' ', progressWidth - progressBarWidth);
+                Console.Write($"\r{progressBar}{emptyProgressBar}] {(progress * 100):0.00}%");
+                if (readSoFar == totalSize)
+                {
+                    Console.CursorLeft = 0;
+                    Console.Write(new string(' ', Console.WindowWidth));
+                    Console.CursorLeft = 0;
+                }
+                await fileStream.WriteAsync(buffer, 0, read);
+            }
+        }
+        //byte[] fileBytes = await r.Content.ReadAsByteArrayAsync();
+
+        //byte[] fileBytes = await this.client.GetByteArrayAsync(uri, cts.Token);
+        //File.WriteAllBytes(outputPath, fileBytes);
     }
 
    public async Task<String> GetHTML(string uri)
