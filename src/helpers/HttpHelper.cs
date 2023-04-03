@@ -32,6 +32,10 @@ public class HttpHelper
 
    public async Task DownloadFileAsync(string uri, string outputPath, int timeout = 100)
    {
+        bool console = false;
+        if (Environment.UserInteractive && Console.WindowHeight > 0) {
+            console = true;
+        }
         using var cts = new CancellationTokenSource();
         cts.CancelAfter(TimeSpan.FromSeconds(timeout));
         Uri? uriResult;
@@ -55,30 +59,30 @@ public class HttpHelper
             if (read == 0)
             {
                 isMoreToRead = false;
-                Console.Write("\r");
+                if (console) {
+                    Console.Write("\r");
+                }
             }
             else
             {
                 readSoFar += read;
                 var progress = (double)readSoFar / totalSize;
-                var progressWidth = Console.WindowWidth - 14;
-                var progressBarWidth = (int)(progress * progressWidth);
-                var progressBar = new string('=', progressBarWidth);
-                var emptyProgressBar = new string(' ', progressWidth - progressBarWidth);
-                Console.Write($"\r{progressBar}{emptyProgressBar}] {(progress * 100):0.00}%");
-                if (readSoFar == totalSize)
-                {
-                    Console.CursorLeft = 0;
-                    Console.Write(new string(' ', Console.WindowWidth));
-                    Console.CursorLeft = 0;
+                if (console) {
+                    var progressWidth = Console.WindowWidth - 14;
+                    var progressBarWidth = (int)(progress * progressWidth);
+                    var progressBar = new string('=', progressBarWidth);
+                    var emptyProgressBar = new string(' ', progressWidth - progressBarWidth);
+                    Console.Write($"\r{progressBar}{emptyProgressBar}] {(progress * 100):0.00}%");
+                    if (readSoFar == totalSize)
+                    {
+                        Console.CursorLeft = 0;
+                        Console.Write(new string(' ', Console.WindowWidth));
+                        Console.CursorLeft = 0;
+                    }
                 }
                 await fileStream.WriteAsync(buffer, 0, read);
             }
         }
-        //byte[] fileBytes = await r.Content.ReadAsByteArrayAsync();
-
-        //byte[] fileBytes = await this.client.GetByteArrayAsync(uri, cts.Token);
-        //File.WriteAllBytes(outputPath, fileBytes);
     }
 
    public async Task<String> GetHTML(string uri)
