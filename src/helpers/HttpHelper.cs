@@ -8,6 +8,7 @@ public class HttpHelper
     private static HttpHelper instance = null;
     private static object syncLock = new object();
     private HttpClient client = null;
+    public event EventHandler<DownloadProgressEventArgs> DownloadProgressUpdate;
 
     private HttpHelper()
     {
@@ -33,9 +34,11 @@ public class HttpHelper
    public async Task DownloadFileAsync(string uri, string outputPath, int timeout = 100)
    {
         bool console = false;
-        if (Environment.UserInteractive && Console.WindowHeight > 0) {
+        try {
+            var test = Console.WindowWidth;
             console = true;
-        }
+        } catch (Exception) { }
+
         using var cts = new CancellationTokenSource();
         cts.CancelAfter(TimeSpan.FromSeconds(timeout));
         Uri? uriResult;
@@ -80,6 +83,9 @@ public class HttpHelper
                         Console.CursorLeft = 0;
                     }
                 }
+                DownloadProgressEventArgs args = new DownloadProgressEventArgs();
+                args.progress = progress;
+                OnDownloadProgressUpdate(args);
                 await fileStream.WriteAsync(buffer, 0, read);
             }
         }
@@ -96,4 +102,18 @@ public class HttpHelper
 
         return html;
    }
+
+   protected virtual void OnDownloadProgressUpdate(DownloadProgressEventArgs e)
+    {
+        EventHandler<DownloadProgressEventArgs> handler = DownloadProgressUpdate;
+        if(handler != null)
+        {
+            handler(this, e);
+        }
+    }
+}
+
+public class DownloadProgressEventArgs : EventArgs
+{
+    public double progress = 0;
 }
