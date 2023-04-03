@@ -473,6 +473,11 @@ public class PocketCoreUpdater : Base
         this.OnStatusUpdated(e);
     }
     public event EventHandler<UpdateProcessCompleteEventArgs>? UpdateProcessComplete;
+
+    public void SetDownloadProgressHandler(EventHandler<DownloadProgressEventArgs> handler)
+    {
+        Factory.GetHttpHelper().DownloadProgressUpdate += handler;
+    }
 }
 
 public class UpdateProcessCompleteEventArgs : EventArgs
