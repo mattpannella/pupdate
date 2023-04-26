@@ -75,7 +75,7 @@ internal class Program
                     if (platform == "win") {
                         Console.Write("Would you like to [i]nstall the update, [c]ontinue with the current version, or [q]uit? [i/c/q]: ");
                     } else {
-                        Console.Write("Update downloaded and extracted. Would you like to [c]ontinue with the current version, or [q]uit? [c/q]: ");
+                        Console.Write("Update downloaded. Would you like to [c]ontinue with the current version, or [q]uit? [c/q]: ");
                     }
                     response = Console.ReadKey(false).Key;
                     Console.WriteLine();
@@ -599,6 +599,10 @@ internal class Program
             return "mac";
         }
         if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
+            Architecture arch = RuntimeInformation.ProcessArchitecture;
+            if(arch == Architecture.Arm64) {
+                return "linux_arm64";
+            }
             return "linux";
         }
 
@@ -761,6 +765,13 @@ internal class Program
 |  |  |     | . | .'|_ -| .'|
 |_____|_|_|_|___|__,|___|__,|
                              ",
+        @"               _                              
+ __        _  | |                             
+|  |   ___| |_|_|___    _____ ___ ___ ___ _ _ 
+|  |__| -_|  _| |_ -|  |     | . |_ -| -_| | |
+|_____|___|_|   |___|  |_|_|_|___|___|___|_  |
+                                         |___|",
+
         
     };
 }
