@@ -60,7 +60,7 @@ jobs:
           else
             cd $release_name
             zip "../pocket_updater_linux.zip" "pocket_updater_x64"
-            zip "../pocket_updater_linux_arm.zip" "pocket_updater_arm"
+            zip "../pocket_updater_linux_arm64.zip" "pocket_updater_arm"
             cd ..
           fi
 
