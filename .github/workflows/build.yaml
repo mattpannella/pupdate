@@ -58,10 +58,10 @@ jobs:
             rm pocket_updater_x64
             zip "../pocket_updater_mac.zip" "pocket_updater"; cd ..;
           else
-            cd $release_name; 
-            zip "../pocket_updater_linux.zip" "pocket_updater"; 
-            zip "../pocket_updater_linux_arm.zip" "pocket_updater_arm"; 
-            cd ..;
+            cd $release_name
+            zip "../pocket_updater_linux.zip" "pocket_updater_x64"
+            zip "../pocket_updater_linux_arm.zip" "pocket_updater_arm"
+            cd ..
           fi
 
           # Delete output directory
