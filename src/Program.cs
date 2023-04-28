@@ -602,6 +602,8 @@ internal class Program
             Architecture arch = RuntimeInformation.ProcessArchitecture;
             if(arch == Architecture.Arm64) {
                 return "linux_arm64";
+            } else if(arch == Architecture.Arm) {
+                return "linux_arm32";
             }
             return "linux";
         }
