@@ -18,12 +18,9 @@ public class Core : Base
     public string? version { get; set; }
 
     private const string ZIP_FILE_NAME = "core.zip";
+    public bool downloadAssets { get; set; } = Factory.GetGlobals().SettingsManager.GetConfig().download_assets;
+    public bool buildInstances { get; set; } = Factory.GetGlobals().SettingsManager.GetConfig().build_instance_jsons;
 
-    public string archive { get; set; }
-    public bool downloadAssets { get; set; } = true;
-    public bool buildInstances { get; set; } = true;
-    public bool useCRC { get; set; } = true;
-    public bool skipAlts { get; set; } = false;
 
     public override string ToString()
     {
@@ -176,7 +173,7 @@ public class Core : Base
                     if(File.GetAttributes(file).HasFlag(FileAttributes.Hidden)) {
                         continue;
                     }
-                    if(skipAlts && file.Contains(Path.Combine(instancesDirectory, "_alternatives"))) {
+                    if(Factory.GetGlobals().SettingsManager.GetConfig().skip_alternative_assets && file.Contains(Path.Combine(instancesDirectory, "_alternatives"))) {
                         continue;
                     }
                     Analogue.InstanceJSON instance = JsonSerializer.Deserialize<Analogue.InstanceJSON>(File.ReadAllText(file), options);
@@ -271,13 +268,13 @@ public class Core : Base
             Uri url = new Uri(baseUrl, filename);
             return url.ToString();
         } else {
-            return ARCHIVE_BASE_URL + "/" + archive + "/" + filename;
+            return ARCHIVE_BASE_URL + "/" + Factory.GetGlobals().SettingsManager.GetConfig().archive_name + "/" + filename;
         }
     }
 
     private bool CheckCRC(string filepath)
     {
-        if(Factory.GetGlobals().ArchiveFiles == null || !useCRC) {
+        if(Factory.GetGlobals().ArchiveFiles == null || !Factory.GetGlobals().SettingsManager.GetConfig().crc_check) {
             return true;
         }
         string filename = Path.GetFileName(filepath);
@@ -296,7 +293,7 @@ public class Core : Base
 
     public void BuildInstanceJSONs(bool overwrite = true)
     {
-        if(!this.buildInstances) {
+        if(!buildInstances) {
             return;
         }
         string instancePackagerFile = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Cores", this.identifier, "instance-packager.json");
