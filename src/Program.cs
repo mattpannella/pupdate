@@ -60,7 +60,7 @@ internal class Program
                 }
                 );
 
-           // path = "/Users/mattpannella/pocket-test";
+            //path = "/Users/mattpannella/pocket-test";
 
             ConsoleKey response;
 

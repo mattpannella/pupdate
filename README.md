@@ -50,8 +50,7 @@ On your first run it will prompt you to select the cores you want tracked. After
 #### All settings can be modified in your `pocket_updater_settings.json` file
 
 |                                          |                                  |                                                                                                                                                                                                      |
-|------------------------------------------|----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Allow pre-release cores                  | coreSettings.{corename}.allowPrerelease                  | Set to `true` for any core want to download, even though it's still pre-release                                                                                                                        |
+|------------------------------------------|----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|                                                                                                                      |
 | Disable Firmware Downloading             | config.download_firmware         | Set to `false` if you don't want Update All to check for firmware updates                                                                                                                              |
 | Disable Asset Downloading                | config.download_assets           | Set to `false` if you'd like to supply your own BIOS and arcade rom files, and don't want Update All to handle this.                                                                                   |
 | Preserve Platforms Folder Customizations | config.preserve_platforms_folder | If you have any customizations to the Platforms folder, you can use this option to preserve them during the update process. Set to `true` in your settings file, or use `-f` as a command line parameter |
@@ -63,6 +62,7 @@ On your first run it will prompt you to select the cores you want tracked. After
 | Use Custom Archive         | config.use_custom_archive      | `false` by default. Instead of checking the archive site defined in your settings to look for required assets, use a custom site that you can define. (by default this will be a site hosted by RetroDriven)
 | Custom Archive URL         | config.custom_archive.url      | The full url to your custom site
 | Custom Archive Index         | config.custom_archive.index      | Relative path to the index of your custom site's files. This is not required, but it's needed for CRC checking. If you have CRC checking enabled, the setting will be ignored unless this provides the necessary format. It must match the output of archive.org's json endpoint. https://archive.org/developers/md-read.html
+| Per Core Settings                | coreSettings.{corename}.download_assets and coreSettings.{corename}.platform_rename                   | Set to `false` for any core you don't want assets downloaded for, or automatic platform renaming (currently this only applies to jotego cores)
 
 #### Troubleshooting
 Slow asset downloads? Try toggling `use_custom_archive` to true, in your settings.

@@ -102,7 +102,7 @@ public class Core : Base
     {
         List<string> installed = new List<string>();
         List<string> skipped = new List<string>();
-        if(!downloadAssets) {
+        if(!downloadAssets && !Factory.GetGlobals().SettingsManager.GetCoreSettings(this.identifier).download_assets) {
             return new Dictionary<string, List<string>>{
                 {"installed", installed },
                 {"skipped", skipped }

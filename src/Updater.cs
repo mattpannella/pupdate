@@ -222,7 +222,6 @@ public class PocketCoreUpdater : Base
                 }
 
                 _writeMessage("Checking Core: " + name);
-                bool allowPrerelease = Factory.GetGlobals().SettingsManager.GetCoreSettings(core.identifier).allowPrerelease;
                 var mostRecentRelease = core.version;
 
                 if(mostRecentRelease == null) {
@@ -295,7 +294,8 @@ public class PocketCoreUpdater : Base
 
     private async Task JotegoRename(Core core)
     {
-        if(_renameJotegoCores && core.identifier.Contains("jotego")) {
+        if(_renameJotegoCores && Factory.GetGlobals().SettingsManager.GetCoreSettings(core.identifier).platform_rename 
+                && core.identifier.Contains("jotego")) {
             core.platform_id = core.identifier.Split('.')[1]; //whatever
             string path = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Platforms", core.platform_id + ".json");
             string json = File.ReadAllText(path);
