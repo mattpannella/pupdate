@@ -48,9 +48,9 @@ public class PocketCoreUpdater : Base
 
     public async Task Initialize()
     {
+        LoadSettings();
         await LoadPlatformFiles();
         await LoadCores();
-        LoadSettings();
         await LoadArchive();
         await LoadBlacklist();
     }
