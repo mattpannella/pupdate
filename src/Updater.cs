@@ -419,24 +419,16 @@ public class PocketCoreUpdater : Base
     {
         string version = "";
         _writeMessage("Checking for firmware updates...");
-        string html = await Factory.GetHttpHelper().GetHTML(FIRMWARE_URL);
+        var details = await AnalogueFirmware.GetDetails();
         
-        MatchCollection matches = BIN_REGEX.Matches(html);
-        if(matches.Count != 1) {
-            _writeMessage("cant find it");
-            return version;
-        } 
-
-        string firmwareUrl = matches[0].Groups["url"].ToString();
-        string[] parts = firmwareUrl.Split("/");
+        string[] parts = details.download_url.Split("/");
         string filename = parts[parts.Length-1];
-
-        Firmware current = Factory.GetGlobals().SettingsManager.GetCurrentFirmware();
-        if(current.version != filename || !File.Exists(Path.Combine(Factory.GetGlobals().UpdateDirectory, filename))) {
+        string filepath = Path.Combine(Factory.GetGlobals().UpdateDirectory, filename);
+        if(!File.Exists(filepath) || !Util.CompareChecksum(filepath, details.md5, Util.HashTypes.MD5)) {
             version = filename;
             var oldfiles = Directory.GetFiles(Factory.GetGlobals().UpdateDirectory, FIRMWARE_FILENAME_PATTERN);
             _writeMessage("Firmware update found. Downloading...");
-            await Factory.GetHttpHelper().DownloadFileAsync(firmwareUrl, Path.Combine(Factory.GetGlobals().UpdateDirectory, filename));
+            await Factory.GetHttpHelper().DownloadFileAsync(details.download_url, Path.Combine(Factory.GetGlobals().UpdateDirectory, filename));
             _writeMessage("Download Complete");
             _writeMessage(Path.Combine(Factory.GetGlobals().UpdateDirectory, filename));
             foreach (string oldfile in oldfiles) {
@@ -445,7 +437,6 @@ public class PocketCoreUpdater : Base
                     File.Delete(oldfile);
                 }
             }
-            Factory.GetGlobals().SettingsManager.SetFirmwareVersion(filename);
             _writeMessage("To install firmware, restart your Pocket.");
         } else {
             _writeMessage("Firmware up to date.");

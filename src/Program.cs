@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.IO;
 using System.IO.Compression;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -61,7 +60,7 @@ internal class Program
                 }
                 );
 
-            //path = "/Users/mattpannella/pocket-test";
+           // path = "/Users/mattpannella/pocket-test";
 
             ConsoleKey response;
 

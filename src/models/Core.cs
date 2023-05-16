@@ -4,7 +4,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Text.Json;
-using Force.Crc32;
 using System.Collections;
 
 public class Core : Base
@@ -286,13 +285,12 @@ public class Core : Base
         if(file == null) {
             return true; //no checksum to compare to
         }
-        //_writeMessage("Checking crc for " + filename);
-        var checksum = Crc32Algorithm.Compute(File.ReadAllBytes(filepath));
-        if(checksum.ToString("x8").Equals(file.crc32, StringComparison.CurrentCultureIgnoreCase)) {
+
+        if(Util.CompareChecksum(filepath, file.crc32)) {
             return true;
         }
 
-        _writeMessage("Bad checksum!");
+        _writeMessage(filename + ": Bad checksum!");
         return false;
     }
 

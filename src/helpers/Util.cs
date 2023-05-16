@@ -1,5 +1,6 @@
 using System.IO;
-
+using Force.Crc32;
+using System.Security.Cryptography;
 namespace pannella.analoguepocket;
 
 public class Util
@@ -7,6 +8,11 @@ public class Util
     private static string _platformsDirectory = "Platforms";
     private static string _temp = "imagesbackup";
     private static readonly string[] BAD_DIRS = { "__MACOSX" };
+    public enum HashTypes {
+        CRC32,
+        MD5
+    }
+    
     public static bool BackupPlatformsDirectory(string rootPath)
     {
         string fullPath = Path.Combine(rootPath, _platformsDirectory);
@@ -106,4 +112,41 @@ public class Util
             return false;
         }
     }
+
+    public static string GetCRC32(string filepath)
+    {
+        if(File.Exists(filepath)) {
+            var checksum = Crc32Algorithm.Compute(File.ReadAllBytes(filepath));
+            return checksum.ToString("x8");
+        } else {
+            throw new Exception("File doesn't exist. Cannot compute checksum");
+        }
+    }
+
+    public static string GetMD5(string filepath)
+    {
+        if(File.Exists(filepath)) {
+            var checksum = MD5.HashData(File.ReadAllBytes(filepath));
+            return Convert.ToHexString(checksum);
+        } else {
+            throw new Exception("File doesn't exist. Cannot compute checksum");
+        }
+    }
+
+    public static bool CompareChecksum(string filepath, string checksum, HashTypes type = HashTypes.CRC32)
+    {
+        string hash;
+        switch(type) {
+            case HashTypes.MD5:
+                hash = GetMD5(filepath);
+                break;
+            case HashTypes.CRC32:
+            default:
+                hash = GetCRC32(filepath);
+                break;
+        }
+        
+        return hash.Equals(checksum, StringComparison.CurrentCultureIgnoreCase);
+    }
+    
 }

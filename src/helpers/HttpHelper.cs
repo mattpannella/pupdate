@@ -12,8 +12,7 @@ public class HttpHelper
 
     private HttpHelper()
     {
-        this.client = new HttpClient();
-        this.client.Timeout = TimeSpan.FromMinutes(10); //10min
+        createClient();
     }
 
     public static HttpHelper Instance
@@ -30,6 +29,7 @@ public class HttpHelper
             }
         }
     }
+
 
    public async Task DownloadFileAsync(string uri, string outputPath, int timeout = 100)
    {
@@ -91,16 +91,31 @@ public class HttpHelper
         }
     }
 
-   public async Task<String> GetHTML(string uri)
+   public async Task<String> GetHTML(string uri, bool allowRedirect = true)
    {
         Uri? uriResult;
 
         if (!Uri.TryCreate(uri, UriKind.Absolute, out uriResult))
             throw new InvalidOperationException("URI is invalid.");
 
-        string html = await this.client.GetStringAsync(uri);
+        if(!allowRedirect) {
+            createClient(false);
+        }
 
+        var response = await this.client.GetAsync(uri);
+        string html = await response.Content.ReadAsStringAsync();
+
+        if(!allowRedirect) {
+            createClient();
+        }
+        
         return html;
+   }
+
+   private void createClient(bool allowRedirect = true)
+   {
+        this.client = new HttpClient(new HttpClientHandler() { AllowAutoRedirect = allowRedirect });
+        this.client.Timeout = TimeSpan.FromMinutes(10); //10min
    }
 
    protected virtual void OnDownloadProgressUpdate(DownloadProgressEventArgs e)
