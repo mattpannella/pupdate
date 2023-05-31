@@ -12,39 +12,6 @@ public class Util
         CRC32,
         MD5
     }
-    
-    public static bool BackupPlatformsDirectory(string rootPath)
-    {
-        string fullPath = Path.Combine(rootPath, _platformsDirectory);
-        if(!Directory.Exists(fullPath)) {
-            return false;
-        }
-
-        string tempPath = Path.Combine(rootPath, _temp);
-        try {
-            Directory.CreateDirectory(tempPath);
-            CopyDirectory(fullPath, tempPath, true, true);
-        } catch (Exception) {
-            return false;
-        }
-        return true;
-    }
-
-    public static bool RestorePlatformsDirectory(string rootPath)
-    {
-        string fullPath = Path.Combine(rootPath, _platformsDirectory);
-        if(!Directory.Exists(fullPath)) {
-            return false;
-        }
-        string tempPath = Path.Combine(rootPath, _temp);
-        if(!Directory.Exists(tempPath)) {
-            return false;
-        }
-        CopyDirectory(tempPath, fullPath, true, true);
-        Directory.Delete(tempPath, true);
-
-        return true;
-    }
 
     public static void CopyDirectory(string sourceDir, string destinationDir, bool recursive, bool overwrite)
     {
@@ -79,7 +46,7 @@ public class Util
         }
     }
 
-    public static void CleanDir(string source)
+    public static void CleanDir(string source, bool preservePlatformsFolder = false, string platform = "")
     {
         // Clean up any bad directories (like Mac OS directories).
         foreach(var dir in BAD_DIRS) {
@@ -87,6 +54,17 @@ public class Util
                 Directory.Delete(Path.Combine(source, dir), true);
             }
             catch { }
+        }
+
+        if(preservePlatformsFolder) {
+            string existing = Path.Combine(Factory.GetGlobals().UpdateDirectory, _platformsDirectory, platform + ".json");
+            if(File.Exists(existing)) {
+                try {
+                    string dir = Path.Combine(source, _platformsDirectory);
+                    Directory.Delete(dir, true);
+                }
+                catch { }
+            }
         }
 
         // Clean files.

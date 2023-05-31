@@ -54,7 +54,7 @@ public class Core : Base
         ZipFile.ExtractToDirectory(zipPath, tempDir, true);
 
         // Clean problematic directories and files.
-        Util.CleanDir(tempDir);
+        Util.CleanDir(tempDir, Factory.GetGlobals().SettingsManager.GetConfig().preserve_platforms_folder, this.platform_id);
 
         // Move the files into place and delete our core's temp directory.
         _writeMessage("Installing...");

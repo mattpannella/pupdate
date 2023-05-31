@@ -184,7 +184,6 @@ public class PocketCoreUpdater : Base
         List<string> installedAssets = new List<string>();
         List<string> skippedAssets = new List<string>();
         Dictionary<string, List<string>> results = new Dictionary<string, List<string>>();
-        bool imagesBacked = false;
         string firmwareDownloaded = "";
         if(Factory.GetGlobals().Cores == null) {
             throw new Exception("Must initialize updater before running update process");
@@ -194,13 +193,6 @@ public class PocketCoreUpdater : Base
             firmwareDownloaded = await UpdateFirmware();
         }
 
-        if(_preservePlatformsFolder) {
-            _writeMessage("Backing up platforms folder");
-            Util.BackupPlatformsDirectory(Factory.GetGlobals().UpdateDirectory);
-            _writeMessage("Finished backing up platforms folder");
-            Divide();
-            imagesBacked = true;
-        }
         List<Core> cores = await getAllCores();
         string json;
         foreach(Core core in Factory.GetGlobals().Cores) {
@@ -275,11 +267,6 @@ public class PocketCoreUpdater : Base
             }
         } 
 
-        if(imagesBacked) {
-            _writeMessage("Restoring platforms folder");
-            Util.RestorePlatformsDirectory(Factory.GetGlobals().UpdateDirectory);
-            Divide();
-        }
         UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs();
         args.Message = "Update Process Complete";
         args.InstalledCores = installed;
