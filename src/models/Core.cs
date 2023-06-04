@@ -260,6 +260,19 @@ public class Core : Base
         return true;
     }
 
+    public Platform ReadPlatformFile()
+    {
+        Analogue.Core info = this.getConfig().core;
+        string UpdateDirectory = Factory.GetGlobals().UpdateDirectory;
+        //cores with multiple platforms won't work...not sure any exist right now?
+        string platformsFolder = Path.Combine(UpdateDirectory, "Platforms");
+
+        string dataFile = Path.Combine(platformsFolder, info.metadata.platform_ids[0] + ".json");
+
+        var p = JsonSerializer.Deserialize<Dictionary<string,Platform>>(File.ReadAllText(dataFile));
+        return p["platform"];
+    }
+
     private string BuildAssetUrl(string filename)
     {
         if(Factory.GetGlobals().SettingsManager.GetConfig().use_custom_archive) {
