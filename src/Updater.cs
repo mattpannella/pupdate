@@ -58,7 +58,8 @@ public class PocketCoreUpdater : Base
     private async Task LoadPlatformFiles()
     {
         try {
-            List<Github.File> files = await GithubApi.GetFiles("dyreschlock", "pocket-platform-images", "arcade/Platforms");
+            List<Github.File> files = await GithubApi.GetFiles("dyreschlock", "pocket-platform-images", "arcade/Platforms",
+                GlobalHelper.Instance.SettingsManager.GetConfig().github_token);
             Dictionary<string, string> platformFiles = new Dictionary<string, string>();
             foreach(Github.File file in files) {
                 string url = file.download_url;
@@ -99,6 +100,11 @@ public class PocketCoreUpdater : Base
         foreach(Core core in Factory.GetGlobals().Cores) {
             core.StatusUpdated += updater_StatusUpdated; //attach handler to bubble event up
         }
+    }
+
+    public List<Core> GetCores()
+    {
+        return Factory.GetGlobals().Cores;
     }
 
     public async Task LoadNonAPICores()

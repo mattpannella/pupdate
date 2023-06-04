@@ -95,6 +95,54 @@ public class Core : Base
         }
     }
 
+    public Platform? ReadPlatformFile()
+    {
+        var config = this.getConfig();
+        if (config == null)
+        {
+            return this.platform;
+        }
+        Analogue.Core info = config.core;
+        
+        string UpdateDirectory = Factory.GetGlobals().UpdateDirectory;
+        //cores with multiple platforms won't work...not sure any exist right now?
+        string platformsFolder = Path.Combine(UpdateDirectory, "Platforms");
+
+        string dataFile = Path.Combine(platformsFolder, info.metadata.platform_ids[0] + ".json");
+        var p = JsonSerializer.Deserialize<Dictionary<string,Platform>>(File.ReadAllText(dataFile));
+        
+        return p["platform"];
+    }
+
+    public bool UpdatePlatform(string title)
+    {
+        var config = this.getConfig();
+        if (config == null)
+        {
+            return false;
+        }
+        Analogue.Core info = config.core;
+        
+        string UpdateDirectory = Factory.GetGlobals().UpdateDirectory;
+        //cores with multiple platforms won't work...not sure any exist right now?
+        string platformsFolder = Path.Combine(UpdateDirectory, "Platforms");
+
+        string dataFile = Path.Combine(platformsFolder, info.metadata.platform_ids[0] + ".json");
+        if (!File.Exists(dataFile))
+        {
+            return false;
+        }
+
+        Dictionary<string, Platform> platform = new Dictionary<string, Platform>();
+        this.platform.name = title;
+        platform.Add("platform", this.platform);
+        string json = JsonSerializer.Serialize(platform);
+        
+        File.WriteAllText(dataFile, json);
+
+        return true;
+    }
+
     public async Task<Dictionary<string, List<string>>> DownloadAssets()
     {
         List<string> installed = new List<string>();
@@ -211,6 +259,10 @@ public class Core : Base
     {
         checkUpdateDirectory();
         string file = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Cores", this.identifier, "core.json");
+        if (!File.Exists(file))
+        {
+            return null;
+        }
         string json = File.ReadAllText(file);
         var options = new JsonSerializerOptions()
         {
@@ -258,19 +310,6 @@ public class Core : Base
         }
 
         return true;
-    }
-
-    public Platform ReadPlatformFile()
-    {
-        Analogue.Core info = this.getConfig().core;
-        string UpdateDirectory = Factory.GetGlobals().UpdateDirectory;
-        //cores with multiple platforms won't work...not sure any exist right now?
-        string platformsFolder = Path.Combine(UpdateDirectory, "Platforms");
-
-        string dataFile = Path.Combine(platformsFolder, info.metadata.platform_ids[0] + ".json");
-
-        var p = JsonSerializer.Deserialize<Dictionary<string,Platform>>(File.ReadAllText(dataFile));
-        return p["platform"];
     }
 
     private string BuildAssetUrl(string filename)
