@@ -23,6 +23,9 @@ internal class Program
             bool forceInstanceGenerator = false;
             string? downloadAssets = null;
             string? coreName = null;
+            string? imagePackOwner = null;
+            string? imagePackRepo = null;
+            string? imagePackVariant = null;
 
 
             Parser.Default.ParseArguments<Options>(args)
@@ -53,6 +56,12 @@ internal class Program
                         cliMode = true;
                         downloadAssets = o.DownloadAssets;
                     }
+                    if(o.ImagePackOwner != null) {
+                        cliMode = true;
+                        imagePackOwner = o.ImagePackOwner;
+                        imagePackRepo = o.ImagePackRepo;
+                        imagePackVariant = o.ImagePackVariant;
+                    }
                 }
                 ).WithNotParsed<Options>(o =>
                 {
@@ -65,7 +74,7 @@ internal class Program
                 }
                 );
 
-           // path = "/Users/mattpannella/pocket-test";
+           //path = "/Users/mattpannella/pocket-test";
 
             ConsoleKey response;
 
@@ -159,10 +168,18 @@ internal class Program
             } else if(forceInstanceGenerator) {
                 await RunInstanceGenerator(updater, true);
             } else if(downloadAssets != null) {
-                if (downloadAssets == "all")
+                if (downloadAssets == "all") {
                     updater.RunAssetDownloader();
-                else
+                } else {
                     updater.RunAssetDownloader(downloadAssets);
+                }
+            } else if (imagePackOwner != null) {
+                ImagePack pack = new ImagePack() {
+                    owner = imagePackOwner,
+                    repository = imagePackRepo,
+                    variant = imagePackVariant
+                };
+                await InstallImagePack(path, pack);
             } else { 
                 bool flag = true;
                 while(flag) {
@@ -663,9 +680,7 @@ internal class Program
 
     private static async Task InstallImagePack(string path, ImagePack pack)
     {
-        pack.Install(path);
-        //string filepath = await fetchImagePack(path, pack);
-        //await installImagePack(path, filepath);
+        await pack.Install(path);
     }
 
     private static void PauseExit(int exitcode = 0)
@@ -797,6 +812,16 @@ public class Options
 
     [Option('a', "assets", Required = false, HelpText = "Download assets for all cores, or a specified one.")]
     public string DownloadAssets { get; set; }
+
+    [Option('o', "owner", Required = false, HelpText = "Image pack repo username")]
+    public string ImagePackOwner { get; set; }
+
+    [Option('r', "repo", Required = false, HelpText = "Github repo name for image pack")]
+    public string ImagePackRepo { get; set; }
+
+    [Option('v', "variant", Required = false, HelpText = "The optional variant")]
+    public string? ImagePackVariant { get; set; }
+
 }
 
 public static class EnumExtension
