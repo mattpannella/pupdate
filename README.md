@@ -29,13 +29,17 @@ CLI Parameters
  -o, --owner   The github username that the image pack repo is owned by
  -v, --variant   Optional variant for the image pack   
 ```
-example:
-`
-/path/to/pocket_updater -p /path/to/sdcard/
-/path/to/pocket_updater -u -c boogermann.bankpanic
-/path/to/pocket_updater -a jotego.jtcontra
-/path/to/pocket_updater -i pocket-platform-images -o dyreschlock  -v home
-`
+examples:
+
+`/path/to/pocket_updater -p /path/to/sdcard/`
+
+`/path/to/pocket_updater -u -c boogermann.bankpanic`
+
+`/path/to/pocket_updater -a jotego.jtcontra`
+
+`/path/to/pocket_updater -i pocket-platform-images -o dyreschlock  -v home`
+
+
 #### Download Image Packs
 This will present you with a list of available image packs and automatically download and extract it to the Platforms/_images directory for you
 
