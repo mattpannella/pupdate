@@ -26,6 +26,7 @@ internal class Program
             string? imagePackOwner = null;
             string? imagePackRepo = null;
             string? imagePackVariant = null;
+            bool downloadFirmware = false;
 
 
             Parser.Default.ParseArguments<Options>(args)
@@ -61,6 +62,10 @@ internal class Program
                         imagePackOwner = o.ImagePackOwner;
                         imagePackRepo = o.ImagePackRepo;
                         imagePackVariant = o.ImagePackVariant;
+                    }
+                    if(o.DownloadFirmware) {
+                        downloadFirmware = true;
+                        cliMode = true;
                     }
                 }
                 ).WithNotParsed<Options>(o =>
@@ -165,6 +170,8 @@ internal class Program
                 Console.WriteLine("Starting update process...");
                 await updater.RunUpdates(coreName);
                 Pause();
+            } else if(downloadFirmware) {
+                await updater.UpdateFirmware();
             } else if(forceInstanceGenerator) {
                 await RunInstanceGenerator(updater, true);
             } else if(downloadAssets != null) {
@@ -821,6 +828,9 @@ public class Options
 
     [Option('v', "variant", Required = false, HelpText = "The optional variant")]
     public string? ImagePackVariant { get; set; }
+
+    [Option('d', "firmware", HelpText = "Download pocket firmware update.", Required = false)]
+    public bool DownloadFirmware { get; set; }
 
 }
 
