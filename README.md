@@ -27,7 +27,8 @@ CLI Parameters
  -j, --instancegenerator    Skip the main menu and just run the instance json builder for supported cores (will overwrite all)
  -i, --imagepack  The name of the repo containing the image pack you want to install
  -o, --owner   The github username that the image pack repo is owned by
- -v, --variant   Optional variant for the image pack   
+ -v, --variant   Optional variant for the image pack  
+ -d, --firmware  Download pocket firmware updates 
 ```
 examples:
 
