@@ -20,14 +20,21 @@ At the main menu run `Settings` to have it walk through the available settings f
 CLI Parameters
 ```
  -p, --path      Absolute path to install location
- -c, --coreselector    Run the core selector.
  -f, --platformsfolder   Preserve the Platforms folder, so customizations aren't overwritten by updates
  -u, --update    Skip the main menu and just run the update process automatically
- -i, --instancegenerator    Skip the main menu and just run the instance json builder for supported cores (will overwrite all)
+ -c, --core    Only update this core, when used with -u. Use the core identifier (ex: boogermann.bankpanic)
+ -a, --assets  Run the asset downloader. Include a core identifier to only check assets for that core
+ -j, --instancegenerator    Skip the main menu and just run the instance json builder for supported cores (will overwrite all)
+ -i, --imagepack  The name of the repo containing the image pack you want to install
+ -o, --owner   The github username that the image pack repo is owned by
+ -v, --variant   Optional variant for the image pack   
 ```
 example:
 `
-/path/to/pocket_updater -a -p /path/to/sdcard/
+/path/to/pocket_updater -p /path/to/sdcard/
+/path/to/pocket_updater -u -c boogermann.bankpanic
+/path/to/pocket_updater -a jotego.jtcontra
+/path/to/pocket_updater -i pocket-platform-images -o dyreschlock  -v home
 `
 #### Download Image Packs
 This will present you with a list of available image packs and automatically download and extract it to the Platforms/_images directory for you

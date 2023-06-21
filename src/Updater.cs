@@ -184,7 +184,7 @@ public class PocketCoreUpdater : Base
     /// <summary>
     /// Run the full openFPGA core download and update process
     /// </summary>
-    public async Task RunUpdates()
+    public async Task RunUpdates(string? id = null)
     {
         List<Dictionary<string, string>> installed = new List<Dictionary<string, string>>();
         List<string> installedAssets = new List<string>();
@@ -195,15 +195,19 @@ public class PocketCoreUpdater : Base
             throw new Exception("Must initialize updater before running update process");
         }
 
-        if(_downloadFirmare) {
+        if(_downloadFirmare && id == null) {
             firmwareDownloaded = await UpdateFirmware();
         }
 
         List<Core> cores = await getAllCores();
         string json;
         foreach(Core core in Factory.GetGlobals().Cores) {
-            core.downloadAssets = _downloadAssets;
-            core.buildInstances = Factory.GetGlobals().SettingsManager.GetConfig().build_instance_jsons;
+            if(id != null && core.identifier != id) {
+                continue;
+            }
+
+            core.downloadAssets = (_downloadAssets && (id==null));
+            core.buildInstances = (Factory.GetGlobals().SettingsManager.GetConfig().build_instance_jsons && (id==null));
             try {
                 if(Factory.GetGlobals().SettingsManager.GetCoreSettings(core.identifier).skip) {
                     _DeleteCore(core);

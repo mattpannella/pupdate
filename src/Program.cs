@@ -18,10 +18,14 @@ internal class Program
         try {
             string location = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
             string? path = Path.GetDirectoryName(location);
-            bool coreSelector = false;
             bool preservePlatformsFolder = false;
             bool forceUpdate = false;
             bool forceInstanceGenerator = false;
+            string? downloadAssets = null;
+            string? coreName = null;
+            string? imagePackOwner = null;
+            string? imagePackRepo = null;
+            string? imagePackVariant = null;
 
 
             Parser.Default.ParseArguments<Options>(args)
@@ -32,10 +36,6 @@ internal class Program
                         path = o.InstallPath;
                         cliMode = true;
                     }
-                    if(o.CoreSelector) {
-                        coreSelector = true;
-                        cliMode = true;
-                    }
                     if(o.PreservePlatformsFolder) {
                         preservePlatformsFolder = true;
                         cliMode = true;
@@ -44,9 +44,23 @@ internal class Program
                         forceUpdate = true;
                         cliMode = true;
                     }
+                    if(o.CoreName != null) {
+                        coreName = o.CoreName;
+                        cliMode = true;
+                    }
                     if(o.ForceInstanceGenerator) {
                         forceInstanceGenerator = true;
                         cliMode = true;
+                    }
+                    if(o.DownloadAssets != null) {
+                        cliMode = true;
+                        downloadAssets = o.DownloadAssets;
+                    }
+                    if(o.ImagePackOwner != null) {
+                        cliMode = true;
+                        imagePackOwner = o.ImagePackOwner;
+                        imagePackRepo = o.ImagePackRepo;
+                        imagePackVariant = o.ImagePackVariant;
                     }
                 }
                 ).WithNotParsed<Options>(o =>
@@ -60,7 +74,7 @@ internal class Program
                 }
                 );
 
-            //path = "/Users/mattpannella/pocket-test";
+           //path = "/Users/mattpannella/pocket-test";
 
             ConsoleKey response;
 
@@ -112,14 +126,6 @@ internal class Program
             updater.DownloadAssets(settings.GetConfig().download_assets);
             await updater.Initialize();
 
-            if(coreSelector || settings.GetConfig().core_selector) {
-                settings.EnableMissingCores(updater.GetMissingCores());
-                List<Core> cores = await CoresService.GetCores();
-                AskAboutNewCores(ref settings, true);
-                RunCoreSelector(ref settings, cores);
-                updater.LoadSettings();
-            }
-
             // If we have any missing cores, handle them.
             if(updater.GetMissingCores().Any()) {
                 Console.WriteLine("\nNew cores found since the last run.");
@@ -157,11 +163,24 @@ internal class Program
             }
             if(forceUpdate) {
                 Console.WriteLine("Starting update process...");
-                await updater.RunUpdates();
+                await updater.RunUpdates(coreName);
                 Pause();
             } else if(forceInstanceGenerator) {
                 await RunInstanceGenerator(updater, true);
-            } else {
+            } else if(downloadAssets != null) {
+                if (downloadAssets == "all") {
+                    updater.RunAssetDownloader();
+                } else {
+                    updater.RunAssetDownloader(downloadAssets);
+                }
+            } else if (imagePackOwner != null) {
+                ImagePack pack = new ImagePack() {
+                    owner = imagePackOwner,
+                    repository = imagePackRepo,
+                    variant = imagePackVariant
+                };
+                await InstallImagePack(path, pack);
+            } else { 
                 bool flag = true;
                 while(flag) {
                     int choice = DisplayMenu();
@@ -661,9 +680,7 @@ internal class Program
 
     private static async Task InstallImagePack(string path, ImagePack pack)
     {
-        pack.Install(path);
-        //string filepath = await fetchImagePack(path, pack);
-        //await installImagePack(path, filepath);
+        await pack.Install(path);
     }
 
     private static void PauseExit(int exitcode = 0)
@@ -784,14 +801,27 @@ public class Options
     [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
     public string? InstallPath { get; set; }
 
-    [Option ('c', "coreselector", Required = false, HelpText = "Run the core selector.")]
-    public bool CoreSelector { get; set; }
+    [Option ('c', "core", Required = false, HelpText = "The core you want to update.")]
+    public string CoreName { get; set; }
 
     [Option('f', "platformsfolder", Required = false, HelpText = "Preserve the Platforms folder, so customizations aren't overwritten by updates.")]
     public bool PreservePlatformsFolder { get; set; }
 
-    [Option('i', "instancegenerator", HelpText = "Force updater to just run instance json generator, instead of displaying the menu.", Required = false)]
+    [Option('j', "instancegenerator", HelpText = "Force updater to just run instance json generator, instead of displaying the menu.", Required = false)]
     public bool ForceInstanceGenerator { get; set; }
+
+    [Option('a', "assets", Required = false, HelpText = "Download assets for all cores, or a specified one.")]
+    public string DownloadAssets { get; set; }
+
+    [Option('o', "owner", Required = false, HelpText = "Image pack repo username")]
+    public string ImagePackOwner { get; set; }
+
+    [Option('i', "imagepack", Required = false, HelpText = "Github repo name for image pack")]
+    public string ImagePackRepo { get; set; }
+
+    [Option('v', "variant", Required = false, HelpText = "The optional variant")]
+    public string? ImagePackVariant { get; set; }
+
 }
 
 public static class EnumExtension
