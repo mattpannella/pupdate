@@ -23,7 +23,7 @@ CLI Parameters
  -f, --platformsfolder   Preserve the Platforms folder, so customizations aren't overwritten by updates
  -u, --update    Skip the main menu and just run the update process automatically
  -c, --core    Only update this core, when used with -u. Use the core identifier (ex: boogermann.bankpanic)
- -a, --assets  Run the asset downloader. Include a core identifier to only check assets for that core
+ -a, --assets  Run the asset downloader. Include a core identifier to only check assets for that core or 'all' for all cores
  -j, --instancegenerator    Skip the main menu and just run the instance json builder for supported cores (will overwrite all)
  -i, --imagepack  The name of the repo containing the image pack you want to install
  -o, --owner   The github username that the image pack repo is owned by
