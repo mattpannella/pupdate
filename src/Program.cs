@@ -18,10 +18,11 @@ internal class Program
         try {
             string location = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
             string? path = Path.GetDirectoryName(location);
-            bool coreSelector = false;
             bool preservePlatformsFolder = false;
             bool forceUpdate = false;
             bool forceInstanceGenerator = false;
+            string? downloadAssets = null;
+            string? coreName = null;
 
 
             Parser.Default.ParseArguments<Options>(args)
@@ -32,10 +33,6 @@ internal class Program
                         path = o.InstallPath;
                         cliMode = true;
                     }
-                    if(o.CoreSelector) {
-                        coreSelector = true;
-                        cliMode = true;
-                    }
                     if(o.PreservePlatformsFolder) {
                         preservePlatformsFolder = true;
                         cliMode = true;
@@ -44,9 +41,17 @@ internal class Program
                         forceUpdate = true;
                         cliMode = true;
                     }
+                    if(o.CoreName != null) {
+                        coreName = o.CoreName;
+                        cliMode = true;
+                    }
                     if(o.ForceInstanceGenerator) {
                         forceInstanceGenerator = true;
                         cliMode = true;
+                    }
+                    if(o.DownloadAssets != null) {
+                        cliMode = true;
+                        downloadAssets = o.DownloadAssets;
                     }
                 }
                 ).WithNotParsed<Options>(o =>
@@ -60,7 +65,7 @@ internal class Program
                 }
                 );
 
-            //path = "/Users/mattpannella/pocket-test";
+           // path = "/Users/mattpannella/pocket-test";
 
             ConsoleKey response;
 
@@ -112,14 +117,6 @@ internal class Program
             updater.DownloadAssets(settings.GetConfig().download_assets);
             await updater.Initialize();
 
-            if(coreSelector || settings.GetConfig().core_selector) {
-                settings.EnableMissingCores(updater.GetMissingCores());
-                List<Core> cores = await CoresService.GetCores();
-                AskAboutNewCores(ref settings, true);
-                RunCoreSelector(ref settings, cores);
-                updater.LoadSettings();
-            }
-
             // If we have any missing cores, handle them.
             if(updater.GetMissingCores().Any()) {
                 Console.WriteLine("\nNew cores found since the last run.");
@@ -157,11 +154,16 @@ internal class Program
             }
             if(forceUpdate) {
                 Console.WriteLine("Starting update process...");
-                await updater.RunUpdates();
+                await updater.RunUpdates(coreName);
                 Pause();
             } else if(forceInstanceGenerator) {
                 await RunInstanceGenerator(updater, true);
-            } else {
+            } else if(downloadAssets != null) {
+                if (downloadAssets == "all")
+                    updater.RunAssetDownloader();
+                else
+                    updater.RunAssetDownloader(downloadAssets);
+            } else { 
                 bool flag = true;
                 while(flag) {
                     int choice = DisplayMenu();
@@ -784,14 +786,17 @@ public class Options
     [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
     public string? InstallPath { get; set; }
 
-    [Option ('c', "coreselector", Required = false, HelpText = "Run the core selector.")]
-    public bool CoreSelector { get; set; }
+    [Option ('c', "core", Required = false, HelpText = "The core you want to update.")]
+    public string CoreName { get; set; }
 
     [Option('f', "platformsfolder", Required = false, HelpText = "Preserve the Platforms folder, so customizations aren't overwritten by updates.")]
     public bool PreservePlatformsFolder { get; set; }
 
     [Option('i', "instancegenerator", HelpText = "Force updater to just run instance json generator, instead of displaying the menu.", Required = false)]
     public bool ForceInstanceGenerator { get; set; }
+
+    [Option('a', "assets", Required = false, HelpText = "Download assets for all cores, or a specified one.")]
+    public string DownloadAssets { get; set; }
 }
 
 public static class EnumExtension
