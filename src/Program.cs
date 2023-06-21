@@ -807,7 +807,7 @@ public class Options
     [Option('f', "platformsfolder", Required = false, HelpText = "Preserve the Platforms folder, so customizations aren't overwritten by updates.")]
     public bool PreservePlatformsFolder { get; set; }
 
-    [Option('i', "instancegenerator", HelpText = "Force updater to just run instance json generator, instead of displaying the menu.", Required = false)]
+    [Option('j', "instancegenerator", HelpText = "Force updater to just run instance json generator, instead of displaying the menu.", Required = false)]
     public bool ForceInstanceGenerator { get; set; }
 
     [Option('a', "assets", Required = false, HelpText = "Download assets for all cores, or a specified one.")]
@@ -816,7 +816,7 @@ public class Options
     [Option('o', "owner", Required = false, HelpText = "Image pack repo username")]
     public string ImagePackOwner { get; set; }
 
-    [Option('r', "repo", Required = false, HelpText = "Github repo name for image pack")]
+    [Option('i', "imagepack", Required = false, HelpText = "Github repo name for image pack")]
     public string ImagePackRepo { get; set; }
 
     [Option('v', "variant", Required = false, HelpText = "The optional variant")]
