@@ -176,9 +176,9 @@ internal class Program
                 await RunInstanceGenerator(updater, true);
             } else if(downloadAssets != null) {
                 if (downloadAssets == "all") {
-                    updater.RunAssetDownloader();
+                    await updater.RunAssetDownloader();
                 } else {
-                    updater.RunAssetDownloader(downloadAssets);
+                    await updater.RunAssetDownloader(downloadAssets);
                 }
             } else if (imagePackOwner != null) {
                 ImagePack pack = new ImagePack() {
