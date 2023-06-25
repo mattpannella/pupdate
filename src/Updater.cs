@@ -385,6 +385,7 @@ public class PocketCoreUpdater : Base
                 Core c = new Core {
                     identifier = n
                 };
+                c.platform = c.ReadPlatformFile();
                 all.Add(c);
             }
         }
