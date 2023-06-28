@@ -310,8 +310,8 @@ internal class Program
         switch(GetPlatform()) {
             case "win":
                 execName += ".exe";
-                execLocation = Path.Combine(execLocation, "win", execName);
-                manifestPath = Path.Combine(manifestPath, "win", "manifest.json");
+                execLocation = Path.Combine(execLocation, "windows", execName);
+                manifestPath = Path.Combine(manifestPath, "windows", "manifest.json");
                 break;
             case "mac":
                 execLocation = Path.Combine(execLocation, "mac", execName);
@@ -320,7 +320,7 @@ internal class Program
                 break;
             default:
                 execLocation = Path.Combine(execLocation, "linux", execName);
-                manifestPath = Path.Combine(manifestPath, "win", "manifest.json");
+                manifestPath = Path.Combine(manifestPath, "linux", "manifest.json");
                 Exec($"chmod +x {execLocation}");
                 break;
         }
