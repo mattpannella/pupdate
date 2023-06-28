@@ -219,11 +219,15 @@ internal class Program
                             Pause();
                             break;
                         case 6:
+                            await BuildGameandWatchROMS(path);
+                            Pause();
+                            break;
+                        case 7:
                             RunConfigWizard(ref settings);
                             SetUpdaterFlags(ref updater, ref settings);
                             Pause();
                             break;
-                        case 7:
+                        case 8:
                             flag = false;
                             break;
                         case 0:
@@ -285,6 +289,60 @@ internal class Program
         return exitcode;
     }
 
+    private async static Task BuildGameandWatchROMS(string directory)
+    {
+        Github.Release release = await GithubApi.GetLatestRelease("agg23", "fpga-gameandwatch");
+        foreach(Github.Asset asset in release.assets) {
+            if (asset.name.EndsWith("Tools.zip")) {
+                string downloadPath = Path.Combine(directory, "tools", "gameandwatch");
+                string filename = Path.Combine(downloadPath, asset.name);
+                if(!File.Exists(filename)) {
+                    Directory.CreateDirectory(downloadPath);
+                    await HttpHelper.Instance.DownloadFileAsync(asset.browser_download_url, filename);
+                    ZipFile.ExtractToDirectory(filename, downloadPath, true);
+                }
+                break;
+            }
+        }
+        string execName = "fpga-gnw-romgenerator";
+        string execLocation = Path.Combine(directory, "tools", "gameandwatch");
+        string manifestPath = Path.Combine(directory, "tools", "gameandwatch");
+        switch(GetPlatform()) {
+            case "win":
+                execName += ".exe";
+                execLocation = Path.Combine(execLocation, "win", execName);
+                manifestPath = Path.Combine(manifestPath, "win", "manifest.json");
+                break;
+            case "mac":
+                execLocation = Path.Combine(execLocation, "mac", execName);
+                manifestPath = Path.Combine(manifestPath, "mac", "manifest.json");
+                Exec($"chmod +x {execLocation}");
+                break;
+            default:
+                execLocation = Path.Combine(execLocation, "linux", execName);
+                manifestPath = Path.Combine(manifestPath, "win", "manifest.json");
+                Exec($"chmod +x {execLocation}");
+                break;
+        }
+
+        string romLocation = Path.Combine(directory, "Assets", "gameandwatch", "agg23.GameAndWatch");
+        string outputLocation = Path.Combine(directory, "Assets", "gameandwatch", "common");
+
+        try {
+            // Execute
+            Console.WriteLine($"Executing {execLocation}");
+            ProcessStartInfo pInfo = new ProcessStartInfo(execLocation) {
+                Arguments = $"--mame-path {romLocation} --output-path {outputLocation} --manifest-path {manifestPath} supported",
+                UseShellExecute = false
+            };
+
+            Process p = Process.Start(pInfo);
+            p.WaitForExit();
+        } catch(Exception e) {
+            Console.Error.WriteLine($"An error occurred: {e.GetType().Name}:{e.ToString()}");
+        }
+    }
+
     static void SetUpdaterFlags(ref PocketCoreUpdater updater, ref SettingsManager settings)
     {
         updater.DeleteSkippedCores(settings.GetConfig().delete_skipped_cores);
@@ -307,6 +365,27 @@ internal class Program
             }
         }
         await updater.BuildInstanceJSON(force);
+    }
+
+    public static void Exec(string cmd)
+    {
+        var escapedArgs = cmd.Replace("\"", "\\\"");
+            
+        using var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                FileName = "/bin/bash",
+                Arguments = $"-c \"{escapedArgs}\""
+            }
+        };
+
+        process.Start();
+        process.WaitForExit();
     }
 
     static void RunCoreSelector(ref SettingsManager settings, List<Core> cores)
@@ -725,6 +804,7 @@ internal class Program
         "Select Cores",
         "Download Platform Image Packs",
         "Generate Instance JSON Files",
+        "Generate Game and Watch ROMS",
         "Settings",
         "Exit"
     };
