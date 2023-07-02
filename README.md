@@ -76,6 +76,21 @@ On your first run it will prompt you to select the cores you want tracked. After
 | Custom Archive Index         | config.custom_archive.index      | Relative path to the index of your custom site's files. This is not required, but it's needed for CRC checking. If you have CRC checking enabled, the setting will be ignored unless this provides the necessary format. It must match the output of archive.org's json endpoint. https://archive.org/developers/md-read.html
 | Per Core Settings                | coreSettings.{corename}.download_assets and coreSettings.{corename}.platform_rename                   | Set to `false` for any core you don't want assets downloaded for, or automatic platform renaming (currently this only applies to jotego cores)
 
+#### How to build game and watch roms that are compatible with the pocket
+Create 2 new folders.
+`/Assets/gameandwatch/agg23.GameAndWatch/artwork` and `/Assets/gameandwatch/agg23.GameAndWatch/roms`
+
+Place your `[artwork].zip` files into the artwork folder and your `[rom]`.zip files into the roms folder
+
+Should look like this:
+
+```
+/Assets/gameandwatch/agg23.GameAndWatch/artwork/gnw_dkong.zip
+/Assets/gameandwatch/agg23.GameAndWatch/roms/gnw_dkong.zip
+```
+
+Now just run the menu option in the updater and it will build your games
+
 #### Troubleshooting
 Slow asset downloads? Try toggling `use_custom_archive` to true, in your settings.
 
