@@ -332,7 +332,7 @@ internal class Program
             // Execute
             Console.WriteLine($"Executing {execLocation}");
             ProcessStartInfo pInfo = new ProcessStartInfo(execLocation) {
-                Arguments = $"--mame-path {romLocation} --output-path {outputLocation} --manifest-path {manifestPath} supported",
+                Arguments = $"--mame-path \"{romLocation}\" --output-path \"{outputLocation}\" --manifest-path \"{manifestPath}\" supported",
                 UseShellExecute = false
             };
 
