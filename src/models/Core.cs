@@ -270,6 +270,28 @@ public class Core : Base
         return config;
     }
 
+    public Updater.Substitute[]? getSubstitutes()
+    {
+        checkUpdateDirectory();
+        string file = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Cores", this.identifier, "updaters.json");
+        if (!File.Exists(file))
+        {
+            return null;
+        }
+        string json = File.ReadAllText(file);
+        var options = new JsonSerializerOptions()
+        {
+            AllowTrailingCommas = true
+        };
+        Updater.Updaters? config = JsonSerializer.Deserialize<Updater.Updaters>(json, options);
+
+        if (config == null) {
+            return null;
+        }
+
+        return config.previous;
+    }
+
     public bool isInstalled()
     {
         checkUpdateDirectory();
