@@ -6,7 +6,7 @@ A free utility for updating the openFPGA cores, and firmware, on your Analogue P
 The update process will check for pocket firmware updates, openfpga core updates, and install any required BIOS files and arcade ROMS. You're on your own when it comes to console ROMs. 
 
 
-A complete list of available cores can also be found here: https://openfpga-cores-inventory.github.io/analogue-pocket/
+A complete list of available cores can also be found here: [https://openfpga-cores-inventory.github.io/analogue-pocket/](https://openfpga-cores-inventory.github.io/analogue-pocket/)
 
 I can't (and don't want to) support old versions, so please make sure you download the latest release before submitting any issues.
 
@@ -97,14 +97,14 @@ Slow asset downloads? Try toggling `use_custom_archive` to true, in your setting
 If you run the update process and get a message like `Error in framework RS: bridge not responding` when running a core, try to run the updater in a local folder on your pc, and then copy the files over to the sd card afterwards. I'm not entirely sure what the issue is, but I've seen it reported a bunch of times now and running the updater locally seems to help.
 
 ## Submitting new cores ##
-You can submit new cores here https://github.com/openfpga-cores-inventory/analogue-pocket
+You can submit new cores here [https://github.com/openfpga-cores-inventory/analogue-pocket](https://github.com/openfpga-cores-inventory/analogue-pocket)
 
 ## Credits ##
 
-Thanks to [neil-morrison44](https://github.com/neil-morrison44). This is a port built on top of the work originally done by him here https://gist.github.com/neil-morrison44/34fbb18de90cd9a32ca5bdafb2a812b8
+Thanks to [neil-morrison44](https://github.com/neil-morrison44). This is a port built on top of the work originally done by him here [https://gist.github.com/neil-morrison44/34fbb18de90cd9a32ca5bdafb2a812b8](https://gist.github.com/neil-morrison44/34fbb18de90cd9a32ca5bdafb2a812b8)
 
 Special thanks to [RetroDriven](https://github.com/RetroDriven/) for maintaining the arcade rom archive.
 
-And if you're looking for something with a few more features and a user interface, check out this updater. https://github.com/RetroDriven/Pocket_Updater
+And if you're looking for something with a few more features and a user interface, check out this updater. [https://github.com/RetroDriven/Pocket_Updater](https://github.com/RetroDriven/Pocket_Updater)
 
-Or if you want something cross platform that will run on a mac or linux: https://github.com/neil-morrison44/pocket-sync
+Or if you want something cross platform that will run on a mac or linux: [https://github.com/neil-morrison44/pocket-sync](https://github.com/neil-morrison44/pocket-sync)
