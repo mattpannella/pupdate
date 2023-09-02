@@ -157,17 +157,14 @@ public class Core : Base
         _writeMessage("Looking for Assets");
         Analogue.Core info = this.getConfig().core;
         string UpdateDirectory = Factory.GetGlobals().UpdateDirectory;
-        string coreDirectory = Path.Combine(UpdateDirectory, "Cores", this.identifier);
         //cores with multiple platforms won't work...not sure any exist right now?
         string instancesDirectory = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0], this.identifier);
-
-        string dataFile = Path.Combine(coreDirectory, "data.json");
         var options = new JsonSerializerOptions
         {
             Converters = { new StringConverter() }
         };
 
-        Analogue.DataJSON data = JsonSerializer.Deserialize<Analogue.DataJSON>(File.ReadAllText(dataFile), options);
+        Analogue.DataJSON data = ReadDataJSON();
         if(data.data.data_slots.Length > 0) {
             foreach(Analogue.DataSlot slot in data.data.data_slots) {
                 if(slot.filename != null && !Factory.GetGlobals().Blacklist.Contains(slot.filename)) {
@@ -441,6 +438,27 @@ public class Core : Base
     {
         string instancePackagerFile = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Cores", this.identifier, "instance-packager.json");
         return File.Exists(instancePackagerFile);
+    }
+
+    public Analogue.DataJSON ReadDataJSON()
+    {
+        string UpdateDirectory = Factory.GetGlobals().UpdateDirectory;
+        string coreDirectory = Path.Combine(UpdateDirectory, "Cores", this.identifier);
+        string dataFile = Path.Combine(coreDirectory, "data.json");
+        var options = new JsonSerializerOptions
+        {
+            Converters = { new StringConverter() }
+        };
+
+        Analogue.DataJSON data = JsonSerializer.Deserialize<Analogue.DataJSON>(File.ReadAllText(dataFile), options);
+
+        return data;
+    }
+
+    public bool JTBetaCheck()
+    {
+        var data = ReadDataJSON();
+        return data.data.data_slots.Any(x=>x.name=="JTBETA");
     }
 }
 public class myReverserClass : IComparer  {

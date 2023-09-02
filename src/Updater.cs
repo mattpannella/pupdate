@@ -199,6 +199,8 @@ public class PocketCoreUpdater : Base
             firmwareDownloaded = await UpdateFirmware();
         }
 
+        await ExtractBetaKey();
+
         List<Core> cores = await getAllCores();
         string json;
         foreach(Core core in Factory.GetGlobals().Cores) {
@@ -229,6 +231,7 @@ public class PocketCoreUpdater : Base
                     installedAssets.AddRange(results["installed"]);
                     skippedAssets.AddRange(results["skipped"]);
                     await JotegoRename(core);
+                    await CopyBetaKey(core);
                     Divide();
                     continue;
                 }
@@ -247,6 +250,7 @@ public class PocketCoreUpdater : Base
                     } else {
                         results = await core.DownloadAssets();
                         await JotegoRename(core);
+                        await CopyBetaKey(core);
                         installedAssets.AddRange(results["installed"]);
                         skippedAssets.AddRange(results["skipped"]);
                         _writeMessage("Up to date. Skipping core");
@@ -265,6 +269,7 @@ public class PocketCoreUpdater : Base
                     installed.Add(summary);
                 }
                 await JotegoRename(core);
+                await CopyBetaKey(core);
                 results = await core.DownloadAssets();
                 installedAssets.AddRange(results["installed"]);
                 skippedAssets.AddRange(results["skipped"]);
@@ -300,6 +305,29 @@ public class PocketCoreUpdater : Base
                 await Factory.GetHttpHelper().DownloadFileAsync(_platformFiles[core.platform_id], path);
                 _writeMessage("Complete");
             }
+        }
+    }
+
+    private async Task CopyBetaKey(Core core)
+    {
+        if(core.JTBetaCheck()) {
+            core.platform_id = core.identifier.Split('.')[1]; //whatever
+            string path = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Assets", core.platform_id, "common");
+            string keyPath = Path.Combine(Factory.GetGlobals().UpdateDirectory, "betakeys");
+            if(Directory.Exists(keyPath) && Directory.Exists(path)) {
+                Util.CopyDirectory(keyPath, path, false, true);
+                _writeMessage("Beta key copied to common directory.");
+            }
+        }
+    }
+
+    private async Task ExtractBetaKey()
+    {
+        string keyPath = Path.Combine(Factory.GetGlobals().UpdateDirectory, "betakeys");
+        string file = Path.Combine(Factory.GetGlobals().UpdateDirectory, "jtbeta.zip");
+        if(File.Exists(file)) {
+            _writeMessage("Extracting JT beta key...");
+            ZipFile.ExtractToDirectory(file, keyPath, true);
         }
     }
 
