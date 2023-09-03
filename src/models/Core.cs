@@ -483,6 +483,19 @@ public class Core : Base
         var data = ReadDataJSON();
         return data.data.data_slots.Any(x=>x.name=="JTBETA");
     }
+
+    public async Task ReplaceCheck()
+    {
+        if (replaces != null) {
+            foreach(string id in replaces) {
+                Core c = new Core(){identifier = id};
+                if (c.isInstalled()) {
+                    c.Uninstall();
+                    _writeMessage($"Uninstalled {id}. It was replaced by this core.");
+                }
+            }
+        }
+    }
 }
 public class myReverserClass : IComparer  {
 
