@@ -17,6 +17,8 @@ public class Core : Base
     public string? date_release { get; set; }
     public string? version { get; set; }
 
+    public bool sponsor_only { get; set; } = false;
+
     private const string ZIP_FILE_NAME = "core.zip";
     public bool downloadAssets { get; set; } = Factory.GetGlobals().SettingsManager.GetConfig().download_assets;
     public bool buildInstances { get; set; } = Factory.GetGlobals().SettingsManager.GetConfig().build_instance_jsons;

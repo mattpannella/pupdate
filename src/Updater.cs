@@ -26,6 +26,7 @@ public class PocketCoreUpdater : Base
     private bool _deleteSkippedCores = true;
     private bool _useConsole = false;
     private bool _renameJotegoCores = true;
+    private bool _jtBeta = false;
 
     private Dictionary<string, string> _platformFiles = new Dictionary<string, string>();
 
@@ -215,6 +216,10 @@ public class PocketCoreUpdater : Base
                     _DeleteCore(core);
                     continue;
                 }
+
+                if (core.sponsor_only && !_jtBeta) {
+                    continue; //skip if you don't have the key
+                }
                 
                 string name = core.identifier;
                 if(name == null) {
@@ -326,6 +331,7 @@ public class PocketCoreUpdater : Base
         string keyPath = Path.Combine(Factory.GetGlobals().UpdateDirectory, "betakeys");
         string file = Path.Combine(Factory.GetGlobals().UpdateDirectory, "jtbeta.zip");
         if(File.Exists(file)) {
+            _jtBeta = true;
             _writeMessage("Extracting JT beta key...");
             ZipFile.ExtractToDirectory(file, keyPath, true);
         }
