@@ -570,7 +570,47 @@ internal class Program
             Console.WriteLine(e.FirmwareUpdated);
             Console.WriteLine("");
         }
-        Console.WriteLine("we did it, come again soon");
+        ShowSponsorLinks();
+        FunFacts();
+    }
+
+    private static void ShowSponsorLinks()
+    {
+        var random = new Random();
+        var index = random.Next(GlobalHelper.Instance.Cores.Count);
+        var randomItem = GlobalHelper.Instance.Cores[index];
+        if(randomItem.sponsor != null) {
+            var links = "";
+            if (randomItem.sponsor.custom != null) {
+                links += "\r\n" + String.Join("\r\n", randomItem.sponsor.custom);
+            }
+            if (randomItem.sponsor.github != null) {
+                links += "\r\n" + String.Join("\r\n", randomItem.sponsor.github);
+            }
+            if (randomItem.sponsor.patreon != null) {
+                links += "\r\n" + randomItem.sponsor.patreon;
+            }
+            Console.WriteLine("");
+            Console.WriteLine($"Please consider supporting {randomItem.getConfig().core.metadata.author} for their work on the {randomItem} core:");
+            Console.WriteLine(links.Trim());
+        }
+    }
+
+    private static void FunFacts()
+    {
+        List<string> cores = new List<string>();
+
+        foreach(Core c in GlobalHelper.Instance.Cores) {
+            if (c.getConfig().core.framework.sleep_supported) {
+                cores.Add(c.identifier);
+            }
+        }
+        Console.WriteLine("");
+        string list = String.Join(", ", cores.ToArray());
+        Console.WriteLine("Fun fact! The ONLY cores that support save states and sleep are the following:");
+        Console.WriteLine(list);
+        Console.WriteLine("Please don't bother the developers of the other cores about this feature. It's a lot of work and most likely will not be coming.");
+        
     }
 
     //return true if newer version is available
@@ -727,6 +767,7 @@ internal class Program
         foreach(var (item, index) in menuItems.WithIndex()) {
             Console.WriteLine($"{index}) {item}");
         }
+        ShowSponsorLinks();
         Console.Write("\nChoose your destiny: ");
         int choice;
         bool result = int.TryParse(Console.ReadLine(), out choice);
