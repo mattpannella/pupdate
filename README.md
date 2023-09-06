@@ -108,6 +108,8 @@ Thanks to [neil-morrison44](https://github.com/neil-morrison44). This is a port 
 
 Special thanks to [RetroDriven](https://github.com/RetroDriven/) for maintaining the arcade rom archive.
 
+And [dyreschlock](https://github.com/dyreschlock/pocket-platform-images/tree/main/arcade/Platforms) for hosting the updated platform files for Jotego's cores
+
 And if you're looking for something with a few more features and a user interface, check out this updater. [https://github.com/RetroDriven/Pocket_Updater](https://github.com/RetroDriven/Pocket_Updater)
 
 Or if you want something cross platform that will run on a mac or linux: [https://github.com/neil-morrison44/pocket-sync](https://github.com/neil-morrison44/pocket-sync)
