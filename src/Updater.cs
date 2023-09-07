@@ -51,8 +51,20 @@ public class PocketCoreUpdater : Base
         LoadSettings();
         await LoadPlatformFiles();
         await LoadCores();
+        await RefreshInstalledCores();
         await LoadArchive();
         await LoadBlacklist();
+    }
+
+    private async Task RefreshInstalledCores()
+    {
+        var installedCores = new List<Core>();
+        foreach(Core c in GlobalHelper.Instance.Cores) {
+            if(c.isInstalled()) {
+                installedCores.Add(c);
+            }
+        }
+        GlobalHelper.Instance.InstalledCores = installedCores;
     }
 
     private async Task LoadPlatformFiles()
@@ -433,6 +445,7 @@ public class PocketCoreUpdater : Base
         {
             handler(this, e);
         }
+        RefreshInstalledCores();
     }
 
     public async Task<string> UpdateFirmware()
