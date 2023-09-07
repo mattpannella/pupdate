@@ -577,8 +577,8 @@ internal class Program
     private static void ShowSponsorLinks()
     {
         var random = new Random();
-        var index = random.Next(GlobalHelper.Instance.Cores.Count);
-        var randomItem = GlobalHelper.Instance.Cores[index];
+        var index = random.Next(GlobalHelper.Instance.InstalledCores.Count);
+        var randomItem = GlobalHelper.Instance.InstalledCores[index];
         if(randomItem.sponsor != null) {
             var links = "";
             if (randomItem.sponsor.custom != null) {
@@ -600,7 +600,7 @@ internal class Program
     {
         List<string> cores = new List<string>();
 
-        foreach(Core c in GlobalHelper.Instance.Cores) {
+        foreach(Core c in GlobalHelper.Instance.InstalledCores) {
             if (c.getConfig().core.framework.sleep_supported) {
                 cores.Add(c.identifier);
             }
@@ -952,7 +952,6 @@ public class Options
 
     [Option('d', "firmware", HelpText = "Download pocket firmware update.", Required = false)]
     public bool DownloadFirmware { get; set; }
-
 }
 
 public static class EnumExtension
