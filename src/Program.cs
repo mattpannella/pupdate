@@ -79,7 +79,7 @@ internal class Program
                 }
                 );
 
-           //path = "/Users/mattpannella/pocket-test";
+            //path = "/Users/mattpannella/pocket-test/test";
 
             ConsoleKey response;
 
@@ -576,6 +576,7 @@ internal class Program
 
     private static void ShowSponsorLinks()
     {
+        if (GlobalHelper.Instance.InstalledCores.Count == 0) return;
         var random = new Random();
         var index = random.Next(GlobalHelper.Instance.InstalledCores.Count);
         var randomItem = GlobalHelper.Instance.InstalledCores[index];
@@ -598,6 +599,7 @@ internal class Program
 
     private static void FunFacts()
     {
+        if (GlobalHelper.Instance.InstalledCores.Count == 0) return;
         List<string> cores = new List<string>();
 
         foreach(Core c in GlobalHelper.Instance.InstalledCores) {
