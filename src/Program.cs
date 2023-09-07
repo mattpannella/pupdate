@@ -616,7 +616,6 @@ internal class Program
     //return true if newer version is available
     async static Task<bool> CheckVersion(string path)
     {
-        return false;
         try {
             List<Github.Release> releases = await GithubApi.GetReleases(USER, REPOSITORY);
 
