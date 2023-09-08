@@ -116,7 +116,7 @@ public class Core : Base
         return p["platform"];
     }
 
-    public bool UpdatePlatform(string title)
+    public bool UpdatePlatform(string title, string category = null)
     {
         var config = this.getConfig();
         if (config == null)
@@ -135,13 +135,23 @@ public class Core : Base
             return false;
         }
 
-        Dictionary<string, Platform> platform = new Dictionary<string, Platform>();
-        this.platform.name = title;
-        platform.Add("platform", this.platform);
-        string json = JsonSerializer.Serialize(platform);
+        if (platform.name != title || platform.category != category)
+        {
+            
+            Dictionary<string, Platform> platform = new Dictionary<string, Platform>();
+            this.platform.name = title;
+            if (category != null)
+            {
+                this.platform.category = category;
+            }
+            platform.Add("platform", this.platform);
+            string json = JsonSerializer.Serialize(platform);
         
-        File.WriteAllText(dataFile, json);
-
+            File.WriteAllText(dataFile, json);
+            Factory.GetGlobals().SettingsManager.GetConfig().preserve_platforms_folder = true;
+            Factory.GetGlobals().SettingsManager.SaveSettings();
+        }
+        
         return true;
     }
 
