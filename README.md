@@ -101,8 +101,7 @@ This will present you with a list of available image packs and automatically dow
 
 #### Core Selector
 
-On your first run it will prompt you to select the cores you want tracked. After that initial run, you can run it again any time via the main menu. Or you can always run this again by setting `config.core_selector` to `true` in the settings json file, or if running from the cli you can use the paramater -c
-
+On your first run it will prompt you to select the cores you want tracked. After that initial run, you can run it again any time via the main menu.
   
 
 #### Generating Instance JSON Files
