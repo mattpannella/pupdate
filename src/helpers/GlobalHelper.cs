@@ -34,4 +34,9 @@ public class GlobalHelper
             }
         }
     }  
+
+    public Core? GetCore(string identifier)
+    {
+        return instance.Cores.Find(i => i.identifier == identifier);
+    }
 }

@@ -11,6 +11,9 @@ internal class Program
     private const string USER = "mattpannella";
     private const string REPOSITORY = "pocket-updater-utility";
     private const string RELEASE_URL = "https://github.com/mattpannella/pocket-updater-utility/releases/download/{0}/pocket_updater_{1}.zip";
+    private static SettingsManager settings;
+
+    private static PocketCoreUpdater updater;
 
     private static bool cliMode = false;
     private static async Task Main(string[] args)
@@ -28,62 +31,9 @@ internal class Program
             string? imagePackVariant = null;
             bool downloadFirmware = false;
 
-
-            Parser.Default.ParseArguments<Options>(args)
-                .WithParsed<Options>(o =>
-                {
-                    if(o.InstallPath != null && o.InstallPath != "") {
-                        Console.WriteLine("path: " + o.InstallPath);
-                        path = o.InstallPath;
-                        cliMode = true;
-                    }
-                    if(o.PreservePlatformsFolder) {
-                        preservePlatformsFolder = true;
-                        cliMode = true;
-                    }
-                    if(o.ForceUpdate) {
-                        forceUpdate = true;
-                        cliMode = true;
-                    }
-                    if(o.CoreName != null) {
-                        coreName = o.CoreName;
-                        cliMode = true;
-                    }
-                    if(o.ForceInstanceGenerator) {
-                        forceInstanceGenerator = true;
-                        cliMode = true;
-                    }
-                    if(o.DownloadAssets != null) {
-                        cliMode = true;
-                        downloadAssets = o.DownloadAssets;
-                    }
-                    if(o.ImagePackOwner != null) {
-                        cliMode = true;
-                        imagePackOwner = o.ImagePackOwner;
-                        imagePackRepo = o.ImagePackRepo;
-                        imagePackVariant = o.ImagePackVariant;
-                    }
-                    if(o.DownloadFirmware) {
-                        downloadFirmware = true;
-                        cliMode = true;
-                    }
-                }
-                ).WithNotParsed<Options>(o =>
-                {
-                    if(o.IsHelp()) {
-                        Environment.Exit(1);
-                    }
-                    if(o.IsVersion()) {
-                        Environment.Exit(1);
-                    }
-                }
-                );
-
-            //path = "/Users/mattpannella/pocket-test/test";
-
             ConsoleKey response;
 
-            Console.WriteLine("Analogue Pocket Core Updater v" + version);
+            Console.WriteLine("Pocket Updater Utility v" + version);
             Console.WriteLine("Checking for updates...");
 
             if(await CheckVersion(path)) {
@@ -115,8 +65,111 @@ internal class Program
                 }
             }
 
-            PocketCoreUpdater updater = new PocketCoreUpdater(path);
-            SettingsManager settings = new SettingsManager(path);
+            string verb = "menu";
+            Dictionary<string, object?> data = new Dictionary<string, object?>();
+            Parser.Default.ParseArguments<MenuOptions, FundOptions, UpdateOptions,
+                AssetsOptions, FirmwareOptions, ImagesOptions, InstancegeneratorOptions>(args)
+                .WithParsed<FundOptions>(async o =>
+                {
+                    verb = "fund";
+                    data.Add("core", null);
+                    if(o.Core != null && o.Core != "") {
+                        data["core"] = o.Core;
+                    }
+                }
+                )
+                .WithParsed<UpdateOptions>(async o =>
+                {
+                    verb = "update";
+                    cliMode = true;
+                    forceUpdate = true;
+                    if(o.InstallPath != null && o.InstallPath != "") {
+                        path = o.InstallPath;
+                    }
+                    if(o.PreservePlatformsFolder) {
+                        preservePlatformsFolder = true;
+                    }
+                }
+                )
+                .WithParsed<AssetsOptions>(async o =>
+                {
+                    verb = "assets";
+                    cliMode = true;
+                    downloadAssets = "all";
+                    if(o.InstallPath != null && o.InstallPath != "") {
+                        path = o.InstallPath;
+                    }
+                    if(o.CoreName != null) {
+                        downloadAssets = o.CoreName;
+                    }
+                }
+                )
+                .WithParsed<FirmwareOptions>(async o =>
+                {
+                    verb = "firmware";
+                    cliMode = true;
+                    downloadFirmware = true;
+                    if(o.InstallPath != null && o.InstallPath != "") {
+                        path = o.InstallPath;
+                    }
+                }
+                )
+                .WithParsed<ImagesOptions>(async o =>
+                {
+                    verb = "images";
+                    cliMode = true;
+                    if(o.InstallPath != null && o.InstallPath != "") {
+                        path = o.InstallPath;
+                    }
+                    if(o.ImagePackOwner != null) {
+                        imagePackOwner = o.ImagePackOwner;
+                        imagePackRepo = o.ImagePackRepo;
+                        imagePackVariant = o.ImagePackVariant;
+                    }
+                }
+                )
+                .WithParsed<InstancegeneratorOptions>(async o =>
+                {
+                    verb = "instancegenerator";
+                    forceInstanceGenerator = true;
+                    cliMode = true;
+                    if(o.InstallPath != null && o.InstallPath != "") {
+                        path = o.InstallPath;
+                    }
+                }
+                )
+                .WithParsed<MenuOptions>(o =>
+                {
+                    if(o.InstallPath != null && o.InstallPath != "") {
+                        path = o.InstallPath;
+                        cliMode = true;
+                    }
+                }
+                )
+                .WithNotParsed(o =>
+                {
+                    if(o.IsHelp()) {
+                        Environment.Exit(1);
+                    }
+                    if(o.IsVersion()) {
+                        Environment.Exit(1);
+                    }
+                }
+                );
+
+            //path = "/Users/mattpannella/pocket-test";
+
+            updater = new PocketCoreUpdater(path);
+            settings = new SettingsManager(path);
+
+            switch(verb) {
+                case "fund":
+                    await Funding((string)data["core"]);
+                    Environment.Exit(1);
+                    break;
+                default:
+                    break;
+            }
 
             if(preservePlatformsFolder || settings.GetConfig().preserve_platforms_folder) {
                 updater.PreservePlatformsFolder(true);
@@ -134,7 +187,7 @@ internal class Program
             // If we have any missing cores, handle them.
             if(updater.GetMissingCores().Any()) {
                 Console.WriteLine("\nNew cores found since the last run.");
-                AskAboutNewCores(ref settings);
+                AskAboutNewCores();
 
                 string? download_new_cores = settings.GetConfig().download_new_cores?.ToLowerInvariant();
                 switch(download_new_cores) {
@@ -160,7 +213,7 @@ internal class Program
                         break;
                     default:
                     case "ask":
-                        RunCoreSelector(ref settings, updater.GetMissingCores());
+                        RunCoreSelector(updater.GetMissingCores());
                         break;
                 }
 
@@ -204,8 +257,8 @@ internal class Program
                             break;
                         case 3:
                             List<Core> cores = await CoresService.GetCores();
-                            AskAboutNewCores(ref settings, true);
-                            RunCoreSelector(ref settings, cores);
+                            AskAboutNewCores(true);
+                            RunCoreSelector(cores);
                             updater.LoadSettings();
 
                             Console.WriteLine("\nDone!  Press ENTER to continue.");
@@ -223,8 +276,8 @@ internal class Program
                             Pause();
                             break;
                         case 7:
-                            RunConfigWizard(ref settings);
-                            SetUpdaterFlags(ref updater, ref settings);
+                            RunConfigWizard();
+                            SetUpdaterFlags();
                             Pause();
                             break;
                         case 8:
@@ -343,7 +396,7 @@ internal class Program
         }
     }
 
-    static void SetUpdaterFlags(ref PocketCoreUpdater updater, ref SettingsManager settings)
+    static void SetUpdaterFlags()
     {
         updater.DeleteSkippedCores(settings.GetConfig().delete_skipped_cores);
         updater.SetGithubApiKey(settings.GetConfig().github_token);
@@ -388,7 +441,7 @@ internal class Program
         process.WaitForExit();
     }
 
-    static void RunCoreSelector(ref SettingsManager settings, List<Core> cores)
+    static void RunCoreSelector(List<Core> cores)
     {
         if(settings.GetConfig().download_new_cores?.ToLowerInvariant() == "yes") {
             foreach(Core core in cores)
@@ -411,7 +464,7 @@ internal class Program
         settings.SaveSettings();
     }
 
-    static void RunConfigWizard(ref SettingsManager settings)
+    static void RunConfigWizard()
     {
         ConsoleKey response;
         bool valid = false;
@@ -594,6 +647,40 @@ internal class Program
             Console.WriteLine("");
             Console.WriteLine($"Please consider supporting {randomItem.getConfig().core.metadata.author} for their work on the {randomItem} core:");
             Console.WriteLine(links.Trim());
+        }
+    }
+
+    private static async Task Funding(string? identifier)
+    {
+        await updater.Initialize();
+        if (GlobalHelper.Instance.InstalledCores.Count == 0) return;
+
+        List<Core> cores = new List<Core>();
+        if (identifier == null) {
+            cores = GlobalHelper.Instance.InstalledCores;
+        } else {
+            var c = GlobalHelper.Instance.GetCore(identifier);
+            if (c != null && c.isInstalled()) {
+                cores.Add(c);
+            }
+        }
+        
+        foreach(Core core in cores) {
+            if(core.sponsor != null) {
+                var links = "";
+                if (core.sponsor.custom != null) {
+                    links += "\r\n" + String.Join("\r\n", core.sponsor.custom);
+                }
+                if (core.sponsor.github != null) {
+                    links += "\r\n" + String.Join("\r\n", core.sponsor.github);
+                }
+                if (core.sponsor.patreon != null) {
+                    links += "\r\n" + core.sponsor.patreon;
+                }
+                Console.WriteLine("");
+                Console.WriteLine($"{core.identifier}:");
+                Console.WriteLine(links.Trim());
+            }
         }
     }
 
@@ -824,7 +911,7 @@ internal class Program
         Console.ReadLine();
     }
 
-    private static void AskAboutNewCores(ref SettingsManager settings, bool force = false)
+    private static void AskAboutNewCores(bool force = false)
     {
         while(settings.GetConfig().download_new_cores == null || force) {
             force = false;
@@ -923,11 +1010,16 @@ internal class Program
         
     };
 }
-
-public class Options
+[Verb("menu", isDefault: true, HelpText = "Interactive Main Menu")]
+public class MenuOptions
 {
-    [Option('u', "update", HelpText = "Force updater to just run update process, instead of displaying the menu.", Required = false)]
-    public bool ForceUpdate { get; set; }
+    [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
+    public string? InstallPath { get; set; }
+}
+
+[Verb("update",  HelpText = "Run update all. (You can configure via the settings menu)")]
+public class UpdateOptions
+{
     [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
     public string? InstallPath { get; set; }
 
@@ -936,12 +1028,30 @@ public class Options
 
     [Option('f', "platformsfolder", Required = false, HelpText = "Preserve the Platforms folder, so customizations aren't overwritten by updates.")]
     public bool PreservePlatformsFolder { get; set; }
+}
 
-    [Option('j', "instancegenerator", HelpText = "Force updater to just run instance json generator, instead of displaying the menu.", Required = false)]
-    public bool ForceInstanceGenerator { get; set; }
+[Verb("assets",  HelpText = "Run the asset downloader")]
+public class AssetsOptions
+{
+    [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
+    public string? InstallPath { get; set; }
 
-    [Option('a', "assets", Required = false, HelpText = "Download assets for all cores, or a specified one.")]
-    public string DownloadAssets { get; set; }
+    [Option ('c', "core", Required = false, HelpText = "The core you want to download assets for.")]
+    public string CoreName { get; set; }
+}
+
+[Verb("instancegenerator",  HelpText = "Run the instance JSON generator")]
+public class InstancegeneratorOptions
+{
+    [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
+    public string? InstallPath { get; set; }
+}
+
+[Verb("images",  HelpText = "Download image packs")]
+public class ImagesOptions
+{
+    [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
+    public string? InstallPath { get; set; }
 
     [Option('o', "owner", Required = false, HelpText = "Image pack repo username")]
     public string ImagePackOwner { get; set; }
@@ -951,9 +1061,20 @@ public class Options
 
     [Option('v', "variant", Required = false, HelpText = "The optional variant")]
     public string? ImagePackVariant { get; set; }
+}
 
-    [Option('d', "firmware", HelpText = "Download pocket firmware update.", Required = false)]
-    public bool DownloadFirmware { get; set; }
+[Verb("firmware",  HelpText = "Check for Pocket firmware updates")]
+public class FirmwareOptions
+{
+    [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
+    public string? InstallPath { get; set; }
+}
+
+[Verb("fund", HelpText = "List sponsor links")]
+public class FundOptions
+{
+    [Option('c', "core", HelpText = "The core to check funding links for", Required = false)]
+    public string? Core { get; set; }
 }
 
 public static class EnumExtension
