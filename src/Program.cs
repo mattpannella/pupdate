@@ -65,9 +65,10 @@ internal class Program
                 }
             }
 
-            string verb = "run";
+            string verb = "menu";
             Dictionary<string, object?> data = new Dictionary<string, object?>();
-            Parser.Default.ParseArguments<RunOptions, FundOptions>(args)
+            Parser.Default.ParseArguments<MenuOptions, FundOptions, UpdateOptions,
+                AssetsOptions, FirmwareOptions, ImagesOptions, InstancegeneratorOptions>(args)
                 .WithParsed<FundOptions>(async o =>
                 {
                     verb = "fund";
@@ -77,40 +78,70 @@ internal class Program
                     }
                 }
                 )
-                .WithParsed<RunOptions>(o =>
+                .WithParsed<UpdateOptions>(async o =>
                 {
+                    verb = "update";
+                    cliMode = true;
+                    forceUpdate = true;
                     if(o.InstallPath != null && o.InstallPath != "") {
                         path = o.InstallPath;
-                        cliMode = true;
                     }
                     if(o.PreservePlatformsFolder) {
                         preservePlatformsFolder = true;
-                        cliMode = true;
                     }
-                    if(o.ForceUpdate) {
-                        forceUpdate = true;
-                        cliMode = true;
+                }
+                )
+                .WithParsed<AssetsOptions>(async o =>
+                {
+                    verb = "assets";
+                    cliMode = true;
+                    downloadAssets = "all";
+                    if(o.InstallPath != null && o.InstallPath != "") {
+                        path = o.InstallPath;
                     }
                     if(o.CoreName != null) {
-                        coreName = o.CoreName;
-                        cliMode = true;
+                        downloadAssets = o.CoreName;
                     }
-                    if(o.ForceInstanceGenerator) {
-                        forceInstanceGenerator = true;
-                        cliMode = true;
+                }
+                )
+                .WithParsed<FirmwareOptions>(async o =>
+                {
+                    verb = "firmware";
+                    cliMode = true;
+                    downloadFirmware = true;
+                    if(o.InstallPath != null && o.InstallPath != "") {
+                        path = o.InstallPath;
                     }
-                    if(o.DownloadAssets != null) {
-                        cliMode = true;
-                        downloadAssets = o.DownloadAssets;
+                }
+                )
+                .WithParsed<ImagesOptions>(async o =>
+                {
+                    verb = "images";
+                    cliMode = true;
+                    if(o.InstallPath != null && o.InstallPath != "") {
+                        path = o.InstallPath;
                     }
                     if(o.ImagePackOwner != null) {
-                        cliMode = true;
                         imagePackOwner = o.ImagePackOwner;
                         imagePackRepo = o.ImagePackRepo;
                         imagePackVariant = o.ImagePackVariant;
                     }
-                    if(o.DownloadFirmware) {
-                        downloadFirmware = true;
+                }
+                )
+                .WithParsed<InstancegeneratorOptions>(async o =>
+                {
+                    verb = "instancegenerator";
+                    forceInstanceGenerator = true;
+                    cliMode = true;
+                    if(o.InstallPath != null && o.InstallPath != "") {
+                        path = o.InstallPath;
+                    }
+                }
+                )
+                .WithParsed<MenuOptions>(o =>
+                {
+                    if(o.InstallPath != null && o.InstallPath != "") {
+                        path = o.InstallPath;
                         cliMode = true;
                     }
                 }
@@ -979,11 +1010,16 @@ internal class Program
         
     };
 }
-[Verb("run", isDefault: true, HelpText = "Do the thing")]
-public class RunOptions
+[Verb("menu", isDefault: true, HelpText = "Interactive Main Menu")]
+public class MenuOptions
 {
-    [Option('u', "update", HelpText = "Force updater to just run update process, instead of displaying the menu.", Required = false)]
-    public bool ForceUpdate { get; set; }
+    [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
+    public string? InstallPath { get; set; }
+}
+
+[Verb("update",  HelpText = "Run update all. (You can configure via the settings menu)")]
+public class UpdateOptions
+{
     [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
     public string? InstallPath { get; set; }
 
@@ -992,12 +1028,30 @@ public class RunOptions
 
     [Option('f', "platformsfolder", Required = false, HelpText = "Preserve the Platforms folder, so customizations aren't overwritten by updates.")]
     public bool PreservePlatformsFolder { get; set; }
+}
 
-    [Option('j', "instancegenerator", HelpText = "Force updater to just run instance json generator, instead of displaying the menu.", Required = false)]
-    public bool ForceInstanceGenerator { get; set; }
+[Verb("assets",  HelpText = "Run the asset downloader")]
+public class AssetsOptions
+{
+    [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
+    public string? InstallPath { get; set; }
 
-    [Option('a', "assets", Required = false, HelpText = "Download assets for all cores, or a specified one.")]
-    public string DownloadAssets { get; set; }
+    [Option ('c', "core", Required = false, HelpText = "The core you want to download assets for.")]
+    public string CoreName { get; set; }
+}
+
+[Verb("instancegenerator",  HelpText = "Run the instance JSON generator")]
+public class InstancegeneratorOptions
+{
+    [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
+    public string? InstallPath { get; set; }
+}
+
+[Verb("images",  HelpText = "Download image packs")]
+public class ImagesOptions
+{
+    [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
+    public string? InstallPath { get; set; }
 
     [Option('o', "owner", Required = false, HelpText = "Image pack repo username")]
     public string ImagePackOwner { get; set; }
@@ -1007,9 +1061,13 @@ public class RunOptions
 
     [Option('v', "variant", Required = false, HelpText = "The optional variant")]
     public string? ImagePackVariant { get; set; }
+}
 
-    [Option('d', "firmware", HelpText = "Download pocket firmware update.", Required = false)]
-    public bool DownloadFirmware { get; set; }
+[Verb("firmware",  HelpText = "Check for Pocket firmware updates")]
+public class FirmwareOptions
+{
+    [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
+    public string? InstallPath { get; set; }
 }
 
 [Verb("fund", HelpText = "List sponsor links")]
