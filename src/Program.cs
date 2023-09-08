@@ -89,6 +89,9 @@ internal class Program
                     if(o.PreservePlatformsFolder) {
                         preservePlatformsFolder = true;
                     }
+                    if(o.CoreName != null && o.CoreName != "") {
+                        coreName = o.CoreName;
+                    }
                 }
                 )
                 .WithParsed<AssetsOptions>(async o =>
