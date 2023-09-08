@@ -40,7 +40,7 @@ CLI Parameters
 ```
 
   menu                 (Default Verb) Interactive Main Menu
-	-p, --path    	      Absolute path to install location
+    -p, --path    	     Absolute path to install location
 
   fund                 List sponsor links. Lists all if no core is provided
     -c, --core               The core to check funding links for
