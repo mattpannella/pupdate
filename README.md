@@ -132,34 +132,20 @@ On your first run it will prompt you to select the cores you want tracked. After
 
   
 
-| | | |
-
-|------------------------------------------|----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-
-| Disable Firmware Downloading | config.download_firmware | Set to `false` if you don't want Update All to check for firmware updates |
-
-| Disable Asset Downloading | config.download_assets | Set to `false` if you'd like to supply your own BIOS and arcade rom files, and don't want Update All to handle this. |
-
+|                                          |                                  |                                                                                                                                                                                                      |
+|------------------------------------------|----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|                                                                                                                      
+| Disable Firmware Downloading             | config.download_firmware         | Set to `false` if you don't want Update All to check for firmware updates                                                                                                                              |
+| Disable Asset Downloading                | config.download_assets           | Set to `false` if you'd like to supply your own BIOS and arcade rom files, and don't want Update All to handle this.                                                                                   |
 | Preserve Platforms Folder Customizations | config.preserve_platforms_folder | If you have any customizations to the Platforms folder, you can use this option to preserve them during the update process. Set to `true` in your settings file, or use `-f` as a command line parameter |
-
-| Github Personal Access Token | config.github_token | If you're running up against the rate limit on the github api, you can provide your personal access token to the updater via the settings. |
-
-| Disable Instance JSON Builder | config.build_instance_jsons | Set this to `false` if you don't want Update All to build instance JSON files.
-
-| Delete Untracked Cores | config.delete_skipped_cores | `true` by default. Set to `false` if you don't want the updater to remove cores you don't select to track
-
-| CRC Check Assets | config.crc_check | `true` by default. Set to `false` if you don't want the updater check the CRC hash on your asset files
-
-| Skip Alternative Assets | config.skip_alternative_assets | `true` by default. If a core developer puts any of their rom asset files in a directory named `_alternatives` they won't be downloaded automatically (unless you set this to `false`)
-
-| Use Custom Archive | config.use_custom_archive | `false` by default. Instead of checking the archive site defined in your settings to look for required assets, use a custom site that you can define. (by default this will be a site hosted by RetroDriven)
-
-| Custom Archive URL | config.custom_archive.url | The full url to your custom site
-
-| Custom Archive Index | config.custom_archive.index | Relative path to the index of your custom site's files. This is not required, but it's needed for CRC checking. If you have CRC checking enabled, the setting will be ignored unless this provides the necessary format. It must match the output of archive.org's json endpoint. https://archive.org/developers/md-read.html
-
-| Per Core Settings | coreSettings.{corename}.download_assets and coreSettings.{corename}.platform_rename | Set to `false` for any core you don't want assets downloaded for, or automatic platform renaming (currently this only applies to jotego cores)
-
+| Github Personal Access Token             | config.github_token              | If you're running up against the rate limit on the github api, you can provide your personal access token to the updater via the settings.                                                           |
+| Disable Instance JSON Builder            | config.build_instance_jsons      | Set this to `false` if you don't want Update All to build instance JSON files.
+| Delete Untracked Cores           | config.delete_skipped_cores      | `true` by default. Set to `false` if you don't want the updater to remove cores you don't select to track  
+| CRC Check Assets          | config.crc_check      | `true` by default. Set to `false` if you don't want the updater check the CRC hash on your asset files
+| Skip Alternative Assets         | config.skip_alternative_assets      | `true` by default. If a core developer puts any of their rom asset files in a directory named `_alternatives` they won't be downloaded automatically (unless you set this to `false`)
+| Use Custom Archive         | config.use_custom_archive      | `false` by default. Instead of checking the archive site defined in your settings to look for required assets, use a custom site that you can define. (by default this will be a site hosted by RetroDriven)
+| Custom Archive URL         | config.custom_archive.url      | The full url to your custom site
+| Custom Archive Index         | config.custom_archive.index      | Relative path to the index of your custom site's files. This is not required, but it's needed for CRC checking. If you have CRC checking enabled, the setting will be ignored unless this provides the necessary format. It must match the output of archive.org's json endpoint. https://archive.org/developers/md-read.html
+| Per Core Settings                | coreSettings.{corename}.download_assets and coreSettings.{corename}.platform_rename                   | Set to `false` for any core you don't want assets downloaded for, or automatic platform renaming (currently this only applies to jotego cores)
   
 
 #### Jotego Beta Cores
