@@ -11,6 +11,9 @@ internal class Program
     private const string USER = "mattpannella";
     private const string REPOSITORY = "pocket-updater-utility";
     private const string RELEASE_URL = "https://github.com/mattpannella/pocket-updater-utility/releases/download/{0}/pocket_updater_{1}.zip";
+    private static SettingsManager settings;
+
+    private static PocketCoreUpdater updater;
 
     private static bool cliMode = false;
     private static async Task Main(string[] args)
@@ -28,12 +31,55 @@ internal class Program
             string? imagePackVariant = null;
             bool downloadFirmware = false;
 
+            ConsoleKey response;
 
-            Parser.Default.ParseArguments<Options>(args)
-                .WithParsed<Options>(o =>
+            Console.WriteLine("Pocket Updater Utility v" + version);
+            Console.WriteLine("Checking for updates...");
+
+            if(await CheckVersion(path)) {
+                string platform = GetPlatform();
+                ConsoleKey[] acceptedInputs = new[] { ConsoleKey.I, ConsoleKey.C, ConsoleKey.Q };
+                do {
+                    if (platform == "win") {
+                        Console.Write("Would you like to [i]nstall the update, [c]ontinue with the current version, or [q]uit? [i/c/q]: ");
+                    } else {
+                        Console.Write("Update downloaded. Would you like to [c]ontinue with the current version, or [q]uit? [c/q]: ");
+                    }
+                    response = Console.ReadKey(false).Key;
+                    Console.WriteLine();
+                } while(!acceptedInputs.Contains(response));
+
+                switch(response) {
+                    case ConsoleKey.I:
+                        int result = UpdateSelfAndRun(path, args);
+                        Environment.Exit(result);
+                        break;
+
+                    case ConsoleKey.C:
+                        break;
+
+                    case ConsoleKey.Q:
+                        Console.WriteLine("Come again soon");
+                        PauseExit();
+                        break;
+                }
+            }
+
+            string verb = "run";
+            Dictionary<string, object?> data = new Dictionary<string, object?>();
+            Parser.Default.ParseArguments<RunOptions, FundOptions>(args)
+                .WithParsed<FundOptions>(async o =>
+                {
+                    verb = "fund";
+                    data.Add("core", null);
+                    if(o.Core != null && o.Core != "") {
+                        data["core"] = o.Core;
+                    }
+                }
+                )
+                .WithParsed<RunOptions>(o =>
                 {
                     if(o.InstallPath != null && o.InstallPath != "") {
-                        Console.WriteLine("path: " + o.InstallPath);
                         path = o.InstallPath;
                         cliMode = true;
                     }
@@ -68,7 +114,8 @@ internal class Program
                         cliMode = true;
                     }
                 }
-                ).WithNotParsed<Options>(o =>
+                )
+                .WithNotParsed(o =>
                 {
                     if(o.IsHelp()) {
                         Environment.Exit(1);
@@ -79,44 +126,19 @@ internal class Program
                 }
                 );
 
-            //path = "/Users/mattpannella/pocket-test/test";
+            //path = "/Users/mattpannella/pocket-test";
 
-            ConsoleKey response;
+            updater = new PocketCoreUpdater(path);
+            settings = new SettingsManager(path);
 
-            Console.WriteLine("Analogue Pocket Core Updater v" + version);
-            Console.WriteLine("Checking for updates...");
-
-            if(await CheckVersion(path)) {
-                string platform = GetPlatform();
-                ConsoleKey[] acceptedInputs = new[] { ConsoleKey.I, ConsoleKey.C, ConsoleKey.Q };
-                do {
-                    if (platform == "win") {
-                        Console.Write("Would you like to [i]nstall the update, [c]ontinue with the current version, or [q]uit? [i/c/q]: ");
-                    } else {
-                        Console.Write("Update downloaded. Would you like to [c]ontinue with the current version, or [q]uit? [c/q]: ");
-                    }
-                    response = Console.ReadKey(false).Key;
-                    Console.WriteLine();
-                } while(!acceptedInputs.Contains(response));
-
-                switch(response) {
-                    case ConsoleKey.I:
-                        int result = UpdateSelfAndRun(path, args);
-                        Environment.Exit(result);
-                        break;
-
-                    case ConsoleKey.C:
-                        break;
-
-                    case ConsoleKey.Q:
-                        Console.WriteLine("Come again soon");
-                        PauseExit();
-                        break;
-                }
+            switch(verb) {
+                case "fund":
+                    await Funding((string)data["core"]);
+                    Environment.Exit(1);
+                    break;
+                default:
+                    break;
             }
-
-            PocketCoreUpdater updater = new PocketCoreUpdater(path);
-            SettingsManager settings = new SettingsManager(path);
 
             if(preservePlatformsFolder || settings.GetConfig().preserve_platforms_folder) {
                 updater.PreservePlatformsFolder(true);
@@ -134,7 +156,7 @@ internal class Program
             // If we have any missing cores, handle them.
             if(updater.GetMissingCores().Any()) {
                 Console.WriteLine("\nNew cores found since the last run.");
-                AskAboutNewCores(ref settings);
+                AskAboutNewCores();
 
                 string? download_new_cores = settings.GetConfig().download_new_cores?.ToLowerInvariant();
                 switch(download_new_cores) {
@@ -160,7 +182,7 @@ internal class Program
                         break;
                     default:
                     case "ask":
-                        RunCoreSelector(ref settings, updater.GetMissingCores());
+                        RunCoreSelector(updater.GetMissingCores());
                         break;
                 }
 
@@ -204,8 +226,8 @@ internal class Program
                             break;
                         case 3:
                             List<Core> cores = await CoresService.GetCores();
-                            AskAboutNewCores(ref settings, true);
-                            RunCoreSelector(ref settings, cores);
+                            AskAboutNewCores(true);
+                            RunCoreSelector(cores);
                             updater.LoadSettings();
 
                             Console.WriteLine("\nDone!  Press ENTER to continue.");
@@ -223,8 +245,8 @@ internal class Program
                             Pause();
                             break;
                         case 7:
-                            RunConfigWizard(ref settings);
-                            SetUpdaterFlags(ref updater, ref settings);
+                            RunConfigWizard();
+                            SetUpdaterFlags();
                             Pause();
                             break;
                         case 8:
@@ -343,7 +365,7 @@ internal class Program
         }
     }
 
-    static void SetUpdaterFlags(ref PocketCoreUpdater updater, ref SettingsManager settings)
+    static void SetUpdaterFlags()
     {
         updater.DeleteSkippedCores(settings.GetConfig().delete_skipped_cores);
         updater.SetGithubApiKey(settings.GetConfig().github_token);
@@ -388,7 +410,7 @@ internal class Program
         process.WaitForExit();
     }
 
-    static void RunCoreSelector(ref SettingsManager settings, List<Core> cores)
+    static void RunCoreSelector(List<Core> cores)
     {
         if(settings.GetConfig().download_new_cores?.ToLowerInvariant() == "yes") {
             foreach(Core core in cores)
@@ -411,7 +433,7 @@ internal class Program
         settings.SaveSettings();
     }
 
-    static void RunConfigWizard(ref SettingsManager settings)
+    static void RunConfigWizard()
     {
         ConsoleKey response;
         bool valid = false;
@@ -594,6 +616,40 @@ internal class Program
             Console.WriteLine("");
             Console.WriteLine($"Please consider supporting {randomItem.getConfig().core.metadata.author} for their work on the {randomItem} core:");
             Console.WriteLine(links.Trim());
+        }
+    }
+
+    private static async Task Funding(string? identifier)
+    {
+        await updater.Initialize();
+        if (GlobalHelper.Instance.InstalledCores.Count == 0) return;
+
+        List<Core> cores = new List<Core>();
+        if (identifier == null) {
+            cores = GlobalHelper.Instance.InstalledCores;
+        } else {
+            var c = GlobalHelper.Instance.GetCore(identifier);
+            if (c != null && c.isInstalled()) {
+                cores.Add(c);
+            }
+        }
+        
+        foreach(Core core in cores) {
+            if(core.sponsor != null) {
+                var links = "";
+                if (core.sponsor.custom != null) {
+                    links += "\r\n" + String.Join("\r\n", core.sponsor.custom);
+                }
+                if (core.sponsor.github != null) {
+                    links += "\r\n" + String.Join("\r\n", core.sponsor.github);
+                }
+                if (core.sponsor.patreon != null) {
+                    links += "\r\n" + core.sponsor.patreon;
+                }
+                Console.WriteLine("");
+                Console.WriteLine($"{core.identifier}:");
+                Console.WriteLine(links.Trim());
+            }
         }
     }
 
@@ -824,7 +880,7 @@ internal class Program
         Console.ReadLine();
     }
 
-    private static void AskAboutNewCores(ref SettingsManager settings, bool force = false)
+    private static void AskAboutNewCores(bool force = false)
     {
         while(settings.GetConfig().download_new_cores == null || force) {
             force = false;
@@ -923,8 +979,8 @@ internal class Program
         
     };
 }
-
-public class Options
+[Verb("run", isDefault: true, HelpText = "Do the thing")]
+public class RunOptions
 {
     [Option('u', "update", HelpText = "Force updater to just run update process, instead of displaying the menu.", Required = false)]
     public bool ForceUpdate { get; set; }
@@ -954,6 +1010,13 @@ public class Options
 
     [Option('d', "firmware", HelpText = "Download pocket firmware update.", Required = false)]
     public bool DownloadFirmware { get; set; }
+}
+
+[Verb("fund", HelpText = "List sponsor links")]
+public class FundOptions
+{
+    [Option('c', "core", HelpText = "The core to check funding links for", Required = false)]
+    public string? Core { get; set; }
 }
 
 public static class EnumExtension
