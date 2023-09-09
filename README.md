@@ -93,7 +93,7 @@ examples:
   
 ### Settings
 
-#### All settings can be modified in your `pocket_updater_settings.json` file
+ All settings can be modified in your `pocket_updater_settings.json` file
 
   
 
