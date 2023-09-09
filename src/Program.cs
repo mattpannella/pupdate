@@ -4,6 +4,8 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using CommandLine;
 using pannella.analoguepocket;
+using ConsoleTools;
+
 
 internal class Program
 {
@@ -145,7 +147,6 @@ internal class Program
                 {
                     if(o.InstallPath != null && o.InstallPath != "") {
                         path = o.InstallPath;
-                        cliMode = true;
                     }
                 }
                 )
@@ -246,7 +247,7 @@ internal class Program
             } else { 
                 bool flag = true;
                 while(flag) {
-                    int choice = DisplayMenu();
+                    int choice = DisplayMenuNew();
 
                     switch(choice) {
                         case 1:
@@ -653,6 +654,32 @@ internal class Program
         }
     }
 
+    private static string? GetSponsorLinks()
+    {
+        if (GlobalHelper.Instance.InstalledCores.Count == 0) return null;
+        var random = new Random();
+        var index = random.Next(GlobalHelper.Instance.InstalledCores.Count);
+        var randomItem = GlobalHelper.Instance.InstalledCores[index];
+        string output = "";
+        if(randomItem.sponsor != null) {
+            var links = "";
+            if (randomItem.sponsor.custom != null) {
+                links += "\r\n" + String.Join("\r\n", randomItem.sponsor.custom);
+            }
+            if (randomItem.sponsor.github != null) {
+                links += "\r\n" + String.Join("\r\n", randomItem.sponsor.github);
+            }
+            if (randomItem.sponsor.patreon != null) {
+                links += "\r\n" + randomItem.sponsor.patreon;
+            }
+            output += "\r\n";
+            output += $"Please consider supporting {randomItem.getConfig().core.metadata.author} for their work on the {randomItem} core:";
+            output += $"\r\n{links.Trim()}";
+        }
+
+        return output;
+    }
+
     private static async Task Funding(string? identifier)
     {
         await updater.Initialize();
@@ -847,6 +874,37 @@ internal class Program
         return "";
     }
 
+    private static int DisplayMenuNew()
+    {
+        Console.Clear();
+        Random random = new Random();
+        int i = random.Next(0, welcomeMessages.Length);
+        string welcome = welcomeMessages[i];
+
+        int choice = 0;
+
+        var menu = new ConsoleMenu()
+            .Configure(config =>
+            {
+            config.Selector = "=>";
+            //config.EnableFilter = true;
+            config.Title = $"{welcome}\r\n{GetSponsorLinks()}\r\n";
+            config.EnableWriteTitle = true;
+            //config.EnableBreadcrumb = true;
+            config.WriteHeaderAction = () => Console.WriteLine("Choose your destiny:");
+            config.SelectedItemBackgroundColor = Console.ForegroundColor;
+            config.SelectedItemForegroundColor = Console.BackgroundColor;
+            });
+        
+        foreach(var (item, index) in menuItems.WithIndex()) {
+            menu.Add(item, (thisMenu) => { choice = thisMenu.CurrentItem.Index; thisMenu.CloseMenu(); });
+        }
+
+        menu.Show();
+      
+        return choice;
+    }
+
     private static int DisplayMenu()
     {
         Console.Clear();
@@ -875,14 +933,29 @@ internal class Program
         Console.WriteLine("Checking for image packs...\n");
         ImagePack[] packs = await ImagePacksService.GetImagePacks();
         if(packs.Length > 0) {
+
+
+            int choice = 0;
+
+            var menu = new ConsoleMenu()
+                .Configure(config =>
+                {
+                config.Selector = "=>";
+                config.EnableWriteTitle = false;
+                //config.EnableBreadcrumb = true;
+                config.WriteHeaderAction = () => Console.WriteLine("So, what'll it be?:");
+                config.SelectedItemBackgroundColor = Console.ForegroundColor;
+                config.SelectedItemForegroundColor = Console.BackgroundColor;
+                });
+            
             foreach(var (pack, index) in packs.WithIndex()) {
-                Console.WriteLine($"{index}) {pack.owner}: {pack.repository} {pack.variant}");
+                menu.Add($"{pack.owner}: {pack.repository} {pack.variant}", (thisMenu) => { choice = thisMenu.CurrentItem.Index; thisMenu.CloseMenu(); });
             }
-            Console.WriteLine($"{packs.Length}) Go back");
-            Console.Write("\nSo, what'll it be?: ");
-            int choice;
-            bool result = int.TryParse(Console.ReadLine(), out choice);
-            if(result && choice < packs.Length && choice >= 0) {
+            menu.Add("Go Back", (thisMenu) => {choice = packs.Length; thisMenu.CloseMenu();});
+
+            menu.Show();
+
+            if(choice < packs.Length && choice >= 0) {
                 await InstallImagePack(path, packs[choice]);
                 Pause();
             } else if(choice == packs.Length) {
