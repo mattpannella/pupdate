@@ -1,8 +1,6 @@
 ## Oh Hi ##
 
-[![Current Release](https://img.shields.io/github/v/release/mattpannella/pocket-updater-utility?label=Current%20Release)](https://github.com/mattpannella/pocket-updater-utility/releases/latest) ![Downloads](https://img.shields.io/github/downloads/mattpannella/pocket-updater-utility/latest/total?label=Downloads)
-
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?business=YEERX89E75HQ8&no_recurring=1&currency_code=USD)
+[![Current Release](https://img.shields.io/github/v/release/mattpannella/pocket-updater-utility?label=Current%20Release)](https://github.com/mattpannella/pocket-updater-utility/releases/latest) ![Downloads](https://img.shields.io/github/downloads/mattpannella/pocket-updater-utility/latest/total?label=Downloads) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?business=YEERX89E75HQ8&no_recurring=1&currency_code=USD)
 
   
 
@@ -30,6 +28,14 @@ download the [latest release](https://github.com/mattpannella/pocket-updater-uti
   
 
 At the main menu run `Settings` to have it walk through the available settings for you.
+
+[Advanced](#advanced-usage) |
+[Settings](#settings) |
+[Image Packs](#download-image-packs) |
+[Core Selector](#core-selector) |
+[PC Engine CD](#generating-instance-json-files) |
+[Jotego Cores](#jotego-beta-cores) |
+[Game n Watch](#how-to-build-game-and-watch-roms-that-are-compatible-with-the-pocket)
 
   
 
