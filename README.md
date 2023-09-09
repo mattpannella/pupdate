@@ -33,7 +33,7 @@ At the main menu run `Settings` to have it walk through the available settings f
 
   
 
-#### Advanced Usage
+### Advanced Usage
 
 CLI Parameters
 
@@ -91,41 +91,6 @@ examples:
 `/path/to/pocket_updater images -i pocket-platform-images -o dyreschlock -v home`
 
   
-  
-
-#### Download Image Packs
-
-This will present you with a list of available image packs and automatically download and extract it to the Platforms/_images directory for you
-
-  
-
-#### Core Selector
-
-On your first run it will prompt you to select the cores you want tracked. After that initial run, you can run it again any time via the main menu.
-  
-
-#### Generating Instance JSON Files
-
-- Only supported by PC Engine CD, currently
-
-- Put your games in /Assets/{platform}/common
-
-- Each game needs to be in its own directory (and be sure to name the directory the full title of the game)
-
-- Example: /Assets/pcecd/common/Rondo of Blood
-
-- /Assets/pcecd/common/Bonk
-
-- etc
-
-- All games (for PC Engine CD) must be in cue/bin format. The generated json file will be saved using the same filename as the cue file, so be sure to also name that with the full title of the game
-
-- When you run the `Generate Instance JSON Files` or `Update All` menu items, it will search through every directory in common and create a json file that can be launched by the core
-
-- You can disable this process in Update All by setting `build_instance_jsons` to `false` in your settings file, if you don't want it to run every time you update.
-
-  
-
 ### Settings
 
 #### All settings can be modified in your `pocket_updater_settings.json` file
@@ -148,13 +113,45 @@ On your first run it will prompt you to select the cores you want tracked. After
 | Per Core Settings                | coreSettings.{corename}.download_assets and coreSettings.{corename}.platform_rename                   | Set to `false` for any core you don't want assets downloaded for, or automatic platform renaming (currently this only applies to jotego cores)
   
 
-#### Jotego Beta Cores
+### Download Image Packs
+
+This will present you with a list of available image packs and automatically download and extract it to the Platforms/_images directory for you
+
+  
+
+### Core Selector
+
+On your first run it will prompt you to select the cores you want tracked. After that initial run, you can run it again any time via the main menu.
+  
+
+### Generating Instance JSON Files
+
+- Only supported by PC Engine CD, currently
+
+- Put your games in /Assets/{platform}/common
+
+- Each game needs to be in its own directory (and be sure to name the directory the full title of the game)
+
+- Example: /Assets/pcecd/common/Rondo of Blood
+
+- /Assets/pcecd/common/Bonk
+
+- etc
+
+- All games (for PC Engine CD) must be in cue/bin format. The generated json file will be saved using the same filename as the cue file, so be sure to also name that with the full title of the game
+
+- When you run the `Generate Instance JSON Files` or `Update All` menu items, it will search through every directory in common and create a json file that can be launched by the core
+
+- You can disable this process in Update All by setting `build_instance_jsons` to `false` in your settings file, if you don't want it to run every time you update.
+
+
+### Jotego Beta Cores
 
 Now that Jotego is releasing his beta cores publicly (and requiring a beta key to play them), you can just drop the `jtbeta.zip` file from patreon onto the root of your sd card and run Update All, and it will automatically copy the beta key to the correct folders for the cores that need it. Make sure you don't rename the file, it's going to look for exactly `jtbeta.zip`
 
   
 
-#### How to build game and watch roms that are compatible with the pocket
+### How to build game and watch roms that are compatible with the pocket
 
 Create 2 new folders.
 
@@ -184,7 +181,7 @@ Now just run the menu option in the updater and it will build your games
 
   
 
-#### Troubleshooting
+## Troubleshooting
 
 Slow asset downloads? Try toggling `use_custom_archive` to true, in your settings.
 
