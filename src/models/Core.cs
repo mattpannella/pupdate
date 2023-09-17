@@ -179,7 +179,7 @@ public class Core : Base
         Analogue.DataJSON data = ReadDataJSON();
         if(data.data.data_slots.Length > 0) {
             foreach(Analogue.DataSlot slot in data.data.data_slots) {
-                if(slot.filename != null && !Factory.GetGlobals().Blacklist.Contains(slot.filename)) {
+                if(slot.filename != null && !slot.filename.EndsWith(".sav") && !Factory.GetGlobals().Blacklist.Contains(slot.filename)) {
                     string path = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0]);
                     if(slot.isCoreSpecific()) {
                         path = Path.Combine(path, this.identifier);
@@ -237,7 +237,7 @@ public class Core : Base
                     if(instance.instance.data_slots.Length > 0) {
                         string data_path = instance.instance.data_path;
                         foreach(Analogue.DataSlot slot in instance.instance.data_slots) {
-                            if(!Factory.GetGlobals().Blacklist.Contains(slot.filename)) {
+                            if(!Factory.GetGlobals().Blacklist.Contains(slot.filename) && !slot.filename.EndsWith(".sav")) {
                                 string path = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0], "common", data_path, slot.filename);
                                 if(File.Exists(path) && CheckCRC(path)) {
                                     _writeMessage("Already installed: " + slot.filename);
