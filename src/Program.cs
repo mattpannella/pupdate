@@ -32,45 +32,17 @@ internal class Program
             string? imagePackRepo = null;
             string? imagePackVariant = null;
             bool downloadFirmware = false;
+            bool selfUpdate = false;
 
             ConsoleKey response;
-
-            Console.WriteLine("Pocket Updater Utility v" + version);
-            Console.WriteLine("Checking for updates...");
-
-            if(await CheckVersion(path)) {
-                string platform = GetPlatform();
-                ConsoleKey[] acceptedInputs = new[] { ConsoleKey.I, ConsoleKey.C, ConsoleKey.Q };
-                do {
-                    if (platform == "win") {
-                        Console.Write("Would you like to [i]nstall the update, [c]ontinue with the current version, or [q]uit? [i/c/q]: ");
-                    } else {
-                        Console.Write("Update downloaded. Would you like to [c]ontinue with the current version, or [q]uit? [c/q]: ");
-                    }
-                    response = Console.ReadKey(false).Key;
-                    Console.WriteLine();
-                } while(!acceptedInputs.Contains(response));
-
-                switch(response) {
-                    case ConsoleKey.I:
-                        int result = UpdateSelfAndRun(path, args);
-                        Environment.Exit(result);
-                        break;
-
-                    case ConsoleKey.C:
-                        break;
-
-                    case ConsoleKey.Q:
-                        Console.WriteLine("Come again soon");
-                        PauseExit();
-                        break;
-                }
-            }
 
             string verb = "menu";
             Dictionary<string, object?> data = new Dictionary<string, object?>();
             Parser.Default.ParseArguments<MenuOptions, FundOptions, UpdateOptions,
-                AssetsOptions, FirmwareOptions, ImagesOptions, InstancegeneratorOptions>(args)
+                AssetsOptions, FirmwareOptions, ImagesOptions, InstancegeneratorOptions, UpdateSelfOptions>(args)
+                .WithParsed<UpdateSelfOptions>(o => {
+                    selfUpdate = true;
+                })
                 .WithParsed<FundOptions>(async o =>
                 {
                     verb = "fund";
@@ -160,6 +132,43 @@ internal class Program
                     }
                 }
                 );
+
+            if (!cliMode) {
+                Console.WriteLine("Pocket Updater Utility v" + version);
+                Console.WriteLine("Checking for updates...");
+
+                if(await CheckVersion(path) && !selfUpdate) {
+                    string platform = GetPlatform();
+                    ConsoleKey[] acceptedInputs = new[] { ConsoleKey.I, ConsoleKey.C, ConsoleKey.Q };
+                    do {
+                        if (platform == "win") {
+                            Console.Write("Would you like to [i]nstall the update, [c]ontinue with the current version, or [q]uit? [i/c/q]: ");
+                        } else {
+                            Console.Write("Update downloaded. Would you like to [c]ontinue with the current version, or [q]uit? [c/q]: ");
+                        }
+                        response = Console.ReadKey(false).Key;
+                        Console.WriteLine();
+                    } while(!acceptedInputs.Contains(response));
+
+                    switch(response) {
+                        case ConsoleKey.I:
+                            int result = UpdateSelfAndRun(path, args);
+                            Environment.Exit(result);
+                            break;
+
+                        case ConsoleKey.C:
+                            break;
+
+                        case ConsoleKey.Q:
+                            Console.WriteLine("Come again soon");
+                            PauseExit();
+                            break;
+                    }
+                }
+                if(selfUpdate) {
+                    Environment.Exit(0);
+                }
+            }
 
             //path = "/Users/mattpannella/pocket-test";
 
@@ -1151,6 +1160,11 @@ public class FundOptions
 {
     [Option('c', "core", HelpText = "The core to check funding links for", Required = false)]
     public string? Core { get; set; }
+}
+
+[Verb("update-self", HelpText = "Update this utility")]
+public class UpdateSelfOptions
+{
 }
 
 public static class EnumExtension
