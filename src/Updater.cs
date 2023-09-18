@@ -229,7 +229,7 @@ public class PocketCoreUpdater : Base
                     continue;
                 }
 
-                if (core.sponsor_only && !_jtBeta) {
+                if (core.requires_license && !_jtBeta) {
                     continue; //skip if you don't have the key
                 }
                 
