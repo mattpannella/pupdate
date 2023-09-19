@@ -153,7 +153,7 @@ On your first run it will prompt you to select the cores you want tracked. After
 
 ### Jotego Beta Cores
 
-Now that Jotego is releasing his beta cores publicly (and requiring a beta key to play them), you can just drop the `jtbeta.zip` file from patreon onto the root of your sd card and run Update All, and it will automatically copy the beta key to the correct folders for the cores that need it. Make sure you don't rename the file, it's going to look for exactly `jtbeta.zip`
+Now that Jotego is releasing his beta cores publicly (and requiring a beta key to play them), you can just drop the `jtbeta.zip` file from patreon onto the root of your sd card and run Update All, and it will automatically copy the beta key to the correct folders for the cores that need it. It also will let you install the yhe cores directly from the updater, now. Make sure you don't rename the file, it's going to look for exactly `jtbeta.zip`
 
   
 
