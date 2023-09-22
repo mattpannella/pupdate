@@ -4,6 +4,8 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using CommandLine;
 using pannella.analoguepocket;
+using ConsoleTools;
+
 
 internal class Program
 {
@@ -11,6 +13,9 @@ internal class Program
     private const string USER = "mattpannella";
     private const string REPOSITORY = "pocket-updater-utility";
     private const string RELEASE_URL = "https://github.com/mattpannella/pocket-updater-utility/releases/download/{0}/pocket_updater_{1}.zip";
+    private static SettingsManager settings;
+
+    private static PocketCoreUpdater updater;
 
     private static bool cliMode = false;
     private static async Task Main(string[] args)
@@ -27,48 +32,97 @@ internal class Program
             string? imagePackRepo = null;
             string? imagePackVariant = null;
             bool downloadFirmware = false;
+            bool selfUpdate = false;
 
+            ConsoleKey response;
 
-            Parser.Default.ParseArguments<Options>(args)
-                .WithParsed<Options>(o =>
+            string verb = "menu";
+            Dictionary<string, object?> data = new Dictionary<string, object?>();
+            Parser.Default.ParseArguments<MenuOptions, FundOptions, UpdateOptions,
+                AssetsOptions, FirmwareOptions, ImagesOptions, InstancegeneratorOptions, UpdateSelfOptions>(args)
+                .WithParsed<UpdateSelfOptions>(o => {
+                    selfUpdate = true;
+                })
+                .WithParsed<FundOptions>(async o =>
                 {
+                    verb = "fund";
+                    data.Add("core", null);
+                    if(o.Core != null && o.Core != "") {
+                        data["core"] = o.Core;
+                    }
+                }
+                )
+                .WithParsed<UpdateOptions>(async o =>
+                {
+                    verb = "update";
+                    cliMode = true;
+                    forceUpdate = true;
                     if(o.InstallPath != null && o.InstallPath != "") {
-                        Console.WriteLine("path: " + o.InstallPath);
                         path = o.InstallPath;
-                        cliMode = true;
                     }
                     if(o.PreservePlatformsFolder) {
                         preservePlatformsFolder = true;
-                        cliMode = true;
                     }
-                    if(o.ForceUpdate) {
-                        forceUpdate = true;
-                        cliMode = true;
+                    if(o.CoreName != null && o.CoreName != "") {
+                        coreName = o.CoreName;
+                    }
+                }
+                )
+                .WithParsed<AssetsOptions>(async o =>
+                {
+                    verb = "assets";
+                    cliMode = true;
+                    downloadAssets = "all";
+                    if(o.InstallPath != null && o.InstallPath != "") {
+                        path = o.InstallPath;
                     }
                     if(o.CoreName != null) {
-                        coreName = o.CoreName;
-                        cliMode = true;
+                        downloadAssets = o.CoreName;
                     }
-                    if(o.ForceInstanceGenerator) {
-                        forceInstanceGenerator = true;
-                        cliMode = true;
+                }
+                )
+                .WithParsed<FirmwareOptions>(async o =>
+                {
+                    verb = "firmware";
+                    cliMode = true;
+                    downloadFirmware = true;
+                    if(o.InstallPath != null && o.InstallPath != "") {
+                        path = o.InstallPath;
                     }
-                    if(o.DownloadAssets != null) {
-                        cliMode = true;
-                        downloadAssets = o.DownloadAssets;
+                }
+                )
+                .WithParsed<ImagesOptions>(async o =>
+                {
+                    verb = "images";
+                    cliMode = true;
+                    if(o.InstallPath != null && o.InstallPath != "") {
+                        path = o.InstallPath;
                     }
                     if(o.ImagePackOwner != null) {
-                        cliMode = true;
                         imagePackOwner = o.ImagePackOwner;
                         imagePackRepo = o.ImagePackRepo;
                         imagePackVariant = o.ImagePackVariant;
                     }
-                    if(o.DownloadFirmware) {
-                        downloadFirmware = true;
-                        cliMode = true;
+                }
+                )
+                .WithParsed<InstancegeneratorOptions>(async o =>
+                {
+                    verb = "instancegenerator";
+                    forceInstanceGenerator = true;
+                    cliMode = true;
+                    if(o.InstallPath != null && o.InstallPath != "") {
+                        path = o.InstallPath;
                     }
                 }
-                ).WithNotParsed<Options>(o =>
+                )
+                .WithParsed<MenuOptions>(o =>
+                {
+                    if(o.InstallPath != null && o.InstallPath != "") {
+                        path = o.InstallPath;
+                    }
+                }
+                )
+                .WithNotParsed(o =>
                 {
                     if(o.IsHelp()) {
                         Environment.Exit(1);
@@ -79,44 +133,56 @@ internal class Program
                 }
                 );
 
-           //path = "/Users/mattpannella/pocket-test";
+            if (!cliMode) {
+                Console.WriteLine("Pocket Updater Utility v" + version);
+                Console.WriteLine("Checking for updates...");
 
-            ConsoleKey response;
+                if(await CheckVersion(path) && !selfUpdate) {
+                    string platform = GetPlatform();
+                    ConsoleKey[] acceptedInputs = new[] { ConsoleKey.I, ConsoleKey.C, ConsoleKey.Q };
+                    do {
+                        if (platform == "win") {
+                            Console.Write("Would you like to [i]nstall the update, [c]ontinue with the current version, or [q]uit? [i/c/q]: ");
+                        } else {
+                            Console.Write("Update downloaded. Would you like to [c]ontinue with the current version, or [q]uit? [c/q]: ");
+                        }
+                        response = Console.ReadKey(false).Key;
+                        Console.WriteLine();
+                    } while(!acceptedInputs.Contains(response));
 
-            Console.WriteLine("Analogue Pocket Core Updater v" + version);
-            Console.WriteLine("Checking for updates...");
+                    switch(response) {
+                        case ConsoleKey.I:
+                            int result = UpdateSelfAndRun(path, args);
+                            Environment.Exit(result);
+                            break;
 
-            if(await CheckVersion(path)) {
-                string platform = GetPlatform();
-                ConsoleKey[] acceptedInputs = new[] { ConsoleKey.I, ConsoleKey.C, ConsoleKey.Q };
-                do {
-                    if (platform == "win") {
-                        Console.Write("Would you like to [i]nstall the update, [c]ontinue with the current version, or [q]uit? [i/c/q]: ");
-                    } else {
-                        Console.Write("Update downloaded. Would you like to [c]ontinue with the current version, or [q]uit? [c/q]: ");
+                        case ConsoleKey.C:
+                            break;
+
+                        case ConsoleKey.Q:
+                            Console.WriteLine("Come again soon");
+                            PauseExit();
+                            break;
                     }
-                    response = Console.ReadKey(false).Key;
-                    Console.WriteLine();
-                } while(!acceptedInputs.Contains(response));
-
-                switch(response) {
-                    case ConsoleKey.I:
-                        int result = UpdateSelfAndRun(path, args);
-                        Environment.Exit(result);
-                        break;
-
-                    case ConsoleKey.C:
-                        break;
-
-                    case ConsoleKey.Q:
-                        Console.WriteLine("Come again soon");
-                        PauseExit();
-                        break;
+                }
+                if(selfUpdate) {
+                    Environment.Exit(0);
                 }
             }
 
-            PocketCoreUpdater updater = new PocketCoreUpdater(path);
-            SettingsManager settings = new SettingsManager(path);
+            //path = "/Users/mattpannella/pocket-test";
+
+            updater = new PocketCoreUpdater(path);
+            settings = new SettingsManager(path);
+
+            switch(verb) {
+                case "fund":
+                    await Funding((string)data["core"]);
+                    Environment.Exit(1);
+                    break;
+                default:
+                    break;
+            }
 
             if(preservePlatformsFolder || settings.GetConfig().preserve_platforms_folder) {
                 updater.PreservePlatformsFolder(true);
@@ -130,11 +196,12 @@ internal class Program
             updater.UpdateProcessComplete += updater_UpdateProcessComplete;
             updater.DownloadAssets(settings.GetConfig().download_assets);
             await updater.Initialize();
+            settings = GlobalHelper.Instance.SettingsManager;
 
             // If we have any missing cores, handle them.
             if(updater.GetMissingCores().Any()) {
                 Console.WriteLine("\nNew cores found since the last run.");
-                AskAboutNewCores(ref settings);
+                AskAboutNewCores();
 
                 string? download_new_cores = settings.GetConfig().download_new_cores?.ToLowerInvariant();
                 switch(download_new_cores) {
@@ -145,8 +212,6 @@ internal class Program
 
                         settings.EnableMissingCores(updater.GetMissingCores());
                         settings.SaveSettings();
-                        Console.WriteLine("\nPress ENTER to continue.");
-                        Pause();
                         break;
                     case "no":
                         Console.WriteLine("The following cores have been disabled:");
@@ -155,12 +220,16 @@ internal class Program
 
                         settings.DisableMissingCores(updater.GetMissingCores());
                         settings.SaveSettings();
-                        Console.WriteLine("\nPress ENTER to continue.");
-                        Pause();
                         break;
                     default:
                     case "ask":
-                        RunCoreSelector(ref settings, updater.GetMissingCores());
+                        var newones = updater.GetMissingCores();
+                        settings.EnableMissingCores(newones);
+                        if (cliMode) {
+                            settings.SaveSettings();
+                        } else {
+                            await RunCoreSelector(newones, "New cores are available!");
+                        }
                         break;
                 }
 
@@ -190,7 +259,7 @@ internal class Program
             } else { 
                 bool flag = true;
                 while(flag) {
-                    int choice = DisplayMenu();
+                    int choice = DisplayMenuNew();
 
                     switch(choice) {
                         case 1:
@@ -204,12 +273,9 @@ internal class Program
                             break;
                         case 3:
                             List<Core> cores = await CoresService.GetCores();
-                            AskAboutNewCores(ref settings, true);
-                            RunCoreSelector(ref settings, cores);
+                            AskAboutNewCores(true);
+                            await RunCoreSelector(cores);
                             updater.LoadSettings();
-
-                            Console.WriteLine("\nDone!  Press ENTER to continue.");
-                            Pause();
                             break;
                         case 4:
                             await ImagePackSelector(path);
@@ -223,9 +289,8 @@ internal class Program
                             Pause();
                             break;
                         case 7:
-                            RunConfigWizard(ref settings);
-                            SetUpdaterFlags(ref updater, ref settings);
-                            Pause();
+                            SettingsMenu();
+                            SetUpdaterFlags();
                             break;
                         case 8:
                             flag = false;
@@ -343,7 +408,7 @@ internal class Program
         }
     }
 
-    static void SetUpdaterFlags(ref PocketCoreUpdater updater, ref SettingsManager settings)
+    static void SetUpdaterFlags()
     {
         updater.DeleteSkippedCores(settings.GetConfig().delete_skipped_cores);
         updater.SetGithubApiKey(settings.GetConfig().github_token);
@@ -388,150 +453,58 @@ internal class Program
         process.WaitForExit();
     }
 
-    static void RunCoreSelector(ref SettingsManager settings, List<Core> cores)
+    static async Task RunCoreSelector(List<Core> cores, string message = "Select your cores.")
     {
         if(settings.GetConfig().download_new_cores?.ToLowerInvariant() == "yes") {
             foreach(Core core in cores)
                 settings.EnableCore(core.identifier);
         } else {
-            ConsoleKey response;
-            Console.WriteLine("\nSelect your cores! The available cores will be listed 1 at a time. For each one, hit 'n' if you don't want it installed, or just hit enter if you want it. Ok you've got this. Here we go...\n");
-            foreach(Core core in cores) {
-                Console.Write(core.identifier + "?[Y/n] ");
-                response = Console.ReadKey(false).Key;
-                if(response == ConsoleKey.N) {
-                    settings.DisableCore(core.identifier);
-                } else {
-                    settings.EnableCore(core.identifier);
+            var pageSize = 15;
+            var offset = 0;
+            bool next = false;
+            bool previous = false;
+            bool more = true;
+            while(more) {
+                var menu = new ConsoleMenu()
+                    .Configure(config =>
+                    {
+                        config.Selector = "=>";
+                        config.EnableWriteTitle = false;
+                        config.WriteHeaderAction = () => Console.WriteLine($"{message} Use enter to check/uncheck your choices.");
+                        config.SelectedItemBackgroundColor = Console.ForegroundColor;
+                        config.SelectedItemForegroundColor = Console.BackgroundColor;
+                        config.WriteItemAction = item => Console.Write("{1}", item.Index, item.Name);
+                    });
+                var current = -1;
+                if((offset + pageSize) <= cores.Count) {
+                    menu.Add("Next Page", (thisMenu) => { offset += pageSize; thisMenu.CloseMenu();});
                 }
-                Console.WriteLine("");
+                foreach(Core core in cores) {
+                    current++;
+                    if ((current <= (offset + pageSize)) && (current > offset)) {
+                        var coreSettings = settings.GetCoreSettings(core.identifier);
+                        var selected = !coreSettings.skip;
+                        var title = settingsMenuItem(core.identifier, selected);
+                        menu.Add(title, (thisMenu) => { 
+                            selected = !selected;
+                            if (!selected) {
+                                settings.DisableCore(core.identifier);
+                            } else {
+                                settings.EnableCore(core.identifier);
+                            }
+
+                            thisMenu.CurrentItem.Name = settingsMenuItem(core.identifier, selected);
+                        });
+                    }
+                }
+                if((offset + pageSize) <= cores.Count) {
+                    menu.Add("Next Page", (thisMenu) => { offset += pageSize; thisMenu.CloseMenu();});
+                }
+                menu.Add("Save Choices", (thisMenu) => {thisMenu.CloseMenu(); more = false;});
+                menu.Show();
             }
         }
         settings.GetConfig().core_selector = false;
-        settings.SaveSettings();
-    }
-
-    static void RunConfigWizard(ref SettingsManager settings)
-    {
-        ConsoleKey response;
-        bool valid = false;
-        while(!valid) {
-            Console.Write("\nDownload Firmware Updates during 'Update All'?[Y/n] ");
-            response = Console.ReadKey(false).Key;
-            if(response == ConsoleKey.N) {
-                settings.GetConfig().download_firmware = false;
-                valid = true;
-            } else if(response == ConsoleKey.Y || response == ConsoleKey.Enter) {
-                settings.GetConfig().download_firmware = true;
-                valid = true;
-            }
-        }
-        Console.WriteLine("");
-        valid = false;
-        while(!valid) {
-            Console.Write("\nDownload Missing Assets (ROMs and BIOS Files) during 'Update All'?[Y/n] ");
-            response = Console.ReadKey(false).Key;
-            if(response == ConsoleKey.N) {
-                settings.GetConfig().download_assets = false;
-                valid = true;
-            } else if(response == ConsoleKey.Y || response == ConsoleKey.Enter) {
-                settings.GetConfig().download_assets = true;
-                valid = true;
-            }
-        }
-        Console.WriteLine("");
-        valid = false;
-        while(!valid) {
-            Console.Write("\nBuild game JSON files for supported cores during 'Update All'?[Y/n] ");
-            response = Console.ReadKey(false).Key;
-            if(response == ConsoleKey.N) {
-                settings.GetConfig().build_instance_jsons = false;
-                valid = true;
-            } else if(response == ConsoleKey.Y || response == ConsoleKey.Enter) {
-                settings.GetConfig().build_instance_jsons = true;
-                valid = true;
-            }
-        }
-        Console.WriteLine("");
-        valid = false;
-        while(!valid) {
-            Console.Write("\nDelete untracked cores during 'Update All'?[Y/n] ");
-            response = Console.ReadKey(false).Key;
-            if(response == ConsoleKey.N) {
-                settings.GetConfig().delete_skipped_cores = false;
-                valid = true;
-            } else if(response == ConsoleKey.Y || response == ConsoleKey.Enter) {
-                settings.GetConfig().delete_skipped_cores = true;
-                valid = true;
-            }
-        }
-        Console.WriteLine("");
-        valid = false;
-        while(!valid) {
-            Console.Write("\nAutomatically rename Jotego cores during 'Update All'?[Y/n] ");
-            response = Console.ReadKey(false).Key;
-            if (response == ConsoleKey.N) {
-                settings.GetConfig().fix_jt_names = false;
-                valid = true;
-            } else if (response == ConsoleKey.Y || response == ConsoleKey.Enter) {
-                settings.GetConfig().fix_jt_names = true;
-                valid = true;
-            }
-        }
-        Console.WriteLine("");
-        valid = false;
-        while(!valid) {
-            Console.Write("\nUse CRC check when checking ROMs and BIOS files?[Y/n] ");
-            response = Console.ReadKey(false).Key;
-            if (response == ConsoleKey.N) {
-                settings.GetConfig().crc_check = false;
-                valid = true;
-            } else if (response == ConsoleKey.Y || response == ConsoleKey.Enter) {
-                settings.GetConfig().crc_check = true;
-                valid = true;
-            }
-        }
-        Console.WriteLine("");
-        valid = false;
-        while(!valid) {
-            Console.Write("\nPreserve 'Platforms' folder during 'Update All'?[y/N] ");
-            response = Console.ReadKey(false).Key;
-            if(response == ConsoleKey.N || response == ConsoleKey.Enter) {
-                settings.GetConfig().preserve_platforms_folder = false;
-                valid = true;
-            } else if(response == ConsoleKey.Y) {
-                settings.GetConfig().preserve_platforms_folder = true;
-                valid = true;
-            }
-        }
-        Console.WriteLine("");
-        valid = false;
-        while(!valid) {
-            Console.Write("\nInclude alternative roms when downloading assets?[y/N] ");
-            response = Console.ReadKey(false).Key;
-            if(response == ConsoleKey.N || response == ConsoleKey.Enter) {
-                settings.GetConfig().skip_alternative_assets = true;
-                valid = true;
-            } else if(response == ConsoleKey.Y) {
-                settings.GetConfig().skip_alternative_assets = false;
-                valid = true;
-            }
-        }
-        Console.WriteLine("");
-        valid = false;
-        while(!valid) {
-            Console.Write("\nUse custom asset archive??[y/N] ");
-            response = Console.ReadKey(false).Key;
-            if(response == ConsoleKey.N || response == ConsoleKey.Enter) {
-                settings.GetConfig().use_custom_archive = false;
-                valid = true;
-            } else if(response == ConsoleKey.Y) {
-                settings.GetConfig().use_custom_archive = true;
-                valid = true;
-            }
-        }
-        Console.WriteLine("");
-        Console.WriteLine("Settings saved!");
         settings.SaveSettings();
     }
 
@@ -570,7 +543,109 @@ internal class Program
             Console.WriteLine(e.FirmwareUpdated);
             Console.WriteLine("");
         }
-        Console.WriteLine("we did it, come again soon");
+        ShowSponsorLinks();
+        FunFacts();
+    }
+
+    private static void ShowSponsorLinks()
+    {
+        if (GlobalHelper.Instance.InstalledCores.Count == 0) return;
+        var random = new Random();
+        var index = random.Next(GlobalHelper.Instance.InstalledCores.Count);
+        var randomItem = GlobalHelper.Instance.InstalledCores[index];
+        if(randomItem.sponsor != null) {
+            var links = "";
+            if (randomItem.sponsor.custom != null) {
+                links += "\r\n" + String.Join("\r\n", randomItem.sponsor.custom);
+            }
+            if (randomItem.sponsor.github != null) {
+                links += "\r\n" + String.Join("\r\n", randomItem.sponsor.github);
+            }
+            if (randomItem.sponsor.patreon != null) {
+                links += "\r\n" + randomItem.sponsor.patreon;
+            }
+            Console.WriteLine("");
+            Console.WriteLine($"Please consider supporting {randomItem.getConfig().core.metadata.author} for their work on the {randomItem} core:");
+            Console.WriteLine(links.Trim());
+        }
+    }
+
+    private static string? GetSponsorLinks()
+    {
+        if (GlobalHelper.Instance.InstalledCores.Count == 0) return null;
+        var random = new Random();
+        var index = random.Next(GlobalHelper.Instance.InstalledCores.Count);
+        var randomItem = GlobalHelper.Instance.InstalledCores[index];
+        string output = "";
+        if(randomItem.sponsor != null) {
+            var links = "";
+            if (randomItem.sponsor.custom != null) {
+                links += "\r\n" + String.Join("\r\n", randomItem.sponsor.custom);
+            }
+            if (randomItem.sponsor.github != null) {
+                links += "\r\n" + String.Join("\r\n", randomItem.sponsor.github);
+            }
+            if (randomItem.sponsor.patreon != null) {
+                links += "\r\n" + randomItem.sponsor.patreon;
+            }
+            output += "\r\n";
+            output += $"Please consider supporting {randomItem.getConfig().core.metadata.author} for their work on the {randomItem} core:";
+            output += $"\r\n{links.Trim()}";
+        }
+
+        return output;
+    }
+
+    private static async Task Funding(string? identifier)
+    {
+        await updater.Initialize();
+        if (GlobalHelper.Instance.InstalledCores.Count == 0) return;
+
+        List<Core> cores = new List<Core>();
+        if (identifier == null) {
+            cores = GlobalHelper.Instance.InstalledCores;
+        } else {
+            var c = GlobalHelper.Instance.GetCore(identifier);
+            if (c != null && c.isInstalled()) {
+                cores.Add(c);
+            }
+        }
+        
+        foreach(Core core in cores) {
+            if(core.sponsor != null) {
+                var links = "";
+                if (core.sponsor.custom != null) {
+                    links += "\r\n" + String.Join("\r\n", core.sponsor.custom);
+                }
+                if (core.sponsor.github != null) {
+                    links += "\r\n" + String.Join("\r\n", core.sponsor.github);
+                }
+                if (core.sponsor.patreon != null) {
+                    links += "\r\n" + core.sponsor.patreon;
+                }
+                Console.WriteLine("");
+                Console.WriteLine($"{core.identifier}:");
+                Console.WriteLine(links.Trim());
+            }
+        }
+    }
+
+    private static void FunFacts()
+    {
+        if (GlobalHelper.Instance.InstalledCores.Count == 0) return;
+        List<string> cores = new List<string>();
+
+        foreach(Core c in GlobalHelper.Instance.InstalledCores) {
+            if (c.getConfig().core.framework.sleep_supported) {
+                cores.Add(c.identifier);
+            }
+        }
+        Console.WriteLine("");
+        string list = String.Join(", ", cores.ToArray());
+        Console.WriteLine("Fun fact! The ONLY cores that support save states and sleep are the following:");
+        Console.WriteLine(list);
+        Console.WriteLine("Please don't bother the developers of the other cores about this feature. It's a lot of work and most likely will not be coming.");
+        
     }
 
     //return true if newer version is available
@@ -715,6 +790,37 @@ internal class Program
         return "";
     }
 
+    private static int DisplayMenuNew()
+    {
+        Console.Clear();
+        Random random = new Random();
+        int i = random.Next(0, welcomeMessages.Length);
+        string welcome = welcomeMessages[i];
+
+        int choice = 0;
+
+        var menu = new ConsoleMenu()
+            .Configure(config =>
+            {
+            config.Selector = "=>";
+            //config.EnableFilter = true;
+            config.Title = $"{welcome}\r\n{GetSponsorLinks()}\r\n";
+            config.EnableWriteTitle = true;
+            //config.EnableBreadcrumb = true;
+            config.WriteHeaderAction = () => Console.WriteLine("Choose your destiny:");
+            config.SelectedItemBackgroundColor = Console.ForegroundColor;
+            config.SelectedItemForegroundColor = Console.BackgroundColor;
+            });
+        
+        foreach(var (item, index) in menuItems.WithIndex()) {
+            menu.Add(item, (thisMenu) => { choice = thisMenu.CurrentItem.Index; thisMenu.CloseMenu(); });
+        }
+
+        menu.Show();
+      
+        return choice;
+    }
+
     private static int DisplayMenu()
     {
         Console.Clear();
@@ -727,6 +833,7 @@ internal class Program
         foreach(var (item, index) in menuItems.WithIndex()) {
             Console.WriteLine($"{index}) {item}");
         }
+        ShowSponsorLinks();
         Console.Write("\nChoose your destiny: ");
         int choice;
         bool result = int.TryParse(Console.ReadLine(), out choice);
@@ -736,20 +843,85 @@ internal class Program
         return 0;
     }
 
+    private static async Task SettingsMenu()
+    {
+        Console.Clear();
+
+        var menuItems = new Dictionary<string, string>(){
+            {"download_firmware", "Download Firmware Updates during 'Update All'"},
+            {"download_assets", "Download Missing Assets (ROMs and BIOS Files) during 'Update All'"},
+            {"build_instance_jsons", "Build game JSON files for supported cores during 'Update All'"},
+            {"delete_skipped_cores", "Delete untracked cores during 'Update All'"},
+            {"fix_jt_names", "Automatically rename Jotego cores during 'Update All"},
+            {"crc_check", "Use CRC check when checking ROMs and BIOS files"},
+            {"preserve_platforms_folder", "Preserve 'Platforms' folder during 'Update All'"},
+            {"skip_alternative_assets", "Skip alternative roms when downloading assets"},
+            {"use_custom_archive", "Use custom asset archive"}
+        };
+
+        var type = typeof(Config);
+
+        var menu = new ConsoleMenu()
+            .Configure(config =>
+            {
+                config.Selector = "=>";
+                config.EnableWriteTitle = false;
+                config.WriteHeaderAction = () => Console.WriteLine("Settings. Use enter to check/uncheck your choices.");
+                config.SelectedItemBackgroundColor = Console.ForegroundColor;
+                config.SelectedItemForegroundColor = Console.BackgroundColor;
+                config.WriteItemAction = item => Console.Write("{1}", item.Index, item.Name);
+            });
+        
+        foreach(var (name, text) in menuItems) {
+            var property = type.GetProperty(name);
+            var value = (bool)property.GetValue(settings.GetConfig());
+            var title = settingsMenuItem(text, value);
+            menu.Add(title, (thisMenu) => { value = !value; property.SetValue(settings.GetConfig(), value); thisMenu.CurrentItem.Name =  settingsMenuItem(text, value);});
+        }
+        
+        menu.Add("Save", (thisMenu) => {thisMenu.CloseMenu();});
+
+        menu.Show();
+
+        settings.SaveSettings();
+    }
+
+    private static string settingsMenuItem(string title, bool value)
+    {
+        var x = " ";
+        if (value) {
+            x = "X";
+        }
+
+        return $"[{x}] {title}";
+    }
+
     private static async Task ImagePackSelector(string path)
     {
         Console.Clear();
         Console.WriteLine("Checking for image packs...\n");
         ImagePack[] packs = await ImagePacksService.GetImagePacks();
         if(packs.Length > 0) {
+            int choice = 0;
+            var menu = new ConsoleMenu()
+                .Configure(config =>
+                {
+                config.Selector = "=>";
+                config.EnableWriteTitle = false;
+                //config.EnableBreadcrumb = true;
+                config.WriteHeaderAction = () => Console.WriteLine("So, what'll it be?:");
+                config.SelectedItemBackgroundColor = Console.ForegroundColor;
+                config.SelectedItemForegroundColor = Console.BackgroundColor;
+                });
+            
             foreach(var (pack, index) in packs.WithIndex()) {
-                Console.WriteLine($"{index}) {pack.owner}: {pack.repository} {pack.variant}");
+                menu.Add($"{pack.owner}: {pack.repository} {pack.variant}", (thisMenu) => { choice = thisMenu.CurrentItem.Index; thisMenu.CloseMenu(); });
             }
-            Console.WriteLine($"{packs.Length}) Go back");
-            Console.Write("\nSo, what'll it be?: ");
-            int choice;
-            bool result = int.TryParse(Console.ReadLine(), out choice);
-            if(result && choice < packs.Length && choice >= 0) {
+            menu.Add("Go Back", (thisMenu) => {choice = packs.Length; thisMenu.CloseMenu();});
+
+            menu.Show();
+
+            if(choice < packs.Length && choice >= 0) {
                 await InstallImagePack(path, packs[choice]);
                 Pause();
             } else if(choice == packs.Length) {
@@ -781,7 +953,7 @@ internal class Program
         Console.ReadLine();
     }
 
-    private static void AskAboutNewCores(ref SettingsManager settings, bool force = false)
+    private static void AskAboutNewCores(bool force = false)
     {
         while(settings.GetConfig().download_new_cores == null || force) {
             force = false;
@@ -880,11 +1052,16 @@ internal class Program
         
     };
 }
-
-public class Options
+[Verb("menu", isDefault: true, HelpText = "Interactive Main Menu")]
+public class MenuOptions
 {
-    [Option('u', "update", HelpText = "Force updater to just run update process, instead of displaying the menu.", Required = false)]
-    public bool ForceUpdate { get; set; }
+    [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
+    public string? InstallPath { get; set; }
+}
+
+[Verb("update",  HelpText = "Run update all. (You can configure via the settings menu)")]
+public class UpdateOptions
+{
     [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
     public string? InstallPath { get; set; }
 
@@ -893,12 +1070,30 @@ public class Options
 
     [Option('f', "platformsfolder", Required = false, HelpText = "Preserve the Platforms folder, so customizations aren't overwritten by updates.")]
     public bool PreservePlatformsFolder { get; set; }
+}
 
-    [Option('j', "instancegenerator", HelpText = "Force updater to just run instance json generator, instead of displaying the menu.", Required = false)]
-    public bool ForceInstanceGenerator { get; set; }
+[Verb("assets",  HelpText = "Run the asset downloader")]
+public class AssetsOptions
+{
+    [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
+    public string? InstallPath { get; set; }
 
-    [Option('a', "assets", Required = false, HelpText = "Download assets for all cores, or a specified one.")]
-    public string DownloadAssets { get; set; }
+    [Option ('c', "core", Required = false, HelpText = "The core you want to download assets for.")]
+    public string CoreName { get; set; }
+}
+
+[Verb("instancegenerator",  HelpText = "Run the instance JSON generator")]
+public class InstancegeneratorOptions
+{
+    [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
+    public string? InstallPath { get; set; }
+}
+
+[Verb("images",  HelpText = "Download image packs")]
+public class ImagesOptions
+{
+    [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
+    public string? InstallPath { get; set; }
 
     [Option('o', "owner", Required = false, HelpText = "Image pack repo username")]
     public string ImagePackOwner { get; set; }
@@ -908,10 +1103,25 @@ public class Options
 
     [Option('v', "variant", Required = false, HelpText = "The optional variant")]
     public string? ImagePackVariant { get; set; }
+}
 
-    [Option('d', "firmware", HelpText = "Download pocket firmware update.", Required = false)]
-    public bool DownloadFirmware { get; set; }
+[Verb("firmware",  HelpText = "Check for Pocket firmware updates")]
+public class FirmwareOptions
+{
+    [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
+    public string? InstallPath { get; set; }
+}
 
+[Verb("fund", HelpText = "List sponsor links")]
+public class FundOptions
+{
+    [Option('c', "core", HelpText = "The core to check funding links for", Required = false)]
+    public string? Core { get; set; }
+}
+
+[Verb("update-self", HelpText = "Update this utility")]
+public class UpdateSelfOptions
+{
 }
 
 public static class EnumExtension

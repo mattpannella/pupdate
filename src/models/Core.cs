@@ -18,6 +18,8 @@ public class Core : Base
     public string? version { get; set; }
     public string[]? replaces { get; set; }
 
+    public bool requires_license { get; set; } = false;
+
     private const string ZIP_FILE_NAME = "core.zip";
     public bool downloadAssets { get; set; } = Factory.GetGlobals().SettingsManager.GetConfig().download_assets;
     public bool buildInstances { get; set; } = Factory.GetGlobals().SettingsManager.GetConfig().build_instance_jsons;
@@ -115,7 +117,7 @@ public class Core : Base
         return p["platform"];
     }
 
-    public bool UpdatePlatform(string title)
+    public bool UpdatePlatform(string title, string category = null)
     {
         var config = this.getConfig();
         if (config == null)
@@ -134,13 +136,23 @@ public class Core : Base
             return false;
         }
 
-        Dictionary<string, Platform> platform = new Dictionary<string, Platform>();
-        this.platform.name = title;
-        platform.Add("platform", this.platform);
-        string json = JsonSerializer.Serialize(platform);
+        if (platform.name != title || platform.category != category)
+        {
+            
+            Dictionary<string, Platform> platform = new Dictionary<string, Platform>();
+            this.platform.name = title;
+            if (category != null)
+            {
+                this.platform.category = category;
+            }
+            platform.Add("platform", this.platform);
+            string json = JsonSerializer.Serialize(platform);
         
-        File.WriteAllText(dataFile, json);
-
+            File.WriteAllText(dataFile, json);
+            Factory.GetGlobals().SettingsManager.GetConfig().preserve_platforms_folder = true;
+            Factory.GetGlobals().SettingsManager.SaveSettings();
+        }
+        
         return true;
     }
 
@@ -168,7 +180,7 @@ public class Core : Base
         Analogue.DataJSON data = ReadDataJSON();
         if(data.data.data_slots.Length > 0) {
             foreach(Analogue.DataSlot slot in data.data.data_slots) {
-                if(slot.filename != null && !Factory.GetGlobals().Blacklist.Contains(slot.filename)) {
+                if(slot.filename != null && !slot.filename.EndsWith(".sav") && !Factory.GetGlobals().Blacklist.Contains(slot.filename)) {
                     string path = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0]);
                     if(slot.isCoreSpecific()) {
                         path = Path.Combine(path, this.identifier);
@@ -226,7 +238,7 @@ public class Core : Base
                     if(instance.instance.data_slots.Length > 0) {
                         string data_path = instance.instance.data_path;
                         foreach(Analogue.DataSlot slot in instance.instance.data_slots) {
-                            if(!Factory.GetGlobals().Blacklist.Contains(slot.filename)) {
+                            if(!Factory.GetGlobals().Blacklist.Contains(slot.filename) && !slot.filename.EndsWith(".sav")) {
                                 string path = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0], "common", data_path, slot.filename);
                                 if(File.Exists(path) && CheckCRC(path)) {
                                     _writeMessage("Already installed: " + slot.filename);

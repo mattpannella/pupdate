@@ -26,6 +26,7 @@ public class PocketCoreUpdater : Base
     private bool _deleteSkippedCores = true;
     private bool _useConsole = false;
     private bool _renameJotegoCores = true;
+    private bool _jtBeta = false;
 
     private Dictionary<string, string> _platformFiles = new Dictionary<string, string>();
 
@@ -51,8 +52,20 @@ public class PocketCoreUpdater : Base
         LoadSettings();
         await LoadPlatformFiles();
         await LoadCores();
+        await RefreshInstalledCores();
         await LoadArchive();
         await LoadBlacklist();
+    }
+
+    private async Task RefreshInstalledCores()
+    {
+        var installedCores = new List<Core>();
+        foreach(Core c in GlobalHelper.Instance.Cores) {
+            if(c.isInstalled()) {
+                installedCores.Add(c);
+            }
+        }
+        GlobalHelper.Instance.InstalledCores = installedCores;
     }
 
     private async Task LoadPlatformFiles()
@@ -97,6 +110,7 @@ public class PocketCoreUpdater : Base
     public async Task LoadCores()
     {
         Factory.GetGlobals().Cores = await CoresService.GetCores();
+        Factory.GetGlobals().SettingsManager.InitializeCoreSettings(Factory.GetGlobals().Cores);
         foreach(Core core in Factory.GetGlobals().Cores) {
             core.StatusUpdated += updater_StatusUpdated; //attach handler to bubble event up
         }
@@ -215,6 +229,10 @@ public class PocketCoreUpdater : Base
                     _DeleteCore(core);
                     continue;
                 }
+
+                if (core.requires_license && !_jtBeta) {
+                    continue; //skip if you don't have the key
+                }
                 
                 string name = core.identifier;
                 if(name == null) {
@@ -328,6 +346,7 @@ public class PocketCoreUpdater : Base
         string keyPath = Path.Combine(Factory.GetGlobals().UpdateDirectory, "betakeys");
         string file = Path.Combine(Factory.GetGlobals().UpdateDirectory, "jtbeta.zip");
         if(File.Exists(file)) {
+            _jtBeta = true;
             _writeMessage("Extracting JT beta key...");
             ZipFile.ExtractToDirectory(file, keyPath, true);
         }
@@ -435,6 +454,7 @@ public class PocketCoreUpdater : Base
         {
             handler(this, e);
         }
+        RefreshInstalledCores();
     }
 
     public async Task<string> UpdateFirmware()

@@ -13,6 +13,7 @@ public class GlobalHelper
     public string SettingsPath { get; set; }
     public string[] Blacklist { get; set; }
     public List<Core>? Cores { get; set; }
+    public List<Core>? InstalledCores { get; set; }
 
     private GlobalHelper()
     {
@@ -33,4 +34,9 @@ public class GlobalHelper
             }
         }
     }  
+
+    public Core? GetCore(string identifier)
+    {
+        return instance.Cores.Find(i => i.identifier == identifier);
+    }
 }
