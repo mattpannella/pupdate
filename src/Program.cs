@@ -289,9 +289,8 @@ internal class Program
                             Pause();
                             break;
                         case 7:
-                            RunConfigWizard();
+                            NewSettingsMenu();
                             SetUpdaterFlags();
-                            Pause();
                             break;
                         case 8:
                             flag = false;
@@ -936,16 +935,66 @@ internal class Program
         return 0;
     }
 
+    private static async Task NewSettingsMenu()
+    {
+        Console.Clear();
+
+        var menuItems = new Dictionary<string, string>(){
+            {"download_firmware", "Download Firmware Updates during 'Update All'"},
+            {"download_assets", "Download Missing Assets (ROMs and BIOS Files) during 'Update All'"},
+            {"build_instance_jsons", "Build game JSON files for supported cores during 'Update All'"},
+            {"delete_skipped_cores", "Delete untracked cores during 'Update All'"},
+            {"fix_jt_names", "Automatically rename Jotego cores during 'Update All"},
+            {"crc_check", "Use CRC check when checking ROMs and BIOS files"},
+            {"preserve_platforms_folder", "Preserve 'Platforms' folder during 'Update All'"},
+            {"skip_alternative_assets", "Skip alternative roms when downloading assets"},
+            {"use_custom_archive", "Use custom asset archive"}
+        };
+
+        var type = typeof(Config);
+
+        var menu = new ConsoleMenu()
+            .Configure(config =>
+            {
+                config.Selector = "=>";
+                config.EnableWriteTitle = false;
+                config.WriteHeaderAction = () => Console.WriteLine("Settings");
+                config.SelectedItemBackgroundColor = Console.ForegroundColor;
+                config.SelectedItemForegroundColor = Console.BackgroundColor;
+                config.WriteItemAction = item => Console.Write("{1}", item.Index, item.Name);
+            });
+        
+        foreach(var (name, text) in menuItems) {
+            var property = type.GetProperty(name);
+            var value = (bool)property.GetValue(settings.GetConfig());
+            var title = settingsMenuItem(text, value);
+            menu.Add(title, (thisMenu) => { property.SetValue(settings.GetConfig(), !value); thisMenu.CurrentItem.Name =  settingsMenuItem(text, !value);});
+        }
+        
+        menu.Add("Save", (thisMenu) => {thisMenu.CloseMenu();});
+
+        menu.Show();
+
+        settings.SaveSettings();
+    }
+
+    private static string settingsMenuItem(string title, bool value)
+    {
+        var x = " ";
+        if (value) {
+            x = "X";
+        }
+
+        return $"[{x}] {title}";
+    }
+
     private static async Task ImagePackSelector(string path)
     {
         Console.Clear();
         Console.WriteLine("Checking for image packs...\n");
         ImagePack[] packs = await ImagePacksService.GetImagePacks();
         if(packs.Length > 0) {
-
-
             int choice = 0;
-
             var menu = new ConsoleMenu()
                 .Configure(config =>
                 {
