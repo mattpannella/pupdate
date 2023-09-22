@@ -876,7 +876,7 @@ internal class Program
             var property = type.GetProperty(name);
             var value = (bool)property.GetValue(settings.GetConfig());
             var title = settingsMenuItem(text, value);
-            menu.Add(title, (thisMenu) => { property.SetValue(settings.GetConfig(), !value); thisMenu.CurrentItem.Name =  settingsMenuItem(text, !value);});
+            menu.Add(title, (thisMenu) => { value = !value; property.SetValue(settings.GetConfig(), value); thisMenu.CurrentItem.Name =  settingsMenuItem(text, value);});
         }
         
         menu.Add("Save", (thisMenu) => {thisMenu.CloseMenu();});
