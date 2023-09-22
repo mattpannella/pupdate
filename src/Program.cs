@@ -196,6 +196,7 @@ internal class Program
             updater.UpdateProcessComplete += updater_UpdateProcessComplete;
             updater.DownloadAssets(settings.GetConfig().download_assets);
             await updater.Initialize();
+            settings = GlobalHelper.Instance.SettingsManager;
 
             // If we have any missing cores, handle them.
             if(updater.GetMissingCores().Any()) {
@@ -211,8 +212,6 @@ internal class Program
 
                         settings.EnableMissingCores(updater.GetMissingCores());
                         settings.SaveSettings();
-                        Console.WriteLine("\nPress ENTER to continue.");
-                        Pause();
                         break;
                     case "no":
                         Console.WriteLine("The following cores have been disabled:");
@@ -221,12 +220,16 @@ internal class Program
 
                         settings.DisableMissingCores(updater.GetMissingCores());
                         settings.SaveSettings();
-                        Console.WriteLine("\nPress ENTER to continue.");
-                        Pause();
                         break;
                     default:
                     case "ask":
-                        RunCoreSelector(updater.GetMissingCores());
+                        var newones = updater.GetMissingCores();
+                        settings.EnableMissingCores(newones);
+                        if (cliMode) {
+                            settings.SaveSettings();
+                        } else {
+                            await RunCoreSelector(newones, "New cores are available!");
+                        }
                         break;
                 }
 
@@ -271,11 +274,8 @@ internal class Program
                         case 3:
                             List<Core> cores = await CoresService.GetCores();
                             AskAboutNewCores(true);
-                            RunCoreSelector(cores);
+                            await RunCoreSelector(cores);
                             updater.LoadSettings();
-
-                            Console.WriteLine("\nDone!  Press ENTER to continue.");
-                            Pause();
                             break;
                         case 4:
                             await ImagePackSelector(path);
@@ -289,7 +289,7 @@ internal class Program
                             Pause();
                             break;
                         case 7:
-                            NewSettingsMenu();
+                            SettingsMenu();
                             SetUpdaterFlags();
                             break;
                         case 8:
@@ -453,150 +453,58 @@ internal class Program
         process.WaitForExit();
     }
 
-    static void RunCoreSelector(List<Core> cores)
+    static async Task RunCoreSelector(List<Core> cores, string message = "Select your cores.")
     {
         if(settings.GetConfig().download_new_cores?.ToLowerInvariant() == "yes") {
             foreach(Core core in cores)
                 settings.EnableCore(core.identifier);
         } else {
-            ConsoleKey response;
-            Console.WriteLine("\nSelect your cores! The available cores will be listed 1 at a time. For each one, hit 'n' if you don't want it installed, or just hit enter if you want it. Ok you've got this. Here we go...\n");
-            foreach(Core core in cores) {
-                Console.Write(core.identifier + "?[Y/n] ");
-                response = Console.ReadKey(false).Key;
-                if(response == ConsoleKey.N) {
-                    settings.DisableCore(core.identifier);
-                } else {
-                    settings.EnableCore(core.identifier);
+            var pageSize = 15;
+            var offset = 0;
+            bool next = false;
+            bool previous = false;
+            bool more = true;
+            while(more) {
+                var menu = new ConsoleMenu()
+                    .Configure(config =>
+                    {
+                        config.Selector = "=>";
+                        config.EnableWriteTitle = false;
+                        config.WriteHeaderAction = () => Console.WriteLine($"{message} Use enter to check/uncheck your choices.");
+                        config.SelectedItemBackgroundColor = Console.ForegroundColor;
+                        config.SelectedItemForegroundColor = Console.BackgroundColor;
+                        config.WriteItemAction = item => Console.Write("{1}", item.Index, item.Name);
+                    });
+                var current = -1;
+                if((offset + pageSize) <= cores.Count) {
+                    menu.Add("Next Page", (thisMenu) => { offset += pageSize; thisMenu.CloseMenu();});
                 }
-                Console.WriteLine("");
+                foreach(Core core in cores) {
+                    current++;
+                    if ((current <= (offset + pageSize)) && (current > offset)) {
+                        var coreSettings = settings.GetCoreSettings(core.identifier);
+                        var selected = !coreSettings.skip;
+                        var title = settingsMenuItem(core.identifier, selected);
+                        menu.Add(title, (thisMenu) => { 
+                            selected = !selected;
+                            if (!selected) {
+                                settings.DisableCore(core.identifier);
+                            } else {
+                                settings.EnableCore(core.identifier);
+                            }
+
+                            thisMenu.CurrentItem.Name = settingsMenuItem(core.identifier, selected);
+                        });
+                    }
+                }
+                if((offset + pageSize) <= cores.Count) {
+                    menu.Add("Next Page", (thisMenu) => { offset += pageSize; thisMenu.CloseMenu();});
+                }
+                menu.Add("Save Choices", (thisMenu) => {thisMenu.CloseMenu(); more = false;});
+                menu.Show();
             }
         }
         settings.GetConfig().core_selector = false;
-        settings.SaveSettings();
-    }
-
-    static void RunConfigWizard()
-    {
-        ConsoleKey response;
-        bool valid = false;
-        while(!valid) {
-            Console.Write("\nDownload Firmware Updates during 'Update All'?[Y/n] ");
-            response = Console.ReadKey(false).Key;
-            if(response == ConsoleKey.N) {
-                settings.GetConfig().download_firmware = false;
-                valid = true;
-            } else if(response == ConsoleKey.Y || response == ConsoleKey.Enter) {
-                settings.GetConfig().download_firmware = true;
-                valid = true;
-            }
-        }
-        Console.WriteLine("");
-        valid = false;
-        while(!valid) {
-            Console.Write("\nDownload Missing Assets (ROMs and BIOS Files) during 'Update All'?[Y/n] ");
-            response = Console.ReadKey(false).Key;
-            if(response == ConsoleKey.N) {
-                settings.GetConfig().download_assets = false;
-                valid = true;
-            } else if(response == ConsoleKey.Y || response == ConsoleKey.Enter) {
-                settings.GetConfig().download_assets = true;
-                valid = true;
-            }
-        }
-        Console.WriteLine("");
-        valid = false;
-        while(!valid) {
-            Console.Write("\nBuild game JSON files for supported cores during 'Update All'?[Y/n] ");
-            response = Console.ReadKey(false).Key;
-            if(response == ConsoleKey.N) {
-                settings.GetConfig().build_instance_jsons = false;
-                valid = true;
-            } else if(response == ConsoleKey.Y || response == ConsoleKey.Enter) {
-                settings.GetConfig().build_instance_jsons = true;
-                valid = true;
-            }
-        }
-        Console.WriteLine("");
-        valid = false;
-        while(!valid) {
-            Console.Write("\nDelete untracked cores during 'Update All'?[Y/n] ");
-            response = Console.ReadKey(false).Key;
-            if(response == ConsoleKey.N) {
-                settings.GetConfig().delete_skipped_cores = false;
-                valid = true;
-            } else if(response == ConsoleKey.Y || response == ConsoleKey.Enter) {
-                settings.GetConfig().delete_skipped_cores = true;
-                valid = true;
-            }
-        }
-        Console.WriteLine("");
-        valid = false;
-        while(!valid) {
-            Console.Write("\nAutomatically rename Jotego cores during 'Update All'?[Y/n] ");
-            response = Console.ReadKey(false).Key;
-            if (response == ConsoleKey.N) {
-                settings.GetConfig().fix_jt_names = false;
-                valid = true;
-            } else if (response == ConsoleKey.Y || response == ConsoleKey.Enter) {
-                settings.GetConfig().fix_jt_names = true;
-                valid = true;
-            }
-        }
-        Console.WriteLine("");
-        valid = false;
-        while(!valid) {
-            Console.Write("\nUse CRC check when checking ROMs and BIOS files?[Y/n] ");
-            response = Console.ReadKey(false).Key;
-            if (response == ConsoleKey.N) {
-                settings.GetConfig().crc_check = false;
-                valid = true;
-            } else if (response == ConsoleKey.Y || response == ConsoleKey.Enter) {
-                settings.GetConfig().crc_check = true;
-                valid = true;
-            }
-        }
-        Console.WriteLine("");
-        valid = false;
-        while(!valid) {
-            Console.Write("\nPreserve 'Platforms' folder during 'Update All'?[y/N] ");
-            response = Console.ReadKey(false).Key;
-            if(response == ConsoleKey.N || response == ConsoleKey.Enter) {
-                settings.GetConfig().preserve_platforms_folder = false;
-                valid = true;
-            } else if(response == ConsoleKey.Y) {
-                settings.GetConfig().preserve_platforms_folder = true;
-                valid = true;
-            }
-        }
-        Console.WriteLine("");
-        valid = false;
-        while(!valid) {
-            Console.Write("\nInclude alternative roms when downloading assets?[y/N] ");
-            response = Console.ReadKey(false).Key;
-            if(response == ConsoleKey.N || response == ConsoleKey.Enter) {
-                settings.GetConfig().skip_alternative_assets = true;
-                valid = true;
-            } else if(response == ConsoleKey.Y) {
-                settings.GetConfig().skip_alternative_assets = false;
-                valid = true;
-            }
-        }
-        Console.WriteLine("");
-        valid = false;
-        while(!valid) {
-            Console.Write("\nUse custom asset archive??[y/N] ");
-            response = Console.ReadKey(false).Key;
-            if(response == ConsoleKey.N || response == ConsoleKey.Enter) {
-                settings.GetConfig().use_custom_archive = false;
-                valid = true;
-            } else if(response == ConsoleKey.Y) {
-                settings.GetConfig().use_custom_archive = true;
-                valid = true;
-            }
-        }
-        Console.WriteLine("");
-        Console.WriteLine("Settings saved!");
         settings.SaveSettings();
     }
 
@@ -935,7 +843,7 @@ internal class Program
         return 0;
     }
 
-    private static async Task NewSettingsMenu()
+    private static async Task SettingsMenu()
     {
         Console.Clear();
 
@@ -958,7 +866,7 @@ internal class Program
             {
                 config.Selector = "=>";
                 config.EnableWriteTitle = false;
-                config.WriteHeaderAction = () => Console.WriteLine("Settings");
+                config.WriteHeaderAction = () => Console.WriteLine("Settings. Use enter to check/uncheck your choices.");
                 config.SelectedItemBackgroundColor = Console.ForegroundColor;
                 config.SelectedItemForegroundColor = Console.BackgroundColor;
                 config.WriteItemAction = item => Console.Write("{1}", item.Index, item.Name);

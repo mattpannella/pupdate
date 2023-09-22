@@ -37,14 +37,14 @@ public class SettingsManager
         _settingsFile = file;
 
         if(cores != null) {
-            _initializeCoreSettings(cores);
+            InitializeCoreSettings(cores);
         }
 
         SaveSettings();
     }
 
     //loop through every core, and add any missing ones to the settings file
-    private void _initializeCoreSettings(List<Core> cores)
+    public void InitializeCoreSettings(List<Core> cores)
     {
         if(_settings.coreSettings == null) {
             _settings.coreSettings = new Dictionary<string,CoreSettings>();

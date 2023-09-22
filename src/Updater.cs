@@ -110,6 +110,7 @@ public class PocketCoreUpdater : Base
     public async Task LoadCores()
     {
         Factory.GetGlobals().Cores = await CoresService.GetCores();
+        Factory.GetGlobals().SettingsManager.InitializeCoreSettings(Factory.GetGlobals().Cores);
         foreach(Core core in Factory.GetGlobals().Cores) {
             core.StatusUpdated += updater_StatusUpdated; //attach handler to bubble event up
         }
