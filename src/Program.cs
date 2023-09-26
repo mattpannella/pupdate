@@ -481,10 +481,14 @@ internal class Program
                 }
                 foreach(Core core in cores) {
                     current++;
-                    if ((current <= (offset + pageSize)) && (current > offset)) {
+                    if ((current <= (offset + pageSize)) && (current >= offset)) {
                         var coreSettings = settings.GetCoreSettings(core.identifier);
                         var selected = !coreSettings.skip;
-                        var title = settingsMenuItem(core.identifier, selected);
+                        var name = core.identifier;
+                        if (core.requires_license) {
+                            name += " (Requires beta access)";
+                        }
+                        var title = settingsMenuItem(name, selected);
                         menu.Add(title, (thisMenu) => { 
                             selected = !selected;
                             if (!selected) {
