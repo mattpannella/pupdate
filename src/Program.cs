@@ -547,6 +547,13 @@ internal class Program
             Console.WriteLine(e.FirmwareUpdated);
             Console.WriteLine("");
         }
+        if(e.MissingBetaKeys.Count > 0) {
+            Console.WriteLine("Missing or incorrect Beta Key for the following cores:");
+            foreach(string core in e.MissingBetaKeys) {
+                Console.WriteLine(core);
+            }
+            Console.WriteLine("");
+        }
         ShowSponsorLinks();
         FunFacts();
     }
@@ -671,6 +678,8 @@ internal class Program
                     Console.WriteLine("Download complete.");
                     Console.WriteLine(saveLocation);
                     Console.WriteLine("Go to " + releases[0].html_url + " for a change log");
+                } else {
+                    Console.WriteLine("Up to date.");
                 }
                 return check;
             }

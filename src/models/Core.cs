@@ -16,6 +16,7 @@ public class Core : Base
     public string? download_url { get; set; }
     public string? date_release { get; set; }
     public string? version { get; set; }
+    public string? betaSlotId = null;
 
     public bool requires_license { get; set; } = false;
 
@@ -155,14 +156,16 @@ public class Core : Base
         return true;
     }
 
-    public async Task<Dictionary<string, List<string>>> DownloadAssets()
+    public async Task<Dictionary<string, Object>> DownloadAssets()
     {
         List<string> installed = new List<string>();
         List<string> skipped = new List<string>();
+        bool missingBetaKey = false;
         if(!downloadAssets || !Factory.GetGlobals().SettingsManager.GetCoreSettings(this.identifier).download_assets) {
-            return new Dictionary<string, List<string>>{
+            return new Dictionary<string, Object>{
                 {"installed", installed },
-                {"skipped", skipped }
+                {"skipped", skipped },
+                {"missingBetaKey", missingBetaKey }
             };
         }
         checkUpdateDirectory();
@@ -208,17 +211,19 @@ public class Core : Base
         }
 
         if(this.identifier == "Mazamars312.NeoGeo" || this.identifier == "Mazamars312.NeoGeo_Overdrive") {
-            return new Dictionary<string, List<string>>{
+            return new Dictionary<string, Object>{
                 {"installed", installed },
-                {"skipped", skipped }
+                {"skipped", skipped },
+                {"missingBetaKey", false }
             }; //nah
         }
 
         if(CheckInstancePackager()) {
             BuildInstanceJSONs();
-            return new Dictionary<string, List<string>>{
+            return new Dictionary<string, Object>{
                 {"installed", installed },
-                {"skipped", skipped }
+                {"skipped", skipped },
+                {"missingBetaKey", missingBetaKey }
             };
         }
         
@@ -237,6 +242,10 @@ public class Core : Base
                     if(instance.instance.data_slots.Length > 0) {
                         string data_path = instance.instance.data_path;
                         foreach(Analogue.DataSlot slot in instance.instance.data_slots) {
+                            if(!CheckBetaMD5(slot, info.metadata.platform_ids[0])) {
+                                _writeMessage("Invalid or missing beta key.");
+                                missingBetaKey = true;
+                            }
                             if(!Factory.GetGlobals().Blacklist.Contains(slot.filename) && !slot.filename.EndsWith(".sav")) {
                                 string path = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0], "common", data_path, slot.filename);
                                 if(File.Exists(path) && CheckCRC(path)) {
@@ -257,9 +266,10 @@ public class Core : Base
                 }
             }
         }
-        Dictionary<string, List<string>> results = new Dictionary<string, List<string>>{
+        Dictionary<string, Object> results = new Dictionary<string, Object>{
             {"installed", installed },
-            {"skipped", skipped }
+            {"skipped", skipped },
+            {"missingBetaKey", missingBetaKey }
         };
         return results;
     }
@@ -350,6 +360,22 @@ public class Core : Base
 
         _writeMessage(filename + ": Bad checksum!");
         return false;
+    }
+
+    //return false if a beta ley is required and missing or wrong
+    private bool CheckBetaMD5(Analogue.DataSlot slot, string platform)
+    {
+        if(slot.md5 != null && (betaSlotId != null && slot.id == betaSlotId)) {
+            string UpdateDirectory = Factory.GetGlobals().UpdateDirectory;
+            string path = Path.Combine(UpdateDirectory, "Assets", platform);
+            string filepath = Path.Combine(path, "common", slot.filename);
+            if(!File.Exists(filepath)) {
+                return false;
+            }
+            return Util.CompareChecksum(filepath, slot.md5, Util.HashTypes.MD5);
+        }
+
+        return true;
     }
 
     public void BuildInstanceJSONs(bool overwrite = true)
@@ -470,9 +496,16 @@ public class Core : Base
     public bool JTBetaCheck()
     {
         var data = ReadDataJSON();
-        return data.data.data_slots.Any(x=>x.name=="JTBETA");
+        bool check = data.data.data_slots.Any(x=>x.name=="JTBETA");
+
+        if (check) {
+            betaSlotId = data.data.data_slots.Where(x=>x.name=="JTBETA").First().id;
+        }
+
+        return check;
     }
 }
+
 public class myReverserClass : IComparer  {
 
       // Calls CaseInsensitiveComparer.Compare with the parameters reversed.
