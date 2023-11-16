@@ -91,6 +91,7 @@ public class PocketCoreUpdater : Base
 
     private async Task LoadArchive()
     {
+        _writeMessage("Loading Assets Index...");
         if(Factory.GetGlobals().SettingsManager.GetConfig().use_custom_archive) {
             var custom = Factory.GetGlobals().SettingsManager.GetConfig().custom_archive;
             Uri baseUrl = new Uri(custom["url"]);
@@ -203,7 +204,8 @@ public class PocketCoreUpdater : Base
         List<Dictionary<string, string>> installed = new List<Dictionary<string, string>>();
         List<string> installedAssets = new List<string>();
         List<string> skippedAssets = new List<string>();
-        Dictionary<string, List<string>> results = new Dictionary<string, List<string>>();
+        List<string> missingBetaKeys = new List<string>();
+        Dictionary<string, Object> results = new Dictionary<string, Object>();
         string firmwareDownloaded = "";
         if(Factory.GetGlobals().Cores == null) {
             throw new Exception("Must initialize updater before running update process");
@@ -245,11 +247,14 @@ public class PocketCoreUpdater : Base
 
                 if(mostRecentRelease == null) {
                     _writeMessage("No releases found. Skipping");
-                    results = await core.DownloadAssets();
-                    installedAssets.AddRange(results["installed"]);
-                    skippedAssets.AddRange(results["skipped"]);
-                    await JotegoRename(core);
                     await CopyBetaKey(core);
+                    results = await core.DownloadAssets();
+                    installedAssets.AddRange(results["installed"] as List<string>);
+                    skippedAssets.AddRange(results["skipped"] as List<string>);
+                    if((bool)results["missingBetaKey"]) {
+                        missingBetaKeys.Add(core.identifier);
+                    }
+                    await JotegoRename(core);
                     Divide();
                     continue;
                 }
@@ -266,11 +271,14 @@ public class PocketCoreUpdater : Base
                     if (mostRecentRelease != localVersion){
                         _writeMessage("Updating core");
                     } else {
+                        await CopyBetaKey(core);
                         results = await core.DownloadAssets();
                         await JotegoRename(core);
-                        await CopyBetaKey(core);
-                        installedAssets.AddRange(results["installed"]);
-                        skippedAssets.AddRange(results["skipped"]);
+                        installedAssets.AddRange(results["installed"] as List<string>);
+                        skippedAssets.AddRange(results["skipped"] as List<string>);
+                        if((bool)results["missingBetaKey"]) {
+                            missingBetaKeys.Add(core.identifier);
+                        }
                         _writeMessage("Up to date. Skipping core");
                         Divide();
                         continue;
@@ -289,8 +297,11 @@ public class PocketCoreUpdater : Base
                 await JotegoRename(core);
                 await CopyBetaKey(core);
                 results = await core.DownloadAssets();
-                installedAssets.AddRange(results["installed"]);
-                skippedAssets.AddRange(results["skipped"]);
+                installedAssets.AddRange(results["installed"] as List<string>);
+                skippedAssets.AddRange(results["skipped"] as List<string>);
+                if((bool)results["missingBetaKey"]) {
+                    missingBetaKeys.Add(core.identifier);
+                }
                 _writeMessage("Installation complete.");
                 Divide();
                 
@@ -305,6 +316,7 @@ public class PocketCoreUpdater : Base
         args.InstalledCores = installed;
         args.InstalledAssets = installedAssets;
         args.SkippedAssets = skippedAssets;
+        args.MissingBetaKeys = missingBetaKeys;
         args.FirmwareUpdated = firmwareDownloaded;
         OnUpdateProcessComplete(args);
     }
@@ -354,7 +366,8 @@ public class PocketCoreUpdater : Base
     {
         List<string> installedAssets = new List<string>();
         List<string> skippedAssets = new List<string>();
-        Dictionary<string, List<string>> results = new Dictionary<string, List<string>>();
+        List<string> missingBetaKeys = new List<string>();
+        Dictionary<string, Object> results = new Dictionary<string, Object>();
         if(Factory.GetGlobals().Cores == null) {
             throw new Exception("Must initialize updater before running update process");
         }
@@ -377,8 +390,11 @@ public class PocketCoreUpdater : Base
                 }
                 _writeMessage(core.identifier);
                 results = await core.DownloadAssets();
-                installedAssets.AddRange(results["installed"]);
-                skippedAssets.AddRange(results["skipped"]);
+                installedAssets.AddRange(results["installed"] as List<string>);
+                skippedAssets.AddRange(results["skipped"] as List<string>);
+                if((bool)results["missingBetaKey"]) {
+                    missingBetaKeys.Add(core.identifier);
+                }
                 Divide();
             } catch(Exception e) {
                 _writeMessage("Uh oh something went wrong.");
@@ -390,6 +406,7 @@ public class PocketCoreUpdater : Base
         args.Message = "All Done";
         args.InstalledAssets = installedAssets;
         args.SkippedAssets = skippedAssets;
+        args.MissingBetaKeys = missingBetaKeys;
         OnUpdateProcessComplete(args);
     }
 
@@ -521,4 +538,5 @@ public class UpdateProcessCompleteEventArgs : EventArgs
     public List<string> InstalledAssets { get; set; }
     public List<string> SkippedAssets { get; set; }
     public string FirmwareUpdated { get; set; } = "";
+    public List<string> MissingBetaKeys { get; set; }
 }
