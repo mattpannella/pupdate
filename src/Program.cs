@@ -481,10 +481,14 @@ internal class Program
                 }
                 foreach(Core core in cores) {
                     current++;
-                    if ((current <= (offset + pageSize)) && (current > offset)) {
+                    if ((current <= (offset + pageSize)) && (current >= offset)) {
                         var coreSettings = settings.GetCoreSettings(core.identifier);
                         var selected = !coreSettings.skip;
-                        var title = settingsMenuItem(core.identifier, selected);
+                        var name = core.identifier;
+                        if (core.requires_license) {
+                            name += " (Requires beta access)";
+                        }
+                        var title = settingsMenuItem(name, selected);
                         menu.Add(title, (thisMenu) => { 
                             selected = !selected;
                             if (!selected) {
@@ -541,6 +545,13 @@ internal class Program
         if(e.FirmwareUpdated != "") {
             Console.WriteLine("New Firmware was downloaded. Restart your Pocket to install");
             Console.WriteLine(e.FirmwareUpdated);
+            Console.WriteLine("");
+        }
+        if(e.MissingBetaKeys.Count > 0) {
+            Console.WriteLine("Missing or incorrect Beta Key for the following cores:");
+            foreach(string core in e.MissingBetaKeys) {
+                Console.WriteLine(core);
+            }
             Console.WriteLine("");
         }
         ShowSponsorLinks();
@@ -667,6 +678,8 @@ internal class Program
                     Console.WriteLine("Download complete.");
                     Console.WriteLine(saveLocation);
                     Console.WriteLine("Go to " + releases[0].html_url + " for a change log");
+                } else {
+                    Console.WriteLine("Up to date.");
                 }
                 return check;
             }

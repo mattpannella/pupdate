@@ -13,6 +13,8 @@ public class DataSlot
 
     public string[]? alternate_filenames{ get; set; }
 
+    public string? md5 { get; set; }
+
     public bool isCoreSpecific()
     {
         if(parameters == null) {
