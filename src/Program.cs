@@ -33,6 +33,7 @@ internal class Program
             string? imagePackVariant = null;
             bool downloadFirmware = false;
             bool selfUpdate = false;
+            bool downloadAlts = false;
 
             ConsoleKey response;
 
@@ -78,6 +79,9 @@ internal class Program
                     }
                     if(o.CoreName != null) {
                         downloadAssets = o.CoreName;
+                    }
+                    if(o.Alternatives != null) {
+                        downloadAlts = true;
                     }
                 }
                 )
@@ -169,8 +173,6 @@ internal class Program
                     Environment.Exit(0);
                 }
             }
-
-            //path = "/Users/mattpannella/pocket-test";
 
             updater = new PocketCoreUpdater(path);
             settings = new SettingsManager(path);
@@ -1093,6 +1095,9 @@ public class AssetsOptions
 
     [Option ('c', "core", Required = false, HelpText = "The core you want to download assets for.")]
     public string CoreName { get; set; }
+
+    [Option ('a', "alternatives", Required = false, HelpText = "Download alternative roms")]
+    public string Alternatives { get; set; }
 }
 
 [Verb("instancegenerator",  HelpText = "Run the instance JSON generator")]
