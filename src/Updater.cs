@@ -341,8 +341,11 @@ public class PocketCoreUpdater : Base
     private async Task CopyBetaKey(Core core)
     {
         if(core.JTBetaCheck()) {
-            core.platform_id = core.identifier.Split('.')[1]; //whatever
-            string path = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Assets", core.platform_id, "common");
+            //core.platform_id = core.identifier.Split('.')[1]; //whatever
+            string path = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Assets", "jtpatreon", "common");
+            if(!Directory.Exists(path)) {
+                Directory.CreateDirectory(path);
+            }
             string keyPath = Path.Combine(Factory.GetGlobals().UpdateDirectory, "betakeys");
             if(Directory.Exists(keyPath) && Directory.Exists(path)) {
                 Util.CopyDirectory(keyPath, path, false, true);

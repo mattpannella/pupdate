@@ -242,6 +242,10 @@ public class Core : Base
                     if(instance.instance.data_slots.Length > 0) {
                         string data_path = instance.instance.data_path;
                         foreach(Analogue.DataSlot slot in instance.instance.data_slots) {
+                            var plat = info.metadata.platform_ids[0];
+                            if(info.metadata.author == "jotego") {
+                                plat = "jtpatreon";
+                            }
                             if(!CheckBetaMD5(slot, info.metadata.platform_ids[0])) {
                                 _writeMessage("Invalid or missing beta key.");
                                 missingBetaKey = true;

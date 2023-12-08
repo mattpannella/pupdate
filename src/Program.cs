@@ -170,8 +170,6 @@ internal class Program
                 }
             }
 
-            //path = "/Users/mattpannella/pocket-test";
-
             updater = new PocketCoreUpdater(path);
             settings = new SettingsManager(path);
 
