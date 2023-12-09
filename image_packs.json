@@ -6,12 +6,22 @@
     {
         "owner": "dyreschlock",
         "repository": "pocket-platform-images",
+        "variant": "arcade"
+    },
+    {
+        "owner": "dyreschlock",
+        "repository": "pocket-platform-images",
         "variant": "home"
     },
     {
         "owner": "dyreschlock",
         "repository": "pocket-platform-images",
-        "variant": "arcade"
+        "variant": "home_jp_alts"
+    },
+    {
+        "owner": "dyreschlock",
+        "repository": "pocket-platform-images",
+        "variant": "home_pal_alts"
     },
     {
         "owner": "terminator2k2",
