@@ -246,7 +246,7 @@ public class Core : Base
                             if(info.metadata.author == "jotego") {
                                 plat = "jtpatreon";
                             }
-                            if(!CheckBetaMD5(slot, info.metadata.platform_ids[0])) {
+                            if(!CheckBetaMD5(slot, plat)) {
                                 _writeMessage("Invalid or missing beta key.");
                                 missingBetaKey = true;
                             }
