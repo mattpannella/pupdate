@@ -15,10 +15,10 @@ public class DataSlot
 
     public string? md5 { get; set; }
 
-    public bool isCoreSpecific()
+    private BitArray? getBits()
     {
         if(parameters == null) {
-            return false;
+            return null;
         }
         int p = 0;
         if(parameters.StartsWith("0x")) {
@@ -30,6 +30,35 @@ public class DataSlot
         byte[] bytes = System.BitConverter.GetBytes(p);
         BitArray bits = new BitArray(bytes);
 
+        return bits;
+    }
+
+    public bool isCoreSpecific()
+    {
+        var bits = getBits();
+
+        if(bits == null) {
+            return false;
+        }
+
         return bits[1];
+    }
+
+    public int getPlatformIdIndex()
+    {
+        var bits = getBits();
+
+        if(bits == null) {
+            return 0;
+        }
+
+        var temp = new BitArray(2);
+        temp[1] = bits[25];
+        temp[0] = bits[24];
+
+        int[] index = new int[1];
+        temp.CopyTo(index, 0);
+
+        return index[0];
     }
 }
