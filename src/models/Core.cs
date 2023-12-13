@@ -17,6 +17,7 @@ public class Core : Base
     public string? date_release { get; set; }
     public string? version { get; set; }
     public string? betaSlotId = null;
+    public int betaSlotPlatformIdIndex = 0;
 
     public bool requires_license { get; set; } = false;
 
@@ -180,6 +181,9 @@ public class Core : Base
         };
 
         Analogue.DataJSON data = ReadDataJSON();
+        if (betaSlotId != null) {
+
+        }
         if(data.data.data_slots.Length > 0) {
             foreach(Analogue.DataSlot slot in data.data.data_slots) {
                 if(slot.filename != null && !slot.filename.EndsWith(".sav") && !Factory.GetGlobals().Blacklist.Contains(slot.filename)) {
@@ -242,10 +246,7 @@ public class Core : Base
                     if(instance.instance.data_slots.Length > 0) {
                         string data_path = instance.instance.data_path;
                         foreach(Analogue.DataSlot slot in instance.instance.data_slots) {
-                            var plat = info.metadata.platform_ids[0];
-                            if(info.metadata.author == "jotego") {
-                                plat = "jtpatreon";
-                            }
+                            var plat = info.metadata.platform_ids[betaSlotPlatformIdIndex];
                             if(!CheckBetaMD5(slot, plat)) {
                                 _writeMessage("Invalid or missing beta key.");
                                 missingBetaKey = true;
@@ -503,7 +504,9 @@ public class Core : Base
         bool check = data.data.data_slots.Any(x=>x.name=="JTBETA");
 
         if (check) {
-            betaSlotId = data.data.data_slots.Where(x=>x.name=="JTBETA").First().id;
+            var slot = data.data.data_slots.Where(x=>x.name=="JTBETA").First();
+            betaSlotId = slot.id;
+            betaSlotPlatformIdIndex = slot.getPlatformIdIndex();
         }
 
         return check;
