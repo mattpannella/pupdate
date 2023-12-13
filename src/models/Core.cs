@@ -14,8 +14,9 @@ public class Core : Base
     public string platform_id { get; set; }
     public Sponsor? sponsor { get; set; }
     public string? download_url { get; set; }
-    public string? date_release { get; set; }
+    public string? release_date { get; set; }
     public string? version { get; set; }
+    public string[]? replaces { get; set; }
     public string? betaSlotId = null;
     public int betaSlotPlatformIdIndex = 0;
 
@@ -297,6 +298,28 @@ public class Core : Base
         return config;
     }
 
+    public Updater.Substitute[]? getSubstitutes()
+    {
+        checkUpdateDirectory();
+        string file = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Cores", this.identifier, "updaters.json");
+        if (!File.Exists(file))
+        {
+            return null;
+        }
+        string json = File.ReadAllText(file);
+        var options = new JsonSerializerOptions()
+        {
+            AllowTrailingCommas = true
+        };
+        Updater.Updaters? config = JsonSerializer.Deserialize<Updater.Updaters>(json, options);
+
+        if (config == null) {
+            return null;
+        }
+
+        return config.previous;
+    }
+
     public bool isInstalled()
     {
         checkUpdateDirectory();
@@ -510,6 +533,19 @@ public class Core : Base
         }
 
         return check;
+    }
+
+    public async Task ReplaceCheck()
+    {
+        if (replaces != null) {
+            foreach(string id in replaces) {
+                Core c = new Core(){identifier = id};
+                if (c.isInstalled()) {
+                    c.Uninstall();
+                    _writeMessage($"Uninstalled {id}. It was replaced by this core.");
+                }
+            }
+        }
     }
 }
 
