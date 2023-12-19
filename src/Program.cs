@@ -141,7 +141,7 @@ internal class Program
                     string platform = GetPlatform();
                     ConsoleKey[] acceptedInputs = new[] { ConsoleKey.I, ConsoleKey.C, ConsoleKey.Q };
                     do {
-                        if (platform == "win") {
+                        if (platform == "win" || platform == "linux" || platform == "mac") {
                             Console.Write("Would you like to [i]nstall the update, [c]ontinue with the current version, or [q]uit? [i/c/q]: ");
                         } else {
                             Console.Write("Update downloaded. Would you like to [c]ontinue with the current version, or [q]uit? [c/q]: ");
@@ -326,6 +326,7 @@ internal class Program
         try {
             // Load System.IO.Compression now
             Assembly.Load("System.IO.Compression");
+            Assembly.Load("System.IO.Pipes");
 
             // Move current process file
             Console.WriteLine($"Renaming {execLocation} to {backupLocation}");
