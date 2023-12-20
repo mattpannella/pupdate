@@ -42,9 +42,12 @@ jobs:
           # Build everything
           dotnet publish pocket_updater.csproj -r ${{ matrix.target }}-x64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly
           if ${{ matrix.arm }}; then
-            dotnet publish pocket_updater.csproj -r ${{ matrix.target }}-arm64 --self-contained true -c Release -o "${release_name}_arm64" --consoleloggerparameters:ErrorsOnly
+            mv ${release_name}/pocket_updater ${release_name}/pocket_updater_x64
+            dotnet publish pocket_updater.csproj -r ${{ matrix.target }}-arm64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly
+            mv ${release_name}/pocket_updater ${release_name}/pocket_updater_arm64
             if [ "${{ matrix.target }}" == "linux" ]; then
-              dotnet publish pocket_updater.csproj -r ${{ matrix.target }}-arm --self-contained true -c Release -o "${release_name}_arm32" --consoleloggerparameters:ErrorsOnly
+              dotnet publish pocket_updater.csproj -r ${{ matrix.target }}-arm --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly
+              mv ${release_name}/pocket_updater ${release_name}/pocket_updater_arm32
             fi
           fi
 
@@ -54,12 +57,13 @@ jobs:
             7z a -tzip "pocket_updater_win.zip" "./${release_name}/pocket_updater.exe"
           elif [ "${{ matrix.target }}" == "osx" ]; then
             cd $release_name
-            lipo -create -output pocket_updater pocket_updater_arm64 pocket_updater
+            lipo -create -output pocket_updater pocket_updater_arm64 pocket_updater_x64
             rm pocket_updater_arm64
-            rm pocket_updater
+            rm pocket_updater_x64
             zip "../pocket_updater_mac.zip" "pocket_updater"; cd ..;
           else
             cd $release_name
+            mv pocket_updater_x64 pocket_updater
             zip "../pocket_updater_linux.zip" "pocket_updater"
             zip "../pocket_updater_linux_arm64.zip" "pocket_updater_arm64"
             zip "../pocket_updater_linux_arm32.zip" "pocket_updater_arm32"
