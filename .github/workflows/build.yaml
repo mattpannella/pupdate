@@ -42,12 +42,9 @@ jobs:
           # Build everything
           dotnet publish pocket_updater.csproj -r ${{ matrix.target }}-x64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly
           if ${{ matrix.arm }}; then
-            mv ${release_name}/pocket_updater ${release_name}/pocket_updater
-            dotnet publish pocket_updater.csproj -r ${{ matrix.target }}-arm64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly
-            mv ${release_name}/pocket_updater ${release_name}/pocket_updater_arm64
+            dotnet publish pocket_updater.csproj -r ${{ matrix.target }}-arm64 --self-contained true -c Release -o "${release_name}_arm64" --consoleloggerparameters:ErrorsOnly
             if [ "${{ matrix.target }}" == "linux" ]; then
-              dotnet publish pocket_updater.csproj -r ${{ matrix.target }}-arm --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly
-              mv ${release_name}/pocket_updater ${release_name}/pocket_updater_arm32
+              dotnet publish pocket_updater.csproj -r ${{ matrix.target }}-arm --self-contained true -c Release -o "${release_name}_arm32" --consoleloggerparameters:ErrorsOnly
             fi
           fi
 
