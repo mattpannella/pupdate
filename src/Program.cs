@@ -309,6 +309,18 @@ internal class Program
         }
     }
 
+    static void DisplayHelp<T>(ParserResult<T> result)
+    {  
+        var helpText = CommandLine.Text.HelpText.AutoBuild(result, h =>
+        {
+            h.AdditionalNewLineAfterOption = false;
+            h.Heading = "Myapp 2.0.0-beta"; //change header
+            h.Copyright = "Copyright (c) 2019 Global.com"; //change copyright text
+            return CommandLine.Text.HelpText.DefaultParsingErrorsHandler(result, h);
+        }, e => e);
+        Console.WriteLine(helpText);
+        }
+
     private static int UpdateSelfAndRun(string directory, string[] updaterArgs)
     {
         string execName = "pocket_updater";
@@ -575,7 +587,7 @@ internal class Program
                 links += "\r\n" + randomItem.sponsor.patreon;
             }
             Console.WriteLine("");
-            Console.WriteLine($"Please consider supporting {randomItem.getConfig().core.metadata.author} for their work on the {randomItem} core:");
+            Console.WriteLine($"Please consider supporting {randomItem.getConfig().metadata.author} for their work on the {randomItem} core:");
             Console.WriteLine(links.Trim());
         }
     }
@@ -599,7 +611,7 @@ internal class Program
                 links += "\r\n" + randomItem.sponsor.patreon;
             }
             output += "\r\n";
-            output += $"Please consider supporting {randomItem.getConfig().core.metadata.author} for their work on the {randomItem} core:";
+            output += $"Please consider supporting {randomItem.getConfig().metadata.author} for their work on the {randomItem} core:";
             output += $"\r\n{links.Trim()}";
         }
 
@@ -646,7 +658,7 @@ internal class Program
         List<string> cores = new List<string>();
 
         foreach(Core c in GlobalHelper.Instance.InstalledCores) {
-            if (c.getConfig().core.framework.sleep_supported) {
+            if (c.getConfig().framework.sleep_supported) {
                 cores.Add(c.identifier);
             }
         }

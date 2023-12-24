@@ -102,12 +102,11 @@ public class Core : Base
 
     public Platform? ReadPlatformFile()
     {
-        var config = this.getConfig();
-        if (config == null)
+        var info = this.getConfig();
+        if (info == null)
         {
             return this.platform;
         }
-        Analogue.Core info = config.core;
         
         string UpdateDirectory = Factory.GetGlobals().UpdateDirectory;
         //cores with multiple platforms won't work...not sure any exist right now?
@@ -121,12 +120,11 @@ public class Core : Base
 
     public bool UpdatePlatform(string title, string category = null)
     {
-        var config = this.getConfig();
-        if (config == null)
+        var info = this.getConfig();
+        if (info == null)
         {
             return false;
         }
-        Analogue.Core info = config.core;
         
         string UpdateDirectory = Factory.GetGlobals().UpdateDirectory;
         //cores with multiple platforms won't work...not sure any exist right now?
@@ -172,7 +170,7 @@ public class Core : Base
         }
         checkUpdateDirectory();
         _writeMessage("Looking for Assets");
-        Analogue.Core info = this.getConfig().core;
+        Analogue.Cores.Core info = this.getConfig();
         string UpdateDirectory = Factory.GetGlobals().UpdateDirectory;
         //cores with multiple platforms won't work...not sure any exist right now?
         string instancesDirectory = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0], this.identifier);
@@ -280,7 +278,7 @@ public class Core : Base
         return results;
     }
 
-    public Analogue.Config? getConfig()
+    public Analogue.Cores.Core? getConfig()
     {
         checkUpdateDirectory();
         string file = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Cores", this.identifier, "core.json");
@@ -293,7 +291,7 @@ public class Core : Base
         {
             AllowTrailingCommas = true
         };
-        Analogue.Config? config = JsonSerializer.Deserialize<Analogue.Config>(json, options);
+        Analogue.Cores.Core? config = JsonSerializer.Deserialize<Dictionary<string, Analogue.Cores.Core>>(json, options)["core"];
 
         return config;
     }
