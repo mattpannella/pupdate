@@ -1,4 +1,4 @@
-namespace Analogue;
+namespace pannella.analoguepocket.Analogue;
 
 public class Framework
 {
