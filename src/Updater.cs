@@ -263,7 +263,7 @@ public class PocketCoreUpdater : Base
 
                 _writeMessage(mostRecentRelease + " is the most recent release, checking local core...");
                 if (core.isInstalled()) {
-                    Analogue.Core localCore = core.getConfig().core;
+                    Analogue.Cores.Core.Core localCore = core.getConfig();
                     string localVersion = localCore.metadata.version;
                     
                     if(localVersion != null) {
@@ -343,7 +343,7 @@ public class PocketCoreUpdater : Base
     private async Task CopyBetaKey(Core core)
     {
         if(core.JTBetaCheck()) {
-            Analogue.Core info = core.getConfig().core;
+            Analogue.Cores.Core.Core info = core.getConfig();
             string path = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Assets", info.metadata.platform_ids[core.betaSlotPlatformIdIndex], "common");
             if(!Directory.Exists(path)) {
                 Directory.CreateDirectory(path);
@@ -412,6 +412,42 @@ public class PocketCoreUpdater : Base
         args.InstalledAssets = installedAssets;
         args.SkippedAssets = skippedAssets;
         args.MissingBetaKeys = missingBetaKeys;
+        OnUpdateProcessComplete(args);
+    }
+
+    public async Task ForceDisplayModes(string? id = null)
+    {
+        if(Factory.GetGlobals().Cores == null) {
+            throw new Exception("Must initialize updater before running update process");
+        }
+        List<Core> cores = await getAllCores();
+        foreach(Core core in Factory.GetGlobals().Cores) {
+            if(id != null && core.identifier != id) {
+                continue;
+            }
+
+            if(Factory.GetGlobals().SettingsManager.GetCoreSettings(core.identifier).skip) {
+                continue;
+            }
+
+            core.downloadAssets = true;
+            try {
+                string name = core.identifier;
+                if(name == null) {
+                    _writeMessage("Core Name is required. Skipping.");
+                    continue;
+                }
+                _writeMessage(core.identifier);
+                await core.AddDisplayModes();
+                Divide();
+            } catch(Exception e) {
+                _writeMessage("Uh oh something went wrong.");
+                _writeMessage(e.Message);
+            }
+        } 
+
+        UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs();
+        args.Message = "All Done";
         OnUpdateProcessComplete(args);
     }
 

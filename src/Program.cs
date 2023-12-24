@@ -287,10 +287,14 @@ internal class Program
                             Pause();
                             break;
                         case 7:
+                            await updater.ForceDisplayModes();
+                            Pause();
+                            break;
+                        case 8:
                             SettingsMenu();
                             SetUpdaterFlags();
                             break;
-                        case 8:
+                        case 9:
                             flag = false;
                             break;
                         case 0:
@@ -1001,6 +1005,7 @@ internal class Program
         "Download Platform Image Packs",
         "Generate Instance JSON Files",
         "Generate Game and Watch ROMS",
+        "Enable All Display Modes",
         "Settings",
         "Exit"
     };

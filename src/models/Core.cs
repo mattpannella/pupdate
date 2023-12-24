@@ -26,6 +26,14 @@ public class Core : Base
     public bool downloadAssets { get; set; } = Factory.GetGlobals().SettingsManager.GetConfig().download_assets;
     public bool buildInstances { get; set; } = Factory.GetGlobals().SettingsManager.GetConfig().build_instance_jsons;
 
+    private string[] allModes = {
+        "0x10", "0x20", "0x30", "0x31", "0x32", "0x40", "0x41", "0x42", "0x51", "0x52", "0xE0"
+    };
+
+    private string[] gbModes = {
+        "0x21", "0x22", "0x23"
+    };
+
 
     public override string ToString()
     {
@@ -170,7 +178,7 @@ public class Core : Base
         }
         checkUpdateDirectory();
         _writeMessage("Looking for Assets");
-        Analogue.Cores.Core info = this.getConfig();
+        Analogue.Cores.Core.Core info = this.getConfig();
         string UpdateDirectory = Factory.GetGlobals().UpdateDirectory;
         //cores with multiple platforms won't work...not sure any exist right now?
         string instancesDirectory = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0], this.identifier);
@@ -278,7 +286,7 @@ public class Core : Base
         return results;
     }
 
-    public Analogue.Cores.Core? getConfig()
+    public Analogue.Cores.Core.Core? getConfig()
     {
         checkUpdateDirectory();
         string file = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Cores", this.identifier, "core.json");
@@ -291,7 +299,7 @@ public class Core : Base
         {
             AllowTrailingCommas = true
         };
-        Analogue.Cores.Core? config = JsonSerializer.Deserialize<Dictionary<string, Analogue.Cores.Core>>(json, options)["core"];
+        Analogue.Cores.Core.Core? config = JsonSerializer.Deserialize<Dictionary<string, Analogue.Cores.Core.Core>>(json, options)["core"];
 
         return config;
     }
@@ -544,6 +552,49 @@ public class Core : Base
                 }
             }
         }
+    }
+
+    public async Task<Analogue.Cores.Video.Video> GetVideoConfig()
+    {
+        checkUpdateDirectory();
+        string file = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Cores", this.identifier, "video.json");
+        if (!File.Exists(file))
+        {
+            return null;
+        }
+        string json = File.ReadAllText(file);
+        var options = new JsonSerializerOptions()
+        {
+            AllowTrailingCommas = true
+        };
+        Analogue.Cores.Video.Video? config = JsonSerializer.Deserialize<Dictionary<string, Analogue.Cores.Video.Video>>(json, options)["video"];
+
+        return config;
+    }
+
+    public async Task AddDisplayModes()
+    {
+        var video = await GetVideoConfig();
+        List<Analogue.Cores.Video.DisplayMode> all = new List<Analogue.Cores.Video.DisplayMode>();
+        foreach(string id in allModes) {
+            all.Add(new Analogue.Cores.Video.DisplayMode{id = id});
+        }
+        if(this.identifier == "Spiritualized.GB" || this.identifier == "Spiritualized.GBC") {
+            foreach(string id in gbModes) {
+                all.Add(new Analogue.Cores.Video.DisplayMode{id = id});
+            }
+        }
+        video.display_modes = all;
+
+        Dictionary<string, Analogue.Cores.Video.Video> output = new Dictionary<string, Analogue.Cores.Video.Video>();
+        output.Add("video", video);
+        var options = new JsonSerializerOptions()
+        {
+            WriteIndented = true
+        };
+        string json = JsonSerializer.Serialize(output, options);
+    
+        File.WriteAllText(Path.Combine(Factory.GetGlobals().UpdateDirectory, "Cores", this.identifier, "video.json"), json);
     }
 }
 
