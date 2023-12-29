@@ -437,7 +437,7 @@ public class PocketCoreUpdater : Base
                     _writeMessage("Core Name is required. Skipping.");
                     continue;
                 }
-                _writeMessage(core.identifier);
+                _writeMessage("Updating " + core.identifier);
                 await core.AddDisplayModes();
                 Divide();
             } catch(Exception e) {
@@ -445,10 +445,7 @@ public class PocketCoreUpdater : Base
                 _writeMessage(e.Message);
             }
         } 
-
-        UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs();
-        args.Message = "All Done";
-        OnUpdateProcessComplete(args);
+        _writeMessage("Finished.");
     }
 
     private void Divide()
