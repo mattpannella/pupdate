@@ -12,8 +12,7 @@ internal class Program
     private static string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
     private const string USER = "mattpannella";
     private const string REPOSITORY = "pocket-updater-utility";
-    private const string RELEASE_URL = "https://github.com/mattpannella/pocket-updater-utility/releases/download/{0}/pocket_updater_{1}.zip";
-    private const string NEW_RELEASE_URL = "https://github.com/mattpannella/pocket-updater-utility/releases/download/{0}/pupdate_{1}.zip";
+    private const string RELEASE_URL = "https://github.com/mattpannella/pocket-updater-utility/releases/download/{0}/pupdate_{1}.zip";
     private static SettingsManager settings;
 
     private static PocketCoreUpdater updater;
@@ -136,7 +135,7 @@ internal class Program
                 );
 
             if (!cliMode) {
-                Console.WriteLine("Pocket Updater Utility v" + version);
+                Console.WriteLine("Pupdate v" + version);
                 Console.WriteLine("Checking for updates...");
 
                 if(await CheckVersion(path) && !selfUpdate) {
@@ -329,23 +328,14 @@ internal class Program
 
     private static int UpdateSelfAndRun(string directory, string[] updaterArgs)
     {
-        string execName = "pocket_updater";
-        string newExecName = "pocket_updater";
-        if(migrate) {
-            newExecName = "pupdate";
-        }
+        string execName = "pupdate";
         if(GetPlatform() == "win") {
             execName += ".exe";
-            newExecName += ".exe";
         }
         string execLocation = Path.Combine(directory, execName);
-        string newExecLocation = Path.Combine(directory, newExecName);
         string backupName = $"{execName}.backup";
         string backupLocation = Path.Combine(directory, backupName);
-        string updateName = "pocket_updater.zip";
-        if(migrate) {
-            updateName = "pupdate.zip";
-        }
+        string updateName = "pupdate.zip";
         string updateLocation = Path.Combine(directory, updateName);
 
         int exitcode = int.MinValue;
@@ -366,8 +356,8 @@ internal class Program
             ZipFile.ExtractToDirectory(updateLocation, directory, true);
 
             // Execute
-            Console.WriteLine($"Executing {newExecLocation}");
-            ProcessStartInfo pInfo = new ProcessStartInfo(newExecLocation) {
+            Console.WriteLine($"Executing {execLocation}");
+            ProcessStartInfo pInfo = new ProcessStartInfo(execLocation) {
                 Arguments = string.Join(' ', updaterArgs),
                 UseShellExecute = false
             };
@@ -694,21 +684,14 @@ internal class Program
             List<Github.Release> releases = await GithubApi.GetReleases(USER, REPOSITORY);
 
             string tag_name = releases[0].tag_name;
-            string releaseUrl = RELEASE_URL;
-            string fileName = "pocket_updater";
-            if(tag_name == "3.0.0") {
-                releaseUrl = NEW_RELEASE_URL;
-                fileName = "pupdate";
-                migrate = true;
-            }
             string? v = SemverUtil.FindSemver(tag_name);
             if(v != null) {
                 bool check = SemverUtil.SemverCompare(v, version);
                 if(check) {
                     Console.WriteLine("A new version is available. Downloading now...");
                     string platform = GetPlatform();
-                    string url = String.Format(releaseUrl, tag_name, platform);
-                    string saveLocation = Path.Combine(path, $"{fileName}.zip");
+                    string url = String.Format(RELEASE_URL, tag_name, platform);
+                    string saveLocation = Path.Combine(path, "pupdate.zip");
                     await Factory.GetHttpHelper().DownloadFileAsync(url, saveLocation);
                     Console.WriteLine("Download complete.");
                     Console.WriteLine(saveLocation);
@@ -724,7 +707,6 @@ internal class Program
             return false;
         }
     }
-
 
     private static string GetPlatform()
     {

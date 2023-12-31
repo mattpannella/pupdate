@@ -40,33 +40,33 @@ jobs:
           release_name="App-$tag-${{ matrix.target }}"
 
           # Build everything
-          dotnet publish pocket_updater.csproj -r ${{ matrix.target }}-x64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly
+          dotnet publish pupdate.csproj -r ${{ matrix.target }}-x64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly
           if ${{ matrix.arm }}; then
-            mv ${release_name}/pocket_updater ${release_name}/pocket_updater_x64
-            dotnet publish pocket_updater.csproj -r ${{ matrix.target }}-arm64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly
-            mv ${release_name}/pocket_updater ${release_name}/pocket_updater_arm64
+            mv ${release_name}/pupdate ${release_name}/pupdate_x64
+            dotnet publish pupdate.csproj -r ${{ matrix.target }}-arm64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly
+            mv ${release_name}/pupdate ${release_name}/pupdate_arm64
             if [ "${{ matrix.target }}" == "linux" ]; then
-              dotnet publish pocket_updater.csproj -r ${{ matrix.target }}-arm --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly
-              mv ${release_name}/pocket_updater ${release_name}/pocket_updater_arm32
+              dotnet publish pupdate.csproj -r ${{ matrix.target }}-arm --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly
+              mv ${release_name}/pupdate ${release_name}/pupdate_arm32
             fi
           fi
 
           # Pack files
           if [ "${{ matrix.target }}" == "win" ]; then
             # Pack to zip for Windows
-            7z a -tzip "pocket_updater_win.zip" "./${release_name}/pocket_updater.exe"
+            7z a -tzip "pupdate_win.zip" "./${release_name}/pupdate.exe"
           elif [ "${{ matrix.target }}" == "osx" ]; then
             cd $release_name
-            lipo -create -output pocket_updater pocket_updater_arm64 pocket_updater_x64
-            rm pocket_updater_arm64
-            rm pocket_updater_x64
-            zip "../pocket_updater_mac.zip" "pocket_updater"; cd ..;
+            lipo -create -output pupdate pupdate_arm64 pupdate_x64
+            rm pupdate_arm64
+            rm pupdate_x64
+            zip "../pupdate_mac.zip" "pupdate"; cd ..;
           else
             cd $release_name
-            mv pocket_updater_x64 pocket_updater
-            zip "../pocket_updater_linux.zip" "pocket_updater"
-            zip "../pocket_updater_linux_arm64.zip" "pocket_updater_arm64"
-            zip "../pocket_updater_linux_arm32.zip" "pocket_updater_arm32"
+            mv pupdate_x64 pupdate
+            zip "../pupdate_linux.zip" "pupdate"
+            zip "../pupdate_linux_arm64.zip" "pupdate_arm64"
+            zip "../pupdate_linux_arm32.zip" "pupdate_arm32"
             cd ..
           fi
 
@@ -76,6 +76,6 @@ jobs:
       - name: Publish
         uses: softprops/action-gh-release@v1
         with:
-          files: "pocket_updater*.zip"
+          files: "pupdate*.zip"
         env:
           GITHUB_TOKEN: ${{ secrets.API_TOKEN }}
