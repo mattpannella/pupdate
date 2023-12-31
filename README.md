@@ -22,7 +22,7 @@ At the main menu run `Settings` to have it walk through the available settings f
 ## Important Menu Items ##
 
 ### Update All
-By default, runs through a series of steps. It can basically be used as the "do everything I want" option. Everything marked with a * can be turned on/off via settings.
+Install/Update all of your cores, plus a bunch of other stuff. It can basically be used as the "do everything I want" option. Everything marked with a * can be turned on/off via settings.
 1. Checks for new firmware updates *
 2. Installs/updates every core you have selected
 3. Checks for missing required assets for each core you have selected *
