@@ -21,6 +21,26 @@ download the [latest release](https://github.com/mattpannella/pocket-updater-uti
 
 At the main menu run `Settings` to have it walk through the available settings for you.
 
+## Important Menu Items ##
+
+### Update All
+By default, runs through a series of steps. It can basically be used as the "do everything I want" option. Everything marked with a * can be turned on/off via settings.
+1. Checks for new firmware updates *
+2. Installs/updates every core you have selected
+3. Checks for missing required assets for each core you have selected *
+4. Deletes cores that you do not have selected *
+5. Runs the instance JSON generator for each core you have selected (currently, only PC Engine CD) *
+6. Rename every Jotego core you have selected *
+
+### Update Firmware
+Self explanatory. Just checks for firmware updates and exits.
+
+### Download Required Assets
+Checks for missing required assets for each core you have selected (mainly arcade ROM files and BIOSes)
+
+## RTFM ##
+
+
 [Settings](#settings) |
 [Additional Settings](#additional-settings) |
 [CLI Commands and Parameters](#cli-commands-and-parameters) |
@@ -120,17 +140,22 @@ examples:
 
 `/path/to/pocket_updater images -i pocket-platform-images -o dyreschlock -v home`
 
-  
+### Core Selector
+
+This will prompt you to ask if you want new cores installed by default, with 3 options:
+ - Yes
+   - Selecting this automatically chooses all existing cores, and will continue to automatically install new cores as they are released.
+ - No
+   - Selecting this means as new cores are released, they will not be installed automatically, nor will you be asked about them. Then you will be presented with a list of all currently available cores, to select from for yourself.
+ - Ask
+   - Selecting this means as new cores are released, you will be notified each time you run the app and have the option to select them for installation.  Then you will be presented with a list of all currently available cores, to select from for yourself.
+
 
 ### Download Image Packs
 
 This will present you with a list of available image packs and automatically download and extract it to the Platforms/_images directory for you
 
   
-
-### Core Selector
-
-On your first run it will prompt you to select the cores you want tracked. After that initial run, you can run it again any time via the main menu.
   
 
 ### Generating Instance JSON Files
