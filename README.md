@@ -1,25 +1,17 @@
-## Oh Hi ##
 
 [![Current Release](https://img.shields.io/github/v/release/mattpannella/pocket-updater-utility?label=Current%20Release)](https://github.com/mattpannella/pocket-updater-utility/releases/latest) ![Downloads](https://img.shields.io/github/downloads/mattpannella/pocket-updater-utility/latest/total?label=Downloads) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?business=YEERX89E75HQ8&no_recurring=1&currency_code=USD)
 
   
 
-A free utility for updating the openFPGA cores, and firmware, on your Analogue Pocket.
-
-The update process will check for pocket firmware updates, openfpga core updates, and install any required BIOS files and arcade ROMS. You're on your own when it comes to console ROMs.
-
-  
-  
+A free utility for updating the openFPGA cores, firmware, and a bunch of other stuff on your Analogue Pocket.
 
 A complete list of available cores can also be found here: [https://openfpga-cores-inventory.github.io/analogue-pocket/](https://openfpga-cores-inventory.github.io/analogue-pocket/)
-
-  
 
 I can't (and don't want to) support old versions, so please make sure you download the latest release before submitting any issues.
 
   
 
-## Instructions ##
+## Easy Mode ##
 
 If you just want to use this utility, do not clone the source repository. Just
 
@@ -29,19 +21,51 @@ download the [latest release](https://github.com/mattpannella/pocket-updater-uti
 
 At the main menu run `Settings` to have it walk through the available settings for you.
 
-[Advanced](#advanced-usage) |
 [Settings](#settings) |
+[Additional Settings](#additional-settings) |
+[CLI Commands and Parameters](#cli-commands-and-parameters) |
 [Image Packs](#download-image-packs) |
 [Core Selector](#core-selector) |
 [PC Engine CD](#generating-instance-json-files) |
 [Jotego Cores](#jotego-beta-cores) |
 [Game n Watch](#how-to-build-game-and-watch-roms-that-are-compatible-with-the-pocket)
 
+
+### Settings
+
+ The following settings are all available via the `Settings` menu item.
+
   
 
-### Advanced Usage
+|                                   |                                                                                                                                                                                                     |
+|-----------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Download Firmware Updates         | Check for firmware updates when running "Update All"                                                                                                                                                |
+| Download Missing Assets           | Check for missing assets (ROMs, BIOS files, etc) when running "Update All"                                                                                                                          |
+| Build game JSON Files             | Run the Instance JSON builder during "Update All"                                                                                                                                                   |
+| Delete untracked cores            | Any core that is available, but you have not chosen in the "Core Selector" will be uninstalled, if found on your SD card when running "Update All"                                                  |
+| Automatically rename Jotego cores | Jotego's cores will be renamed to the correct titles of the platforms they are emulating, when running "Update All". example: jtcontra is Contra                                                    |
+| Use CRC check                     | Use CRC file hashes to verify Asset files, and re-download if needed. When running "Update All" or "Download Required Assets"                                                                       |
+| Preserve Platforms folder         | Don't overwrite changes made to files in the Platforms folder when running "Update All"                                                                                                             |
+| Skip alternative ROMs             | Ignore files if they are in a folder named "_altermatives" when checking for Assets                                                                                                                 |
+| Use custom archive                | Allows you to use a custom site for Asset file checking (there is a pre-configured site available). The actual URL of the custom site can be set manually by editing the settings file in an editor |
+|                                   |                                                                                                                                                                                                     |
 
-CLI Parameters
+### Additional Settings
+
+ The following settings can be set by editing `pocket_updater_settings.json` in a text editor.
+
+ |                           |                                                                                                                                                                                                                                                                                                                                                                                                                 |
+|---------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| config.archive_name       | The account on archive.org that the app will use to check for Assets                                                                                                                                                                                                                                                                                                                                            |
+| config.github_token       | The app will use this when making API calls to GitHub                                                                                                                                                                                                                                                                                                                                                           |
+| config.download_new_cores | This will be set automatically by the `Select Cores` menu item. It can be set to "yes", "no", or "ask"                                                                                                                                                                                                                                                                                                          |
+| config.custom_archive     | You can set a custom URL here, if you don't want to use the default. `index` is a relative path to the index of your custom site's files. This is not required, but it's needed for CRC checking. If you have CRC checking enabled, the setting will be ignored unless this provides the necessary format. It must match the output of archive.org's json endpoint. https://archive.org/developers/md-read.html |
+| coreSettings              | This allows you to set a subset of settings on a per core basis. It contains a list of every core, with 3 options. `skip`, `download_assets`, and `platform_rename`. You can use these to override your global defaults                                                                                                                                                                                         |
+
+  
+
+### CLI Commands and Parameters
+
 
 ```
 
@@ -96,27 +120,6 @@ examples:
 
 `/path/to/pocket_updater images -i pocket-platform-images -o dyreschlock -v home`
 
-  
-### Settings
-
- All settings can be modified in your `pocket_updater_settings.json` file
-
-  
-
-|                                          |                                  |                                                                                                                                                                                                      |
-|------------------------------------------|----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|                                                                                                                      
-| Disable Firmware Downloading             | config.download_firmware         | Set to `false` if you don't want Update All to check for firmware updates                                                                                                                              |
-| Disable Asset Downloading                | config.download_assets           | Set to `false` if you'd like to supply your own BIOS and arcade rom files, and don't want Update All to handle this.                                                                                   |
-| Preserve Platforms Folder Customizations | config.preserve_platforms_folder | If you have any customizations to the Platforms folder, you can use this option to preserve them during the update process. Set to `true` in your settings file, or use `-f` as a command line parameter |
-| Github Personal Access Token             | config.github_token              | If you're running up against the rate limit on the github api, you can provide your personal access token to the updater via the settings.                                                           |
-| Disable Instance JSON Builder            | config.build_instance_jsons      | Set this to `false` if you don't want Update All to build instance JSON files.
-| Delete Untracked Cores           | config.delete_skipped_cores      | `true` by default. Set to `false` if you don't want the updater to remove cores you don't select to track  
-| CRC Check Assets          | config.crc_check      | `true` by default. Set to `false` if you don't want the updater check the CRC hash on your asset files
-| Skip Alternative Assets         | config.skip_alternative_assets      | `true` by default. If a core developer puts any of their rom asset files in a directory named `_alternatives` they won't be downloaded automatically (unless you set this to `false`)
-| Use Custom Archive         | config.use_custom_archive      | `false` by default. Instead of checking the archive site defined in your settings to look for required assets, use a custom site that you can define. (by default this will be a site hosted by RetroDriven)
-| Custom Archive URL         | config.custom_archive.url      | The full url to your custom site
-| Custom Archive Index         | config.custom_archive.index      | Relative path to the index of your custom site's files. This is not required, but it's needed for CRC checking. If you have CRC checking enabled, the setting will be ignored unless this provides the necessary format. It must match the output of archive.org's json endpoint. https://archive.org/developers/md-read.html
-| Per Core Settings                | coreSettings.{corename}.download_assets and coreSettings.{corename}.platform_rename                   | Set to `false` for any core you don't want assets downloaded for, or automatic platform renaming (currently this only applies to jotego cores)
   
 
 ### Download Image Packs
