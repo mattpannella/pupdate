@@ -64,7 +64,7 @@ Checks for missing required assets for each core you have selected (mainly arcad
 | Automatically rename Jotego cores | Jotego's cores will be renamed to the correct titles of the platforms they are emulating, when running "Update All". example: jtcontra is Contra                                                    |
 | Use CRC check                     | Use CRC file hashes to verify Asset files, and re-download if needed. When running "Update All" or "Download Required Assets"                                                                       |
 | Preserve Platforms folder         | Don't overwrite changes made to files in the Platforms folder when running "Update All"                                                                                                             |
-| Skip alternative ROMs             | Ignore files if they are in a folder named "_altermatives" when checking for Assets                                                                                                                 |
+| Skip alternative ROMs             | Ignore files if they are in a folder named "_altermatives" when checking for Assets (Note: this is on by default)                                                                                                                 |
 | Use custom archive                | Allows you to use a custom site for Asset file checking (there is a pre-configured site available). The actual URL of the custom site can be set manually by editing the settings file in an editor |
 |                                   |                                                                                                                                                                                                     |
 
@@ -215,12 +215,15 @@ Now just run the menu option in the updater and it will build your games
 
 ## Troubleshooting
 
-Slow asset downloads? Try toggling `use_custom_archive` to true, in your settings.
+ - Slow asset downloads? Try toggling `use_custom_archive` to true, in your settings.
 
   
 
-If you run the update process and get a message like `Error in framework RS: bridge not responding` when running a core, try to run the updater in a local folder on your pc, and then copy the files over to the sd card afterwards. I'm not entirely sure what the issue is, but I've seen it reported a bunch of times now and running the updater locally seems to help.
+ - If you run the update process and get a message like `Error in framework RS: bridge not responding` when running a core, try to run the updater in a local folder on your pc, and then copy the files over to the sd card afterwards. I'm not entirely sure what the issue is, but I've seen it reported a bunch of times now and running the updater locally seems to help.
 
+ - I keep getting a `Missing ROM ID [1]` message when trying to launch arcade games in the _alternatives folder.
+
+    Check your settings and make sure you have `Skip Alternative ROMS` turned off.
   
 
 ## Submitting new cores ##
