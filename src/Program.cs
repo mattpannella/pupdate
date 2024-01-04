@@ -898,6 +898,7 @@ internal class Program
 
     private static void PauseExit(int exitcode = 0)
     {
+        Console.WriteLine("Press any key to exit.");
         Console.ReadLine(); //wait for input so the console doesn't auto close in windows
         Environment.Exit(exitcode);
     }
@@ -905,6 +906,7 @@ internal class Program
     private static void Pause()
     {
         if(cliMode) return;
+        Console.WriteLine("Press any key to continue.");
         Console.ReadLine();
     }
 
