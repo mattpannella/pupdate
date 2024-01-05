@@ -574,12 +574,13 @@ public class Core : Base
 
     public async Task AddDisplayModes()
     {
+        var info = this.getConfig();
         var video = await GetVideoConfig();
         List<Analogue.Cores.Video.DisplayMode> all = new List<Analogue.Cores.Video.DisplayMode>();
         foreach(string id in allModes) {
             all.Add(new Analogue.Cores.Video.DisplayMode{id = id});
         }
-        if(this.identifier == "Spiritualized.GB" || this.identifier == "Spiritualized.GBC") {
+        if(info.metadata.platform_ids.Contains("gb")) {
             foreach(string id in gbModes) {
                 all.Add(new Analogue.Cores.Video.DisplayMode{id = id});
             }
