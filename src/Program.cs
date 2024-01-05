@@ -353,7 +353,9 @@ internal class Program
         try {
             // Load System.IO.Compression now
             Assembly.Load("System.IO.Compression");
-            Assembly.Load("System.IO.Pipes");
+            if(GetPlatform() != "win") {
+                Assembly.Load("System.IO.Pipes");
+            }
 
             // Move current process file
             Console.WriteLine($"Renaming {execLocation} to {backupLocation}");
