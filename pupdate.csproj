@@ -10,7 +10,7 @@
     <Description>Keep your Analogue Pocket up to date</Description>
     <Copyright>2023 Matt Pannella</Copyright>
     <Authors>Matt Pannella</Authors>
-    <Product>Analogue Pocket Updater Utility</Product>
+    <Product>Pupdate</Product>
     <RepositoryUrl>https://github.com/mattpannella/pocket-updater-utility</RepositoryUrl>
   </PropertyGroup>
   <ItemGroup>

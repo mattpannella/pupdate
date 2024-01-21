@@ -89,6 +89,7 @@ Checks for missing required assets for each core you have selected (mainly arcad
 
   menu                 (Default Verb) Interactive Main Menu
     -p, --path    	     Absolute path to install location
+    -s, --skip-update        Go straight to the menu, without looking for an update
 
   fund                 List sponsor links. Lists all if no core is provided
     -c, --core               The core to check funding links for
@@ -124,19 +125,19 @@ examples:
 
   
 
-`/path/to/pocket_updater -p /path/to/sdcard/`
+`/path/to/pupdate -p /path/to/sdcard/`
 
   
 
-`/path/to/pocket_updater update -c boogermann.bankpanic`
+`/path/to/pupdate update -c boogermann.bankpanic`
 
   
 
-`/path/to/pocket_updater assets -c jotego.jtcontra`
+`/path/to/pupdate assets -c jotego.jtcontra`
 
   
 
-`/path/to/pocket_updater images -i pocket-platform-images -o dyreschlock -v home`
+`/path/to/pupdate images -i pocket-platform-images -o dyreschlock -v home`
 
 ### Core Selector
 

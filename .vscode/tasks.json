@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/pocket_updater.csproj",
+                "${workspaceFolder}/pupdate.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/pocket_updater.csproj",
+                "${workspaceFolder}/pupdate.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -33,7 +33,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/pocket_updater.csproj"
+                "${workspaceFolder}/pupdate.csproj"
             ],
             "problemMatcher": "$msCompile"
         }
