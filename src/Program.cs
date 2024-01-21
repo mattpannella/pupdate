@@ -120,6 +120,9 @@ internal class Program
                     if(o.InstallPath != null && o.InstallPath != "") {
                         path = o.InstallPath;
                     }
+                    if(o.SkipUpdate) {
+                        cliMode = true;
+                    }
                 }
                 )
                 .WithNotParsed(o =>
@@ -312,18 +315,6 @@ internal class Program
             Pause();
         }
     }
-
-    static void DisplayHelp<T>(ParserResult<T> result)
-    {  
-        var helpText = CommandLine.Text.HelpText.AutoBuild(result, h =>
-        {
-            h.AdditionalNewLineAfterOption = false;
-            h.Heading = "Myapp 2.0.0-beta"; //change header
-            h.Copyright = "Copyright (c) 2019 Global.com"; //change copyright text
-            return CommandLine.Text.HelpText.DefaultParsingErrorsHandler(result, h);
-        }, e => e);
-        Console.WriteLine(helpText);
-        }
 
     private static int UpdateSelfAndRun(string directory, string[] updaterArgs)
     {
@@ -998,6 +989,9 @@ public class MenuOptions
 {
     [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
     public string? InstallPath { get; set; }
+    
+    [Option('s', "skip-update", HelpText = "Skip the self update check", Required = false)]
+    public bool SkipUpdate { get; set; }
 }
 
 [Verb("update",  HelpText = "Run update all. (You can configure via the settings menu)")]
