@@ -89,7 +89,7 @@ Checks for missing required assets for each core you have selected (mainly arcad
 
   menu                 (Default Verb) Interactive Main Menu
     -p, --path    	     Absolute path to install location
-    -s, --skip-update    GO straight to the menu, without looking for an update
+    -s, --skip-update        Go straight to the menu, without looking for an update
 
   fund                 List sponsor links. Lists all if no core is provided
     -c, --core               The core to check funding links for
