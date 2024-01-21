@@ -18,7 +18,6 @@ internal class Program
     private static PocketCoreUpdater updater;
 
     private static bool cliMode = false;
-    private static bool migrate = false;
     private static async Task Main(string[] args)
     {
         try {
