@@ -18,7 +18,7 @@ jobs:
             -d '{
                 "username": "mattpannella",
                 "avatar_url": "https://avatars.githubusercontent.com/u/4806679",
-                "content": "Pocket Updater Utility Release",
+                "content": "Pupdate Release",
                 "embeds": [{
                     "color": 4819409,
                     "title": "${{ github.event.release.name }}",
