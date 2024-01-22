@@ -7,7 +7,7 @@ description: A thing for updating your Analogue Pocket and some other stuff
 show_downloads: true
 
 domain: https://mattpannella.github.io
-baseurl: "/pocket-updater-utility"
+baseurl: "/pupdate"
 url: https://mattpannella.github.io
 
 remote_theme: pages-themes/cayman@v0.2.0
