@@ -98,6 +98,11 @@ Checks for missing required assets for each core you have selected (mainly arcad
     -p, --path               Absolute path to install location
     -c, --core               The core you want to update. Runs for all otherwise
     -f, --platformsfolder    Preserve the Platforms folder, so customizations aren't overwritten by updates.
+  
+  uninstall            Delete a core
+    -p, --path               Absolute path to install location
+    -c, --core               The core you want to uninstall. Required
+    -a, --assets             Delete the core specific Assets folder. ex: Assets/{platform}/{corename}
 
   assets               Run the asset downloader
     -p, --path               Absolute path to install location

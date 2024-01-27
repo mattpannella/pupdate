@@ -228,7 +228,7 @@ public class PocketCoreUpdater : Base
             core.buildInstances = (Factory.GetGlobals().SettingsManager.GetConfig().build_instance_jsons && (id==null));
             try {
                 if(Factory.GetGlobals().SettingsManager.GetCoreSettings(core.identifier).skip) {
-                    _DeleteCore(core);
+                    await DeleteCore(core);
                     continue;
                 }
 
@@ -545,13 +545,13 @@ public class PocketCoreUpdater : Base
         _deleteSkippedCores = value;
     }
 
-    private void _DeleteCore(Core core)
+    public async Task DeleteCore(Core core, bool force = false, bool nuke = false)
     {
-        if(!_deleteSkippedCores) {
+        if(!_deleteSkippedCores || !force) {
             return;
         }
 
-        core.Uninstall();
+        core.Uninstall(nuke);
     }
 
     private void updater_StatusUpdated(object sender, StatusUpdatedEventArgs e)

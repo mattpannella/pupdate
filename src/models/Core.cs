@@ -95,17 +95,30 @@ public class Core : Base
         return true;
     }
 
-    public void Uninstall()
+    public void Uninstall(bool nuke = false)
     {
-        List<string> folders = new List<string>{"Cores", "Presets"};
+        _writeMessage("Uninstalling " + this.identifier);
+        List<string> folders = new List<string>{"Cores", "Presets", "Settings"};
         foreach(string folder in folders) {
             string path = Path.Combine(Factory.GetGlobals().UpdateDirectory, folder, this.identifier);
             if(Directory.Exists(path)) {
-                _writeMessage("Uninstalling " + path);
+                _writeMessage("Deleting " + path);
                 Directory.Delete(path, true);
-                Divide();
             }
         }
+        if(nuke) {
+            string path = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Assets", this.platform_id, this.identifier);
+            if (Directory.Exists(path)) {
+                _writeMessage("Deleting " + path);
+                Directory.Delete(path, true);
+            }
+        }
+
+        Factory.GetGlobals().SettingsManager.DisableCore(this.identifier);
+        Factory.GetGlobals().SettingsManager.SaveSettings();
+
+        _writeMessage("Finished");
+        Divide();
     }
 
     public Platform? ReadPlatformFile()
