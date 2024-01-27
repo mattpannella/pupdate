@@ -34,6 +34,7 @@ internal class Program
             bool downloadFirmware = false;
             bool selfUpdate = false;
             bool nuke = false;
+            bool cleanInstall = false;
 
             ConsoleKey response;
 
@@ -63,6 +64,9 @@ internal class Program
                     }
                     if(o.PreservePlatformsFolder) {
                         preservePlatformsFolder = true;
+                    }
+                    if(o.CleanInstall) {
+                        cleanInstall = true;
                     }
                     if(o.CoreName != null && o.CoreName != "") {
                         coreName = o.CoreName;
@@ -252,7 +256,7 @@ internal class Program
             }
             if(forceUpdate) {
                 Console.WriteLine("Starting update process...");
-                await updater.RunUpdates(coreName);
+                await updater.RunUpdates(coreName, cleanInstall);
                 Pause();
             } else if(downloadFirmware) {
                 await updater.UpdateFirmware();
@@ -1031,6 +1035,10 @@ public class UpdateOptions
 
     [Option('f', "platformsfolder", Required = false, HelpText = "Preserve the Platforms folder, so customizations aren't overwritten by updates.")]
     public bool PreservePlatformsFolder { get; set; }
+
+    [Option('r', "clean", Required = false, HelpText = "Clean install. Remove all existing core files, before updating")]
+    public bool CleanInstall { get; set; }
+
 }
 
 [Verb("uninstall",  HelpText = "Delete a core")]
