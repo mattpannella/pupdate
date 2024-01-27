@@ -127,6 +127,8 @@ Checks for missing required assets for each core you have selected (mainly arcad
     -p, --path               Absolute path to install location
     -l, --location           Absolute path to backup location. Required
     -s, --save               Save settings to the config file for use during 'Update All'
+    
+  update-self          Check for updates to pupdate
 
   help                 Display more information on a specific command.
 
