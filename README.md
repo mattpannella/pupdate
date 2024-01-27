@@ -98,6 +98,7 @@ Checks for missing required assets for each core you have selected (mainly arcad
     -p, --path               Absolute path to install location
     -c, --core               The core you want to update. Runs for all otherwise
     -f, --platformsfolder    Preserve the Platforms folder, so customizations aren't overwritten by updates.
+    -r, --clean              Clean install. Remove all existing core files, and force a fresh re-install
   
   uninstall            Delete a core
     -p, --path               Absolute path to install location
