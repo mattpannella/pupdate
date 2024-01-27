@@ -33,13 +33,15 @@ internal class Program
             string? imagePackVariant = null;
             bool downloadFirmware = false;
             bool selfUpdate = false;
+            bool nuke = false;
+            bool cleanInstall = false;
 
             ConsoleKey response;
 
             string verb = "menu";
             Dictionary<string, object?> data = new Dictionary<string, object?>();
             Parser.Default.ParseArguments<MenuOptions, FundOptions, UpdateOptions,
-                AssetsOptions, FirmwareOptions, ImagesOptions, InstancegeneratorOptions, UpdateSelfOptions>(args)
+                AssetsOptions, FirmwareOptions, ImagesOptions, InstancegeneratorOptions, UpdateSelfOptions, UninstallOptions>(args)
                 .WithParsed<UpdateSelfOptions>(o => {
                     selfUpdate = true;
                 })
@@ -63,8 +65,24 @@ internal class Program
                     if(o.PreservePlatformsFolder) {
                         preservePlatformsFolder = true;
                     }
+                    if(o.CleanInstall) {
+                        cleanInstall = true;
+                    }
                     if(o.CoreName != null && o.CoreName != "") {
                         coreName = o.CoreName;
+                    }
+                }
+                )
+                .WithParsed<UninstallOptions>(async o =>
+                {
+                    verb = "uninstall";
+                    cliMode = true;
+                    coreName = o.CoreName;
+                    if(o.InstallPath != null && o.InstallPath != "") {
+                        path = o.InstallPath;
+                    }
+                    if(o.DeleteAssets) {
+                        nuke = true;
                     }
                 }
                 )
@@ -238,7 +256,7 @@ internal class Program
             }
             if(forceUpdate) {
                 Console.WriteLine("Starting update process...");
-                await updater.RunUpdates(coreName);
+                await updater.RunUpdates(coreName, cleanInstall);
                 Pause();
             } else if(downloadFirmware) {
                 await updater.UpdateFirmware();
@@ -257,6 +275,12 @@ internal class Program
                     variant = imagePackVariant
                 };
                 await InstallImagePack(path, pack);
+            } else if (verb == "uninstall") {
+                if (GlobalHelper.Instance.GetCore(coreName) == null) {
+                    Console.WriteLine("Unknown core");
+                } else {
+                    await updater.DeleteCore(GlobalHelper.Instance.GetCore(coreName), true, nuke);
+                }
             } else { 
                 bool flag = true;
                 while(flag) {
@@ -1011,6 +1035,23 @@ public class UpdateOptions
 
     [Option('f', "platformsfolder", Required = false, HelpText = "Preserve the Platforms folder, so customizations aren't overwritten by updates.")]
     public bool PreservePlatformsFolder { get; set; }
+
+    [Option('r', "clean", Required = false, HelpText = "Clean install. Remove all existing core files, before updating")]
+    public bool CleanInstall { get; set; }
+
+}
+
+[Verb("uninstall",  HelpText = "Delete a core")]
+public class UninstallOptions
+{
+    [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
+    public string? InstallPath { get; set; }
+
+    [Option ('c', "core", Required = true, HelpText = "The core you want to delete.")]
+    public string CoreName { get; set; }
+
+    [Option('a', "assets", Required = false, HelpText = "Delete the core specific Assets folder")]
+    public bool DeleteAssets { get; set; }
 }
 
 [Verb("assets",  HelpText = "Run the asset downloader")]

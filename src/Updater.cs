@@ -199,7 +199,7 @@ public class PocketCoreUpdater : Base
     /// <summary>
     /// Run the full openFPGA core download and update process
     /// </summary>
-    public async Task RunUpdates(string? id = null)
+    public async Task RunUpdates(string? id = null, bool clean = false)
     {
         List<Dictionary<string, string>> installed = new List<Dictionary<string, string>>();
         List<string> installedAssets = new List<string>();
@@ -228,7 +228,7 @@ public class PocketCoreUpdater : Base
             core.buildInstances = (Factory.GetGlobals().SettingsManager.GetConfig().build_instance_jsons && (id==null));
             try {
                 if(Factory.GetGlobals().SettingsManager.GetCoreSettings(core.identifier).skip) {
-                    _DeleteCore(core);
+                    await DeleteCore(core);
                     continue;
                 }
 
@@ -270,7 +270,7 @@ public class PocketCoreUpdater : Base
                         _writeMessage("local core found: " + localVersion);
                     }
 
-                    if (mostRecentRelease != localVersion){
+                    if (mostRecentRelease != localVersion || clean){
                         _writeMessage("Updating core");
                     } else {
                         await CopyBetaKey(core);
@@ -289,7 +289,7 @@ public class PocketCoreUpdater : Base
                     _writeMessage("Downloading core");
                 }
                 
-                if(await core.Install(_githubApiKey)) {
+                if(await core.Install(clean)) {
                     Dictionary<string, string> summary = new Dictionary<string, string>();
                     summary.Add("version", mostRecentRelease);
                     summary.Add("core", core.identifier);
@@ -545,13 +545,13 @@ public class PocketCoreUpdater : Base
         _deleteSkippedCores = value;
     }
 
-    private void _DeleteCore(Core core)
+    public async Task DeleteCore(Core core, bool force = false, bool nuke = false)
     {
-        if(!_deleteSkippedCores) {
+        if(!_deleteSkippedCores || !force) {
             return;
         }
 
-        core.Uninstall();
+        core.Uninstall(nuke);
     }
 
     private void updater_StatusUpdated(object sender, StatusUpdatedEventArgs e)

@@ -40,11 +40,14 @@ public class Core : Base
         return platform.name;
     }
 
-    public async Task<bool> Install(string githubApiKey = "")
+    public async Task<bool> Install(bool clean = false)
     {
         if(this.repository == null) {
             _writeMessage("Core installed manually. Skipping.");
             return false;
+        }
+        if (clean && this.isInstalled()) {
+            Delete();
         }
         //iterate through assets to find the zip release
         return await _installGithubAsset();
@@ -95,17 +98,36 @@ public class Core : Base
         return true;
     }
 
-    public void Uninstall()
+    public void Delete(bool nuke = false)
     {
-        List<string> folders = new List<string>{"Cores", "Presets"};
+        List<string> folders = new List<string>{"Cores", "Presets", "Settings"};
         foreach(string folder in folders) {
             string path = Path.Combine(Factory.GetGlobals().UpdateDirectory, folder, this.identifier);
             if(Directory.Exists(path)) {
-                _writeMessage("Uninstalling " + path);
+                _writeMessage("Deleting " + path);
                 Directory.Delete(path, true);
-                Divide();
             }
         }
+        if(nuke) {
+            string path = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Assets", this.platform_id, this.identifier);
+            if (Directory.Exists(path)) {
+                _writeMessage("Deleting " + path);
+                Directory.Delete(path, true);
+            }
+        }
+    }
+
+    public void Uninstall(bool nuke = false)
+    {
+        _writeMessage("Uninstalling " + this.identifier);
+        
+        Delete(nuke);
+
+        Factory.GetGlobals().SettingsManager.DisableCore(this.identifier);
+        Factory.GetGlobals().SettingsManager.SaveSettings();
+
+        _writeMessage("Finished");
+        Divide();
     }
 
     public Platform? ReadPlatformFile()

@@ -18,7 +18,7 @@ jobs:
             -d '{
                 "username": "mattpannella",
                 "avatar_url": "https://avatars.githubusercontent.com/u/4806679",
-                "content": "Pupdate Release",
+                "content": "Bark bark, motherfuckers. A new version of Pupdate is available.",
                 "embeds": [{
                     "color": 4819409,
                     "title": "${{ github.event.release.name }}",
