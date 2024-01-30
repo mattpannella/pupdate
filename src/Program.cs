@@ -35,13 +35,16 @@ internal class Program
             bool selfUpdate = false;
             bool nuke = false;
             bool cleanInstall = false;
+            string? backupSaves_Path = null;
+            bool backupSaves_SaveConfig = false;
 
             ConsoleKey response;
 
             string verb = "menu";
             Dictionary<string, object?> data = new Dictionary<string, object?>();
             Parser.Default.ParseArguments<MenuOptions, FundOptions, UpdateOptions,
-                AssetsOptions, FirmwareOptions, ImagesOptions, InstancegeneratorOptions, UpdateSelfOptions, UninstallOptions>(args)
+                AssetsOptions, FirmwareOptions, ImagesOptions, InstancegeneratorOptions,
+                UpdateSelfOptions, UninstallOptions, BackupSavesOptions>(args)
                 .WithParsed<UpdateSelfOptions>(o => {
                     selfUpdate = true;
                 })
@@ -143,6 +146,14 @@ internal class Program
                     }
                 }
                 )
+                .WithParsed<BackupSavesOptions>(o =>
+                {
+                    verb = "backup-saves";
+                    cliMode = true;
+                    backupSaves_Path = o.BackupPath;
+                    backupSaves_SaveConfig = o.Save;
+                }
+                )
                 .WithNotParsed(o =>
                 {
                     if(o.IsHelp()) {
@@ -214,6 +225,7 @@ internal class Program
             updater.StatusUpdated += updater_StatusUpdated;
             updater.UpdateProcessComplete += updater_UpdateProcessComplete;
             updater.DownloadAssets(settings.GetConfig().download_assets);
+            updater.BackupSaves(settings.GetConfig().backup_saves, settings.GetConfig().backup_saves_location);
             await updater.Initialize();
             settings = GlobalHelper.Instance.SettingsManager;
 
@@ -281,6 +293,18 @@ internal class Program
                 } else {
                     await updater.DeleteCore(GlobalHelper.Instance.GetCore(coreName), true, nuke);
                 }
+            } else if (verb == "backup-saves") {
+                AssetsService.BackupSaves(path, backupSaves_Path ?? settings.GetConfig().backup_saves_location);
+            
+                if (backupSaves_SaveConfig)
+                {
+                    var config = settings.GetConfig();
+                
+                    config.backup_saves = true;
+                    config.backup_saves_location = backupSaves_Path;
+                
+                    settings.SaveSettings();
+                }
             } else { 
                 bool flag = true;
                 while(flag) {
@@ -292,7 +316,7 @@ internal class Program
                             Pause();
                             break;
                         case 2:
-                            Console.WriteLine("Checking for requied files...");
+                            Console.WriteLine("Checking for required files...");
                             await updater.RunAssetDownloader();
                             Pause();
                             break;
@@ -318,10 +342,14 @@ internal class Program
                             Pause();
                             break;
                         case 8:
+                            AssetsService.BackupSaves(path, settings.GetConfig().backup_saves_location);
+                            Pause();
+                            break;
+                        case 9:
                             SettingsMenu();
                             SetUpdaterFlags();
                             break;
-                        case 9:
+                        case 10:
                             flag = false;
                             break;
                         case 0:
@@ -447,6 +475,7 @@ internal class Program
         updater.DownloadFirmware(settings.GetConfig().download_firmware);
         updater.DownloadAssets(settings.GetConfig().download_assets);
         updater.RenameJotegoCores(settings.GetConfig().fix_jt_names);
+        updater.BackupSaves(settings.GetConfig().backup_saves, settings.GetConfig().backup_saves_location);
         updater.LoadSettings();
     }
 
@@ -755,18 +784,22 @@ internal class Program
         var menu = new ConsoleMenu()
             .Configure(config =>
             {
-            config.Selector = "=>";
-            //config.EnableFilter = true;
-            config.Title = $"{welcome}\r\n{GetSponsorLinks()}\r\n";
-            config.EnableWriteTitle = true;
-            //config.EnableBreadcrumb = true;
-            config.WriteHeaderAction = () => Console.WriteLine("Choose your destiny:");
-            config.SelectedItemBackgroundColor = Console.ForegroundColor;
-            config.SelectedItemForegroundColor = Console.BackgroundColor;
+                config.Selector = "=>";
+                //config.EnableFilter = true;
+                config.Title = $"{welcome}\r\n{GetSponsorLinks()}\r\n";
+                config.EnableWriteTitle = true;
+                //config.EnableBreadcrumb = true;
+                config.WriteHeaderAction = () => Console.WriteLine("Choose your destiny:");
+                config.SelectedItemBackgroundColor = Console.ForegroundColor;
+                config.SelectedItemForegroundColor = Console.BackgroundColor;
             });
         
         foreach(var (item, index) in menuItems.WithIndex()) {
-            menu.Add(item, (thisMenu) => { choice = thisMenu.CurrentItem.Index; thisMenu.CloseMenu(); });
+            menu.Add(item, (thisMenu) =>
+            {
+                choice = thisMenu.CurrentItem.Index;
+                thisMenu.CloseMenu();
+            });
         }
 
         menu.Show();
@@ -809,6 +842,7 @@ internal class Program
             {"crc_check", "Use CRC check when checking ROMs and BIOS files"},
             {"preserve_platforms_folder", "Preserve 'Platforms' folder during 'Update All'"},
             {"skip_alternative_assets", "Skip alternative roms when downloading assets"},
+            {"backup_saves", "Compress and backup Saves directory during 'Update All'"},
             {"use_custom_archive", "Use custom asset archive"}
         };
 
@@ -827,9 +861,15 @@ internal class Program
         
         foreach(var (name, text) in menuItems) {
             var property = type.GetProperty(name);
-            var value = (bool)property.GetValue(settings.GetConfig());
+            var value = (bool) property.GetValue(settings.GetConfig());
             var title = settingsMenuItem(text, value);
-            menu.Add(title, (thisMenu) => { value = !value; property.SetValue(settings.GetConfig(), value); thisMenu.CurrentItem.Name =  settingsMenuItem(text, value);});
+            
+            menu.Add(title, (thisMenu) =>
+            {
+                value = !value;
+                property.SetValue(settings.GetConfig(), value);
+                thisMenu.CurrentItem.Name = settingsMenuItem(text, value);
+            });
         }
         
         menu.Add("Save", (thisMenu) => {thisMenu.CloseMenu();});
@@ -933,6 +973,7 @@ internal class Program
         "Generate Instance JSON Files",
         "Generate Game and Watch ROMS",
         "Enable All Display Modes",
+        "Backup Saves Directory",
         "Settings",
         "Exit"
     };
@@ -1104,6 +1145,16 @@ public class FundOptions
 [Verb("update-self", HelpText = "Update this utility")]
 public class UpdateSelfOptions
 {
+}
+
+[Verb("backup-saves", HelpText = "Create a compressed zip file of the Saves directory.")]
+public class BackupSavesOptions
+{
+    [Option('p', "path", HelpText = "Absolute path to backup location", Required = false)]
+    public string? BackupPath { get; set; }
+    
+    [Option('s', "save", HelpText = "Save settings to the config file", Required = false)]
+    public bool Save { get; set; }
 }
 
 public static class EnumExtension
