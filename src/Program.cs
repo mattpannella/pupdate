@@ -306,8 +306,7 @@ internal class Program
                     settings.SaveSettings();
                 }
             } else { 
-                DisplayMenuNew2(path);
-                /*bool flag = true;
+                bool flag = true;
                 while(flag) {
                     int choice = DisplayMenuNew();
 
@@ -360,7 +359,7 @@ internal class Program
                             Pause();
                             break;
                     }
-                }*/
+                }
             }
         } catch(Exception e) {
             Console.WriteLine("Well, something went wrong. Sorry about that.");
@@ -771,93 +770,6 @@ internal class Program
         }
 
         return "";
-    }
-
-    private static void DisplayMenuNew2(string path)
-    {
-        Console.Clear();
-
-        Random random = new Random();
-        int i = random.Next(0, welcomeMessages.Length);
-        string welcome = welcomeMessages[i];
-
-        var commonConfig = new MenuConfig
-        {
-            Selector = "=>",
-            // EnableFilter = true,
-            Title = $"{welcome}\r\n{GetSponsorLinks()}\r\n",
-            EnableWriteTitle = true,
-            // EnableBreadcrumb = true,
-            SelectedItemBackgroundColor = Console.ForegroundColor,
-            SelectedItemForegroundColor = Console.BackgroundColor,
-        };
-
-        var subMenu = new ConsoleMenu(Array.Empty<string>(), 1)
-            .Configure(commonConfig)
-            .Configure(config => { config.WriteHeaderAction = () => Console.WriteLine("Choose your destiny, page 2:"); })
-            .Add("Download Platform Image Packs", async () =>
-            {
-                await ImagePackSelector(path);
-            })
-            .Add("Generate Instance JSON Files", async () =>
-            {
-                await RunInstanceGenerator(updater);
-                Pause();
-            })
-            .Add("Generate Game and Watch ROMS", async () =>
-            {
-                await BuildGameandWatchROMS(path);
-                Pause();
-            })
-            .Add("Enable All Display Modes", async () =>
-            {
-                await updater.ForceDisplayModes();
-                Pause();
-            })
-            .Add("Go Back", thisMenu => thisMenu.CloseMenu())
-            .Add("Exit", () => Environment.Exit(0));
-        
-        var menu = new ConsoleMenu()
-            .Configure(commonConfig)
-            .Configure(config => { config.WriteHeaderAction = () => Console.WriteLine("Choose your destiny:"); })
-            .Add("Update All", async thisMenu =>
-            {
-                Console.WriteLine("Starting update process...");
-                await updater.RunUpdates();
-                Pause();
-            })
-            .Add("Update Firmware", async () =>
-            {
-                await updater.UpdateFirmware();
-                Pause();
-            })
-            .Add("Download Required Assets", async () =>
-            {
-                Console.WriteLine("Checking for required files...");
-                await updater.RunAssetDownloader();
-                Pause();
-            })
-            .Add("Select Cores", async () =>
-            {
-                List<Core> cores = await CoresService.GetCores();
-                AskAboutNewCores(true);
-                await RunCoreSelector(cores);
-                updater.LoadSettings();
-            })
-            .Add("Backup Saves Directory", () =>
-            {
-                AssetsService.BackupSaves(path, settings.GetConfig().backup_saves_location);
-                Pause();
-            })
-            .Add("Settings", () =>
-            {
-                SettingsMenu();
-                SetUpdaterFlags();
-            })
-            .Add("Next", subMenu.Show)
-            .Add("Exit", thisMenu => thisMenu.CloseMenu());
-        
-        menu.Show();
     }
 
     private static int DisplayMenuNew()
