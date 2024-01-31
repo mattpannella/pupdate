@@ -10,6 +10,12 @@ public static class AssetsService
 
     public static void BackupSaves(string directory, string backupLocation)
     {
+        if (string.IsNullOrEmpty(directory))
+            throw new ArgumentNullException(nameof(directory));
+
+        if (string.IsNullOrEmpty(backupLocation))
+            throw new ArgumentNullException(nameof(backupLocation));
+        
         Console.WriteLine("Compressing and backing up Saves directory...");
         string savesPath = Path.Combine(directory, "Saves");
         string fileName = $"Saves_Backup_{DateTime.Now:yyyy-MM-dd_HH.mm.ss}.zip";

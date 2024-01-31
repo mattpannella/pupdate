@@ -35,7 +35,7 @@ internal class Program
             bool selfUpdate = false;
             bool nuke = false;
             bool cleanInstall = false;
-            string? backupSaves_Path = null;
+            string backupSaves_Path = null!;
             bool backupSaves_SaveConfig = false;
 
             ConsoleKey response;
@@ -150,6 +150,7 @@ internal class Program
                 {
                     verb = "backup-saves";
                     cliMode = true;
+                    path = o.InstallPath;
                     backupSaves_Path = o.BackupPath;
                     backupSaves_SaveConfig = o.Save;
                 }
@@ -294,7 +295,7 @@ internal class Program
                     await updater.DeleteCore(GlobalHelper.Instance.GetCore(coreName), true, nuke);
                 }
             } else if (verb == "backup-saves") {
-                AssetsService.BackupSaves(path, backupSaves_Path ?? settings.GetConfig().backup_saves_location);
+                AssetsService.BackupSaves(path, backupSaves_Path);
             
                 if (backupSaves_SaveConfig)
                 {
@@ -945,7 +946,7 @@ internal class Program
     {
         if(cliMode) return;
         Console.WriteLine("Press any key to continue.");
-        Console.ReadLine();
+        Console.ReadKey(true);
     }
 
     private static void AskAboutNewCores(bool force = false)
@@ -1150,9 +1151,12 @@ public class UpdateSelfOptions
 [Verb("backup-saves", HelpText = "Create a compressed zip file of the Saves directory.")]
 public class BackupSavesOptions
 {
-    [Option('p', "path", HelpText = "Absolute path to backup location", Required = false)]
-    public string? BackupPath { get; set; }
-    
+    [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
+    public string? InstallPath { get; set; }
+
+    [Option('l', "location", HelpText = "Absolute path to backup location", Required = true)]
+    public string BackupPath { get; set; } = null!;
+
     [Option('s', "save", HelpText = "Save settings to the config file", Required = false)]
     public bool Save { get; set; }
 }

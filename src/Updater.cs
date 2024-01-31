@@ -28,7 +28,7 @@ public class PocketCoreUpdater : Base
     private bool _renameJotegoCores = true;
     private bool _jtBeta = false;
     private bool _backupSaves = false;
-    private string? _backupSavesLocation = null;
+    private string _backupSavesLocation;
 
     private Dictionary<string, string> _platformFiles = new Dictionary<string, string>();
 
@@ -221,8 +221,7 @@ public class PocketCoreUpdater : Base
 
         if (_backupSaves)
         {
-            AssetsService.BackupSaves(Factory.GetGlobals().UpdateDirectory,
-                Factory.GetGlobals().SettingsManager.GetConfig().backup_saves_location);
+            AssetsService.BackupSaves(Factory.GetGlobals().UpdateDirectory, _backupSavesLocation);
         }
         
         if(_downloadFirmware && id == null) {

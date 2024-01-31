@@ -124,7 +124,8 @@ Checks for missing required assets for each core you have selected (mainly arcad
     -p, --path               Absolute path to install location
 
   backup-saves         Compress and backup Saves directory
-    -p, --path               Absolute path to backup location
+    -p, --path               Absolute path to install location
+    -l, --location           Absolute path to backup location. Required
     -s, --save               Save settings to the config file for use during 'Update All'
 
   help                 Display more information on a specific command.
