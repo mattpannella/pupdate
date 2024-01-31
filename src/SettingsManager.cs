@@ -13,15 +13,28 @@ public class SettingsManager
     private const string OLD_DEFAULT = "pocket-roms";
     private const string NEW_DEFAULT = "openFPGA-Files";
 
-    private const string SETTINGS_FILENAME = "pocket_updater_settings.json";
+    private const string OLD_SETTINGS_FILENAME = "pocket_updater_settings.json";
+    private const string SETTINGS_FILENAME = "pupdate_settings.json";
 
     public SettingsManager(string settingsPath, List<Core>? cores = null)
     {
         _settings = new Settings();
         string file = Path.Combine(settingsPath, SETTINGS_FILENAME);
+        string oldFile = Path.Combine(settingsPath, OLD_SETTINGS_FILENAME);
+        string json = null!;
+
         if (File.Exists(file))
         {
-            string json = File.ReadAllText(file);
+            json = File.ReadAllText(file);
+        }
+        else if (File.Exists(oldFile))
+        {
+            json = File.ReadAllText(oldFile);
+            File.Delete(oldFile);
+        }
+
+        if (!string.IsNullOrEmpty(json))
+        {
             _settings = JsonSerializer.Deserialize<Settings>(json);
 
             //hack to force people over to new default :)
