@@ -124,11 +124,6 @@ public class PocketCoreUpdater : Base
         return Factory.GetGlobals().Cores;
     }
 
-    public async Task LoadNonAPICores()
-    {
-        Factory.GetGlobals().Cores.AddRange(await CoresService.GetNonAPICores());
-    }
-
     public void LoadSettings()
     {
          Factory.GetGlobals().SettingsManager = new SettingsManager(Factory.GetGlobals().SettingsPath, Factory.GetGlobals().Cores);

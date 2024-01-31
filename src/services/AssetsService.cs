@@ -5,8 +5,8 @@ namespace pannella.analoguepocket;
 
 public static class AssetsService
 {
-    private const string IMAGE_PACKS = "https://raw.githubusercontent.com/mattpannella/pocket-updater-utility/main/image_packs.json";
-    private const string BLACKLIST = "https://raw.githubusercontent.com/mattpannella/pocket-updater-utility/main/blacklist.json";
+    private const string IMAGE_PACKS = "https://raw.githubusercontent.com/mattpannella/pupdate/main/image_packs.json";
+    private const string BLACKLIST = "https://raw.githubusercontent.com/mattpannella/pupdate/main/blacklist.json";
 
     public static void BackupSaves(string directory, string backupLocation)
     {
