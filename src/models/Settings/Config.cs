@@ -4,12 +4,12 @@ public class Config
 {
     public bool download_assets { get; set; }
     public string archive_name { get; set; }
-    public string? github_token { get; set; }
+    public string github_token { get; set; }
     public bool download_firmware { get; set; }
     public bool core_selector { get; set; }
     public bool preserve_platforms_folder { get; set; }
     public bool delete_skipped_cores { get; set; }
-    public string? download_new_cores { get; set; }
+    public string download_new_cores { get; set; }
     public bool build_instance_jsons { get; set; }
     public bool crc_check { get; set; }
     public bool fix_jt_names { get; set; }

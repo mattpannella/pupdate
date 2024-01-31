@@ -6,7 +6,7 @@ public class SemverUtil
 {
     private const string SEMVER_FINDER = @"\D*(\d+(\.\d+)*\.\d+)\D*";
 
-    public static string? FindSemver(string input)
+    public static string FindSemver(string input)
     {
         Regex r = new Regex(SEMVER_FINDER);
         Match matches = r.Match(input);
@@ -53,7 +53,7 @@ public class SemverUtil
 
     public static bool IsActuallySemver(string potentiallySemver)
     {
-        Version? ver = null;
+        Version ver = null;
         return Version.TryParse(potentiallySemver, out ver);
     }
 }

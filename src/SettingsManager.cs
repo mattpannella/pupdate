@@ -15,7 +15,7 @@ public class SettingsManager
 
     private const string SETTINGS_FILENAME = "pocket_updater_settings.json";
 
-    public SettingsManager(string settingsPath, List<Core>? cores = null)
+    public SettingsManager(string settingsPath, List<Core> cores = null)
     {
         _settings = new Settings();
         string file = Path.Combine(settingsPath, SETTINGS_FILENAME);

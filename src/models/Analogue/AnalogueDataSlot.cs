@@ -9,13 +9,13 @@ public class DataSlot
     public bool required { get; set; }
     public string parameters { get; set; }
 
-    public string? filename { get; set; }
+    public string filename { get; set; }
 
-    public string[]? alternate_filenames{ get; set; }
+    public string[] alternate_filenames{ get; set; }
 
-    public string? md5 { get; set; }
+    public string md5 { get; set; }
 
-    private BitArray? getBits()
+    private BitArray getBits()
     {
         if(parameters == null) {
             return null;

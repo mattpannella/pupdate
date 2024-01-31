@@ -9,15 +9,15 @@ using System.Collections;
 public class Core : Base
 {
     public string identifier { get; set; }
-    public Repo? repository { get; set; }
-    public Platform? platform { get; set; }
+    public Repo repository { get; set; }
+    public Platform platform { get; set; }
     public string platform_id { get; set; }
-    public Sponsor? sponsor { get; set; }
-    public string? download_url { get; set; }
-    public string? release_date { get; set; }
-    public string? version { get; set; }
-    public string[]? replaces { get; set; }
-    public string? betaSlotId = null;
+    public Sponsor sponsor { get; set; }
+    public string download_url { get; set; }
+    public string release_date { get; set; }
+    public string version { get; set; }
+    public string[] replaces { get; set; }
+    public string betaSlotId = null;
     public int betaSlotPlatformIdIndex = 0;
 
     public bool requires_license { get; set; } = false;
@@ -130,7 +130,7 @@ public class Core : Base
         Divide();
     }
 
-    public Platform? ReadPlatformFile()
+    public Platform ReadPlatformFile()
     {
         var info = this.getConfig();
         if (info == null)
@@ -308,7 +308,7 @@ public class Core : Base
         return results;
     }
 
-    public Analogue.Cores.Core.Core? getConfig()
+    public Analogue.Cores.Core.Core getConfig()
     {
         checkUpdateDirectory();
         string file = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Cores", this.identifier, "core.json");
@@ -321,12 +321,12 @@ public class Core : Base
         {
             AllowTrailingCommas = true
         };
-        Analogue.Cores.Core.Core? config = JsonSerializer.Deserialize<Dictionary<string, Analogue.Cores.Core.Core>>(json, options)["core"];
+        Analogue.Cores.Core.Core config = JsonSerializer.Deserialize<Dictionary<string, Analogue.Cores.Core.Core>>(json, options)["core"];
 
         return config;
     }
 
-    public Updater.Substitute[]? getSubstitutes()
+    public Updater.Substitute[] getSubstitutes()
     {
         checkUpdateDirectory();
         string file = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Cores", this.identifier, "updaters.json");
@@ -339,7 +339,7 @@ public class Core : Base
         {
             AllowTrailingCommas = true
         };
-        Updater.Updaters? config = JsonSerializer.Deserialize<Updater.Updaters>(json, options);
+        Updater.Updaters config = JsonSerializer.Deserialize<Updater.Updaters>(json, options);
 
         if (config == null) {
             return null;
@@ -358,7 +358,7 @@ public class Core : Base
     private async Task<bool> DownloadAsset(string filename, string destination)
     {
         if(Factory.GetGlobals().ArchiveFiles != null) {
-            archiveorg.File? file = Factory.GetGlobals().ArchiveFiles.GetFile(filename);
+            archiveorg.File file = Factory.GetGlobals().ArchiveFiles.GetFile(filename);
             if(file == null) {
                 _writeMessage("Unable to find " + filename + " in archive");
                 return false;
@@ -405,7 +405,7 @@ public class Core : Base
             return true;
         }
         string filename = Path.GetFileName(filepath);
-        archiveorg.File? file = Factory.GetGlobals().ArchiveFiles.GetFile(filename);
+        archiveorg.File file = Factory.GetGlobals().ArchiveFiles.GetFile(filename);
         if(file == null) {
             return true; //no checksum to compare to
         }
@@ -589,7 +589,7 @@ public class Core : Base
         {
             AllowTrailingCommas = true
         };
-        Analogue.Cores.Video.Video? config = JsonSerializer.Deserialize<Dictionary<string, Analogue.Cores.Video.Video>>(json, options)["video"];
+        Analogue.Cores.Video.Video config = JsonSerializer.Deserialize<Dictionary<string, Analogue.Cores.Video.Video>>(json, options)["video"];
 
         return config;
     }

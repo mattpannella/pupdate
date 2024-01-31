@@ -41,7 +41,7 @@ public class HttpHelper
 
         using var cts = new CancellationTokenSource();
         cts.CancelAfter(TimeSpan.FromSeconds(timeout));
-        Uri? uriResult;
+        Uri uriResult;
 
         if (!Uri.TryCreate(uri, UriKind.Absolute, out uriResult))
             throw new InvalidOperationException("URI is invalid.");
@@ -93,7 +93,7 @@ public class HttpHelper
 
    public async Task<String> GetHTML(string uri, bool allowRedirect = true)
    {
-        Uri? uriResult;
+        Uri uriResult;
 
         if (!Uri.TryCreate(uri, UriKind.Absolute, out uriResult))
             throw new InvalidOperationException("URI is invalid.");

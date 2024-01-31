@@ -35,7 +35,7 @@ public class PocketCoreUpdater : Base
     /// </summary>
     /// <param name="updateDirectory">The directory to install/update openFPGA cores in.</param>
     /// <param name="settingsPath">Path to settings json file</param>
-    public PocketCoreUpdater(string updateDirectory, string? settingsPath = null)
+    public PocketCoreUpdater(string updateDirectory, string settingsPath = null)
     {
         Factory.GetGlobals().UpdateDirectory = updateDirectory;
         Directory.CreateDirectory(Path.Combine(Factory.GetGlobals().UpdateDirectory, "Cores"));
@@ -184,7 +184,7 @@ public class PocketCoreUpdater : Base
         return cores;
     }
 
-    public async Task BuildInstanceJSON(bool overwrite = false, string? corename = null)
+    public async Task BuildInstanceJSON(bool overwrite = false, string corename = null)
     {
         List<Core> cores = await getAllCores();
         foreach(Core core in Factory.GetGlobals().Cores) {
@@ -199,7 +199,7 @@ public class PocketCoreUpdater : Base
     /// <summary>
     /// Run the full openFPGA core download and update process
     /// </summary>
-    public async Task RunUpdates(string? id = null, bool clean = false)
+    public async Task RunUpdates(string id = null, bool clean = false)
     {
         List<Dictionary<string, string>> installed = new List<Dictionary<string, string>>();
         List<string> installedAssets = new List<string>();
@@ -367,7 +367,7 @@ public class PocketCoreUpdater : Base
         }
     }
 
-    public async Task RunAssetDownloader(string? id = null)
+    public async Task RunAssetDownloader(string id = null)
     {
         List<string> installedAssets = new List<string>();
         List<string> skippedAssets = new List<string>();
@@ -415,7 +415,7 @@ public class PocketCoreUpdater : Base
         OnUpdateProcessComplete(args);
     }
 
-    public async Task ForceDisplayModes(string? id = null)
+    public async Task ForceDisplayModes(string id = null)
     {
         if(Factory.GetGlobals().Cores == null) {
             throw new Exception("Must initialize updater before running update process");
@@ -558,7 +558,7 @@ public class PocketCoreUpdater : Base
     {
         this.OnStatusUpdated(e);
     }
-    public event EventHandler<UpdateProcessCompleteEventArgs>? UpdateProcessComplete;
+    public event EventHandler<UpdateProcessCompleteEventArgs> UpdateProcessComplete;
 
     public void SetDownloadProgressHandler(EventHandler<DownloadProgressEventArgs> handler)
     {

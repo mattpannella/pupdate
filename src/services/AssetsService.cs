@@ -10,7 +10,7 @@ public static class AssetsService
     public static async Task<ImagePack[]> GetImagePacks()
     {
         string json = await Factory.GetHttpHelper().GetHTML(IMAGE_PACKS);
-        ImagePack[] packs = JsonSerializer.Deserialize<ImagePack[]?>(json);
+        ImagePack[] packs = JsonSerializer.Deserialize<ImagePack[]>(json);
 
         if(packs != null) {
             return packs;
@@ -22,7 +22,7 @@ public static class AssetsService
     public static async Task<string[]> GetBlacklist()
     {
         string json = await Factory.GetHttpHelper().GetHTML(BLACKLIST);
-        string[] files = JsonSerializer.Deserialize<string[]?>(json);
+        string[] files = JsonSerializer.Deserialize<string[]>(json);
 
         if(files != null) {
             return files;

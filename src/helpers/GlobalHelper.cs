@@ -8,12 +8,12 @@ public class GlobalHelper
     private static GlobalHelper instance = null;
     private static object syncLock = new object();
     public archiveorg.Archive ArchiveFiles { get; set; }
-    public SettingsManager? SettingsManager { get; set ;}
+    public SettingsManager SettingsManager { get; set ;}
     public string UpdateDirectory { get; set; }
     public string SettingsPath { get; set; }
     public string[] Blacklist { get; set; }
-    public List<Core>? Cores { get; set; }
-    public List<Core>? InstalledCores { get; set; }
+    public List<Core> Cores { get; set; }
+    public List<Core> InstalledCores { get; set; }
 
     private GlobalHelper()
     {
@@ -35,7 +35,7 @@ public class GlobalHelper
         }
     }  
 
-    public Core? GetCore(string identifier)
+    public Core GetCore(string identifier)
     {
         return instance.Cores.Find(i => i.identifier == identifier);
     }

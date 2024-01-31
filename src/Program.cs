@@ -22,15 +22,15 @@ internal class Program
     {
         try {
             string location = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
-            string? path = Path.GetDirectoryName(location);
+            string path = Path.GetDirectoryName(location);
             bool preservePlatformsFolder = false;
             bool forceUpdate = false;
             bool forceInstanceGenerator = false;
-            string? downloadAssets = null;
-            string? coreName = null;
-            string? imagePackOwner = null;
-            string? imagePackRepo = null;
-            string? imagePackVariant = null;
+            string downloadAssets = null;
+            string coreName = null;
+            string imagePackOwner = null;
+            string imagePackRepo = null;
+            string imagePackVariant = null;
             bool downloadFirmware = false;
             bool selfUpdate = false;
             bool nuke = false;
@@ -39,7 +39,7 @@ internal class Program
             ConsoleKey response;
 
             string verb = "menu";
-            Dictionary<string, object?> data = new Dictionary<string, object?>();
+            Dictionary<string, object> data = new Dictionary<string, object>();
             Parser.Default.ParseArguments<MenuOptions, FundOptions, UpdateOptions,
                 AssetsOptions, FirmwareOptions, ImagesOptions, InstancegeneratorOptions, UpdateSelfOptions, UninstallOptions>(args)
                 .WithParsed<UpdateSelfOptions>(o => {
@@ -222,7 +222,7 @@ internal class Program
                 Console.WriteLine("\nNew cores found since the last run.");
                 AskAboutNewCores();
 
-                string? download_new_cores = settings.GetConfig().download_new_cores?.ToLowerInvariant();
+                string download_new_cores = settings.GetConfig().download_new_cores?.ToLowerInvariant();
                 switch(download_new_cores) {
                     case "yes":
                         Console.WriteLine("The following cores have been enabled:");
@@ -613,7 +613,7 @@ internal class Program
         }
     }
 
-    private static string? GetSponsorLinks()
+    private static string GetSponsorLinks()
     {
         if (GlobalHelper.Instance.InstalledCores.Count == 0) return null;
         var random = new Random();
@@ -639,7 +639,7 @@ internal class Program
         return output;
     }
 
-    private static async Task Funding(string? identifier)
+    private static async Task Funding(string identifier)
     {
         await updater.Initialize();
         if (GlobalHelper.Instance.InstalledCores.Count == 0) return;
@@ -698,7 +698,7 @@ internal class Program
             List<Github.Release> releases = await GithubApi.GetReleases(USER, REPOSITORY);
 
             string tag_name = releases[0].tag_name;
-            string? v = SemverUtil.FindSemver(tag_name);
+            string v = SemverUtil.FindSemver(tag_name);
             if(v != null) {
                 bool check = SemverUtil.SemverCompare(v, version);
                 if(check) {
@@ -1018,7 +1018,7 @@ internal class Program
 public class MenuOptions
 {
     [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
-    public string? InstallPath { get; set; }
+    public string InstallPath { get; set; }
     
     [Option('s', "skip-update", HelpText = "Skip the self update check", Required = false)]
     public bool SkipUpdate { get; set; }
@@ -1028,7 +1028,7 @@ public class MenuOptions
 public class UpdateOptions
 {
     [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
-    public string? InstallPath { get; set; }
+    public string InstallPath { get; set; }
 
     [Option ('c', "core", Required = false, HelpText = "The core you want to update.")]
     public string CoreName { get; set; }
@@ -1045,7 +1045,7 @@ public class UpdateOptions
 public class UninstallOptions
 {
     [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
-    public string? InstallPath { get; set; }
+    public string InstallPath { get; set; }
 
     [Option ('c', "core", Required = true, HelpText = "The core you want to delete.")]
     public string CoreName { get; set; }
@@ -1058,7 +1058,7 @@ public class UninstallOptions
 public class AssetsOptions
 {
     [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
-    public string? InstallPath { get; set; }
+    public string InstallPath { get; set; }
 
     [Option ('c', "core", Required = false, HelpText = "The core you want to download assets for.")]
     public string CoreName { get; set; }
@@ -1068,14 +1068,14 @@ public class AssetsOptions
 public class InstancegeneratorOptions
 {
     [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
-    public string? InstallPath { get; set; }
+    public string InstallPath { get; set; }
 }
 
 [Verb("images",  HelpText = "Download image packs")]
 public class ImagesOptions
 {
     [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
-    public string? InstallPath { get; set; }
+    public string InstallPath { get; set; }
 
     [Option('o', "owner", Required = false, HelpText = "Image pack repo username")]
     public string ImagePackOwner { get; set; }
@@ -1084,21 +1084,21 @@ public class ImagesOptions
     public string ImagePackRepo { get; set; }
 
     [Option('v', "variant", Required = false, HelpText = "The optional variant")]
-    public string? ImagePackVariant { get; set; }
+    public string ImagePackVariant { get; set; }
 }
 
 [Verb("firmware",  HelpText = "Check for Pocket firmware updates")]
 public class FirmwareOptions
 {
     [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
-    public string? InstallPath { get; set; }
+    public string InstallPath { get; set; }
 }
 
 [Verb("fund", HelpText = "List sponsor links")]
 public class FundOptions
 {
     [Option('c', "core", HelpText = "The core to check funding links for", Required = false)]
-    public string? Core { get; set; }
+    public string Core { get; set; }
 }
 
 [Verb("update-self", HelpText = "Update this utility")]
