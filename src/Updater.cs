@@ -461,28 +461,6 @@ public class PocketCoreUpdater : Base
         _writeMessage("-------------");
     }
 
-    private string BuildAssetUrl(DependencyFile asset)
-    {
-        string archive = Factory.GetGlobals().SettingsManager.GetConfig().archive_name;
-        if(asset.file_name != null && asset.archive_zip == null && asset.archive_file == null && !asset.zip) {
-            return ARCHIVE_BASE_URL + "/" + archive + "/" + asset.file_name;
-        } else if(archive != null && asset.archive_zip != null) {
-            return ARCHIVE_BASE_URL + "/" + archive + "/" + asset.archive_zip + ".zip/" + asset.file_name;
-        } else if(archive != null && asset.archive_file != null) {
-            return ARCHIVE_BASE_URL + "/" + archive + "/" + asset.archive_file;
-        } else if(asset.url != null) {
-            return asset.url;
-        }
-
-        return "";
-    }
-
-    private string BuildAssetUrlNew(string filename)
-    {
-        string archive = Factory.GetGlobals().SettingsManager.GetConfig().archive_name;
-        return ARCHIVE_BASE_URL + "/" + archive + "/" + filename;
-    }
-
     public async Task<List<Core>> GetLocalCores()
     {
         string coresDirectory = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Cores");
