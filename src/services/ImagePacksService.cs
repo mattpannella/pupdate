@@ -4,7 +4,7 @@ namespace pannella.analoguepocket;
 
 public static class ImagePacksService
 {
-    private const string END_POINT = "https://raw.githubusercontent.com/mattpannella/pocket-updater-utility/main/image_packs.json";
+    private const string END_POINT = "https://raw.githubusercontent.com/mattpannella/pupdate/main/image_packs.json";
 
     public static async Task<ImagePack[]> GetImagePacks()
     {
