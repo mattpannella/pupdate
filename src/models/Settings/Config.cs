@@ -15,7 +15,7 @@ public class Config
     public bool fix_jt_names { get; set; }
     public bool skip_alternative_assets { get; set; }
     public bool backup_saves { get; set; }
-    public string? backup_saves_location { get; set; }
+    public string backup_saves_location { get; set; }
     public bool use_custom_archive { get; set; }
     public Dictionary<string, string> custom_archive { get; set; }
 

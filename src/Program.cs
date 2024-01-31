@@ -1152,7 +1152,7 @@ public class UpdateSelfOptions
 public class BackupSavesOptions
 {
     [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
-    public string? InstallPath { get; set; }
+    public string InstallPath { get; set; }
 
     [Option('l', "location", HelpText = "Absolute path to backup location", Required = true)]
     public string BackupPath { get; set; } = null!;
