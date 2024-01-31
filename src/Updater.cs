@@ -22,11 +22,13 @@ public class PocketCoreUpdater : Base
 
     private string _githubApiKey = "";
 
-    private bool _downloadFirmare = true;
+    private bool _downloadFirmware = true;
     private bool _deleteSkippedCores = true;
     private bool _useConsole = false;
     private bool _renameJotegoCores = true;
     private bool _jtBeta = false;
+    private bool _backupSaves = false;
+    private string _backupSavesLocation;
 
     private Dictionary<string, string> _platformFiles = new Dictionary<string, string>();
 
@@ -122,11 +124,6 @@ public class PocketCoreUpdater : Base
         return Factory.GetGlobals().Cores;
     }
 
-    public async Task LoadNonAPICores()
-    {
-        Factory.GetGlobals().Cores.AddRange(await CoresService.GetNonAPICores());
-    }
-
     public void LoadSettings()
     {
          Factory.GetGlobals().SettingsManager = new SettingsManager(Factory.GetGlobals().SettingsPath, Factory.GetGlobals().Cores);
@@ -168,7 +165,13 @@ public class PocketCoreUpdater : Base
 
     public void DownloadFirmware(bool set)
     {
-        _downloadFirmare = set;
+        _downloadFirmware = set;
+    }
+
+    public void BackupSaves(bool set, string location)
+    {
+        _backupSaves = set;
+        _backupSavesLocation = location;
     }
 
     //get api and local cores
@@ -211,7 +214,12 @@ public class PocketCoreUpdater : Base
             throw new Exception("Must initialize updater before running update process");
         }
 
-        if(_downloadFirmare && id == null) {
+        if (_backupSaves)
+        {
+            AssetsService.BackupSaves(Factory.GetGlobals().UpdateDirectory, _backupSavesLocation);
+        }
+        
+        if(_downloadFirmware && id == null) {
             firmwareDownloaded = await UpdateFirmware();
         }
 
