@@ -16,7 +16,7 @@ public class ImagePack
     {
         string filepath = await this.FetchImagePack(path);
 
-        await InstallImagePack(path, filepath);
+        InstallImagePack(path, filepath);
     }
 
     private async Task<string> FetchImagePack(string path)
@@ -56,7 +56,7 @@ public class ImagePack
         return string.Empty;
     }
 
-    private static async Task InstallImagePack(string path, string filepath)
+    private static void InstallImagePack(string path, string filepath)
     {
         Console.WriteLine("Installing...");
 

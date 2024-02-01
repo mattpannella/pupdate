@@ -2,7 +2,7 @@ namespace Pannella;
 
 internal partial class Program
 {
-    private static async Task RunInstanceGenerator(PocketCoreUpdater pocketCoreUpdater, bool force = false)
+    private static void RunInstanceGenerator(PocketCoreUpdater pocketCoreUpdater, bool force = false)
     {
         if (!force)
         {
@@ -17,6 +17,6 @@ internal partial class Program
             }
         }
 
-        await pocketCoreUpdater.BuildInstanceJson(force);
+        pocketCoreUpdater.BuildInstanceJson(force);
     }
 }

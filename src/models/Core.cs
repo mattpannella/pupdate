@@ -647,7 +647,7 @@ public class Core : Base
         return check;
     }
 
-    public async Task ReplaceCheck()
+    public void ReplaceCheck()
     {
         if (replaces != null)
         {
@@ -664,7 +664,7 @@ public class Core : Base
         }
     }
 
-    public async Task<Video> GetVideoConfig()
+    public Video GetVideoConfig()
     {
         CheckUpdateDirectory();
 
@@ -682,10 +682,10 @@ public class Core : Base
         return config;
     }
 
-    public async Task AddDisplayModes()
+    public void AddDisplayModes()
     {
         var info = this.GetConfig();
-        var video = await GetVideoConfig();
+        var video = GetVideoConfig();
         List<DisplayMode> all = new List<DisplayMode>();
 
         foreach (string id in ALL_MODES)

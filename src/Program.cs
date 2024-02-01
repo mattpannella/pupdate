@@ -306,7 +306,7 @@ internal partial class Program
                         }
                         else
                         {
-                            await RunCoreSelector(newOnes, "New cores are available!");
+                            RunCoreSelector(newOnes, "New cores are available!");
                         }
 
                         break;
@@ -328,7 +328,7 @@ internal partial class Program
             }
             else if (forceInstanceGenerator)
             {
-                await RunInstanceGenerator(coreUpdater, true);
+                RunInstanceGenerator(coreUpdater, true);
             }
             else if (downloadAssets != null)
             {
@@ -360,7 +360,7 @@ internal partial class Program
                 }
                 else
                 {
-                    await coreUpdater.DeleteCore(GlobalHelper.GetCore(coreName), true, nuke);
+                    coreUpdater.DeleteCore(GlobalHelper.GetCore(coreName), true, nuke);
                 }
             }
             else if (verb == "backup-saves")
@@ -401,7 +401,7 @@ internal partial class Program
                         case 3:
                             List<Core> cores = await CoresService.GetCores();
                             AskAboutNewCores(true);
-                            await RunCoreSelector(cores);
+                            RunCoreSelector(cores);
                             // Is reloading the settings file necessary?
                             GlobalHelper.ReloadSettings();
                             break;
@@ -411,7 +411,7 @@ internal partial class Program
                             break;
 
                         case 5:
-                            await RunInstanceGenerator(coreUpdater);
+                            RunInstanceGenerator(coreUpdater);
                             Pause();
                             break;
 
@@ -421,7 +421,7 @@ internal partial class Program
                             break;
 
                         case 7:
-                            await coreUpdater.ForceDisplayModes();
+                            coreUpdater.ForceDisplayModes();
                             Pause();
                             break;
 

@@ -93,7 +93,7 @@ public class PocketCoreUpdater : Base
 
     #endregion
 
-    public async Task BuildInstanceJson(bool overwrite = false, string coreName = null)
+    public void BuildInstanceJson(bool overwrite = false, string coreName = null)
     {
         foreach (Core core in GlobalHelper.Cores)
         {
@@ -133,7 +133,7 @@ public class PocketCoreUpdater : Base
             firmwareDownloaded = await UpdateFirmware();
         }
 
-        await ExtractBetaKey();
+        ExtractBetaKey();
 
         foreach (var core in GlobalHelper.Cores.Where(core => id == null || core.identifier == id))
         {
@@ -144,7 +144,7 @@ public class PocketCoreUpdater : Base
             {
                 if (GlobalHelper.SettingsManager.GetCoreSettings(core.identifier).skip)
                 {
-                    await DeleteCore(core);
+                    DeleteCore(core);
                     continue;
                 }
 
@@ -164,13 +164,13 @@ public class PocketCoreUpdater : Base
                 WriteMessage("Checking Core: " + name);
                 var mostRecentRelease = core.version;
 
-                await core.ReplaceCheck();
+                core.ReplaceCheck();
 
                 if (mostRecentRelease == null)
                 {
                     WriteMessage("No releases found. Skipping");
 
-                    await CopyBetaKey(core);
+                    CopyBetaKey(core);
 
                     results = await core.DownloadAssets();
                     installedAssets.AddRange(results["installed"] as List<string>);
@@ -204,7 +204,7 @@ public class PocketCoreUpdater : Base
                     }
                     else
                     {
-                        await CopyBetaKey(core);
+                        CopyBetaKey(core);
                         results = await core.DownloadAssets();
                         await JotegoRename(core);
 
@@ -239,7 +239,7 @@ public class PocketCoreUpdater : Base
                 }
 
                 await JotegoRename(core);
-                await CopyBetaKey(core);
+                CopyBetaKey(core);
 
                 results = await core.DownloadAssets();
                 installedAssets.AddRange(results["installed"] as List<string>);
@@ -330,7 +330,7 @@ public class PocketCoreUpdater : Base
         }
     }
 
-    private async Task CopyBetaKey(Core core)
+    private void CopyBetaKey(Core core)
     {
         if (core.JTBetaCheck())
         {
@@ -356,7 +356,7 @@ public class PocketCoreUpdater : Base
         }
     }
 
-    private async Task ExtractBetaKey()
+    private void ExtractBetaKey()
     {
         string keyPath = Path.Combine(GlobalHelper.UpdateDirectory, "betakeys");
         string file = Path.Combine(GlobalHelper.UpdateDirectory, "jtbeta.zip");
@@ -427,7 +427,7 @@ public class PocketCoreUpdater : Base
         OnUpdateProcessComplete(args);
     }
 
-    public async Task ForceDisplayModes(string id = null)
+    public void ForceDisplayModes(string id = null)
     {
         if (GlobalHelper.Cores == null)
         {
@@ -450,7 +450,7 @@ public class PocketCoreUpdater : Base
                 }
 
                 WriteMessage("Updating " + core.identifier);
-                await core.AddDisplayModes();
+                core.AddDisplayModes();
                 Divide();
             }
             catch (Exception e)
@@ -510,7 +510,7 @@ public class PocketCoreUpdater : Base
         return version;
     }
 
-    public async Task DeleteCore(Core core, bool force = false, bool nuke = false)
+    public void DeleteCore(Core core, bool force = false, bool nuke = false)
     {
         if (!_deleteSkippedCores || !force)
         {
@@ -526,11 +526,6 @@ public class PocketCoreUpdater : Base
     }
 
     public event EventHandler<UpdateProcessCompleteEventArgs> UpdateProcessComplete;
-
-    public void SetDownloadProgressHandler(EventHandler<DownloadProgressEventArgs> handler)
-    {
-        HttpHelper.Instance.DownloadProgressUpdate += handler;
-    }
 }
 
 public class UpdateProcessCompleteEventArgs : EventArgs

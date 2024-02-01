@@ -78,7 +78,7 @@ internal partial class Program
         }
     }
 
-    private static async Task RunCoreSelector(List<Core> cores, string message = "Select your cores.")
+    private static void RunCoreSelector(List<Core> cores, string message = "Select your cores.")
     {
         if (GlobalHelper.SettingsManager.GetConfig().download_new_cores?.ToLowerInvariant() == "yes")
         {
