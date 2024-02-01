@@ -1,6 +1,8 @@
 using System.Text.Json;
+using Pannella.Helpers;
+using Pannella.Models;
 
-namespace pannella.analoguepocket;
+namespace Pannella.Services;
 
 public static class CoresService
 {
@@ -8,14 +10,22 @@ public static class CoresService
 
     public static async Task<List<Core>> GetCores()
     {
-        string json = await Factory.GetHttpHelper().GetHTML(END_POINT);
-        Dictionary<string, List<Core>> parsed = JsonSerializer.Deserialize<Dictionary<string, List<Core>>>(json);
+        string json = await HttpHelper.Instance.GetHTML(END_POINT);
 
-        if(parsed.ContainsKey("data")) {
-            var cores = parsed["data"];
-            return cores;
-        } else {
-            throw new Exception("Error communicating with openFPGA Cores API");
+        try
+        {
+            Dictionary<string, List<Core>> parsed = JsonSerializer.Deserialize<Dictionary<string, List<Core>>>(json);
+
+            if (parsed.TryGetValue("data", out var cores))
+            {
+                return cores;
+            }
         }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+
+        throw new Exception("Error communicating with openFPGA Cores API");
     }
 }

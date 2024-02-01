@@ -1,4 +1,4 @@
-namespace pannella.analoguepocket;
+namespace Pannella.Models;
 
 public class Platform
 {

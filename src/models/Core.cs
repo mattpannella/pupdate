@@ -1,117 +1,140 @@
-namespace pannella.analoguepocket;
-
-using System.IO;
-using System.IO.Compression;
-using System.Net.Http;
-using System.Text.Json;
 using System.Collections;
+using System.IO.Compression;
+using System.Net;
+using System.Text.Json;
+using Pannella.Helpers;
+using Pannella.Models.Analogue.Data;
+using Pannella.Models.Analogue.Instance;
+using Pannella.Models.Analogue.Instance.Simple;
+using Pannella.Models.Analogue.Video;
+using Pannella.Models.InstancePackager;
+using AnalogueCore = Pannella.Models.Analogue.Core.Core;
+using ArchiveFile = Pannella.Models.Archive.File;
+using DataSlot = Pannella.Models.Analogue.Shared.DataSlot;
+using InstancePackagerDataSlot =  Pannella.Models.InstancePackager.DataSlot;
+
+namespace Pannella.Models;
 
 public class Core : Base
 {
     public string identifier { get; set; }
-    public Repo? repository { get; set; }
-    public Platform? platform { get; set; }
+    public Repo repository { get; set; }
+    public Platform platform { get; set; }
     public string platform_id { get; set; }
-    public Sponsor? sponsor { get; set; }
-    public string? download_url { get; set; }
-    public string? release_date { get; set; }
-    public string? version { get; set; }
-    public string[]? replaces { get; set; }
-    public string? betaSlotId = null;
-    public int betaSlotPlatformIdIndex = 0;
-
+    public Sponsor sponsor { get; set; }
+    public string download_url { get; set; }
+    public string release_date { get; set; }
+    public string version { get; set; }
+    public string[] replaces { get; set; }
+    public string beta_slot_id;
+    public int beta_slot_platform_id_index;
     public bool requires_license { get; set; } = false;
 
+    public bool download_assets { get; set; } = GlobalHelper.SettingsManager.GetConfig().download_assets;
+
+    public bool build_instances { get; set; } = GlobalHelper.SettingsManager.GetConfig().build_instance_jsons;
+
     private const string ZIP_FILE_NAME = "core.zip";
-    public bool downloadAssets { get; set; } = Factory.GetGlobals().SettingsManager.GetConfig().download_assets;
-    public bool buildInstances { get; set; } = Factory.GetGlobals().SettingsManager.GetConfig().build_instance_jsons;
 
-    private string[] allModes = {
-        "0x10", "0x20", "0x30", "0x31", "0x32", "0x40", "0x41", "0x42", "0x51", "0x52", "0xE0"
-    };
+    private static string[] ALL_MODES = { "0x10", "0x20", "0x30", "0x31", "0x32", "0x40", "0x41", "0x42", "0x51", "0x52", "0xE0" };
 
-    private string[] gbModes = {
-        "0x21", "0x22", "0x23"
-    };
-
+    private static string[] GB_MODES = { "0x21", "0x22", "0x23" };
 
     public override string ToString()
     {
         return platform.name;
     }
 
-    public async Task<bool> Install(bool clean = false)
+    public async Task<bool> Install(bool preservePlatformsFolder, bool clean = false)
     {
-        if(this.repository == null) {
-            _writeMessage("Core installed manually. Skipping.");
+        if (this.repository == null)
+        {
+            WriteMessage("Core installed manually. Skipping.");
+
             return false;
         }
-        if (clean && this.isInstalled()) {
+
+        if (clean && this.IsInstalled())
+        {
             Delete();
         }
-        //iterate through assets to find the zip release
-        return await _installGithubAsset();
+
+        // iterate through assets to find the zip release
+        return await InstallGithubAsset(preservePlatformsFolder);
     }
 
-    private async Task<bool> _installGithubAsset()
+    private async Task<bool> InstallGithubAsset(bool preservePlatformsFolder)
     {
-        bool updated = false;
-        if (this.download_url == null) {
-            _writeMessage("No release URL found...");
-            return updated;
-        }
-        _writeMessage("Downloading file " + this.download_url + "...");
-        string zipPath = Path.Combine(Factory.GetGlobals().UpdateDirectory, ZIP_FILE_NAME);
-        string extractPath = Factory.GetGlobals().UpdateDirectory;
-        await Factory.GetHttpHelper().DownloadFileAsync(this.download_url, zipPath);
+        if (this.download_url == null)
+        {
+            WriteMessage("No release URL found...");
 
-        _writeMessage("Extracting...");
+            return false;
+        }
+
+        WriteMessage("Downloading file " + this.download_url + "...");
+
+        string zipPath = Path.Combine(GlobalHelper.UpdateDirectory, ZIP_FILE_NAME);
+        string extractPath = GlobalHelper.UpdateDirectory;
+
+        await HttpHelper.Instance.DownloadFileAsync(this.download_url, zipPath);
+
+        WriteMessage("Extracting...");
+
         string tempDir = Path.Combine(extractPath, "temp", this.identifier);
+
         ZipFile.ExtractToDirectory(zipPath, tempDir, true);
 
         // Clean problematic directories and files.
-        Util.CleanDir(tempDir, Factory.GetGlobals().SettingsManager.GetConfig().preserve_platforms_folder, this.platform_id);
+        Util.CleanDir(tempDir, preservePlatformsFolder, this.platform_id);
 
         // Move the files into place and delete our core's temp directory.
-        _writeMessage("Installing...");
+        WriteMessage("Installing...");
         Util.CopyDirectory(tempDir, extractPath, true, true);
         Directory.Delete(tempDir, true);
 
         // See if the temp directory itself can be removed.
-        // Probably not needed if we aren't going to multithread this, but this is an async function so let's future proof.
+        // Probably not needed if we aren't going to multi-thread this, but this is an async function so let's future proof.
         if (!Directory.GetFiles(Path.Combine(extractPath, "temp")).Any())
+        {
             Directory.Delete(Path.Combine(extractPath, "temp"));
-
-        updated = true;
-        
-        File.Delete(zipPath);
-
-        return updated;
-    }
-
-    private bool checkUpdateDirectory()
-    {
-        if(!Directory.Exists(Factory.GetGlobals().UpdateDirectory)) {
-            throw new Exception("Unable to access update directory");
         }
+
+        File.Delete(zipPath);
 
         return true;
     }
 
-    public void Delete(bool nuke = false)
+    private static void CheckUpdateDirectory()
     {
-        List<string> folders = new List<string>{"Cores", "Presets", "Settings"};
-        foreach(string folder in folders) {
-            string path = Path.Combine(Factory.GetGlobals().UpdateDirectory, folder, this.identifier);
-            if(Directory.Exists(path)) {
-                _writeMessage("Deleting " + path);
+        if (!Directory.Exists(GlobalHelper.UpdateDirectory))
+        {
+            throw new Exception("Unable to access update directory");
+        }
+    }
+
+    private void Delete(bool nuke = false)
+    {
+        List<string> folders = new List<string> { "Cores", "Presets", "Settings" };
+
+        foreach (string folder in folders)
+        {
+            string path = Path.Combine(GlobalHelper.UpdateDirectory, folder, this.identifier);
+
+            if (Directory.Exists(path))
+            {
+                WriteMessage("Deleting " + path);
                 Directory.Delete(path, true);
             }
         }
-        if(nuke) {
-            string path = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Assets", this.platform_id, this.identifier);
-            if (Directory.Exists(path)) {
-                _writeMessage("Deleting " + path);
+
+        if (nuke)
+        {
+            string path = Path.Combine(GlobalHelper.UpdateDirectory, "Assets", this.platform_id, this.identifier);
+
+            if (Directory.Exists(path))
+            {
+                WriteMessage("Deleting " + path);
                 Directory.Delete(path, true);
             }
         }
@@ -119,123 +142,108 @@ public class Core : Base
 
     public void Uninstall(bool nuke = false)
     {
-        _writeMessage("Uninstalling " + this.identifier);
-        
+        WriteMessage("Uninstalling " + this.identifier);
+
         Delete(nuke);
 
-        Factory.GetGlobals().SettingsManager.DisableCore(this.identifier);
-        Factory.GetGlobals().SettingsManager.SaveSettings();
+        GlobalHelper.SettingsManager.DisableCore(this.identifier);
+        GlobalHelper.SettingsManager.SaveSettings();
 
-        _writeMessage("Finished");
+        WriteMessage("Finished");
         Divide();
     }
 
-    public Platform? ReadPlatformFile()
+    public Platform ReadPlatformFile()
     {
-        var info = this.getConfig();
+        var info = this.GetConfig();
+
         if (info == null)
         {
             return this.platform;
         }
-        
-        string UpdateDirectory = Factory.GetGlobals().UpdateDirectory;
-        //cores with multiple platforms won't work...not sure any exist right now?
-        string platformsFolder = Path.Combine(UpdateDirectory, "Platforms");
 
+        string updateDirectory = GlobalHelper.UpdateDirectory;
+        // cores with multiple platforms won't work...not sure any exist right now?
+        string platformsFolder = Path.Combine(updateDirectory, "Platforms");
         string dataFile = Path.Combine(platformsFolder, info.metadata.platform_ids[0] + ".json");
-        var p = JsonSerializer.Deserialize<Dictionary<string,Platform>>(File.ReadAllText(dataFile));
-        
+        var p = JsonSerializer.Deserialize<Dictionary<string, Platform>>(File.ReadAllText(dataFile));
+
         return p["platform"];
     }
 
-    public bool UpdatePlatform(string title, string category = null)
-    {
-        var info = this.getConfig();
-        if (info == null)
-        {
-            return false;
-        }
-        
-        string UpdateDirectory = Factory.GetGlobals().UpdateDirectory;
-        //cores with multiple platforms won't work...not sure any exist right now?
-        string platformsFolder = Path.Combine(UpdateDirectory, "Platforms");
-
-        string dataFile = Path.Combine(platformsFolder, info.metadata.platform_ids[0] + ".json");
-        if (!File.Exists(dataFile))
-        {
-            return false;
-        }
-
-        if (platform.name != title || platform.category != category)
-        {
-            
-            Dictionary<string, Platform> platform = new Dictionary<string, Platform>();
-            this.platform.name = title;
-            if (category != null)
-            {
-                this.platform.category = category;
-            }
-            platform.Add("platform", this.platform);
-            string json = JsonSerializer.Serialize(platform);
-        
-            File.WriteAllText(dataFile, json);
-            Factory.GetGlobals().SettingsManager.GetConfig().preserve_platforms_folder = true;
-            Factory.GetGlobals().SettingsManager.SaveSettings();
-        }
-        
-        return true;
-    }
-
-    public async Task<Dictionary<string, Object>> DownloadAssets()
+    public async Task<Dictionary<string, object>> DownloadAssets()
     {
         List<string> installed = new List<string>();
         List<string> skipped = new List<string>();
         bool missingBetaKey = false;
-        if(!downloadAssets || !Factory.GetGlobals().SettingsManager.GetCoreSettings(this.identifier).download_assets) {
-            return new Dictionary<string, Object>{
-                {"installed", installed },
-                {"skipped", skipped },
-                {"missingBetaKey", missingBetaKey }
+
+        if (!this.download_assets || !GlobalHelper.SettingsManager.GetCoreSettings(this.identifier).download_assets)
+        {
+            return new Dictionary<string, object>
+            {
+                { "installed", installed },
+                { "skipped", skipped },
+                { "missingBetaKey", false }
             };
         }
-        checkUpdateDirectory();
-        _writeMessage("Looking for Assets");
-        Analogue.Cores.Core.Core info = this.getConfig();
-        string UpdateDirectory = Factory.GetGlobals().UpdateDirectory;
-        //cores with multiple platforms won't work...not sure any exist right now?
-        string instancesDirectory = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0], this.identifier);
-        var options = new JsonSerializerOptions
+
+        CheckUpdateDirectory();
+        WriteMessage("Looking for Assets");
+        AnalogueCore info = this.GetConfig();
+        string updateDirectory = GlobalHelper.UpdateDirectory;
+        // cores with multiple platforms won't work...not sure any exist right now?
+        string instancesDirectory = Path.Combine(updateDirectory, "Assets", info.metadata.platform_ids[0], this.identifier);
+        var options = new JsonSerializerOptions { Converters = { new StringConverter() } };
+
+        DataJSON dataJson = ReadDataJSON();
+
+        if (this.beta_slot_id != null)
         {
-            Converters = { new StringConverter() }
-        };
-
-        Analogue.DataJSON data = ReadDataJSON();
-        if (betaSlotId != null) {
-
+            // what to do?
         }
-        if(data.data.data_slots.Length > 0) {
-            foreach(Analogue.DataSlot slot in data.data.data_slots) {
-                if(slot.filename != null && !slot.filename.EndsWith(".sav") && !Factory.GetGlobals().Blacklist.Contains(slot.filename)) {
-                    string path = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0]);
-                    if(slot.isCoreSpecific()) {
+
+        if (dataJson.data.data_slots.Length > 0)
+        {
+            foreach (DataSlot slot in dataJson.data.data_slots)
+            {
+                if (slot.filename != null && !slot.filename.EndsWith(".sav") &&
+                    !GlobalHelper.Blacklist.Contains(slot.filename))
+                {
+                    string path = Path.Combine(updateDirectory, "Assets", info.metadata.platform_ids[0]);
+
+                    if (slot.IsCoreSpecific())
+                    {
                         path = Path.Combine(path, this.identifier);
-                    } else {
+                    }
+                    else
+                    {
                         path = Path.Combine(path, "common");
                     }
-                    List<string> files = new List<string>();
-                    files.Add(slot.filename);
-                    if (slot.alternate_filenames != null) {
+
+                    List<string> files = new List<string> { slot.filename };
+
+                    if (slot.alternate_filenames != null)
+                    {
                         files.AddRange(slot.alternate_filenames);
                     }
-                    foreach (string f in files) {
+
+                    foreach (string f in files)
+                    {
                         string filepath = Path.Combine(path, f);
-                        if(File.Exists(filepath) && CheckCRC(filepath)) {
-                            _writeMessage("Already installed: " + f);
-                        } else {
-                            if(await DownloadAsset(f, filepath)) {
-                                installed.Add(filepath.Replace(UpdateDirectory, ""));
-                            } else {
-                                skipped.Add(filepath.Replace(UpdateDirectory, ""));
+
+                        if (File.Exists(filepath) && CheckCRC(filepath))
+                        {
+                            WriteMessage("Already installed: " + f);
+                        }
+                        else
+                        {
+                            if (await DownloadAsset(f, filepath))
+                            {
+                                installed.Add(filepath.Replace(updateDirectory, ""));
+                            }
+                            else
+                            {
+                                skipped.Add(filepath.Replace(updateDirectory, ""));
                             }
                         }
                     }
@@ -243,142 +251,169 @@ public class Core : Base
             }
         }
 
-        if(this.identifier == "Mazamars312.NeoGeo" || this.identifier == "Mazamars312.NeoGeo_Overdrive") {
-            return new Dictionary<string, Object>{
-                {"installed", installed },
-                {"skipped", skipped },
-                {"missingBetaKey", false }
-            }; //nah
-        }
-
-        if(CheckInstancePackager()) {
-            BuildInstanceJSONs();
-            return new Dictionary<string, Object>{
-                {"installed", installed },
-                {"skipped", skipped },
-                {"missingBetaKey", missingBetaKey }
+        if (this.identifier is "Mazamars312.NeoGeo" or "Mazamars312.NeoGeo_Overdrive")
+        {
+            return new Dictionary<string, object>
+            {
+                { "installed", installed },
+                { "skipped", skipped },
+                { "missingBetaKey", false }
             };
         }
-        
-        if(Directory.Exists(instancesDirectory)) {
-            string[] files = Directory.GetFiles(instancesDirectory,"*.json", SearchOption.AllDirectories);
-            foreach(string file in files) {
-                try {
-                    //skip mac ._ files
-                    if(File.GetAttributes(file).HasFlag(FileAttributes.Hidden)) {
+
+        if (CheckInstancePackager())
+        {
+            BuildInstanceJSONs();
+
+            return new Dictionary<string, object>
+            {
+                { "installed", installed },
+                { "skipped", skipped },
+                { "missingBetaKey", false }
+            };
+        }
+
+        if (Directory.Exists(instancesDirectory))
+        {
+            string[] files = Directory.GetFiles(instancesDirectory, "*.json", SearchOption.AllDirectories);
+
+            foreach (string file in files)
+            {
+                try
+                {
+                    // skip mac ._ files
+                    if (File.GetAttributes(file).HasFlag(FileAttributes.Hidden))
+                    {
                         continue;
                     }
-                    if(Factory.GetGlobals().SettingsManager.GetConfig().skip_alternative_assets && file.Contains(Path.Combine(instancesDirectory, "_alternatives"))) {
+
+                    if (GlobalHelper.SettingsManager.GetConfig().skip_alternative_assets &&
+                        file.Contains(Path.Combine(instancesDirectory, "_alternatives")))
+                    {
                         continue;
                     }
-                    Analogue.InstanceJSON instance = JsonSerializer.Deserialize<Analogue.InstanceJSON>(File.ReadAllText(file), options);
-                    if(instance.instance.data_slots.Length > 0) {
-                        string data_path = instance.instance.data_path;
-                        foreach(Analogue.DataSlot slot in instance.instance.data_slots) {
-                            var plat = info.metadata.platform_ids[betaSlotPlatformIdIndex];
-                            if(!CheckBetaMD5(slot, plat)) {
-                                _writeMessage("Invalid or missing beta key.");
+
+                    InstanceJSON instanceJson = JsonSerializer.Deserialize<InstanceJSON>(File.ReadAllText(file), options);
+
+                    if (instanceJson.instance.data_slots.Length > 0)
+                    {
+                        string dataPath = instanceJson.instance.data_path;
+
+                        foreach (DataSlot slot in instanceJson.instance.data_slots)
+                        {
+                            var plat = info.metadata.platform_ids[this.beta_slot_platform_id_index];
+
+                            if (!CheckBetaMD5(slot, plat))
+                            {
+                                WriteMessage("Invalid or missing beta key.");
                                 missingBetaKey = true;
                             }
-                            if(!Factory.GetGlobals().Blacklist.Contains(slot.filename) && !slot.filename.EndsWith(".sav")) {
-                                string path = Path.Combine(UpdateDirectory, "Assets", info.metadata.platform_ids[0], "common", data_path, slot.filename);
-                                if(File.Exists(path) && CheckCRC(path)) {
-                                    _writeMessage("Already installed: " + slot.filename);
-                                } else {
-                                    if(await DownloadAsset(slot.filename, path)) {
-                                        installed.Add(path.Replace(UpdateDirectory, ""));
-                                    } else {
-                                        skipped.Add(path.Replace(UpdateDirectory, ""));
+
+                            if (!GlobalHelper.Blacklist.Contains(slot.filename) &&
+                                !slot.filename.EndsWith(".sav"))
+                            {
+                                string path = Path.Combine(updateDirectory, "Assets", info.metadata.platform_ids[0],
+                                    "common", dataPath, slot.filename);
+
+                                if (File.Exists(path) && CheckCRC(path))
+                                {
+                                    WriteMessage("Already installed: " + slot.filename);
+                                }
+                                else
+                                {
+                                    if (await DownloadAsset(slot.filename, path))
+                                    {
+                                        installed.Add(path.Replace(updateDirectory, ""));
+                                    }
+                                    else
+                                    {
+                                        skipped.Add(path.Replace(updateDirectory, ""));
                                     }
                                 }
                             }
                         }
                     }
-                } catch (Exception e) {
-                    _writeMessage("Error while processing " + file);
-                    _writeMessage(e.Message);
+                }
+                catch (Exception e)
+                {
+                    WriteMessage("Error while processing " + file);
+                    WriteMessage(e.Message);
                 }
             }
         }
-        Dictionary<string, Object> results = new Dictionary<string, Object>{
-            {"installed", installed },
-            {"skipped", skipped },
-            {"missingBetaKey", missingBetaKey }
+
+        Dictionary<string, object> results = new Dictionary<string, object>
+        {
+            { "installed", installed },
+            { "skipped", skipped },
+            { "missingBetaKey", missingBetaKey }
         };
         return results;
     }
 
-    public Analogue.Cores.Core.Core? getConfig()
+    public AnalogueCore GetConfig()
     {
-        checkUpdateDirectory();
-        string file = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Cores", this.identifier, "core.json");
+        CheckUpdateDirectory();
+
+        string file = Path.Combine(GlobalHelper.UpdateDirectory, "Cores", this.identifier, "core.json");
+
         if (!File.Exists(file))
         {
             return null;
         }
+
         string json = File.ReadAllText(file);
-        var options = new JsonSerializerOptions()
-        {
-            AllowTrailingCommas = true
-        };
-        Analogue.Cores.Core.Core? config = JsonSerializer.Deserialize<Dictionary<string, Analogue.Cores.Core.Core>>(json, options)["core"];
+        var options = new JsonSerializerOptions { AllowTrailingCommas = true };
+        AnalogueCore config = JsonSerializer.Deserialize<Dictionary<string, AnalogueCore>>(json, options)["core"];
 
         return config;
     }
 
-    public Updater.Substitute[]? getSubstitutes()
+    public bool IsInstalled()
     {
-        checkUpdateDirectory();
-        string file = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Cores", this.identifier, "updaters.json");
-        if (!File.Exists(file))
-        {
-            return null;
-        }
-        string json = File.ReadAllText(file);
-        var options = new JsonSerializerOptions()
-        {
-            AllowTrailingCommas = true
-        };
-        Updater.Updaters? config = JsonSerializer.Deserialize<Updater.Updaters>(json, options);
+        CheckUpdateDirectory();
 
-        if (config == null) {
-            return null;
-        }
+        string localCoreFile = Path.Combine(GlobalHelper.UpdateDirectory, "Cores", this.identifier, "core.json");
 
-        return config.previous;
-    }
-
-    public bool isInstalled()
-    {
-        checkUpdateDirectory();
-        string localCoreFile = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Cores", this.identifier, "core.json");
         return File.Exists(localCoreFile);
     }
 
     private async Task<bool> DownloadAsset(string filename, string destination)
     {
-        if(Factory.GetGlobals().ArchiveFiles != null) {
-            archiveorg.File? file = Factory.GetGlobals().ArchiveFiles.GetFile(filename);
-            if(file == null) {
-                _writeMessage("Unable to find " + filename + " in archive");
+        if (GlobalHelper.ArchiveFiles != null)
+        {
+            ArchiveFile file = GlobalHelper.ArchiveFiles.GetFile(filename);
+
+            if (file == null)
+            {
+                WriteMessage("Unable to find " + filename + " in archive");
                 return false;
             }
         }
 
-        try {
+        try
+        {
             string url = BuildAssetUrl(filename);
             int count = 0;
-            do {
-                _writeMessage("Downloading " + filename);
-                await Factory.GetHttpHelper().DownloadFileAsync(url, destination, 600);
-                _writeMessage("Finished downloading " + filename);
+
+            do
+            {
+                WriteMessage("Downloading " + filename);
+                await HttpHelper.Instance.DownloadFileAsync(url, destination, 600);
+                WriteMessage("Finished downloading " + filename);
                 count++;
-            } while(count < 3 && !CheckCRC(destination));
-        } catch(HttpRequestException e) {
-            if(e.StatusCode == System.Net.HttpStatusCode.NotFound) {
-                _writeMessage("Unable to find " + filename + " in archive");
-            } else {
-                _writeMessage("There was a problem downloading " + filename);
+            }
+            while (count < 3 && !CheckCRC(destination));
+        }
+        catch (HttpRequestException e)
+        {
+            if (e.StatusCode == HttpStatusCode.NotFound)
+            {
+                WriteMessage("Unable to find " + filename + " in archive");
+            }
+            else
+            {
+                WriteMessage("There was a problem downloading " + filename);
             }
 
             return false;
@@ -387,48 +422,53 @@ public class Core : Base
         return true;
     }
 
-    private string BuildAssetUrl(string filename)
+    private static string BuildAssetUrl(string filename)
     {
-        if(Factory.GetGlobals().SettingsManager.GetConfig().use_custom_archive) {
-            var custom = Factory.GetGlobals().SettingsManager.GetConfig().custom_archive;
+        if (GlobalHelper.SettingsManager.GetConfig().use_custom_archive)
+        {
+            var custom = GlobalHelper.SettingsManager.GetConfig().custom_archive;
             Uri baseUrl = new Uri(custom["url"]);
             Uri url = new Uri(baseUrl, filename);
             return url.ToString();
-        } else {
-            return ARCHIVE_BASE_URL + "/" + Factory.GetGlobals().SettingsManager.GetConfig().archive_name + "/" + filename;
         }
+
+        return ARCHIVE_BASE_URL + "/" + GlobalHelper.SettingsManager.GetConfig().archive_name + "/" + filename;
     }
 
     private bool CheckCRC(string filepath)
     {
-        if(Factory.GetGlobals().ArchiveFiles == null || !Factory.GetGlobals().SettingsManager.GetConfig().crc_check) {
+        if (GlobalHelper.ArchiveFiles == null || !GlobalHelper.SettingsManager.GetConfig().crc_check)
+        {
             return true;
         }
+
         string filename = Path.GetFileName(filepath);
-        archiveorg.File? file = Factory.GetGlobals().ArchiveFiles.GetFile(filename);
-        if(file == null) {
+        ArchiveFile file = GlobalHelper.ArchiveFiles.GetFile(filename);
+
+        if (file == null)
+        {
             return true; //no checksum to compare to
         }
 
-        if(Util.CompareChecksum(filepath, file.crc32)) {
+        if (Util.CompareChecksum(filepath, file.crc32))
+        {
             return true;
         }
 
-        _writeMessage(filename + ": Bad checksum!");
+        WriteMessage(filename + ": Bad checksum!");
         return false;
     }
 
-    //return false if a beta ley is required and missing or wrong
-    private bool CheckBetaMD5(Analogue.DataSlot slot, string platform)
+    // return false if a beta ley is required and missing or wrong
+    private bool CheckBetaMD5(DataSlot slot, string platform)
     {
-        if(slot.md5 != null && (betaSlotId != null && slot.id == betaSlotId)) {
-            string UpdateDirectory = Factory.GetGlobals().UpdateDirectory;
-            string path = Path.Combine(UpdateDirectory, "Assets", platform);
+        if (slot.md5 != null && (this.beta_slot_id != null && slot.id == this.beta_slot_id))
+        {
+            string updateDirectory = GlobalHelper.UpdateDirectory;
+            string path = Path.Combine(updateDirectory, "Assets", platform);
             string filepath = Path.Combine(path, "common", slot.filename);
-            if(!File.Exists(filepath)) {
-                return false;
-            }
-            return Util.CompareChecksum(filepath, slot.md5, Util.HashTypes.MD5);
+
+            return File.Exists(filepath) && Util.CompareChecksum(filepath, slot.md5, Util.HashTypes.MD5);
         }
 
         return true;
@@ -436,115 +476,157 @@ public class Core : Base
 
     public void BuildInstanceJSONs(bool overwrite = true)
     {
-        if(!buildInstances) {
+        if (!this.build_instances)
+        {
             return;
         }
-        string instancePackagerFile = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Cores", this.identifier, "instance-packager.json");
-        if(!File.Exists(instancePackagerFile)) {
+
+        string instancePackagerFile = Path.Combine(GlobalHelper.UpdateDirectory, "Cores", this.identifier, "instance-packager.json");
+
+        if (!File.Exists(instancePackagerFile))
+        {
             return;
         }
-        _writeMessage("Building instance json files.");
-        InstancePackager packager = JsonSerializer.Deserialize<InstancePackager>(File.ReadAllText(instancePackagerFile));
-        string commonPath = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Assets", packager.platform_id, "common");
-        string outputDir = Path.Combine(Factory.GetGlobals().UpdateDirectory, packager.output);
+
+        WriteMessage("Building instance json files.");
+        InstanceJsonPackager jsonPackager = JsonSerializer.Deserialize<InstanceJsonPackager>(File.ReadAllText(instancePackagerFile));
+        string commonPath = Path.Combine(GlobalHelper.UpdateDirectory, "Assets", jsonPackager.platform_id, "common");
         bool warning = false;
-        foreach(string dir in Directory.GetDirectories(commonPath, "*", SearchOption.AllDirectories)) {
-            Analogue.SimpleInstanceJSON instancejson = new Analogue.SimpleInstanceJSON();
-            Analogue.SimpleInstance instance = new Analogue.SimpleInstance();
+
+        foreach (string dir in Directory.GetDirectories(commonPath, "*", SearchOption.AllDirectories))
+        {
+            SimpleInstanceJSON simpleInstanceJson = new SimpleInstanceJSON();
+            SimpleInstance instance = new SimpleInstance();
             string dirName = Path.GetFileName(dir);
-            try {
+
+            try
+            {
                 instance.data_path = dir.Replace(commonPath + Path.DirectorySeparatorChar, "") + "/";
-                List<Analogue.InstanceDataSlot> slots = new List<Analogue.InstanceDataSlot>();
+
+                List<SimpleDataSlot> slots = new();
                 string jsonFileName = dirName + ".json";
-                foreach(DataSlot slot in packager.data_slots) {
+
+                foreach (InstancePackagerDataSlot slot in jsonPackager.data_slots)
+                {
                     string[] files = Directory.GetFiles(dir, slot.filename);
                     int index = slot.id;
-                    switch(slot.sort) {
+
+                    switch (slot.sort)
+                    {
                         case "single":
                         case "ascending":
                             Array.Sort(files);
                             break;
+
                         case "descending":
-                            IComparer myComparer = new myReverserClass();
+                            IComparer myComparer = new ReverseComparer();
                             Array.Sort(files, myComparer);
                             break;
                     }
-                    if(slot.required && files.Count() == 0) {
+
+                    if (slot.required && !files.Any())
+                    {
                         throw new MissingRequiredInstanceFiles("Missing required files.");
                     }
-                    foreach(string file in files) {
-                        if(File.GetAttributes(file).HasFlag(FileAttributes.Hidden)) {
+
+                    foreach (string file in files)
+                    {
+                        if (File.GetAttributes(file).HasFlag(FileAttributes.Hidden))
+                        {
                             continue;
                         }
-                        Analogue.InstanceDataSlot current = new Analogue.InstanceDataSlot();
+
+                        SimpleDataSlot current = new();
                         string filename = Path.GetFileName(file);
-                        if(slot.as_filename) {
+
+                        if (slot.as_filename)
+                        {
                             jsonFileName = Path.GetFileNameWithoutExtension(file) + ".json";
                         }
+
                         current.id = index.ToString();
                         current.filename = filename;
                         index++;
                         slots.Add(current);
                     }
                 }
-                var limit = (JsonElement)packager.slot_limit["count"];
-                if (slots.Count == 0 || (packager.slot_limit != null && slots.Count > limit.GetInt32())) {
-                    _writeMessage("Unable to build " + jsonFileName);
+
+                var limit = (JsonElement)jsonPackager.slot_limit["count"];
+
+                if (slots.Count == 0 || (jsonPackager.slot_limit != null && slots.Count > limit.GetInt32()))
+                {
+                    WriteMessage("Unable to build " + jsonFileName);
                     warning = true;
                     continue;
                 }
+
                 instance.data_slots = slots.ToArray();
-                instancejson.instance = instance;
-                var options = new JsonSerializerOptions()
-                {
-                    WriteIndented = true
-                };
+                simpleInstanceJson.instance = instance;
+
+                var options = new JsonSerializerOptions { WriteIndented = true };
                 string[] parts = dir.Split(commonPath);
                 parts = parts[1].Split(jsonFileName.Remove(jsonFileName.Length - 5));
-                string subdir = "";
-                if(parts[0].Length > 1) {
-                    subdir = parts[0].Trim(Path.DirectorySeparatorChar);
+                string subDirectory = string.Empty;
+
+                if (parts[0].Length > 1)
+                {
+                    subDirectory = parts[0].Trim(Path.DirectorySeparatorChar);
                 }
-                string outputfile = Path.Combine(Factory.GetGlobals().UpdateDirectory, packager.output, subdir, jsonFileName);
-                if(!overwrite && File.Exists(outputfile)) {
-                    _writeMessage(jsonFileName + " already exists.");
-                } else {
-                    string json = JsonSerializer.Serialize<Analogue.SimpleInstanceJSON>(instancejson, options);
-                    _writeMessage("Saving " + jsonFileName);
-                    FileInfo file = new System.IO.FileInfo(outputfile);
+
+                string outputFile = Path.Combine(GlobalHelper.UpdateDirectory, jsonPackager.output, subDirectory, jsonFileName);
+
+                if (!overwrite && File.Exists(outputFile))
+                {
+                    WriteMessage(jsonFileName + " already exists.");
+                }
+                else
+                {
+                    string json = JsonSerializer.Serialize(simpleInstanceJson, options);
+
+                    WriteMessage("Saving " + jsonFileName);
+
+                    FileInfo file = new FileInfo(outputFile);
+
                     file.Directory.Create(); // If the directory already exists, this method does nothing.
-                    File.WriteAllText(outputfile, json);
+
+                    File.WriteAllText(outputFile, json);
                 }
-            } catch(MissingRequiredInstanceFiles) {
-                //do nothin
-            } catch(Exception e) {
-                _writeMessage("Unable to build " + dirName);
+            }
+            catch (MissingRequiredInstanceFiles)
+            {
+                // Do nothing.
+            }
+            catch (Exception)
+            {
+                WriteMessage("Unable to build " + dirName);
             }
         }
-        if (warning) {
-            var message = (JsonElement)packager.slot_limit["message"];
-            _writeMessage(message.GetString());
+
+        if (warning)
+        {
+            var message = (JsonElement)jsonPackager.slot_limit["message"];
+
+            WriteMessage(message.GetString());
         }
-        _writeMessage("Finished");
+
+        WriteMessage("Finished");
     }
 
     public bool CheckInstancePackager()
     {
-        string instancePackagerFile = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Cores", this.identifier, "instance-packager.json");
+        string instancePackagerFile = Path.Combine(GlobalHelper.UpdateDirectory, "Cores", this.identifier, "instance-packager.json");
+
         return File.Exists(instancePackagerFile);
     }
 
-    public Analogue.DataJSON ReadDataJSON()
+    private DataJSON ReadDataJSON()
     {
-        string UpdateDirectory = Factory.GetGlobals().UpdateDirectory;
-        string coreDirectory = Path.Combine(UpdateDirectory, "Cores", this.identifier);
+        string updateDirectory = GlobalHelper.UpdateDirectory;
+        string coreDirectory = Path.Combine(updateDirectory, "Cores", this.identifier);
         string dataFile = Path.Combine(coreDirectory, "data.json");
-        var options = new JsonSerializerOptions
-        {
-            Converters = { new StringConverter() }
-        };
+        var options = new JsonSerializerOptions { Converters = { new StringConverter() } };
 
-        Analogue.DataJSON data = JsonSerializer.Deserialize<Analogue.DataJSON>(File.ReadAllText(dataFile), options);
+        DataJSON data = JsonSerializer.Deserialize<DataJSON>(File.ReadAllText(dataFile), options);
 
         return data;
     }
@@ -552,12 +634,14 @@ public class Core : Base
     public bool JTBetaCheck()
     {
         var data = ReadDataJSON();
-        bool check = data.data.data_slots.Any(x=>x.name=="JTBETA");
+        bool check = data.data.data_slots.Any(x => x.name == "JTBETA");
 
-        if (check) {
-            var slot = data.data.data_slots.Where(x=>x.name=="JTBETA").First();
-            betaSlotId = slot.id;
-            betaSlotPlatformIdIndex = slot.getPlatformIdIndex();
+        if (check)
+        {
+            var slot = data.data.data_slots.First(x => x.name == "JTBETA");
+
+            this.beta_slot_id = slot.id;
+            this.beta_slot_platform_id_index = slot.GetPlatformIdIndex();
         }
 
         return check;
@@ -565,66 +649,73 @@ public class Core : Base
 
     public async Task ReplaceCheck()
     {
-        if (replaces != null) {
-            foreach(string id in replaces) {
-                Core c = new Core(){identifier = id};
-                if (c.isInstalled()) {
+        if (replaces != null)
+        {
+            foreach (string id in replaces)
+            {
+                Core c = new Core { identifier = id };
+
+                if (c.IsInstalled())
+                {
                     c.Uninstall();
-                    _writeMessage($"Uninstalled {id}. It was replaced by this core.");
+                    WriteMessage($"Uninstalled {id}. It was replaced by this core.");
                 }
             }
         }
     }
 
-    public async Task<Analogue.Cores.Video.Video> GetVideoConfig()
+    public async Task<Video> GetVideoConfig()
     {
-        checkUpdateDirectory();
-        string file = Path.Combine(Factory.GetGlobals().UpdateDirectory, "Cores", this.identifier, "video.json");
+        CheckUpdateDirectory();
+
+        string file = Path.Combine(GlobalHelper.UpdateDirectory, "Cores", this.identifier, "video.json");
+
         if (!File.Exists(file))
         {
             return null;
         }
+
         string json = File.ReadAllText(file);
-        var options = new JsonSerializerOptions()
-        {
-            AllowTrailingCommas = true
-        };
-        Analogue.Cores.Video.Video? config = JsonSerializer.Deserialize<Dictionary<string, Analogue.Cores.Video.Video>>(json, options)["video"];
+        var options = new JsonSerializerOptions { AllowTrailingCommas = true };
+        Video config = JsonSerializer.Deserialize<Dictionary<string, Video>>(json, options)["video"];
 
         return config;
     }
 
     public async Task AddDisplayModes()
     {
-        var info = this.getConfig();
+        var info = this.GetConfig();
         var video = await GetVideoConfig();
-        List<Analogue.Cores.Video.DisplayMode> all = new List<Analogue.Cores.Video.DisplayMode>();
-        foreach(string id in allModes) {
-            all.Add(new Analogue.Cores.Video.DisplayMode{id = id});
+        List<DisplayMode> all = new List<DisplayMode>();
+
+        foreach (string id in ALL_MODES)
+        {
+            all.Add(new DisplayMode { id = id });
         }
-        if(info.metadata.platform_ids.Contains("gb")) {
-            foreach(string id in gbModes) {
-                all.Add(new Analogue.Cores.Video.DisplayMode{id = id});
+
+        if (info.metadata.platform_ids.Contains("gb"))
+        {
+            foreach (string id in GB_MODES)
+            {
+                all.Add(new DisplayMode { id = id });
             }
         }
+
         video.display_modes = all;
 
-        Dictionary<string, Analogue.Cores.Video.Video> output = new Dictionary<string, Analogue.Cores.Video.Video>();
-        output.Add("video", video);
-        var options = new JsonSerializerOptions()
-        {
-            WriteIndented = true
-        };
+        Dictionary<string, Video> output = new Dictionary<string, Video> { { "video", video } };
+        var options = new JsonSerializerOptions { WriteIndented = true };
         string json = JsonSerializer.Serialize(output, options);
-    
-        File.WriteAllText(Path.Combine(Factory.GetGlobals().UpdateDirectory, "Cores", this.identifier, "video.json"), json);
+
+        File.WriteAllText(Path.Combine(GlobalHelper.UpdateDirectory, "Cores", this.identifier, "video.json"), json);
     }
 }
 
-public class myReverserClass : IComparer  {
-
-      // Calls CaseInsensitiveComparer.Compare with the parameters reversed.
-      int IComparer.Compare( Object x, Object y )  {
-          return( (new CaseInsensitiveComparer()).Compare( y, x ) );
-      }
-   }
+public class ReverseComparer : IComparer
+{
+    // Calls CaseInsensitiveComparer.Compare with the parameters reversed.
+    int IComparer.Compare(object x, object y)
+    {
+        return new CaseInsensitiveComparer().Compare(y, x);
+    }
+}

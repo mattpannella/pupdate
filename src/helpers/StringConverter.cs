@@ -1,21 +1,18 @@
-namespace pannella;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
-public class StringConverter : System.Text.Json.Serialization.JsonConverter<string>
+namespace Pannella.Helpers;
+
+public class StringConverter : JsonConverter<string>
 {
     public override string Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        if (reader.TokenType == JsonTokenType.Number)
+        return reader.TokenType switch
         {
-            var stringValue = reader.GetInt32();
-            return stringValue.ToString();
-        }
-        else if (reader.TokenType == JsonTokenType.String)
-        {
-            return reader.GetString();
-        }
-
-        throw new System.Text.Json.JsonException();
+            JsonTokenType.Number => reader.GetInt32().ToString(),
+            JsonTokenType.String => reader.GetString(),
+            _ => throw new JsonException()
+        };
     }
 
     public override void Write(Utf8JsonWriter writer, string value, JsonSerializerOptions options)

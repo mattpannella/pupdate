@@ -1,14 +1,14 @@
-using System;
 using System.Text.Json;
-using System.IO;
+using Pannella.Models;
+using Pannella.Models.Settings;
 
-namespace pannella.analoguepocket;
+namespace Pannella;
 
 public class SettingsManager
 {
-    private Settings _settings;
-    private string _settingsFile;
-    private List<Core> _newCores = new();
+    private readonly Settings _settings;
+    private readonly string _settingsFile;
+    private readonly List<Core> _newCores = new();
 
     private const string OLD_DEFAULT = "pocket-roms";
     private const string NEW_DEFAULT = "openFPGA-Files";
@@ -16,9 +16,10 @@ public class SettingsManager
     private const string OLD_SETTINGS_FILENAME = "pocket_updater_settings.json";
     private const string SETTINGS_FILENAME = "pupdate_settings.json";
 
-    public SettingsManager(string settingsPath, List<Core>? cores = null)
+    public SettingsManager(string settingsPath, List<Core> cores = null)
     {
         _settings = new Settings();
+
         string file = Path.Combine(settingsPath, SETTINGS_FILENAME);
         string oldFile = Path.Combine(settingsPath, OLD_SETTINGS_FILENAME);
         string json = null!;
@@ -37,130 +38,100 @@ public class SettingsManager
         {
             _settings = JsonSerializer.Deserialize<Settings>(json);
 
-            //hack to force people over to new default :)
-            if(_settings.config.archive_name == OLD_DEFAULT) {
+            // hack to force people over to new default :)
+            if (_settings.config.archive_name == OLD_DEFAULT)
+            {
                 _settings.config.archive_name = NEW_DEFAULT;
             }
         }
 
-        //bandaid to fix old settings files
-        if(_settings.config == null) {
-            _settings.config = new Config();
-        }
+        // bandaid to fix old settings files
+        _settings.config ??= new Config();
         _settingsFile = file;
 
-        if(cores != null) {
+        if (cores != null)
+        {
             InitializeCoreSettings(cores);
         }
 
         SaveSettings();
     }
 
-    //loop through every core, and add any missing ones to the settings file
+    // loop through every core, and add any missing ones to the settings file
     public void InitializeCoreSettings(List<Core> cores)
     {
-        if(_settings.coreSettings == null) {
-            _settings.coreSettings = new Dictionary<string,CoreSettings>();
-        }
-        foreach(Core core in cores)
+        _settings.coreSettings ??= new Dictionary<string, CoreSettings>();
+
+        foreach (Core core in cores)
         {
-            if(!_settings.coreSettings.ContainsKey(core.identifier)) {
+            if (!_settings.coreSettings.ContainsKey(core.identifier))
+            {
                 _newCores.Add(core);
             }
         }
     }
 
     public List<Core> GetMissingCores() => _newCores;
+
     public void EnableMissingCores(List<Core> cores)
     {
         foreach (var core in cores)
+        {
             EnableCore(core.identifier);
+        }
     }
+
     public void DisableMissingCores(List<Core> cores)
     {
         foreach (var core in cores)
+        {
             DisableCore(core.identifier);
+        }
     }
 
-    public bool SaveSettings()
+    public void SaveSettings()
     {
         var options = new JsonSerializerOptions { WriteIndented = true };
         File.WriteAllText(_settingsFile, JsonSerializer.Serialize(_settings, options));
-
-        return true;
     }
 
     public void DisableCore(string name)
     {
-        if(_settings.coreSettings.ContainsKey(name))
+        if (_settings.coreSettings.TryGetValue(name, out CoreSettings value))
         {
-            _settings.coreSettings[name].skip = true;
+            value.skip = true;
         }
         else
         {
-            CoreSettings core = new CoreSettings();
-            core.skip = true;
+            CoreSettings core = new CoreSettings { skip = true };
+
             _settings.coreSettings.Add(name, core);
         }
     }
 
     public void EnableCore(string name)
     {
-        if (_settings.coreSettings.ContainsKey(name))
+        if (_settings.coreSettings.TryGetValue(name, out CoreSettings value))
         {
-            _settings.coreSettings[name].skip = false;
+            value.skip = false;
         }
         else
         {
-            CoreSettings core = new CoreSettings();
-            core.skip = false;
-            _settings.coreSettings.Add(name, core);
-        }
-    }
+            CoreSettings core = new CoreSettings { skip = false };
 
-    public void UpdateCore(CoreSettings core, string name)
-    {
-        if (_settings.coreSettings.ContainsKey(name))
-        {
-            _settings.coreSettings[name] = core;
-        }
-        else
-        {
             _settings.coreSettings.Add(name, core);
         }
     }
 
     public CoreSettings GetCoreSettings(string name)
     {
-        if (_settings.coreSettings.ContainsKey(name))
-        {
-            return _settings.coreSettings[name];
-        }
-        else
-        {
-            return new CoreSettings();
-        }
-    }
-
-    public Firmware GetCurrentFirmware()
-    {
-        return _settings.firmware;
-    }
-
-    public void SetFirmwareVersion(string version)
-    {
-        _settings.firmware.version = version;
-        SaveSettings();
+        return _settings.coreSettings.TryGetValue(name, out CoreSettings value)
+            ? value
+            : new CoreSettings();
     }
 
     public Config GetConfig()
     {
         return _settings.config;
     }
-
-    public void UpdateConfig(Config config)
-    {
-        _settings.config = config;
-    }
-
 }

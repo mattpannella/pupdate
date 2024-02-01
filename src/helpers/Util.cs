@@ -1,14 +1,16 @@
-using System.IO;
-using Force.Crc32;
 using System.Security.Cryptography;
-namespace pannella.analoguepocket;
+using Force.Crc32;
+
+namespace Pannella.Helpers;
 
 public class Util
 {
-    private static string _platformsDirectory = "Platforms";
-    private static string _temp = "imagesbackup";
+    private const string PLATFORMS_DIRECTORY = "Platforms";
+
     private static readonly string[] BAD_DIRS = { "__MACOSX" };
-    public enum HashTypes {
+
+    public enum HashTypes
+    {
         CRC32,
         MD5
     }
@@ -20,7 +22,9 @@ public class Util
 
         // Check if the source directory exists
         if (!dir.Exists)
+        {
             throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");
+        }
 
         // Cache directories before we start copying
         DirectoryInfo[] dirs = dir.GetDirectories();
@@ -32,6 +36,7 @@ public class Util
         foreach (FileInfo file in dir.GetFiles())
         {
             string targetFilePath = Path.Combine(destinationDir, file.Name);
+
             file.CopyTo(targetFilePath, overwrite);
         }
 
@@ -41,6 +46,7 @@ public class Util
             foreach (DirectoryInfo subDir in dirs)
             {
                 string newDestinationDir = Path.Combine(destinationDir, subDir.Name);
+
                 CopyDirectory(subDir.FullName, newDestinationDir, true, overwrite);
             }
         }
@@ -49,82 +55,95 @@ public class Util
     public static void CleanDir(string source, bool preservePlatformsFolder = false, string platform = "")
     {
         // Clean up any bad directories (like Mac OS directories).
-        foreach(var dir in BAD_DIRS) {
-            try {
+        foreach (var dir in BAD_DIRS)
+        {
+            try
+            {
                 Directory.Delete(Path.Combine(source, dir), true);
             }
-            catch { }
+            catch
+            {
+                // Ignore
+            }
         }
 
-        if(preservePlatformsFolder) {
-            string existing = Path.Combine(Factory.GetGlobals().UpdateDirectory, _platformsDirectory, platform + ".json");
-            if(File.Exists(existing)) {
-                try {
-                    string dir = Path.Combine(source, _platformsDirectory);
+        if (preservePlatformsFolder)
+        {
+            string existing = Path.Combine(GlobalHelper.UpdateDirectory, PLATFORMS_DIRECTORY, platform + ".json");
+
+            if (File.Exists(existing))
+            {
+                try
+                {
+                    string dir = Path.Combine(source, PLATFORMS_DIRECTORY);
+
                     Directory.Delete(dir, true);
                 }
-                catch { }
+                catch
+                {
+                    // Ignore
+                }
             }
         }
 
         // Clean files.
-        var files = Directory.EnumerateFiles(source).Where(file => isBadFile(Path.GetFileName(file)));
-        foreach(var file in files) {
-            try {
+        var files = Directory.EnumerateFiles(source).Where(file => IsBadFile(Path.GetFileName(file)));
+
+        foreach (var file in files)
+        {
+            try
+            {
                 File.Delete(file);
             }
-            catch { }
+            catch
+            {
+                // Ignore
+            }
         }
 
         // Recurse through subdirectories.
         var dirs = Directory.GetDirectories(source);
-        foreach(var dir in dirs) {
+
+        foreach (var dir in dirs)
+        {
             CleanDir(Path.Combine(source, Path.GetFileName(dir)));
         }
-
-        static bool isBadFile(string name)
-        {
-            if (name.StartsWith('.')) return true;
-            if (name.EndsWith(".mra")) return true;
-            if (name.EndsWith(".txt")) return true;
-            return false;
-        }
     }
 
-    public static string GetCRC32(string filepath)
+    private static bool IsBadFile(string name)
     {
-        if(File.Exists(filepath)) {
-            var checksum = Crc32Algorithm.Compute(File.ReadAllBytes(filepath));
-            return checksum.ToString("x8");
-        } else {
-            throw new Exception("File doesn't exist. Cannot compute checksum");
-        }
-    }
-
-    public static string GetMD5(string filepath)
-    {
-        if(File.Exists(filepath)) {
-            var checksum = MD5.HashData(File.ReadAllBytes(filepath));
-            return Convert.ToHexString(checksum);
-        } else {
-            throw new Exception("File doesn't exist. Cannot compute checksum");
-        }
+        return name.StartsWith('.') || name.EndsWith(".mra") || name.EndsWith(".txt");
     }
 
     public static bool CompareChecksum(string filepath, string checksum, HashTypes type = HashTypes.CRC32)
     {
+        if (!File.Exists(filepath))
+        {
+            throw new Exception("File doesn't exist. Cannot compute checksum.");
+        }
+
         string hash;
-        switch(type) {
+
+        switch (type)
+        {
             case HashTypes.MD5:
-                hash = GetMD5(filepath);
+            {
+                var newChecksum = MD5.HashData(File.ReadAllBytes(filepath));
+
+                hash = Convert.ToHexString(newChecksum);
                 break;
+            }
+
             case HashTypes.CRC32:
             default:
-                hash = GetCRC32(filepath);
+            {
+                var newChecksum = Crc32Algorithm.Compute(File.ReadAllBytes(filepath));
+
+                hash = newChecksum.ToString("x8");
                 break;
+            }
         }
-        
+
         return hash.Equals(checksum, StringComparison.CurrentCultureIgnoreCase);
     }
-    
 }
