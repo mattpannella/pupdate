@@ -16,7 +16,6 @@ public class Core : Base
     public string? download_url { get; set; }
     public string? release_date { get; set; }
     public string? version { get; set; }
-    public CoreReplacement[]? replaces { get; set; }
     public string? betaSlotId = null;
     public int betaSlotPlatformIdIndex = 0;
 
@@ -50,7 +49,12 @@ public class Core : Base
             Delete();
         }
         //iterate through assets to find the zip release
-        return await _installGithubAsset();
+        if(await _installGithubAsset()) {
+            await this.ReplaceCheck();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private async Task<bool> _installGithubAsset()
@@ -335,11 +339,7 @@ public class Core : Base
             return null;
         }
         string json = File.ReadAllText(file);
-        var options = new JsonSerializerOptions()
-        {
-            AllowTrailingCommas = true
-        };
-        Updater.Updaters? config = JsonSerializer.Deserialize<Updater.Updaters>(json, options);
+        Updater.Updaters? config = JsonSerializer.Deserialize<Updater.Updaters>(json);
 
         if (config == null) {
             return null;
@@ -565,8 +565,12 @@ public class Core : Base
 
     public async Task ReplaceCheck()
     {
-        if (this.replaces != null) {
-            foreach(var replacement in this.replaces) {
+        if(this.identifier == "matt.genesis") {
+            var m = "g";
+        }
+        var replaces = this.getSubstitutes();
+        if (replaces != null) {
+            foreach(var replacement in replaces) {
                 string identifier = $"{replacement.author}.{replacement.shortname}";
                 Core c = new Core(){identifier = identifier, platform_id = replacement.platform_id};
                 if (c.isInstalled()) {
@@ -581,14 +585,14 @@ public class Core : Base
     private void Replace(Core core)
     {
         string root = Factory.GetGlobals().UpdateDirectory;
-        string path = Path.Combine(root, "Assets", this.platform_id, core.identifier);
+        string path = Path.Combine(root, "Assets", core.platform_id, core.identifier);
         if(Directory.Exists(path)) {
-            Directory.Move(path, Path.Combine(root, "Assets", this.platform_id, this.identifier));
+            Directory.Move(path, Path.Combine(root, "Assets", core.platform_id, this.identifier));
         }
         
-        path = Path.Combine(root, "Saves", this.platform_id, core.identifier);
+        path = Path.Combine(root, "Saves", core.platform_id, core.identifier);
         if(Directory.Exists(path)) {
-            Directory.Move(path, Path.Combine(root, "Saves", this.platform_id, this.identifier));
+            Directory.Move(path, Path.Combine(root, "Saves", core.platform_id, this.identifier));
         }
 
         path = Path.Combine(root, "Settings", core.identifier);

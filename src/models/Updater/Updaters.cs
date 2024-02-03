@@ -2,5 +2,5 @@ namespace pannella.analoguepocket.Updater;
 
 public class Updaters
 {
-    public Substitute[]? previous;
+    public Substitute[] previous { get; set; }
 }
