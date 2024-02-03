@@ -565,15 +565,25 @@ public class Core : Base
 
     public async Task ReplaceCheck()
     {
-        if (replaces != null) {
-            foreach(string id in replaces) {
+        if (this.replaces != null) {
+            foreach(string id in this.replaces) {
                 Core c = new Core(){identifier = id};
                 if (c.isInstalled()) {
+                    Replace(c);
                     c.Uninstall();
                     _writeMessage($"Uninstalled {id}. It was replaced by this core.");
                 }
             }
         }
+    }
+
+    private void Replace(Core core)
+    {
+        string root = Factory.GetGlobals().UpdateDirectory;
+
+        Directory.Move(Path.Combine(root, "Assets", this.platform_id, core.identifier), Path.Combine(root, "Assets", this.platform_id, this.identifier));
+        Directory.Move(Path.Combine(root, "Saves", this.platform_id, core.identifier), Path.Combine(root, "Saves", this.platform_id, this.identifier));
+        Directory.Move(Path.Combine(root, "Settings", core.identifier), Path.Combine(root, "Settings", this.identifier));
     }
 
     public async Task<Analogue.Cores.Video.Video> GetVideoConfig()
