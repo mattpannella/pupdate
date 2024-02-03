@@ -270,7 +270,7 @@ public class PocketCoreUpdater : Base
             MissingBetaKeys = missingBetaKeys,
             FirmwareUpdated = firmwareDownloaded
         };
-
+        GlobalHelper.RefreshInstalledCores();
         OnUpdateProcessComplete(args);
     }
 
@@ -512,12 +512,10 @@ public class PocketCoreUpdater : Base
 
     public void DeleteCore(Core core, bool force = false, bool nuke = false)
     {
-        if (!_deleteSkippedCores || !force)
+        if (_deleteSkippedCores || force)
         {
-            return;
+            core.Uninstall(nuke);
         }
-
-        core.Uninstall(nuke);
     }
 
     private void updater_StatusUpdated(object sender, StatusUpdatedEventArgs e)
