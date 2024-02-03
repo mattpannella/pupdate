@@ -580,10 +580,20 @@ public class Core : Base
     private void Replace(Core core)
     {
         string root = Factory.GetGlobals().UpdateDirectory;
+        string path = Path.Combine(root, "Assets", this.platform_id, core.identifier);
+        if(Directory.Exists(path)) {
+            Directory.Move(path, Path.Combine(root, "Assets", this.platform_id, this.identifier));
+        }
+        
+        path = Path.Combine(root, "Saves", this.platform_id, core.identifier);
+        if(Directory.Exists(path)) {
+            Directory.Move(path, Path.Combine(root, "Saves", this.platform_id, this.identifier));
+        }
 
-        Directory.Move(Path.Combine(root, "Assets", this.platform_id, core.identifier), Path.Combine(root, "Assets", this.platform_id, this.identifier));
-        Directory.Move(Path.Combine(root, "Saves", this.platform_id, core.identifier), Path.Combine(root, "Saves", this.platform_id, this.identifier));
-        Directory.Move(Path.Combine(root, "Settings", core.identifier), Path.Combine(root, "Settings", this.identifier));
+        path = Path.Combine(root, "Settings", core.identifier);
+        if(Directory.Exists(path)) {
+            Directory.Move(path, Path.Combine(root, "Settings", this.identifier));
+        }
     }
 
     public async Task<Analogue.Cores.Video.Video> GetVideoConfig()
