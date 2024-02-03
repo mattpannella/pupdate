@@ -253,8 +253,6 @@ public class PocketCoreUpdater : Base
                 _writeMessage("Checking Core: " + name);
                 var mostRecentRelease = core.version;
 
-                await core.ReplaceCheck();
-
                 if(mostRecentRelease == null) {
                     _writeMessage("No releases found. Skipping");
                     await CopyBetaKey(core);

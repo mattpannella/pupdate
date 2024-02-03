@@ -16,7 +16,6 @@ public class Core : Base
     public string? download_url { get; set; }
     public string? release_date { get; set; }
     public string? version { get; set; }
-    public string[]? replaces { get; set; }
     public string? betaSlotId = null;
     public int betaSlotPlatformIdIndex = 0;
 
@@ -50,7 +49,12 @@ public class Core : Base
             Delete();
         }
         //iterate through assets to find the zip release
-        return await _installGithubAsset();
+        if(await _installGithubAsset()) {
+            await this.ReplaceCheck();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private async Task<bool> _installGithubAsset()
@@ -335,11 +339,7 @@ public class Core : Base
             return null;
         }
         string json = File.ReadAllText(file);
-        var options = new JsonSerializerOptions()
-        {
-            AllowTrailingCommas = true
-        };
-        Updater.Updaters? config = JsonSerializer.Deserialize<Updater.Updaters>(json, options);
+        Updater.Updaters? config = JsonSerializer.Deserialize<Updater.Updaters>(json);
 
         if (config == null) {
             return null;
@@ -565,14 +565,36 @@ public class Core : Base
 
     public async Task ReplaceCheck()
     {
+        var replaces = this.getSubstitutes();
         if (replaces != null) {
-            foreach(string id in replaces) {
-                Core c = new Core(){identifier = id};
+            foreach(var replacement in replaces) {
+                string identifier = $"{replacement.author}.{replacement.shortname}";
+                Core c = new Core(){identifier = identifier, platform_id = replacement.platform_id};
                 if (c.isInstalled()) {
+                    Replace(c);
                     c.Uninstall();
-                    _writeMessage($"Uninstalled {id}. It was replaced by this core.");
+                    _writeMessage($"Uninstalled {identifier}. It was replaced by this core.");
                 }
             }
+        }
+    }
+
+    private void Replace(Core core)
+    {
+        string root = Factory.GetGlobals().UpdateDirectory;
+        string path = Path.Combine(root, "Assets", core.platform_id, core.identifier);
+        if(Directory.Exists(path)) {
+            Directory.Move(path, Path.Combine(root, "Assets", core.platform_id, this.identifier));
+        }
+        
+        path = Path.Combine(root, "Saves", core.platform_id, core.identifier);
+        if(Directory.Exists(path)) {
+            Directory.Move(path, Path.Combine(root, "Saves", core.platform_id, this.identifier));
+        }
+
+        path = Path.Combine(root, "Settings", core.identifier);
+        if(Directory.Exists(path)) {
+            Directory.Move(path, Path.Combine(root, "Settings", this.identifier));
         }
     }
 
