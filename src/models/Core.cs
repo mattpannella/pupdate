@@ -8,6 +8,7 @@ using Pannella.Models.Analogue.Instance;
 using Pannella.Models.Analogue.Instance.Simple;
 using Pannella.Models.Analogue.Video;
 using Pannella.Models.InstancePackager;
+using Pannella.Models.Updater;
 using AnalogueCore = Pannella.Models.Analogue.Core.Core;
 using ArchiveFile = Pannella.Models.Archive.File;
 using DataSlot = Pannella.Models.Analogue.Shared.DataSlot;
@@ -25,7 +26,6 @@ public class Core : Base
     public string download_url { get; set; }
     public string release_date { get; set; }
     public string version { get; set; }
-    public string[] replaces { get; set; }
     public string beta_slot_id;
     public int beta_slot_platform_id_index;
     public bool requires_license { get; set; } = false;
@@ -60,7 +60,14 @@ public class Core : Base
         }
 
         // iterate through assets to find the zip release
-        return await InstallGithubAsset(preservePlatformsFolder);
+        if (await InstallGithubAsset(preservePlatformsFolder))
+        {
+            this.ReplaceCheck();
+
+            return true;
+        }
+
+        return false;
     }
 
     private async Task<bool> InstallGithubAsset(bool preservePlatformsFolder)
@@ -369,6 +376,23 @@ public class Core : Base
         return config;
     }
 
+    public Substitute[] GetSubstitutes()
+    {
+        CheckUpdateDirectory();
+
+        string file = Path.Combine(GlobalHelper.UpdateDirectory, "Cores", this.identifier, "updaters.json");
+
+        if (!File.Exists(file))
+        {
+            return null;
+        }
+
+        string json = File.ReadAllText(file);
+        Updaters config = JsonSerializer.Deserialize<Updaters>(json);
+
+        return config?.previous;
+    }
+
     public bool IsInstalled()
     {
         CheckUpdateDirectory();
@@ -649,18 +673,45 @@ public class Core : Base
 
     public void ReplaceCheck()
     {
+        var replaces = this.GetSubstitutes();
+
         if (replaces != null)
         {
-            foreach (string id in replaces)
+            foreach (var replacement in replaces)
             {
-                Core c = new Core { identifier = id };
+                string identifier = $"{replacement.author}.{replacement.shortname}";
+                Core c = new Core { identifier = identifier, platform_id = replacement.platform_id };
 
                 if (c.IsInstalled())
                 {
+                    Replace(c);
                     c.Uninstall();
-                    WriteMessage($"Uninstalled {id}. It was replaced by this core.");
+                    WriteMessage($"Uninstalled {identifier}. It was replaced by this core.");
                 }
             }
+        }
+    }
+
+    private void Replace(Core core)
+    {
+        string root = GlobalHelper.UpdateDirectory;
+        string path = Path.Combine(root, "Assets", core.platform_id, core.identifier);
+
+        if (Directory.Exists(path))
+        {
+            Directory.Move(path, Path.Combine(root, "Assets", core.platform_id, this.identifier));
+        }
+
+        path = Path.Combine(root, "Saves", core.platform_id, core.identifier);
+        if (Directory.Exists(path))
+        {
+            Directory.Move(path, Path.Combine(root, "Saves", core.platform_id, this.identifier));
+        }
+
+        path = Path.Combine(root, "Settings", core.identifier);
+        if (Directory.Exists(path))
+        {
+            Directory.Move(path, Path.Combine(root, "Settings", this.identifier));
         }
     }
 

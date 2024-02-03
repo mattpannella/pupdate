@@ -164,8 +164,6 @@ public class PocketCoreUpdater : Base
                 WriteMessage("Checking Core: " + name);
                 var mostRecentRelease = core.version;
 
-                core.ReplaceCheck();
-
                 if (mostRecentRelease == null)
                 {
                     WriteMessage("No releases found. Skipping");
