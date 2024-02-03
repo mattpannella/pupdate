@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
 using System.Text.Json;
 using Pannella.Helpers;
@@ -9,6 +10,7 @@ using GithubFile = Pannella.Models.Github.File;
 
 namespace Pannella;
 
+[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
 public class PocketCoreUpdater : Base
 {
     private const string FIRMWARE_FILENAME_PATTERN = "pocket_firmware_*.bin";

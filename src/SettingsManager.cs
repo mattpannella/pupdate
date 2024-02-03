@@ -1,9 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Pannella.Models;
 using Pannella.Models.Settings;
 
 namespace Pannella;
 
+[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
 public class SettingsManager
 {
     private readonly Settings _settings;
@@ -133,5 +135,12 @@ public class SettingsManager
     public Config GetConfig()
     {
         return _settings.config;
+    }
+
+    // This is used by the RetroDriven Pocket Updater Windows Application
+    // ReSharper disable once UnusedMember.Global
+    public void UpdateConfig(Config config)
+    {
+        _settings.config = config;
     }
 }
