@@ -565,9 +565,6 @@ public class Core : Base
 
     public async Task ReplaceCheck()
     {
-        if(this.identifier == "matt.genesis") {
-            var m = "g";
-        }
         var replaces = this.getSubstitutes();
         if (replaces != null) {
             foreach(var replacement in replaces) {
