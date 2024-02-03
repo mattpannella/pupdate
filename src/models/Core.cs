@@ -16,7 +16,7 @@ public class Core : Base
     public string? download_url { get; set; }
     public string? release_date { get; set; }
     public string? version { get; set; }
-    public string[]? replaces { get; set; }
+    public CoreReplacement[]? replaces { get; set; }
     public string? betaSlotId = null;
     public int betaSlotPlatformIdIndex = 0;
 
@@ -566,12 +566,13 @@ public class Core : Base
     public async Task ReplaceCheck()
     {
         if (this.replaces != null) {
-            foreach(string id in this.replaces) {
-                Core c = new Core(){identifier = id};
+            foreach(var replacement in this.replaces) {
+                string identifier = $"{replacement.author}.{replacement.shortname}";
+                Core c = new Core(){identifier = identifier, platform_id = replacement.platform_id};
                 if (c.isInstalled()) {
                     Replace(c);
                     c.Uninstall();
-                    _writeMessage($"Uninstalled {id}. It was replaced by this core.");
+                    _writeMessage($"Uninstalled {identifier}. It was replaced by this core.");
                 }
             }
         }
