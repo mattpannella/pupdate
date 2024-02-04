@@ -21,7 +21,7 @@ internal partial class Program
                 var stringArray = value as List<string>;
                 links.AppendLine();
                 links.AppendLine();
-                links.Append(String.Join(Environment.NewLine, stringArray));
+                links.Append(string.Join(Environment.NewLine, stringArray));
             }
             else if (value != null && value.GetType() == typeof(string))
             {
