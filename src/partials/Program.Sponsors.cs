@@ -12,10 +12,10 @@ internal partial class Program
 
         var properties = typeof(Sponsor).GetProperties();
 
-        foreach(var prop in properties)
+        foreach (var prop in properties)
         {
             object value = prop.GetValue(sponsor, null);
-            if(value != null && value.GetType() == typeof(List<string>))
+            if (value != null && value.GetType() == typeof(List<string>))
             {
                 //String.Join didn't want to work unless I explicitely cast this
                 var stringArray = value as List<string>;
@@ -23,7 +23,7 @@ internal partial class Program
                 links.AppendLine();
                 links.Append(String.Join(Environment.NewLine, stringArray));
             }
-            else if(value != null && value.GetType() == typeof(string))
+            else if (value != null && value.GetType() == typeof(string))
             {
                 links.AppendLine();
                 links.AppendLine();
