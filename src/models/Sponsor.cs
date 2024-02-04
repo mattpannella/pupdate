@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace Pannella.Models;
 
 public class Sponsor
@@ -12,4 +14,31 @@ public class Sponsor
     public string patreon { get; set; }
     public string tidelift { get; set; }
     public List<string> custom { get; set; }
+
+    public override string ToString()
+    {
+        var links = new StringBuilder();
+        var properties = typeof(Sponsor).GetProperties();
+
+        foreach (var prop in properties)
+        {
+            object value = prop.GetValue(this, null);
+
+            links.AppendLine();
+            links.AppendLine();
+
+            if (value != null && value.GetType() == typeof(List<string>))
+            {
+                var stringArray = (List<string>)value;
+
+                links.Append(string.Join(Environment.NewLine, stringArray));
+            }
+            else if (value is string)
+            {
+                links.Append(value);
+            }
+        }
+
+        return links.ToString();
+    }
 }
