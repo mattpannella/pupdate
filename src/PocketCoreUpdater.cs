@@ -117,7 +117,6 @@ public class PocketCoreUpdater : Base
         List<string> installedAssets = new List<string>();
         List<string> skippedAssets = new List<string>();
         List<string> missingBetaKeys = new List<string>();
-        Dictionary<string, object> results = new Dictionary<string, object>();
         string firmwareDownloaded = string.Empty;
 
         if (GlobalHelper.Cores == null)
@@ -165,6 +164,8 @@ public class PocketCoreUpdater : Base
 
                 WriteMessage("Checking Core: " + name);
                 var mostRecentRelease = core.version;
+
+                Dictionary<string, object> results;
 
                 if (mostRecentRelease == null)
                 {
@@ -270,6 +271,7 @@ public class PocketCoreUpdater : Base
             MissingBetaKeys = missingBetaKeys,
             FirmwareUpdated = firmwareDownloaded
         };
+
         GlobalHelper.RefreshInstalledCores();
         OnUpdateProcessComplete(args);
     }
@@ -317,7 +319,7 @@ public class PocketCoreUpdater : Base
             core.platform_id = core.identifier.Split('.')[1]; //whatever
 
             string path = Path.Combine(GlobalHelper.UpdateDirectory, "Platforms", core.platform_id + ".json");
-            string json = File.ReadAllText(path);
+            string json = await File.ReadAllTextAsync(path);
             Dictionary<string, Platform> data = JsonSerializer.Deserialize<Dictionary<string, Platform>>(json);
             Platform platform = data["platform"];
 
@@ -474,28 +476,34 @@ public class PocketCoreUpdater : Base
 
     public async Task<string> UpdateFirmware()
     {
-        string version = "";
-        WriteMessage("Checking for firmware updates...");
-        var details = await AnalogueFirmwareService.GetDetails();
+        string version = string.Empty;
 
+        WriteMessage("Checking for firmware updates...");
+
+        var details = await AnalogueFirmwareService.GetDetails();
         string[] parts = details.download_url.Split("/");
         string filename = parts[parts.Length - 1];
         string filepath = Path.Combine(GlobalHelper.UpdateDirectory, filename);
+
         if (!File.Exists(filepath) || !Util.CompareChecksum(filepath, details.md5, Util.HashTypes.MD5))
         {
             version = filename;
-            var oldfiles = Directory.GetFiles(GlobalHelper.UpdateDirectory, FIRMWARE_FILENAME_PATTERN);
+
+            var oldFiles = Directory.GetFiles(GlobalHelper.UpdateDirectory, FIRMWARE_FILENAME_PATTERN);
+
             WriteMessage("Firmware update found. Downloading...");
-            await HttpHelper.Instance.DownloadFileAsync(details.download_url,
-                Path.Combine(GlobalHelper.UpdateDirectory, filename));
+
+            await HttpHelper.Instance.DownloadFileAsync(details.download_url, Path.Combine(GlobalHelper.UpdateDirectory, filename));
+
             WriteMessage("Download Complete");
             WriteMessage(Path.Combine(GlobalHelper.UpdateDirectory, filename));
-            foreach (string oldfile in oldfiles)
+
+            foreach (string oldFile in oldFiles)
             {
-                if (File.Exists(oldfile) && Path.GetFileName(oldfile) != filename)
+                if (File.Exists(oldFile) && Path.GetFileName(oldFile) != filename)
                 {
                     WriteMessage("Deleting old firmware file...");
-                    File.Delete(oldfile);
+                    File.Delete(oldFile);
                 }
             }
 
@@ -507,6 +515,7 @@ public class PocketCoreUpdater : Base
         }
 
         Divide();
+
         return version;
     }
 
