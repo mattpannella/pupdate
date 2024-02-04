@@ -14,14 +14,14 @@ internal partial class Program
         {
             links.AppendLine();
             links.AppendLine();
-            links.Append(sponsor.custom);
+            links.Append(String.Join(Environment.NewLine, sponsor.custom));
         }
 
         if (sponsor.github != null)
         {
             links.AppendLine();
             links.AppendLine();
-            links.Append(sponsor.github);
+            links.Append(String.Join(Environment.NewLine, sponsor.github));
         }
 
         if (sponsor.patreon != null)
@@ -38,7 +38,7 @@ internal partial class Program
     {
         var output = new StringBuilder();
 
-        if (GlobalHelper.InstalledCores.Count == 0)
+        if (GlobalHelper.InstalledCores.Count > 0)
         {
             var random = new Random();
             var index = random.Next(GlobalHelper.InstalledCores.Count);
