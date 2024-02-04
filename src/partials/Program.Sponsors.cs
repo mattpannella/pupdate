@@ -10,25 +10,25 @@ internal partial class Program
     {
         var links = new StringBuilder();
 
-        if (sponsor.custom != null)
-        {
-            links.AppendLine();
-            links.AppendLine();
-            links.Append(String.Join(Environment.NewLine, sponsor.custom));
-        }
+        var properties = typeof(Sponsor).GetProperties();
 
-        if (sponsor.github != null)
+        foreach(var prop in properties)
         {
-            links.AppendLine();
-            links.AppendLine();
-            links.Append(String.Join(Environment.NewLine, sponsor.github));
-        }
-
-        if (sponsor.patreon != null)
-        {
-            links.AppendLine();
-            links.AppendLine();
-            links.Append(sponsor.patreon);
+            object value = prop.GetValue(sponsor, null);
+            if(value != null && value.GetType() == typeof(List<string>))
+            {
+                //String.Join didn't want to work unless I explicitely cast this
+                var stringArray = value as List<string>;
+                links.AppendLine();
+                links.AppendLine();
+                links.Append(String.Join(Environment.NewLine, stringArray));
+            }
+            else if(value != null && value.GetType() == typeof(string))
+            {
+                links.AppendLine();
+                links.AppendLine();
+                links.Append(value);
+            }
         }
 
         return links.ToString();
