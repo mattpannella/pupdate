@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Text;
 
 namespace Pannella.Models;
@@ -24,10 +25,11 @@ public class Sponsor
         {
             object value = prop.GetValue(this, null);
 
-            links.AppendLine();
+            if (value == null) continue;
+
             links.AppendLine();
 
-            if (value != null && value.GetType() == typeof(List<string>))
+            if (value.GetType() == typeof(List<string>))
             {
                 var stringArray = (List<string>)value;
 
