@@ -1,42 +1,63 @@
-using System.IO;
-using System.Net.Http;
+using Pannella.Models;
+using Pannella.Models.Archive;
+using Pannella.Services;
 
-namespace pannella.analoguepocket;
+namespace Pannella.Helpers;
 
-public class GlobalHelper
+public static class GlobalHelper
 {
-    private static GlobalHelper instance = null;
-    private static object syncLock = new object();
-    public archiveorg.Archive ArchiveFiles { get; set; }
-    public SettingsManager? SettingsManager { get; set ;}
-    public string UpdateDirectory { get; set; }
-    public string SettingsPath { get; set; }
-    public string[] Blacklist { get; set; }
-    public List<Core>? Cores { get; set; }
-    public List<Core>? InstalledCores { get; set; }
+    public static Archive ArchiveFiles { get; private set; }
+    public static SettingsManager SettingsManager { get; private set ;}
+    public static string UpdateDirectory { get; private set; }
+    public static string[] Blacklist { get; private set; }
+    public static List<Core> Cores { get; private set; }
+    public static List<Core> InstalledCores { get; private set; }
 
-    private GlobalHelper()
+    private static bool isInitialized;
+
+    public static async void Initialize(string path)
     {
-        
+        if (!isInitialized)
+        {
+            isInitialized = true;
+            UpdateDirectory = path;
+            SettingsManager = new SettingsManager(path);
+            Cores = await CoresService.GetCores();
+            SettingsManager.InitializeCoreSettings(Cores);
+            RefreshInstalledCores();
+            Blacklist = await AssetsService.GetBlacklist();
+
+            Console.WriteLine("Loading Assets Index...");
+
+            if (SettingsManager.GetConfig().use_custom_archive)
+            {
+                var custom = SettingsManager.GetConfig().custom_archive;
+                Uri baseUrl = new Uri(custom["url"]);
+                Uri url = new Uri(baseUrl, custom["index"]);
+
+                ArchiveFiles = await ArchiveService.GetFilesCustom(url.ToString());
+            }
+            else
+            {
+                ArchiveFiles = await ArchiveService.GetFiles(SettingsManager.GetConfig().archive_name);
+            }
+
+            RefreshInstalledCores();
+        }
     }
 
-    public static GlobalHelper Instance
+    public static void ReloadSettings()
     {
-        get
-        {
-            lock (syncLock)
-            {
-                if (GlobalHelper.instance == null) {
-                    GlobalHelper.instance = new GlobalHelper();
-                }
+        SettingsManager = new SettingsManager(UpdateDirectory, Cores);
+    }
 
-                return GlobalHelper.instance;
-            }
-        }
-    }  
-
-    public Core? GetCore(string identifier)
+    public static void RefreshInstalledCores()
     {
-        return instance.Cores.Find(i => i.identifier == identifier);
+        InstalledCores = Cores.Where(c => c.IsInstalled()).ToList();
+    }
+
+    public static Core GetCore(string identifier)
+    {
+        return Cores.Find(i => i.identifier == identifier);
     }
 }

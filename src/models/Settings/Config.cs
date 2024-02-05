@@ -1,43 +1,26 @@
-namespace pannella.analoguepocket;
+namespace Pannella.Models.Settings;
 
 public class Config
 {
-    public bool download_assets { get; set; }
-    public string archive_name { get; set; }
-    public string? github_token { get; set; }
-    public bool download_firmware { get; set; }
-    public bool core_selector { get; set; }
-    public bool preserve_platforms_folder { get; set; }
-    public bool delete_skipped_cores { get; set; }
-    public string? download_new_cores { get; set; }
-    public bool build_instance_jsons { get; set; }
-    public bool crc_check { get; set; }
-    public bool fix_jt_names { get; set; }
-    public bool skip_alternative_assets { get; set; }
+    public bool download_assets { get; set; } = true;
+    public string archive_name { get; set; } = "openFPGA-Files";
+    public string github_token { get; set; } = string.Empty;
+    public bool download_firmware { get; set; } = true;
+    public bool core_selector { get; set; } = true;
+    public bool preserve_platforms_folder { get; set; } = false;
+    public bool delete_skipped_cores { get; set; } = true;
+    public string download_new_cores { get; set; }
+    public bool build_instance_jsons { get; set; } = true;
+    public bool crc_check { get; set; } = true;
+    public bool fix_jt_names { get; set; } = true;
+    public bool skip_alternative_assets { get; set; } = true;
     public bool backup_saves { get; set; }
-    public string? backup_saves_location { get; set; }
-    public bool use_custom_archive { get; set; }
-    public Dictionary<string, string> custom_archive { get; set; }
+    public string backup_saves_location { get; set; } = "Backups";
+    public bool use_custom_archive { get; set; } = false;
 
-    public Config()
+    public Dictionary<string, string> custom_archive { get; set; } = new()
     {
-        download_assets = true;
-        download_firmware = true;
-        archive_name = "openFPGA-Files";
-        core_selector = true;
-        preserve_platforms_folder = false;
-        delete_skipped_cores = true;
-        download_new_cores = null;
-        build_instance_jsons = true;
-        crc_check = true;
-        fix_jt_names = true;
-        skip_alternative_assets = true;
-        backup_saves = false;
-        backup_saves_location = "Backups";
-        use_custom_archive = false;
-        custom_archive = new Dictionary<string, string>() {
-            {"url", "https://updater.retrodriven.com"},
-            {"index", "updater.php"}
-        };
-    }
+        { "url", "https://updater.retrodriven.com" },
+        { "index", "updater.php" }
+    };
 }

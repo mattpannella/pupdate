@@ -1,4 +1,4 @@
-namespace pannella.analoguepocket.Updater;
+namespace Pannella.Models.Updater;
 
 public class Substitute
 {

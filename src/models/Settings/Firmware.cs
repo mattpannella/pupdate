@@ -1,11 +1,6 @@
-namespace pannella.analoguepocket;
+namespace Pannella.Models.Settings;
 
 public class Firmware
 {
-    public string version { get; set; }
-
-    public Firmware()
-    {
-        version = "";
-    }
+    public string version { get; set; } = string.Empty;
 }

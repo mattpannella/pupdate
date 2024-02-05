@@ -1,15 +1,8 @@
-namespace pannella.analoguepocket;
+namespace Pannella.Models.Settings;
 
 public class Settings
 {
-    public Firmware firmware { get; set; }
-    public Config config { get; set; }
-    public Dictionary<string, CoreSettings> coreSettings { get; set; }
-
-    public Settings()
-    {
-        firmware = new Firmware();
-        config = new Config();
-        coreSettings = new Dictionary<string, CoreSettings>();
-    }
+    public Firmware firmware { get; set; } = new();
+    public Config config { get; set; } = new();
+    public Dictionary<string, CoreSettings> coreSettings { get; set; } = new();
 }
