@@ -4,6 +4,7 @@ using Pannella.Helpers;
 using Pannella.Models;
 using Pannella.Options;
 using Pannella.Services;
+using Spectre.Console;
 
 namespace Pannella;
 
@@ -465,7 +466,8 @@ internal partial class Program
 
     private static void coreUpdater_StatusUpdated(object sender, StatusUpdatedEventArgs e)
     {
-        Console.WriteLine(e.Message);
+        //Console.WriteLine(e.Message);
+        AnsiConsole.MarkupLine("[maroon on blue]" + e.Message + "[/]");
     }
 
     static void coreUpdater_UpdateProcessComplete(object sender, UpdateProcessCompleteEventArgs e)
