@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using ConsoleTools;
 using Pannella.Helpers;
 using Pannella.Models;
@@ -22,6 +23,8 @@ internal partial class Program
             "Generate Game and Watch ROMS",
             "Enable All Display Modes",
             "Backup Saves Directory",
+            "Reinstall Cores",
+            "Uninstall Cores",
             "Settings",
             "Exit"
         };
@@ -35,10 +38,8 @@ internal partial class Program
             .Configure(config =>
             {
                 config.Selector = "=>";
-                //config.EnableFilter = true;
                 config.Title = $"{welcome}\r\n{GetRandomSponsorLinks()}\r\n";
                 config.EnableWriteTitle = true;
-                //config.EnableBreadcrumb = true;
                 config.WriteHeaderAction = () => Console.WriteLine("Choose your destiny:");
                 config.SelectedItemBackgroundColor = Console.ForegroundColor;
                 config.SelectedItemForegroundColor = Console.BackgroundColor;
@@ -58,7 +59,7 @@ internal partial class Program
         return choice;
     }
 
-        private static void AskAboutNewCores(bool force = false)
+    private static void AskAboutNewCores(bool force = false)
     {
         while (GlobalHelper.SettingsManager.GetConfig().download_new_cores == null || force)
         {
@@ -66,7 +67,7 @@ internal partial class Program
 
             Console.WriteLine("Would you like to, by default, install new cores? [Y]es, [N]o, [A]sk for each:");
 
-            ConsoleKey response = Console.ReadKey(false).Key;
+            ConsoleKey response = Console.ReadKey(true).Key;
 
             GlobalHelper.SettingsManager.GetConfig().download_new_cores = response switch
             {
@@ -76,6 +77,111 @@ internal partial class Program
                 _ => null
             };
         }
+    }
+
+    private static bool AskAboutCoreSpecificAssets()
+    {
+        Console.WriteLine("Would you like to remove the core specific assets for the selected cores? [Y]es, [N]o");
+
+        bool? result = null;
+
+        while (result == null)
+        {
+            result = Console.ReadKey(true).Key switch
+            {
+                ConsoleKey.Y => true,
+                ConsoleKey.N => false,
+                _ => null
+            };
+        }
+
+        return result.Value;
+    }
+
+    private static Dictionary<string, bool> ShowCoresMenu(List<Core> cores, string message, bool isCoreSelection)
+    {
+        const int pageSize = 15;
+        var offset = 0;
+        bool more = true;
+        var results = new Dictionary<string, bool>();
+
+        while (more)
+        {
+            var menu = new ConsoleMenu()
+                .Configure(config =>
+                {
+                    config.Selector = "=>";
+                    config.EnableWriteTitle = false;
+                    config.WriteHeaderAction = () => Console.WriteLine($"{message} Use enter to check/uncheck your choices.");
+                    config.SelectedItemBackgroundColor = Console.ForegroundColor;
+                    config.SelectedItemForegroundColor = Console.BackgroundColor;
+                    config.WriteItemAction = item => Console.Write("{0}", item.Name);
+                });
+            var current = -1;
+
+            if ((offset + pageSize) <= cores.Count)
+            {
+                menu.Add("Next Page", thisMenu =>
+                {
+                    offset += pageSize;
+                    thisMenu.CloseMenu();
+                });
+            }
+
+            foreach (Core core in cores)
+            {
+                current++;
+
+                if ((current <= (offset + pageSize)) && (current >= offset))
+                {
+                    var coreSettings = GlobalHelper.SettingsManager.GetCoreSettings(core.identifier);
+                    var selected = isCoreSelection && !coreSettings.skip;
+                    var name = core.identifier;
+
+                    if (isCoreSelection && core.requires_license)
+                    {
+                        name += " (Requires beta access)";
+                    }
+
+                    var title = MenuItemName(name, selected);
+
+                    menu.Add(title, thisMenu =>
+                    {
+                        selected = !selected;
+
+                        if (results.ContainsKey(core.identifier))
+                        {
+                            results[core.identifier] = selected;
+                        }
+                        else
+                        {
+                            results.Add(core.identifier, selected);
+                        }
+
+                        thisMenu.CurrentItem.Name = MenuItemName(core.identifier, selected);
+                    });
+                }
+            }
+
+            if ((offset + pageSize) <= cores.Count)
+            {
+                menu.Add("Next Page", thisMenu =>
+                {
+                    offset += pageSize;
+                    thisMenu.CloseMenu();
+                });
+            }
+
+            menu.Add("Save Choices", thisMenu =>
+            {
+                thisMenu.CloseMenu();
+                more = false;
+            });
+
+            menu.Show();
+        }
+
+        return results;
     }
 
     private static void RunCoreSelector(List<Core> cores, string message = "Select your cores.")
@@ -89,85 +195,14 @@ internal partial class Program
         }
         else
         {
-            const int pageSize = 15;
-            var offset = 0;
-            bool more = true;
+            var results = ShowCoresMenu(cores, message, true);
 
-            while (more)
+            foreach (var item in results)
             {
-                var menu = new ConsoleMenu()
-                    .Configure(config =>
-                    {
-                        config.Selector = "=>";
-                        config.EnableWriteTitle = false;
-                        config.WriteHeaderAction = () => Console.WriteLine($"{message} Use enter to check/uncheck your choices.");
-                        config.SelectedItemBackgroundColor = Console.ForegroundColor;
-                        config.SelectedItemForegroundColor = Console.BackgroundColor;
-                        //config.WriteItemAction = item => Console.Write("{1}", item.Index, item.Name);
-                        config.WriteItemAction = item => Console.Write("{0}", item.Name);
-                    });
-                var current = -1;
-
-                if ((offset + pageSize) <= cores.Count)
-                {
-                    menu.Add("Next Page", thisMenu =>
-                    {
-                        offset += pageSize;
-                        thisMenu.CloseMenu();
-                    });
-                }
-
-                foreach (Core core in cores)
-                {
-                    current++;
-
-                    if ((current <= (offset + pageSize)) && (current >= offset))
-                    {
-                        var coreSettings = GlobalHelper.SettingsManager.GetCoreSettings(core.identifier);
-                        var selected = !coreSettings.skip;
-                        var name = core.identifier;
-
-                        if (core.requires_license)
-                        {
-                            name += " (Requires beta access)";
-                        }
-
-                        var title = MenuItemName(name, selected);
-
-                        menu.Add(title, thisMenu =>
-                        {
-                            selected = !selected;
-
-                            if (!selected)
-                            {
-                                GlobalHelper.SettingsManager.DisableCore(core.identifier);
-                            }
-                            else
-                            {
-                                GlobalHelper.SettingsManager.EnableCore(core.identifier);
-                            }
-
-                            thisMenu.CurrentItem.Name = MenuItemName(core.identifier, selected);
-                        });
-                    }
-                }
-
-                if ((offset + pageSize) <= cores.Count)
-                {
-                    menu.Add("Next Page", thisMenu =>
-                    {
-                        offset += pageSize;
-                        thisMenu.CloseMenu();
-                    });
-                }
-
-                menu.Add("Save Choices", thisMenu =>
-                {
-                    thisMenu.CloseMenu();
-                    more = false;
-                });
-
-                menu.Show();
+                if (item.Value)
+                    GlobalHelper.SettingsManager.EnableCore(item.Key);
+                else
+                    GlobalHelper.SettingsManager.DisableCore(item.Key);
             }
         }
 
@@ -185,7 +220,7 @@ internal partial class Program
             { "download_assets", "Download Missing Assets (ROMs and BIOS Files) during 'Update All'" },
             { "build_instance_jsons", "Build game JSON files for supported cores during 'Update All'" },
             { "delete_skipped_cores", "Delete untracked cores during 'Update All'" },
-            { "fix_jt_names", "Automatically rename Jotego cores during 'Update All" },
+            { "fix_jt_names", "Automatically rename Jotego cores during 'Update All'" },
             { "crc_check", "Use CRC check when checking ROMs and BIOS files" },
             { "preserve_platforms_folder", "Preserve 'Platforms' folder during 'Update All'" },
             { "skip_alternative_assets", "Skip alternative roms when downloading assets" },
@@ -202,7 +237,6 @@ internal partial class Program
                 config.WriteHeaderAction = () => Console.WriteLine("Settings. Use enter to check/uncheck your choices.");
                 config.SelectedItemBackgroundColor = Console.ForegroundColor;
                 config.SelectedItemForegroundColor = Console.BackgroundColor;
-                //config.WriteItemAction = item => Console.Write("{1}", item.Index, item.Name);
                 config.WriteItemAction = item => Console.Write("{0}", item.Name);
             });
 

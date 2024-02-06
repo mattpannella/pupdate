@@ -168,17 +168,9 @@ internal partial class Program
                         backupSaves_Path = o.BackupPath;
                         backupSaves_SaveConfig = o.Save;
                     })
-                .WithNotParsed(o =>
+                .WithNotParsed(_ =>
                     {
-                        if (o.IsHelp())
-                        {
-                            Environment.Exit(1);
-                        }
-
-                        if (o.IsVersion())
-                        {
-                            Environment.Exit(1);
-                        }
+                        Environment.Exit(1);
                     });
 
             #endregion
@@ -257,9 +249,8 @@ internal partial class Program
             coreUpdater.StatusUpdated += coreUpdater_StatusUpdated;
             coreUpdater.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
             coreUpdater.DownloadAssets(GlobalHelper.SettingsManager.GetConfig().download_assets);
-            coreUpdater.BackupSaves(GlobalHelper.SettingsManager.GetConfig().backup_saves, GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
-
-            //await coreUpdater.Initialize();
+            coreUpdater.BackupSaves(GlobalHelper.SettingsManager.GetConfig().backup_saves,
+                GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
 
             // If we have any missing cores, handle them.
             if (GlobalHelper.SettingsManager.GetMissingCores().Any())
@@ -431,18 +422,51 @@ internal partial class Program
                             break;
 
                         case 9:
+                        {
+                            var results = ShowCoresMenu(
+                                GlobalHelper.InstalledCores,
+                                "Which cores would you like to reinstall?",
+                                false);
+
+                            foreach (var item in results.Where(x => x.Value))
+                            {
+                                await coreUpdater.RunUpdates(item.Key, true);
+                            }
+
+                            break;
+                        }
+
+                        case 10:
+                        {
+                            var results = ShowCoresMenu(
+                                GlobalHelper.InstalledCores,
+                                "Which cores would you like to uninstall?",
+                                false);
+
+                            nuke = AskAboutCoreSpecificAssets();
+
+                            foreach (var item in results.Where(x => x.Value))
+                            {
+                                coreUpdater.DeleteCore(GlobalHelper.GetCore(item.Key), true, nuke);
+                            }
+
+                            break;
+                        }
+
+                        case 11:
                             SettingsMenu();
 
                             coreUpdater.DeleteSkippedCores(GlobalHelper.SettingsManager.GetConfig().delete_skipped_cores);
                             coreUpdater.DownloadFirmware(GlobalHelper.SettingsManager.GetConfig().download_firmware);
                             coreUpdater.DownloadAssets(GlobalHelper.SettingsManager.GetConfig().download_assets);
                             coreUpdater.RenameJotegoCores(GlobalHelper.SettingsManager.GetConfig().fix_jt_names);
-                            coreUpdater.BackupSaves(GlobalHelper.SettingsManager.GetConfig().backup_saves, GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
+                            coreUpdater.BackupSaves(GlobalHelper.SettingsManager.GetConfig().backup_saves,
+                                GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
                             // Is reloading the settings file necessary?
                             GlobalHelper.ReloadSettings();
                             break;
 
-                        case 10:
+                        case 12:
                             flag = false;
                             break;
 
@@ -468,7 +492,7 @@ internal partial class Program
         Console.WriteLine(e.Message);
     }
 
-    static void coreUpdater_UpdateProcessComplete(object sender, UpdateProcessCompleteEventArgs e)
+    private static void coreUpdater_UpdateProcessComplete(object sender, UpdateProcessCompleteEventArgs e)
     {
         Console.WriteLine("-------------");
         Console.WriteLine(e.Message);
@@ -479,10 +503,10 @@ internal partial class Program
 
             foreach (Dictionary<string, string> core in e.InstalledCores)
             {
-                Console.WriteLine(core["core"] + " " + core["version"]);
+                Console.WriteLine($"{core["core"]} {core["version"]}");
             }
 
-            Console.WriteLine("");
+            Console.WriteLine();
         }
 
         if (e.InstalledAssets.Count > 0)
@@ -505,14 +529,14 @@ internal partial class Program
                 Console.WriteLine(asset);
             }
 
-            Console.WriteLine("");
+            Console.WriteLine();
         }
 
-        if (e.FirmwareUpdated != "")
+        if (e.FirmwareUpdated != string.Empty)
         {
             Console.WriteLine("New Firmware was downloaded. Restart your Pocket to install");
             Console.WriteLine(e.FirmwareUpdated);
-            Console.WriteLine("");
+            Console.WriteLine();
         }
 
         if (e.MissingBetaKeys.Count > 0)
@@ -523,7 +547,7 @@ internal partial class Program
                 Console.WriteLine(core);
             }
 
-            Console.WriteLine("");
+            Console.WriteLine();
         }
 
         Console.WriteLine(GetRandomSponsorLinks());
