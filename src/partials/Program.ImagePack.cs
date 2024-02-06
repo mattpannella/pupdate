@@ -29,7 +29,7 @@ internal partial class Program
 
             foreach (var pack in packs)
             {
-                menu.Add($"{pack.owner}: {pack.repository} {pack.variant}", thisMenu =>
+                menu.Add($"{pack.owner}: {pack.repository} {pack.variant ?? string.Empty}", thisMenu =>
                 {
                     choice = thisMenu.CurrentItem.Index;
                     thisMenu.CloseMenu();
