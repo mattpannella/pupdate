@@ -374,22 +374,22 @@ internal partial class Program
 
                 while (flag)
                 {
-                    int choice = DisplayMenuNew();
+                    MainMenuItems choice = DisplayMenuNew();
 
                     switch (choice)
                     {
-                        case 1:
+                        case MainMenuItems.UpdateFirmware:
                             await coreUpdater.UpdateFirmware();
                             Pause();
                             break;
 
-                        case 2:
+                        case MainMenuItems.DownloadRequiredAssets:
                             Console.WriteLine("Checking for required files...");
                             await coreUpdater.RunAssetDownloader();
                             Pause();
                             break;
 
-                        case 3:
+                        case MainMenuItems.SelectCores:
                             List<Core> cores = await CoresService.GetCores();
                             AskAboutNewCores(true);
                             RunCoreSelector(cores);
@@ -397,31 +397,31 @@ internal partial class Program
                             GlobalHelper.ReloadSettings();
                             break;
 
-                        case 4:
+                        case MainMenuItems.DownloadPlatformImagePacks:
                             await ImagePackSelector(path);
                             break;
 
-                        case 5:
+                        case MainMenuItems.GenerateInstanceJsonFiles:
                             RunInstanceGenerator(coreUpdater);
                             Pause();
                             break;
 
-                        case 6:
+                        case MainMenuItems.GenerateGameAndWatchRoms:
                             await BuildGameAndWatchRoms(path);
                             Pause();
                             break;
 
-                        case 7:
+                        case MainMenuItems.EnableAllDisplayModes:
                             coreUpdater.ForceDisplayModes();
                             Pause();
                             break;
 
-                        case 8:
+                        case MainMenuItems.BackupSavesDirectory:
                             AssetsService.BackupSaves(path, GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
                             Pause();
                             break;
 
-                        case 9:
+                        case MainMenuItems.ReinstallCores:
                         {
                             var results = ShowCoresMenu(
                                 GlobalHelper.InstalledCores,
@@ -436,7 +436,7 @@ internal partial class Program
                             break;
                         }
 
-                        case 10:
+                        case MainMenuItems.UninstallCores:
                         {
                             var results = ShowCoresMenu(
                                 GlobalHelper.InstalledCores,
@@ -453,7 +453,7 @@ internal partial class Program
                             break;
                         }
 
-                        case 11:
+                        case MainMenuItems.Settings:
                             SettingsMenu();
 
                             coreUpdater.DeleteSkippedCores(GlobalHelper.SettingsManager.GetConfig().delete_skipped_cores);
@@ -466,7 +466,7 @@ internal partial class Program
                             GlobalHelper.ReloadSettings();
                             break;
 
-                        case 12:
+                        case MainMenuItems.Exit:
                             flag = false;
                             break;
 

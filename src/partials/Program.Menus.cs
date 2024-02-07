@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using System.Reflection;
 using System.Security.Cryptography;
 using ConsoleTools;
 using Pannella.Helpers;
@@ -8,31 +10,45 @@ namespace Pannella;
 
 internal partial class Program
 {
-    private static int DisplayMenuNew()
+    private enum MainMenuItems
+    {
+        None = 0,
+        [Description("Update All")]
+        UpdateAll = 1,
+        [Description("Update Firmware")]
+        UpdateFirmware,
+        [Description("Download Required Assets")]
+        DownloadRequiredAssets,
+        [Description("Select Cores")]
+        SelectCores,
+        [Description("Download Platform Image Packs")]
+        DownloadPlatformImagePacks,
+        [Description("Generate Instance JSON Files")]
+        GenerateInstanceJsonFiles,
+        [Description("Generate Game and Watch ROMS")]
+        GenerateGameAndWatchRoms,
+        [Description("Enable All Display Modes")]
+        EnableAllDisplayModes,
+        [Description("Backup Saves Directory")]
+        BackupSavesDirectory,
+        [Description("Reinstall Cores")]
+        ReinstallCores,
+        [Description("Uninstall Cores")]
+        UninstallCores,
+        [Description("Settings")]
+        Settings,
+        [Description("Exit")]
+        Exit
+    }
+
+    private static MainMenuItems DisplayMenuNew()
     {
         Console.Clear();
-
-        string[] menuItems =
-        {
-            "Update All",
-            "Update Firmware",
-            "Download Required Assets",
-            "Select Cores",
-            "Download Platform Image Packs",
-            "Generate Instance JSON Files",
-            "Generate Game and Watch ROMS",
-            "Enable All Display Modes",
-            "Backup Saves Directory",
-            "Reinstall Cores",
-            "Uninstall Cores",
-            "Settings",
-            "Exit"
-        };
 
         Random random = new Random();
         int i = random.Next(0, WELCOME_MESSAGES.Length);
         string welcome = WELCOME_MESSAGES[i];
-        int choice = 0;
+        MainMenuItems choice = MainMenuItems.None;
 
         var menu = new ConsoleMenu()
             .Configure(config =>
@@ -45,11 +61,18 @@ internal partial class Program
                 config.SelectedItemForegroundColor = Console.BackgroundColor;
             });
 
-        foreach (var item in menuItems)
+        foreach (var item in Enum.GetValues<MainMenuItems>())
         {
-            menu.Add(item, thisMenu =>
+            if (item == MainMenuItems.None)
+                continue;
+
+            FieldInfo fi = item.GetType().GetField(item.ToString());
+            DescriptionAttribute[] attributes = (DescriptionAttribute[])fi!.GetCustomAttributes(typeof(DescriptionAttribute), false);
+            var itemDescription = attributes.Length > 0 ? attributes[0].Description : item.ToString();
+
+            menu.Add(itemDescription, thisMenu =>
             {
-                choice = thisMenu.CurrentItem.Index;
+                choice = item;
                 thisMenu.CloseMenu();
             });
         }
