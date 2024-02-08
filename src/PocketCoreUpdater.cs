@@ -371,7 +371,7 @@ public class PocketCoreUpdater : Base
         }
     }
 
-    public async Task RunAssetDownloader(string id = null)
+    public async Task RunAssetDownloader(string id = null, bool skipOutro = false)
     {
         List<string> installedAssets = new List<string>();
         List<string> skippedAssets = new List<string>();
@@ -423,7 +423,8 @@ public class PocketCoreUpdater : Base
             Message = "All Done",
             InstalledAssets = installedAssets,
             SkippedAssets = skippedAssets,
-            MissingBetaKeys = missingBetaKeys
+            MissingBetaKeys = missingBetaKeys,
+            SkipOutro = skipOutro,
         };
 
         OnUpdateProcessComplete(args);
@@ -543,4 +544,5 @@ public class UpdateProcessCompleteEventArgs : EventArgs
     public List<string> SkippedAssets { get; set; }
     public string FirmwareUpdated { get; set; } = string.Empty;
     public List<string> MissingBetaKeys { get; set; }
+    public bool SkipOutro;
 }

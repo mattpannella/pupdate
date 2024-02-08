@@ -15,7 +15,7 @@ internal partial class Program
     {
         try
         {
-            string location = Process.GetCurrentProcess().MainModule.FileName;
+            string location = Environment.ProcessPath;
             string path = Path.GetDirectoryName(location);
             bool preservePlatformsFolder = false;
             bool forceUpdate = false;
@@ -453,6 +453,12 @@ internal partial class Program
                             break;
                         }
 
+                        case MainMenuItems.DownloadPocketExtrasDonkeyKong:
+                            await DownloadPocketExtras("ericlewis.DonkeyKong", "pocket-extras-dk",
+                                path, coreUpdater);
+                            Pause();
+                            break;
+
                         case MainMenuItems.Settings:
                             SettingsMenu();
 
@@ -550,7 +556,10 @@ internal partial class Program
             Console.WriteLine();
         }
 
-        Console.WriteLine(GetRandomSponsorLinks());
-        FunFacts();
+        if (!e.SkipOutro)
+        {
+            Console.WriteLine(GetRandomSponsorLinks());
+            FunFacts();
+        }
     }
 }
