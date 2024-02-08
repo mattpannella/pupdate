@@ -4,11 +4,11 @@ public class Archive
 {
     public int files_count { get; set; }
     public int item_last_updated { get; set; }
-    public File[] files { get; set; }
+    public List<File> files { get; set; }
 
-    public File GetFile(string filename)
+    public File GetFile(string fileName)
     {
-        File file = this.files.FirstOrDefault(file => file.name == filename);
+        File file = this.files.FirstOrDefault(file => file.name == fileName);
 
         return file;
     }

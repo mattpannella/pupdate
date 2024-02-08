@@ -183,7 +183,7 @@ internal partial class Program
 
             #endregion
 
-            GlobalHelper.Initialize(path);
+            await GlobalHelper.Initialize(path);
 
             if (!CLI_MODE)
             {
@@ -258,8 +258,6 @@ internal partial class Program
             coreUpdater.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
             coreUpdater.DownloadAssets(GlobalHelper.SettingsManager.GetConfig().download_assets);
             coreUpdater.BackupSaves(GlobalHelper.SettingsManager.GetConfig().backup_saves, GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
-
-            //await coreUpdater.Initialize();
 
             // If we have any missing cores, handle them.
             if (GlobalHelper.SettingsManager.GetMissingCores().Any())

@@ -81,7 +81,7 @@ public class Core : Base
             return false;
         }
 
-        WriteMessage("Downloading file " + this.download_url + "...");
+        WriteMessage($"Downloading file {this.download_url}...");
 
         string zipPath = Path.Combine(GlobalHelper.UpdateDirectory, ZIP_FILE_NAME);
         string extractPath = GlobalHelper.UpdateDirectory;
@@ -162,31 +162,14 @@ public class Core : Base
         Divide();
     }
 
-    public Platform ReadPlatformFile()
-    {
-        var info = this.GetConfig();
-
-        if (info == null)
-        {
-            return this.platform;
-        }
-
-        string updateDirectory = GlobalHelper.UpdateDirectory;
-        // cores with multiple platforms won't work...not sure any exist right now?
-        string platformsFolder = Path.Combine(updateDirectory, "Platforms");
-        string dataFile = Path.Combine(platformsFolder, info.metadata.platform_ids[0] + ".json");
-        var p = JsonSerializer.Deserialize<Dictionary<string, Platform>>(File.ReadAllText(dataFile));
-
-        return p["platform"];
-    }
-
     public async Task<Dictionary<string, object>> DownloadAssets()
     {
         List<string> installed = new List<string>();
         List<string> skipped = new List<string>();
         bool missingBetaKey = false;
 
-        if (!this.download_assets || !GlobalHelper.SettingsManager.GetCoreSettings(this.identifier).download_assets)
+        if (!GlobalHelper.SettingsManager.GetConfig().download_assets ||
+            !GlobalHelper.SettingsManager.GetCoreSettings(this.identifier).download_assets)
         {
             return new Dictionary<string, object>
             {
@@ -202,6 +185,7 @@ public class Core : Base
         string updateDirectory = GlobalHelper.UpdateDirectory;
         // cores with multiple platforms won't work...not sure any exist right now?
         string instancesDirectory = Path.Combine(updateDirectory, "Assets", info.metadata.platform_ids[0], this.identifier);
+        string path = Path.Combine(updateDirectory, "Assets", info.metadata.platform_ids[0]);
         var options = new JsonSerializerOptions { Converters = { new StringConverter() } };
 
         DataJSON dataJson = ReadDataJSON();
@@ -218,8 +202,6 @@ public class Core : Base
                 if (slot.filename != null && !slot.filename.EndsWith(".sav") &&
                     !GlobalHelper.Blacklist.Contains(slot.filename))
                 {
-                    string path = Path.Combine(updateDirectory, "Assets", info.metadata.platform_ids[0]);
-
                     if (slot.IsCoreSpecific())
                     {
                         path = Path.Combine(path, this.identifier);
@@ -240,19 +222,26 @@ public class Core : Base
                     {
                         string filepath = Path.Combine(path, f);
 
-                        if (File.Exists(filepath) && CheckCRC(filepath))
+                        if (File.Exists(filepath) && CheckCRC(filepath, GlobalHelper.ArchiveFiles))
                         {
-                            WriteMessage("Already installed: " + f);
+                            WriteMessage($"Already installed: {f}");
                         }
                         else
                         {
-                            if (await DownloadAsset(f, filepath))
+                            bool result = await DownloadAsset(
+                                f,
+                                filepath,
+                                GlobalHelper.ArchiveFiles,
+                                GlobalHelper.SettingsManager.GetConfig().archive_name,
+                                GlobalHelper.SettingsManager.GetConfig().use_custom_archive);
+
+                            if (result)
                             {
-                                installed.Add(filepath.Replace(updateDirectory, ""));
+                                installed.Add(filepath.Replace(updateDirectory, string.Empty));
                             }
                             else
                             {
-                                skipped.Add(filepath.Replace(updateDirectory, ""));
+                                skipped.Add(filepath.Replace(updateDirectory, string.Empty));
                             }
                         }
                     }
@@ -262,6 +251,51 @@ public class Core : Base
 
         if (this.identifier is "Mazamars312.NeoGeo" or "Mazamars312.NeoGeo_Overdrive")
         {
+            return new Dictionary<string, object>
+            {
+                { "installed", installed },
+                { "skipped", skipped },
+                { "missingBetaKey", false }
+            };
+        }
+
+        if (this.identifier is "agg23.GameAndWatch")
+        {
+            string commonPath = Path.Combine(path, "common");
+
+            foreach (var f in GlobalHelper.GameAndWatchArchiveFiles.files)
+            {
+                string filePath = Path.Combine(commonPath, f.name);
+                string subDirectory = Path.GetDirectoryName(f.name);
+
+                if (!string.IsNullOrEmpty(subDirectory))
+                {
+                    Directory.CreateDirectory(Path.Combine(commonPath, subDirectory));
+                }
+
+                if (File.Exists(filePath) && CheckCRC(filePath, GlobalHelper.GameAndWatchArchiveFiles))
+                {
+                    WriteMessage($"Already installed: {f.name}");
+                }
+                else
+                {
+                    bool result = await DownloadAsset(
+                        f.name,
+                        filePath,
+                        GlobalHelper.GameAndWatchArchiveFiles,
+                        GlobalHelper.SettingsManager.GetConfig().gnw_archive_name);
+
+                    if (result)
+                    {
+                        installed.Add(filePath.Replace(updateDirectory, string.Empty));
+                    }
+                    else
+                    {
+                        skipped.Add(filePath.Replace(updateDirectory, string.Empty));
+                    }
+                }
+            }
+
             return new Dictionary<string, object>
             {
                 { "installed", installed },
@@ -318,25 +352,30 @@ public class Core : Base
                                 missingBetaKey = true;
                             }
 
-                            if (!GlobalHelper.Blacklist.Contains(slot.filename) &&
-                                !slot.filename.EndsWith(".sav"))
+                            if (!GlobalHelper.Blacklist.Contains(slot.filename) && !slot.filename.EndsWith(".sav"))
                             {
-                                string path = Path.Combine(updateDirectory, "Assets", info.metadata.platform_ids[0],
-                                    "common", dataPath, slot.filename);
+                                string slotPath = Path.Combine(path, "common", dataPath, slot.filename);
 
-                                if (File.Exists(path) && CheckCRC(path))
+                                if (File.Exists(slotPath) && CheckCRC(slotPath, GlobalHelper.ArchiveFiles))
                                 {
-                                    WriteMessage("Already installed: " + slot.filename);
+                                    WriteMessage($"Already installed: {slot.filename}");
                                 }
                                 else
                                 {
-                                    if (await DownloadAsset(slot.filename, path))
+                                    bool result = await DownloadAsset(
+                                        slot.filename,
+                                        slotPath,
+                                        GlobalHelper.ArchiveFiles,
+                                        GlobalHelper.SettingsManager.GetConfig().archive_name,
+                                        GlobalHelper.SettingsManager.GetConfig().use_custom_archive);
+
+                                    if (result)
                                     {
-                                        installed.Add(path.Replace(updateDirectory, ""));
+                                        installed.Add(slotPath.Replace(updateDirectory, string.Empty));
                                     }
                                     else
                                     {
-                                        skipped.Add(path.Replace(updateDirectory, ""));
+                                        skipped.Add(slotPath.Replace(updateDirectory, string.Empty));
                                     }
                                 }
                             }
@@ -345,7 +384,7 @@ public class Core : Base
                 }
                 catch (Exception e)
                 {
-                    WriteMessage("Error while processing " + file);
+                    WriteMessage($"Error while processing '{file}'");
                     WriteMessage(e.Message);
                 }
             }
@@ -357,6 +396,7 @@ public class Core : Base
             { "skipped", skipped },
             { "missingBetaKey", missingBetaKey }
         };
+
         return results;
     }
 
@@ -404,43 +444,65 @@ public class Core : Base
         return File.Exists(localCoreFile);
     }
 
-    private async Task<bool> DownloadAsset(string filename, string destination)
+    private async Task<bool> DownloadAsset(string fileName, string destination, Archive.Archive archive,
+        string archiveName, bool useCustomArchive = false)
     {
-        if (GlobalHelper.ArchiveFiles != null)
+        if (archive != null)
         {
-            ArchiveFile file = GlobalHelper.ArchiveFiles.GetFile(filename);
+            ArchiveFile file = archive.GetFile(fileName);
 
             if (file == null)
             {
-                WriteMessage("Unable to find " + filename + " in archive");
+                WriteMessage($"Unable to find '{fileName}' in archive");
                 return false;
             }
         }
 
         try
         {
-            string url = BuildAssetUrl(filename);
+            string url;
+
+            if (useCustomArchive)
+            {
+                var custom = GlobalHelper.SettingsManager.GetConfig().custom_archive;
+                Uri baseUri = new Uri(custom["url"]);
+                Uri uri = new Uri(baseUri, fileName);
+
+                url = uri.ToString();
+            }
+            else
+            {
+                url = $"{ARCHIVE_BASE_URL}/{archiveName}/{fileName}";
+            }
+
             int count = 0;
 
             do
             {
-                WriteMessage("Downloading " + filename);
+                WriteMessage($"Downloading '{fileName}'");
                 await HttpHelper.Instance.DownloadFileAsync(url, destination, 600);
-                WriteMessage("Finished downloading " + filename);
+                WriteMessage($"Finished downloading '{fileName}'");
                 count++;
             }
-            while (count < 3 && !CheckCRC(destination));
+            while (count < 3 && !CheckCRC(destination, GlobalHelper.ArchiveFiles));
         }
         catch (HttpRequestException e)
         {
             if (e.StatusCode == HttpStatusCode.NotFound)
             {
-                WriteMessage("Unable to find " + filename + " in archive");
+                WriteMessage($"Unable to find '{fileName}' in archive");
             }
             else
             {
-                WriteMessage("There was a problem downloading " + filename);
+                WriteMessage($"There was a problem downloading '{fileName}'");
             }
+
+            return false;
+        }
+        catch (Exception e)
+        {
+            WriteMessage($"Something went wrong with '{fileName}'");
+            WriteMessage(e.ToString());
 
             return false;
         }
@@ -448,32 +510,19 @@ public class Core : Base
         return true;
     }
 
-    private static string BuildAssetUrl(string filename)
+    private bool CheckCRC(string filepath, Archive.Archive archive)
     {
-        if (GlobalHelper.SettingsManager.GetConfig().use_custom_archive)
-        {
-            var custom = GlobalHelper.SettingsManager.GetConfig().custom_archive;
-            Uri baseUrl = new Uri(custom["url"]);
-            Uri url = new Uri(baseUrl, filename);
-            return url.ToString();
-        }
-
-        return ARCHIVE_BASE_URL + "/" + GlobalHelper.SettingsManager.GetConfig().archive_name + "/" + filename;
-    }
-
-    private bool CheckCRC(string filepath)
-    {
-        if (GlobalHelper.ArchiveFiles == null || !GlobalHelper.SettingsManager.GetConfig().crc_check)
+        if (archive == null || !GlobalHelper.SettingsManager.GetConfig().crc_check)
         {
             return true;
         }
 
         string filename = Path.GetFileName(filepath);
-        ArchiveFile file = GlobalHelper.ArchiveFiles.GetFile(filename);
+        ArchiveFile file = archive.GetFile(filename);
 
         if (file == null)
         {
-            return true; //no checksum to compare to
+            return true; // no checksum to compare to
         }
 
         if (Util.CompareChecksum(filepath, file.crc32))
@@ -481,7 +530,7 @@ public class Core : Base
             return true;
         }
 
-        WriteMessage(filename + ": Bad checksum!");
+        WriteMessage($"{filename}: Bad checksum!");
         return false;
     }
 
@@ -527,7 +576,7 @@ public class Core : Base
 
             try
             {
-                instance.data_path = dir.Replace(commonPath + Path.DirectorySeparatorChar, "") + "/";
+                instance.data_path = dir.Replace(commonPath + Path.DirectorySeparatorChar, string.Empty) + "/";
 
                 List<SimpleDataSlot> slots = new();
                 string jsonFileName = dirName + ".json";
@@ -581,7 +630,7 @@ public class Core : Base
 
                 if (slots.Count == 0 || (jsonPackager.slot_limit != null && slots.Count > limit.GetInt32()))
                 {
-                    WriteMessage("Unable to build " + jsonFileName);
+                    WriteMessage($"Unable to build {jsonFileName}");
                     warning = true;
                     continue;
                 }
@@ -603,13 +652,13 @@ public class Core : Base
 
                 if (!overwrite && File.Exists(outputFile))
                 {
-                    WriteMessage(jsonFileName + " already exists.");
+                    WriteMessage($"{jsonFileName} already exists.");
                 }
                 else
                 {
                     string json = JsonSerializer.Serialize(simpleInstanceJson, options);
 
-                    WriteMessage("Saving " + jsonFileName);
+                    WriteMessage($"Saving {jsonFileName}");
 
                     FileInfo file = new FileInfo(outputFile);
 
@@ -624,7 +673,7 @@ public class Core : Base
             }
             catch (Exception)
             {
-                WriteMessage("Unable to build " + dirName);
+                WriteMessage($"Unable to build {dirName}");
             }
         }
 
