@@ -49,11 +49,16 @@
     {
         "owner": "Shissa43",
         "repository": "Analogue-Pocket-Platform-Art",
-        "variant": "Simple"
+        "variant": "Arcade_platforms"
     },
     {
         "owner": "Shissa43",
         "repository": "Analogue-Pocket-Platform-Art",
-        "variant": "Banners"
+        "variant": "Home_platforms"
+    },
+    {
+        "owner": "Shissa43",
+        "repository": "Analogue-Pocket-Platform-Art",
+        "variant": "Simple_platforms"
     }
 ]
