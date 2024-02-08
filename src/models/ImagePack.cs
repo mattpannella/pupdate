@@ -23,7 +23,7 @@ public class ImagePack
     {
         Release release = await GithubApiService.GetLatestRelease(this.owner, this.repository);
         string localFile = Path.Combine(path, "imagepack.zip");
-        string downloadUrl = string.Empty;
+        string downloadUrl;
 
         if (release.assets == null)
         {
@@ -36,10 +36,7 @@ public class ImagePack
         }
         else
         {
-            foreach (var asset in release.assets.Where(asset => asset.name.Contains(this.variant)))
-            {
-                downloadUrl = asset.browser_download_url;
-            }
+            downloadUrl = release.assets.Single(asset => asset.name.EndsWith($"{this.variant}.zip")).browser_download_url;
         }
 
         if (downloadUrl != string.Empty)
