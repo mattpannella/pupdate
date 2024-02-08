@@ -21,6 +21,10 @@ internal partial class Program
         DownloadRequiredAssets,
         [Description("Select Cores")]
         SelectCores,
+        [Description("Reinstall Cores")]
+        ReinstallCores,
+        [Description("Uninstall Cores")]
+        UninstallCores,
         [Description("Download Platform Image Packs")]
         DownloadPlatformImagePacks,
         [Description("Generate Instance JSON Files")]
@@ -31,10 +35,6 @@ internal partial class Program
         EnableAllDisplayModes,
         [Description("Backup Saves Directory")]
         BackupSavesDirectory,
-        [Description("Reinstall Cores")]
-        ReinstallCores,
-        [Description("Uninstall Cores")]
-        UninstallCores,
         [Description("Settings")]
         Settings,
         [Description("Exit")]

@@ -175,7 +175,7 @@ internal partial class Program
 
             #endregion
 
-            GlobalHelper.Initialize(path);
+            await GlobalHelper.Initialize(path);
 
             if (!CLI_MODE)
             {
