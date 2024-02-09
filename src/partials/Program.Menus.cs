@@ -1,6 +1,3 @@
-using System.ComponentModel;
-using System.Reflection;
-using System.Security.Cryptography;
 using ConsoleTools;
 using Pannella.Helpers;
 using Pannella.Models;
@@ -11,37 +8,6 @@ namespace Pannella;
 
 internal partial class Program
 {
-    private enum MainMenuItems
-    {
-        None = 0,
-        [Description("Update All")]
-        UpdateAll = 1,
-        [Description("Update Firmware")]
-        UpdateFirmware,
-        [Description("Download Required Assets")]
-        DownloadRequiredAssets,
-        [Description("Select Cores")]
-        SelectCores,
-        [Description("Reinstall Cores")]
-        ReinstallCores,
-        [Description("Uninstall Cores")]
-        UninstallCores,
-        [Description("Download Platform Image Packs")]
-        DownloadPlatformImagePacks,
-        [Description("Generate Instance JSON Files")]
-        GenerateInstanceJsonFiles,
-        [Description("Generate Game and Watch ROMS")]
-        GenerateGameAndWatchRoms,
-        [Description("Enable All Display Modes")]
-        EnableAllDisplayModes,
-        [Description("Backup Saves Directory")]
-        BackupSavesDirectory,
-        [Description("Settings")]
-        Settings,
-        [Description("Exit")]
-        Exit
-    }
-
     private static void DisplayMenuNew(string path, PocketCoreUpdater coreUpdater)
     {
         Console.Clear();
@@ -62,21 +28,21 @@ internal partial class Program
 
         var pocketSetupMenu = new ConsoleMenu()
             .Configure(menuConfig)
-            .Add("Download Platform Image Packs", async m =>
+            .Add("Download Platform Image Packs", async _ =>
             {
                 await ImagePackSelector(path);
             })
-            .Add("Generate Instance JSON Files (PC Engine CD)", m =>
+            .Add("Generate Instance JSON Files (PC Engine CD)", () =>
             {
                 RunInstanceGenerator(coreUpdater);
                 Pause();
             })
-            .Add("Generate Game & Watch ROMs", async m =>
+            .Add("Generate Game & Watch ROMs", async _ =>
             {
                 await BuildGameAndWatchRoms(path);
                 Pause();
             })
-            .Add("Enable All Display Modes", m =>
+            .Add("Enable All Display Modes", () =>
             {
                 coreUpdater.ForceDisplayModes();
                 Pause();
@@ -85,7 +51,7 @@ internal partial class Program
 
         var pocketMaintenanceMenu = new ConsoleMenu()
             .Configure(menuConfig)
-            .Add("Reinstall Cores", async m =>
+            .Add("Reinstall Cores", async _ =>
             {
                 var results = ShowCoresMenu(
                     GlobalHelper.InstalledCores,
@@ -99,7 +65,7 @@ internal partial class Program
 
                 Pause();
             })
-            .Add("Uninstall Cores", m =>
+            .Add("Uninstall Cores", () =>
             {
                 var results = ShowCoresMenu(
                     GlobalHelper.InstalledCores,
@@ -119,38 +85,38 @@ internal partial class Program
 
         var menu = new ConsoleMenu()
             .Configure(menuConfig)
-            .Add("Update All", async m =>
+            .Add("Update All", async _ =>
             {
                 Console.WriteLine("Starting update process...");
                 await coreUpdater.RunUpdates();
                 Pause();
             })
-            .Add("Update Firmware", async m =>
+            .Add("Update Firmware", async _ =>
             {
                 await coreUpdater.UpdateFirmware();
                 Pause();
             })
-            .Add("Select Cores", m =>
+            .Add("Select Cores", () =>
             {
                 AskAboutNewCores(true);
                 RunCoreSelector(GlobalHelper.Cores);
                 // Is reloading the settings file necessary?
                 GlobalHelper.ReloadSettings();
             })
-            .Add("Download Assets", async m =>
+            .Add("Download Assets", async _ =>
             {
                 Console.WriteLine("Checking for required files...");
                 await coreUpdater.RunAssetDownloader();
                 Pause();
             })
-            .Add("Backup Saves", m =>
+            .Add("Backup Saves", () =>
             {
                 AssetsService.BackupSaves(path, GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
                 Pause();
             })
             .Add("Pocket Setup", pocketSetupMenu.Show)
             .Add("Pocket Maintenance", pocketMaintenanceMenu.Show)
-            .Add("Settings", m =>
+            .Add("Settings", () =>
             {
                 SettingsMenu();
 
@@ -166,48 +132,6 @@ internal partial class Program
             .Add("Exit", ConsoleMenu.Close);
 
         menu.Show();
-    }
-
-    private static MainMenuItems DisplayMenu()
-    {
-        Console.Clear();
-
-        Random random = new Random();
-        int i = random.Next(0, WELCOME_MESSAGES.Length);
-        string welcome = WELCOME_MESSAGES[i];
-        MainMenuItems choice = MainMenuItems.None;
-
-        var menu = new ConsoleMenu()
-            .Configure(config =>
-            {
-                config.Selector = "=>";
-                config.Title = $"{welcome}\r\n{GetRandomSponsorLinks()}\r\n";
-                config.EnableWriteTitle = true;
-                config.WriteHeaderAction = () => Console.WriteLine("Choose your destiny:");
-                config.SelectedItemBackgroundColor = Console.ForegroundColor;
-                config.SelectedItemForegroundColor = Console.BackgroundColor;
-            });
-
-        foreach (var item in Enum.GetValues<MainMenuItems>())
-        {
-            if (item == MainMenuItems.None)
-                continue;
-
-            FieldInfo fi = item.GetType().GetField(item.ToString());
-            DescriptionAttribute[] attributes = (DescriptionAttribute[])fi!.GetCustomAttributes(
-                typeof(DescriptionAttribute), false);
-            var itemDescription = attributes.Length > 0 ? attributes[0].Description : item.ToString();
-
-            menu.Add(itemDescription, thisMenu =>
-            {
-                choice = item;
-                thisMenu.CloseMenu();
-            });
-        }
-
-        menu.Show();
-
-        return choice;
     }
 
     private static void AskAboutNewCores(bool force = false)
@@ -369,7 +293,7 @@ internal partial class Program
         {
             { "download_firmware", "Download Firmware Updates during 'Update All'" },
             { "download_assets", "Download Missing Assets (ROMs and BIOS Files) during 'Update All'" },
-            { "download_gnw_roms", "Download Game n Watch ROMS during 'Update All'" },
+            { "download_gnw_roms", "Download Game & Watch ROMs during 'Update All'" },
             { "build_instance_jsons", "Build game JSON files for supported cores during 'Update All'" },
             { "delete_skipped_cores", "Delete untracked cores during 'Update All'" },
             { "fix_jt_names", "Automatically rename Jotego cores during 'Update All'" },
@@ -395,7 +319,7 @@ internal partial class Program
         foreach (var (name, text) in menuItems)
         {
             var property = type.GetProperty(name);
-            var value = (bool)property.GetValue(GlobalHelper.SettingsManager.GetConfig());
+            var value = (bool)property!.GetValue(GlobalHelper.SettingsManager.GetConfig())!;
             var title = MenuItemName(text, value);
 
             menu.Add(title, thisMenu =>
