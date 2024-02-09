@@ -44,11 +44,30 @@ public static class GlobalHelper
             {
                 Console.WriteLine("Loading Game and Watch Assets Index...");
 
-                gameAndWatchArchiveFiles = ArchiveService.GetFiles(SettingsManager.GetConfig().gnw_archive_name).Result;
+                string archiveName = SettingsManager.GetConfig().archive_name;
+                string gnwArchiveName = SettingsManager.GetConfig().gnw_archive_name;
 
-                // remove the metadata files since we're processing the entire json list
-                gameAndWatchArchiveFiles.files.RemoveAll(file =>
-                    Path.GetExtension(file.name) is ".sqlite" or ".torrent" or ".xml");
+                if (gnwArchiveName != archiveName)
+                {
+                    gameAndWatchArchiveFiles = ArchiveService.GetFiles(gnwArchiveName).Result;
+
+                    // remove the metadata files since we're processing the entire json list
+                    gameAndWatchArchiveFiles.files.RemoveAll(file =>
+                        Path.GetExtension(file.name) is ".sqlite" or ".torrent" or ".xml");
+                }
+                else
+                {
+                    // there are GNW files in the openFPGA-files archive as well as the archive maintained by Espiox
+                    // if the GNW archive is set to the openFPGA-files archive, create a second archive
+                    // with just the GNW files from it so things behave correctly
+                    gameAndWatchArchiveFiles = new Archive
+                    {
+                        item_last_updated = ArchiveFiles.item_last_updated,
+                        files = ArchiveFiles.files.Where(file => file.name.EndsWith(".gnw")).ToList()
+                    };
+
+                    gameAndWatchArchiveFiles.files_count = gameAndWatchArchiveFiles.files.Count;
+                }
             }
 
             return gameAndWatchArchiveFiles;
