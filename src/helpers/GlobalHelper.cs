@@ -80,6 +80,8 @@ public static class GlobalHelper
     public static List<Core> Cores { get; private set; }
     public static List<Core> InstalledCores { get; private set; }
 
+    public static List<Core> InstalledCoresWithSponsors { get; private set; }
+
     private static bool isInitialized;
 
     public static async Task Initialize(string path)
@@ -104,6 +106,7 @@ public static class GlobalHelper
     public static void RefreshInstalledCores()
     {
         InstalledCores = Cores.Where(c => c.IsInstalled()).ToList();
+        InstalledCoresWithSponsors = InstalledCores.Where(c => c.sponsor != null).ToList();
     }
 
     public static Core GetCore(string identifier)

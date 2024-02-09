@@ -10,17 +10,16 @@ internal partial class Program
     {
         var output = new StringBuilder();
 
-        if (GlobalHelper.InstalledCores.Count > 0)
+        if (GlobalHelper.InstalledCoresWithSponsors.Count > 0)
         {
             var random = new Random();
-            var index = random.Next(GlobalHelper.InstalledCores.Count);
-            var randomItem = GlobalHelper.InstalledCores[index];
+            var index = random.Next(GlobalHelper.InstalledCoresWithSponsors.Count);
+            var randomItem = GlobalHelper.InstalledCoresWithSponsors[index];
 
             if (randomItem.sponsor != null)
             {
                 var author = randomItem.GetConfig().metadata.author;
 
-                output.AppendLine();
                 output.AppendLine($"Please consider supporting {author} for their work on the {randomItem} core:");
                 output.Append(randomItem.sponsor);
             }
