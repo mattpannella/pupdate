@@ -1,137 +1,137 @@
-using System.ComponentModel;
-using System.Reflection;
 using ConsoleTools;
 using Pannella.Helpers;
 using Pannella.Models;
 using Pannella.Models.Settings;
+using Pannella.Services;
 
 namespace Pannella;
 
 internal partial class Program
 {
-    private enum MainMenuItems
-    {
-        None = 0,
-        [Description("Update All")]
-        UpdateAll = 1,
-        [Description("Update Firmware")]
-        UpdateFirmware,
-        [Description("Download Required Assets")]
-        DownloadRequiredAssets,
-        [Description("Select Cores")]
-        SelectCores,
-        [Description("Reinstall Cores")]
-        ReinstallCores,
-        [Description("Uninstall Cores")]
-        UninstallCores,
-        [Description("Download Platform Image Packs")]
-        DownloadPlatformImagePacks,
-        [Description("Generate Instance JSON Files")]
-        GenerateInstanceJsonFiles,
-        [Description("Generate Game and Watch ROMS")]
-        GenerateGameAndWatchRoms,
-        [Description("Enable All Display Modes")]
-        EnableAllDisplayModes,
-        [Description("Backup Saves Directory")]
-        BackupSavesDirectory,
-        [Description("Download Pocket Extras for ericlewis.DonkeyKong")]
-        DownloadPocketExtrasDonkeyKong,
-        [Description("Settings")]
-        Settings,
-        [Description("Exit")]
-        Exit
-    }
-
-    /*
-     * Menu Structure
-     * 0. Update All
-     * 1. Update Firmware
-     * 2. Select Cores
-     *    -- Should this kick into installing the new cores that are selected right away?
-     *    -- Should this be built into the menu system or dynamically generated like it is?
-     * 3. Download Assets
-     * 4. Backup Saves
-     * 5. Pocket Setup
-     *    a. Download Platform Image Packs
-     *    b. Download Pocket Library Images -- NEW FEATURE
-     *       -- only supported platforms GB, GBC, GG, maybe others when you can verify with someone who has the new adapters
-     *       i.   Spiritualized1997 -- Dropbox link; should be moved to github or the archive maybe?
-     *       ii.  CodeWario / libretro-thumbnails - Box Arts
-     *       iii. CodeWario / libretro-thumbnails - Snaps
-     *       iv.  CodeWario / libretro-thumbnails - Titles
-     *       v.   Go Back
-     *    c. Download GameBoy Palettes -- NEW FEATURE (Discord & github)
-     *    d. Generate Instance JSON Files (PC Engine CD)
-     *    e. Generate Game & Watch ROMs
-     *    f. Enable All Display Modes
-     *    g. Go Back
-     * 6. Pocket Maintenance -- NEW FEATURE
-     *    a. Reinstall Cores
-     *    b. Uninstall Cores
-     *       - Prompt: Do you want to delete the ROMs for the core?
-     *       - Prompt: Do you want to delete the Saves for the core?
-     *    c. Uninstall Pocket Extras
-     *       -- provide a list of the installed extras like the uninstall feature
-     *       -- uninstall the core with prompts
-     *       -- reinstall the base core & download the assets if necessary
-     *    d. Go Back
-     * 7. Pocket Extras -- NEW FEATURE
-     *    a. Download extras for Eric Lewis's Donkey Kong
-     *    b. Download extras for Eric Lewis's Radar Scope -- this includes the DK roms too, what to do?
-     *    c. Download extras for Jotego's Bubble Bobble (jtbubl) (beta)
-     *    d. Download extras for Jotego's Capcom CPS 1 (jtcps1)
-     *    e. Download extras for Jotego's Capcom CPS 1.5 (jtcps15)
-     *    f. Download extras for Jotego's Capcom CPS 2 (jtcps2)
-     *    g. Download extras for Jotego's Pang / Super Pang (jtpang)
-     *    h. Toaplan 2 Single Platform Arcade Multi -- Not sure how to handle this one yet.
-     *    i. Download all extras
-     *    k. Go Back
-     * 8. Settings
-     * 9. Exit
-     *
-     * -- Where to put the Super GameBoy enhancements? (SGB2, 8x7) Maybe Pocket Extras? Talk to dyreschlock about adding them to his repo.
-     * -- SGB Assets don't auto download because of being marked as required false.
-     */
-
-    private static MainMenuItems DisplayMenuNew()
+    private static void DisplayMenuNew(string path, PocketCoreUpdater coreUpdater)
     {
         Console.Clear();
 
         Random random = new Random();
         int i = random.Next(0, WELCOME_MESSAGES.Length);
         string welcome = WELCOME_MESSAGES[i];
-        MainMenuItems choice = MainMenuItems.None;
+
+        var menuConfig = new MenuConfig
+        {
+            Selector = "=>",
+            Title = $"{welcome}\r\n{GetRandomSponsorLinks()}\r\n",
+            EnableWriteTitle = true,
+            WriteHeaderAction = () => Console.WriteLine("Choose your destiny:"),
+            SelectedItemBackgroundColor = Console.ForegroundColor,
+            SelectedItemForegroundColor = Console.BackgroundColor,
+        };
+
+        var pocketSetupMenu = new ConsoleMenu()
+            .Configure(menuConfig)
+            .Add("Download Platform Image Packs", async _ =>
+            {
+                await ImagePackSelector(path);
+            })
+            .Add("Generate Instance JSON Files (PC Engine CD)", () =>
+            {
+                RunInstanceGenerator(coreUpdater);
+                Pause();
+            })
+            .Add("Generate Game & Watch ROMs", async _ =>
+            {
+                await BuildGameAndWatchRoms(path);
+                Pause();
+            })
+            .Add("Enable All Display Modes", () =>
+            {
+                coreUpdater.ForceDisplayModes();
+                Pause();
+            })
+            .Add("Go Back", ConsoleMenu.Close);
+
+        var pocketMaintenanceMenu = new ConsoleMenu()
+            .Configure(menuConfig)
+            .Add("Reinstall Cores", async _ =>
+            {
+                var results = ShowCoresMenu(
+                    GlobalHelper.InstalledCores,
+                    "Which cores would you like to reinstall?",
+                    false);
+
+                foreach (var item in results.Where(x => x.Value))
+                {
+                    await coreUpdater.RunUpdates(item.Key, true);
+                }
+
+                Pause();
+            })
+            .Add("Uninstall Cores", () =>
+            {
+                var results = ShowCoresMenu(
+                    GlobalHelper.InstalledCores,
+                    "Which cores would you like to uninstall?",
+                    false);
+
+                bool nuke = AskAboutCoreSpecificAssets();
+
+                foreach (var item in results.Where(x => x.Value))
+                {
+                    coreUpdater.DeleteCore(GlobalHelper.GetCore(item.Key), true, nuke);
+                }
+
+                Pause();
+            })
+            .Add("Go Back", ConsoleMenu.Close);
 
         var menu = new ConsoleMenu()
-            .Configure(config =>
+            .Configure(menuConfig)
+            .Add("Update All", async _ =>
             {
-                config.Selector = "=>";
-                config.Title = $"{welcome}\r\n{GetRandomSponsorLinks()}\r\n";
-                config.EnableWriteTitle = true;
-                config.WriteHeaderAction = () => Console.WriteLine("Choose your destiny:");
-                config.SelectedItemBackgroundColor = Console.ForegroundColor;
-                config.SelectedItemForegroundColor = Console.BackgroundColor;
-            });
-
-        foreach (var item in Enum.GetValues<MainMenuItems>())
-        {
-            if (item == MainMenuItems.None)
-                continue;
-
-            FieldInfo fi = item.GetType().GetField(item.ToString());
-            DescriptionAttribute[] attributes = (DescriptionAttribute[])fi!.GetCustomAttributes(typeof(DescriptionAttribute), false);
-            var itemDescription = attributes.Length > 0 ? attributes[0].Description : item.ToString();
-
-            menu.Add(itemDescription, thisMenu =>
+                Console.WriteLine("Starting update process...");
+                await coreUpdater.RunUpdates();
+                Pause();
+            })
+            .Add("Update Firmware", async _ =>
             {
-                choice = item;
-                thisMenu.CloseMenu();
-            });
-        }
+                await coreUpdater.UpdateFirmware();
+                Pause();
+            })
+            .Add("Select Cores", () =>
+            {
+                AskAboutNewCores(true);
+                RunCoreSelector(GlobalHelper.Cores);
+                // Is reloading the settings file necessary?
+                GlobalHelper.ReloadSettings();
+            })
+            .Add("Download Assets", async _ =>
+            {
+                Console.WriteLine("Checking for required files...");
+                await coreUpdater.RunAssetDownloader();
+                Pause();
+            })
+            .Add("Backup Saves", () =>
+            {
+                AssetsService.BackupSaves(path, GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
+                Pause();
+            })
+            .Add("Pocket Setup", pocketSetupMenu.Show)
+            .Add("Pocket Maintenance", pocketMaintenanceMenu.Show)
+            .Add("Settings", () =>
+            {
+                SettingsMenu();
+
+                coreUpdater.DeleteSkippedCores(GlobalHelper.SettingsManager.GetConfig().delete_skipped_cores);
+                coreUpdater.DownloadFirmware(GlobalHelper.SettingsManager.GetConfig().download_firmware);
+                coreUpdater.DownloadAssets(GlobalHelper.SettingsManager.GetConfig().download_assets);
+                coreUpdater.RenameJotegoCores(GlobalHelper.SettingsManager.GetConfig().fix_jt_names);
+                coreUpdater.BackupSaves(GlobalHelper.SettingsManager.GetConfig().backup_saves,
+                    GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
+                // Is reloading the settings file necessary?
+                GlobalHelper.ReloadSettings();
+            })
+            .Add("Exit", ConsoleMenu.Close);
 
         menu.Show();
-
-        return choice;
     }
 
     private static void AskAboutNewCores(bool force = false)
@@ -293,7 +293,7 @@ internal partial class Program
         {
             { "download_firmware", "Download Firmware Updates during 'Update All'" },
             { "download_assets", "Download Missing Assets (ROMs and BIOS Files) during 'Update All'" },
-            { "download_gnw_roms", "Download Game n Watch ROMS during 'Update All'" },
+            { "download_gnw_roms", "Download Game & Watch ROMs during 'Update All'" },
             { "build_instance_jsons", "Build game JSON files for supported cores during 'Update All'" },
             { "delete_skipped_cores", "Delete untracked cores during 'Update All'" },
             { "fix_jt_names", "Automatically rename Jotego cores during 'Update All'" },
@@ -319,7 +319,7 @@ internal partial class Program
         foreach (var (name, text) in menuItems)
         {
             var property = type.GetProperty(name);
-            var value = (bool)property.GetValue(GlobalHelper.SettingsManager.GetConfig());
+            var value = (bool)property!.GetValue(GlobalHelper.SettingsManager.GetConfig())!;
             var title = MenuItemName(text, value);
 
             menu.Add(title, thisMenu =>
