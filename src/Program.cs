@@ -11,11 +11,13 @@ internal partial class Program
 {
     private static bool CLI_MODE;
 
+    //private static readonly PocketCoreUpdater coreUpdater = new();
+
     private static async Task Main(string[] args)
     {
         try
         {
-            string location = Process.GetCurrentProcess().MainModule.FileName;
+            string location = Environment.ProcessPath;
             string path = Path.GetDirectoryName(location);
             bool preservePlatformsFolder = false;
             bool forceUpdate = false;
@@ -370,11 +372,12 @@ internal partial class Program
             }
             else
             {
-                bool flag = true;
+                DisplayMenuNew(path, coreUpdater);
+                /*bool flag = true;
 
                 while (flag)
                 {
-                    MainMenuItems choice = DisplayMenuNew();
+                    MainMenuItems choice = DisplayMenu();
 
                     switch (choice)
                     {
@@ -390,9 +393,10 @@ internal partial class Program
                             break;
 
                         case MainMenuItems.SelectCores:
-                            List<Core> cores = await CoresService.GetCores();
+                            //List<Core> cores = await CoresService.GetCores();
                             AskAboutNewCores(true);
-                            RunCoreSelector(cores);
+                            //RunCoreSelector(cores);
+                            RunCoreSelector(GlobalHelper.Cores);
                             // Is reloading the settings file necessary?
                             GlobalHelper.ReloadSettings();
                             break;
@@ -476,7 +480,7 @@ internal partial class Program
                             Pause();
                             break;
                     }
-                }
+                }*/
             }
         }
         catch (Exception e)
