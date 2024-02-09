@@ -205,6 +205,9 @@ public class Core : Base
                     else
                     {
                         path = Path.Combine(platformPath, "common");
+
+                        if (!Directory.Exists(path))
+                            Directory.CreateDirectory(path);
                     }
 
                     List<string> files = new List<string> { slot.filename };
@@ -258,6 +261,9 @@ public class Core : Base
         if (this.identifier is "agg23.GameAndWatch" && GlobalHelper.SettingsManager.GetConfig().download_gnw_roms)
         {
             string commonPath = Path.Combine(platformPath, "common");
+
+            if (!Directory.Exists(commonPath))
+                Directory.CreateDirectory(commonPath);
 
             foreach (var f in GlobalHelper.GameAndWatchArchiveFiles.files)
             {
@@ -350,7 +356,12 @@ public class Core : Base
 
                             if (!GlobalHelper.Blacklist.Contains(slot.filename) && !slot.filename.EndsWith(".sav"))
                             {
-                                string slotPath = Path.Combine(platformPath, "common", dataPath, slot.filename);
+                                string commonPath = Path.Combine(platformPath, "common");
+
+                                if (!Directory.Exists(commonPath))
+                                    Directory.CreateDirectory(commonPath);
+
+                                string slotPath = Path.Combine(commonPath, dataPath, slot.filename);
 
                                 if (File.Exists(slotPath) && CheckCRC(slotPath, GlobalHelper.ArchiveFiles))
                                 {
