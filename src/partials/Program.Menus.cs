@@ -49,7 +49,6 @@ internal partial class Program
         Random random = new Random();
         int i = random.Next(0, WELCOME_MESSAGES.Length);
         string welcome = WELCOME_MESSAGES[i];
-        MainMenuItems choice = MainMenuItems.None;
 
         var menuConfig = new MenuConfig
         {

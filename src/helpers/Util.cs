@@ -128,18 +128,22 @@ public class Util
         {
             case HashTypes.MD5:
             {
-                var newChecksum = MD5.HashData(File.ReadAllBytes(filepath));
+                var fileBytes = File.ReadAllBytes(filepath);
+                var newChecksum = MD5.HashData(fileBytes);
 
                 hash = Convert.ToHexString(newChecksum);
+                fileBytes = null;
                 break;
             }
 
             case HashTypes.CRC32:
             default:
             {
-                var newChecksum = Crc32Algorithm.Compute(File.ReadAllBytes(filepath));
+                var fileBytes = File.ReadAllBytes(filepath);
+                var newChecksum = Crc32Algorithm.Compute(fileBytes);
 
                 hash = newChecksum.ToString("x8");
+                fileBytes = null;
                 break;
             }
         }
