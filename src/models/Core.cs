@@ -185,15 +185,11 @@ public class Core : Base
         string updateDirectory = GlobalHelper.UpdateDirectory;
         // cores with multiple platforms won't work...not sure any exist right now?
         string instancesDirectory = Path.Combine(updateDirectory, "Assets", info.metadata.platform_ids[0], this.identifier);
-        string path = Path.Combine(updateDirectory, "Assets", info.metadata.platform_ids[0]);
+        string platformPath = Path.Combine(updateDirectory, "Assets", info.metadata.platform_ids[0]);
+        string path;
         var options = new JsonSerializerOptions { Converters = { new StringConverter() } };
 
         DataJSON dataJson = ReadDataJSON();
-
-        if (this.beta_slot_id != null)
-        {
-            // what to do?
-        }
 
         if (dataJson.data.data_slots.Length > 0)
         {
@@ -202,13 +198,14 @@ public class Core : Base
                 if (slot.filename != null && !slot.filename.EndsWith(".sav") &&
                     !GlobalHelper.Blacklist.Contains(slot.filename))
                 {
+                    
                     if (slot.IsCoreSpecific())
                     {
-                        path = Path.Combine(path, this.identifier);
+                        path = Path.Combine(platformPath, this.identifier);
                     }
                     else
                     {
-                        path = Path.Combine(path, "common");
+                        path = Path.Combine(platformPath, "common");
                     }
 
                     List<string> files = new List<string> { slot.filename };
@@ -259,9 +256,9 @@ public class Core : Base
             };
         }
 
-        if (this.identifier is "agg23.GameAndWatch")
+        if (this.identifier is "agg23.GameAndWatch" && GlobalHelper.SettingsManager.GetConfig().download_gnw_roms)
         {
-            string commonPath = Path.Combine(path, "common");
+            string commonPath = Path.Combine(platformPath, "common");
 
             foreach (var f in GlobalHelper.GameAndWatchArchiveFiles.files)
             {
@@ -354,7 +351,7 @@ public class Core : Base
 
                             if (!GlobalHelper.Blacklist.Contains(slot.filename) && !slot.filename.EndsWith(".sav"))
                             {
-                                string slotPath = Path.Combine(path, "common", dataPath, slot.filename);
+                                string slotPath = Path.Combine(platformPath, "common", dataPath, slot.filename);
 
                                 if (File.Exists(slotPath) && CheckCRC(slotPath, GlobalHelper.ArchiveFiles))
                                 {
