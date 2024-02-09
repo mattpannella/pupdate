@@ -45,7 +45,11 @@ public static class AssetsService
 
     public static async Task<string[]> GetBlacklist()
     {
+#if DEBUG
+        string json = await File.ReadAllTextAsync("blacklist.json");
+#else
         string json = await HttpHelper.Instance.GetHTML(BLACKLIST);
+#endif
         string[] files = JsonSerializer.Deserialize<string[]>(json);
 
         return files ?? Array.Empty<string>();

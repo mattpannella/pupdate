@@ -198,7 +198,6 @@ public class Core : Base
                 if (slot.filename != null && !slot.filename.EndsWith(".sav") &&
                     !GlobalHelper.Blacklist.Contains(slot.filename))
                 {
-                    
                     if (slot.IsCoreSpecific())
                     {
                         path = Path.Combine(platformPath, this.identifier);
@@ -212,7 +211,7 @@ public class Core : Base
 
                     if (slot.alternate_filenames != null)
                     {
-                        files.AddRange(slot.alternate_filenames);
+                        files.AddRange(slot.alternate_filenames.Where(f => !GlobalHelper.Blacklist.Contains(f)));
                     }
 
                     foreach (string f in files)
