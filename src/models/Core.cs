@@ -162,6 +162,24 @@ public class Core : Base
         Divide();
     }
 
+    public Platform ReadPlatformFile()
+    {
+        var info = this.GetConfig();
+
+        if (info == null)
+        {
+            return this.platform;
+        }
+
+        string updateDirectory = GlobalHelper.UpdateDirectory;
+        // cores with multiple platforms won't work...not sure any exist right now?
+        string platformsFolder = Path.Combine(updateDirectory, "Platforms");
+        string dataFile = Path.Combine(platformsFolder, info.metadata.platform_ids[0] + ".json");
+        var p = JsonSerializer.Deserialize<Dictionary<string, Platform>>(File.ReadAllText(dataFile));
+
+        return p["platform"];
+    }
+
     public async Task<Dictionary<string, object>> DownloadAssets()
     {
         List<string> installed = new List<string>();
@@ -198,7 +216,7 @@ public class Core : Base
                 if (slot.filename != null && !slot.filename.EndsWith(".sav") &&
                     !GlobalHelper.Blacklist.Contains(slot.filename))
                 {
-                    
+
                     if (slot.IsCoreSpecific())
                     {
                         path = Path.Combine(platformPath, this.identifier);
