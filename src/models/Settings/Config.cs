@@ -5,6 +5,7 @@ public class Config
     public bool download_assets { get; set; } = true;
     public string archive_name { get; set; } = "openFPGA-Files";
     public string gnw_archive_name { get; set; } = "fpga-gnw-opt";
+    public bool download_gnw_roms { get; set; } = false;
     public string github_token { get; set; } = string.Empty;
     public bool download_firmware { get; set; } = true;
     public bool core_selector { get; set; } = true;
