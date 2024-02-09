@@ -32,7 +32,14 @@ internal partial class Program
             if (!result.Value)
                 return;
 
-            await coreUpdater.RunUpdates(coreIdentifier);
+            // should I call core.Install here instead?
+            await coreUpdater.RunUpdates(coreIdentifier, skipOutro: true);
+
+            if (!core.IsInstalled())
+            {
+                //Console.WriteLine("The core still isn't installed.");
+                return;
+            }
         }
 
         Release release = await GithubApiService.GetLatestRelease("dyreschlock", "pocket-extras");
@@ -48,10 +55,6 @@ internal partial class Program
         string extractPath = Path.Combine(path, "temp");
         string sourceAssetsCore = Path.Combine(extractPath, "Assets", core.platform_id);
         string destinationAssetsCore = Path.Combine(path, "Assets", core.platform_id);
-        string destinationAssetsMra = Path.Combine(path, "Assets", "mra");
-        string sourceDataJson = Path.Combine(extractPath, "Cores", core.identifier, "data.json");
-        string destinationDataJson = Path.Combine(path, "Cores", core.identifier, "data.json");
-        string destinationDataJsonBackup = Path.Combine(path, "Cores", core.identifier, "data.backup.json");
 
         try
         {
@@ -59,15 +62,38 @@ internal partial class Program
             await HttpHelper.Instance.DownloadFileAsync(asset.browser_download_url, localFile);
             Console.WriteLine("Download complete.");
             Console.WriteLine("Installing...");
+
+            if (Directory.Exists(extractPath))
+                Directory.Delete(extractPath, true);
+
             ZipFile.ExtractToDirectory(localFile, extractPath);
             File.Delete(localFile);
             Util.CopyDirectory(sourceAssetsCore, destinationAssetsCore, true, true);
-            Directory.Delete(destinationAssetsMra, true);
 
-            if (!File.Exists(destinationDataJsonBackup))
+            string destinationAssetsMra = Path.Combine(path, "Assets", core.platform_id, "mra");
+
+            if (Directory.Exists(destinationAssetsMra))
+                Directory.Delete(destinationAssetsMra, true);
+
+            if (core.identifier.StartsWith("jotego"))
+            {
+                string sourcePresetsCore = Path.Combine(extractPath, "Presets", core.identifier);
+                string destinationPresetsCore = Path.Combine(path, "Presets", core.identifier);
+
+                Util.CopyDirectory(sourcePresetsCore, destinationPresetsCore, true, true);
+            }
+            else
+            {
+                string sourceDataJson = Path.Combine(extractPath, "Cores", core.identifier, "data.json");
+                string destinationDataJson = Path.Combine(path, "Cores", core.identifier, "data.json");
+                string destinationDataJsonBackup = Path.Combine(path, "Cores", core.identifier,
+                    $"data.{DateTime.Now:yyyy-MM-dd_HH.mm.ss}.json");
+
+
                 File.Copy(destinationDataJson, destinationDataJsonBackup, true);
+                File.Copy(sourceDataJson, destinationDataJson, true);
+            }
 
-            File.Copy(sourceDataJson, destinationDataJson, true);
             Directory.Delete(extractPath, true);
             Console.WriteLine("Complete.");
         }
@@ -79,6 +105,7 @@ internal partial class Program
         }
 
         Console.WriteLine("Downloading assets...");
+        // should I call await core.DownloadAssets here instead?
         await coreUpdater.RunAssetDownloader(core.identifier, true);
         Console.WriteLine("Complete.");
 
@@ -87,7 +114,6 @@ internal partial class Program
 
         // TODO: Modify 'Update All' and 'Update {core}' to check the pocket_extras flag and act accordingly when true.
         // TODO: Provide uninstall capability for the pocket_extras additions
-        // TODO: Put all the pocket_extras menu items into their own submenu
 
         // TODO: During core uninstall, ask if roms and saves should also be deleted.
     }

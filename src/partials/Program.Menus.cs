@@ -83,6 +83,46 @@ internal partial class Program
             })
             .Add("Go Back", ConsoleMenu.Close);
 
+        var pocketExtrasMenu = new ConsoleMenu()
+            .Configure(menuConfig)
+            .Add("Download Pocket Extras for ericlewis.DonkeyKong", async _ =>
+            {
+                await DownloadPocketExtras("ericlewis.DonkeyKong", "pocket-extras-dk",
+                    path, coreUpdater);
+                Pause();
+            })
+            .Add("Download Pocket Extras for ericlewis.RadarScope", async _ =>
+            {
+                await DownloadPocketExtras("ericlewis.RadarScope", "pocket-extras-dk",
+                    path, coreUpdater);
+                Pause();
+            })
+            .Add("Download Pocket Extras for jotego.jtbubl", async _ =>
+            {
+                await DownloadPocketExtras("jotego.jtbubl", "pocket-extras-jotego",
+                    path, coreUpdater);
+                Pause();
+            })
+            .Add("Download Pocket Extras for jotego.jtcps15", async _ =>
+            {
+                await DownloadPocketExtras("jotego.jtcps15", "pocket-extras-jotego",
+                    path, coreUpdater);
+                Pause();
+            })
+            .Add("Download Pocket Extras for jotego.jtcps2", async _ =>
+            {
+                await DownloadPocketExtras("jotego.jtcps2", "pocket-extras-jotego",
+                    path, coreUpdater);
+                Pause();
+            })
+            .Add("Download Pocket Extras for jotego.jtpang", async _ =>
+            {
+                await DownloadPocketExtras("jotego.jtpang", "pocket-extras-jotego",
+                    path, coreUpdater);
+                Pause();
+            })
+            .Add("Go Back", ConsoleMenu.Close);
+
         var menu = new ConsoleMenu()
             .Configure(menuConfig)
             .Add("Update All", async _ =>
@@ -116,6 +156,7 @@ internal partial class Program
             })
             .Add("Pocket Setup", pocketSetupMenu.Show)
             .Add("Pocket Maintenance", pocketMaintenanceMenu.Show)
+            .Add("Pocket Extras", pocketExtrasMenu.Show)
             .Add("Settings", () =>
             {
                 SettingsMenu();
@@ -212,13 +253,7 @@ internal partial class Program
                     var coreSettings = GlobalHelper.SettingsManager.GetCoreSettings(core.identifier);
                     var selected = isCoreSelection && !coreSettings.skip;
                     var name = core.identifier;
-
-                    if (isCoreSelection && core.requires_license)
-                    {
-                        name += " (Requires beta access)";
-                    }
-
-                    var title = MenuItemName(name, selected);
+                    var title = MenuItemName(name, selected, isCoreSelection, core.requires_license);
 
                     menu.Add(title, thisMenu =>
                     {
@@ -233,7 +268,8 @@ internal partial class Program
                             results.Add(core.identifier, selected);
                         }
 
-                        thisMenu.CurrentItem.Name = MenuItemName(core.identifier, selected);
+                        thisMenu.CurrentItem.Name = MenuItemName(core.identifier, selected, isCoreSelection,
+                            core.requires_license);
                     });
                 }
             }
@@ -337,8 +373,15 @@ internal partial class Program
         GlobalHelper.SettingsManager.SaveSettings();
     }
 
-    private static string MenuItemName(string title, bool value)
+    private static string MenuItemName(string title, bool value, bool isCoreSelection = false, bool requiresLicense = false)
     {
-        return $"[{ (value ? "x" : " ") }] {title}";
+        string name = $"[{(value ? "x" : " ")}] {title}";
+
+        if (isCoreSelection && requiresLicense)
+        {
+            name += " (Requires beta access)";
+        }
+
+        return name;
     }
 }

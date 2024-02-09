@@ -111,7 +111,7 @@ public class PocketCoreUpdater : Base
     /// <summary>
     /// Run the full openFPGA core download and update process
     /// </summary>
-    public async Task RunUpdates(string id = null, bool clean = false)
+    public async Task RunUpdates(string id = null, bool clean = false, bool skipOutro = false)
     {
         List<Dictionary<string, string>> installed = new List<Dictionary<string, string>>();
         List<string> installedAssets = new List<string>();
@@ -151,7 +151,8 @@ public class PocketCoreUpdater : Base
 
                 if (core.requires_license && !_jtBeta)
                 {
-                    continue; //skip if you don't have the key
+                    missingBetaKeys.Add(core.identifier);
+                    continue; // skip if you don't have the key
                 }
 
                 string name = core.identifier;
@@ -269,7 +270,8 @@ public class PocketCoreUpdater : Base
             InstalledAssets = installedAssets,
             SkippedAssets = skippedAssets,
             MissingBetaKeys = missingBetaKeys,
-            FirmwareUpdated = firmwareDownloaded
+            FirmwareUpdated = firmwareDownloaded,
+            SkipOutro = skipOutro,
         };
 
         GlobalHelper.RefreshInstalledCores();

@@ -448,7 +448,11 @@ internal partial class Program
 
         if (!e.SkipOutro)
         {
-            Console.WriteLine(GetRandomSponsorLinks());
+            var links = GetRandomSponsorLinks();
+
+            if (!string.IsNullOrEmpty(links))
+                Console.WriteLine(links);
+
             FunFacts();
         }
     }
