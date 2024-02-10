@@ -6,12 +6,12 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
-    <Version>3.2.1</Version>
+    <Version>3.3.0</Version>
     <Description>Keep your Analogue Pocket up to date</Description>
     <Copyright>2024 Matt Pannella</Copyright>
     <Authors>Matt Pannella</Authors>
     <Product>Pupdate</Product>
-    <RepositoryUrl>https://github.com/mattpannella/pocket-updater-utility</RepositoryUrl>
+    <RepositoryUrl>https://github.com/mattpannella/pupdate</RepositoryUrl>
     <RootNamespace>Pannella</RootNamespace>
   </PropertyGroup>
   <ItemGroup>

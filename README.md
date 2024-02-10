@@ -1,5 +1,5 @@
 
-[![Current Release](https://img.shields.io/github/v/release/mattpannella/pocket-updater-utility?label=Current%20Release)](https://github.com/mattpannella/pocket-updater-utility/releases/latest) ![Downloads](https://img.shields.io/github/downloads/mattpannella/pocket-updater-utility/latest/total?label=Downloads) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?business=YEERX89E75HQ8&no_recurring=1&currency_code=USD)
+[![Current Release](https://img.shields.io/github/v/release/mattpannella/pupdate?label=Current%20Release)](https://github.com/mattpannella/pupdate/releases/latest) ![Downloads](https://img.shields.io/github/downloads/mattpannella/pupdate/latest/total?label=Downloads) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?business=YEERX89E75HQ8&no_recurring=1&currency_code=USD)
 
   
 
@@ -13,7 +13,7 @@ I can't (and don't want to) support old versions, so please make sure you downlo
 
 ## Easy Mode ##
 
-If you just want to use this utility, do not clone the source repository. Just download the [latest release](https://github.com/mattpannella/pocket-updater-utility/releases/latest/). Unzip it, put the executable file for your platform (windows, mac os, or linux) in the root of your sd card, and run the program.
+If you just want to use this utility, do not clone the source repository. Just download the [latest release](https://github.com/mattpannella/pupdate/releases/latest/). Unzip it, put the executable file for your platform (windows, mac os, or linux) in the root of your sd card, and run the program.
 
   
 
@@ -70,7 +70,7 @@ Checks for missing required assets for each core you have selected (mainly arcad
 
 ### Additional Settings
 
- The following settings can be set by editing `pocket_updater_settings.json` in a text editor.
+ The following settings can be set by editing `pupdate_settings.json` in a text editor.
 
 |                              |                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
