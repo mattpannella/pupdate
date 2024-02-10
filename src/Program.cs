@@ -41,7 +41,8 @@ internal partial class Program
 
             Parser.Default.ParseArguments<MenuOptions, FundOptions, UpdateOptions,
                     AssetsOptions, FirmwareOptions, ImagesOptions, InstanceGeneratorOptions,
-                    UpdateSelfOptions, UninstallOptions, BackupSavesOptions>(args)
+                    UpdateSelfOptions, UninstallOptions, BackupSavesOptions, GameBoyPalettesOptions,
+                    PocketLibraryImagesOptions>(args)
                 .WithParsed<UpdateSelfOptions>(_ => { selfUpdate = true; })
                 .WithParsed<FundOptions>(o =>
                     {
@@ -169,6 +170,18 @@ internal partial class Program
                         path = o.InstallPath;
                         backupSaves_Path = o.BackupPath;
                         backupSaves_SaveConfig = o.Save;
+                    })
+                .WithParsed<GameBoyPalettesOptions>(o =>
+                    {
+                        verb = "gameboy-palettes";
+                        CLI_MODE = true;
+                        path = o.InstallPath;
+                    })
+                .WithParsed<PocketLibraryImagesOptions>(o =>
+                    {
+                        verb = "pocket-library-images";
+                        CLI_MODE = true;
+                        path = o.InstallPath;
                     })
                 .WithNotParsed(_ =>
                     {
@@ -345,35 +358,45 @@ internal partial class Program
 
                 await pack.Install(path);
             }
-            else if (verb == "uninstall")
+            else switch (verb)
             {
-                if (GlobalHelper.GetCore(coreName) == null)
-                {
-                    Console.WriteLine("Unknown core");
-                }
-                else
-                {
+                case "uninstall" when GlobalHelper.GetCore(coreName) == null:
+                    Console.WriteLine($"Unknown core '{coreName}'");
+                    break;
+
+                case "uninstall":
                     coreUpdater.DeleteCore(GlobalHelper.GetCore(coreName), true, nuke);
-                }
-            }
-            else if (verb == "backup-saves")
-            {
-                AssetsService.BackupSaves(path, backupSaves_Path);
-                AssetsService.BackupMemories(path, backupSaves_Path);
+                    break;
 
-                if (backupSaves_SaveConfig)
+                case "backup-saves":
                 {
-                    var config = GlobalHelper.SettingsManager.GetConfig();
+                    AssetsService.BackupSaves(path, backupSaves_Path);
+                    AssetsService.BackupMemories(path, backupSaves_Path);
 
-                    config.backup_saves = true;
-                    config.backup_saves_location = backupSaves_Path;
+                    if (backupSaves_SaveConfig)
+                    {
+                        var config = GlobalHelper.SettingsManager.GetConfig();
 
-                    GlobalHelper.SettingsManager.SaveSettings();
+                        config.backup_saves = true;
+                        config.backup_saves_location = backupSaves_Path;
+
+                        GlobalHelper.SettingsManager.SaveSettings();
+                    }
+
+                    break;
                 }
-            }
-            else
-            {
-                DisplayMenuNew(path, coreUpdater);
+
+                case "gameboy-palettes":
+                    await DownloadGameBoyPalettes(path);
+                    break;
+
+                case "pocket-library-images":
+                    await DownloadPockLibraryImages(path);
+                    break;
+
+                default:
+                    DisplayMenuNew(path, coreUpdater);
+                    break;
             }
         }
         catch (Exception e)
