@@ -357,6 +357,7 @@ internal partial class Program
             else if (verb == "backup-saves")
             {
                 AssetsService.BackupSaves(path, backupSaves_Path);
+                AssetsService.BackupMemories(path, backupSaves_Path);
 
                 if (backupSaves_SaveConfig)
                 {
@@ -418,6 +419,7 @@ internal partial class Program
 
                         case MainMenuItems.BackupSavesDirectory:
                             AssetsService.BackupSaves(path, GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
+                            AssetsService.BackupMemories(path, GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
                             Pause();
                             break;
 

@@ -12,9 +12,18 @@ public static class AssetsService
 
     public static void BackupSaves(string directory, string backupLocation)
     {
-        if (string.IsNullOrEmpty(directory))
+        BackupDirectory(directory, "Saves", backupLocation);
+    }
+
+    public static void BackupMemories(string directory, string backupLocation)
+    {
+        BackupDirectory(directory, "Memories", backupLocation);
+    }
+    private static void BackupDirectory(string rootDirectory, string folderName, string backupLocation)
+    {
+        if (string.IsNullOrEmpty(rootDirectory))
         {
-            throw new ArgumentNullException(nameof(directory));
+            throw new ArgumentNullException(nameof(rootDirectory));
         }
 
         if (string.IsNullOrEmpty(backupLocation))
@@ -22,9 +31,9 @@ public static class AssetsService
             throw new ArgumentNullException(nameof(backupLocation));
         }
 
-        Console.WriteLine("Compressing and backing up Saves directory...");
-        string savesPath = Path.Combine(directory, "Saves");
-        string fileName = $"Saves_Backup_{DateTime.Now:yyyy-MM-dd_HH.mm.ss}.zip";
+        Console.WriteLine($"Compressing and backing up {folderName} directory...");
+        string savesPath = Path.Combine(rootDirectory, folderName);
+        string fileName = $"{folderName}_Backup_{DateTime.Now:yyyy-MM-dd_HH.mm.ss}.zip";
         string archiveName = Path.Combine(backupLocation, fileName);
 
         if (Directory.Exists(savesPath))
@@ -39,7 +48,7 @@ public static class AssetsService
         }
         else
         {
-            Console.WriteLine("No Saves directory found, skipping backup...");
+            Console.WriteLine($"No {folderName} directory found, skipping backup...");
         }
     }
 
