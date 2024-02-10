@@ -51,7 +51,12 @@ internal partial class Program
 
         var pocketMaintenanceMenu = new ConsoleMenu()
             .Configure(menuConfig)
-            .Add("Reinstall Cores", async _ =>
+            .Add("Reinstall All Cores", async _ =>
+            {
+                await coreUpdater.RunUpdates(null, true);
+                Pause();
+            })
+            .Add("Reinstall Select Cores", async _ =>
             {
                 var results = ShowCoresMenu(
                     GlobalHelper.InstalledCores,
@@ -65,7 +70,7 @@ internal partial class Program
 
                 Pause();
             })
-            .Add("Uninstall Cores", () =>
+            .Add("Uninstall Select Cores", () =>
             {
                 var results = ShowCoresMenu(
                     GlobalHelper.InstalledCores,
