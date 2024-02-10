@@ -263,8 +263,10 @@ Special thanks to [RetroDriven](https://github.com/RetroDriven/) for maintaining
 
 And [dyreschlock](https://github.com/dyreschlock/pocket-platform-images/tree/main/arcade/Platforms) for hosting the updated platform files for Jotego's cores
 
-  
 
+And [espiox](https://github.com/espiox) for maintaining the game & watch rom archive
+
+  
 And if you're looking for something with a few more features and a user interface, check out this updater. [https://github.com/RetroDriven/Pocket_Updater](https://github.com/RetroDriven/Pocket_Updater)
 
   
