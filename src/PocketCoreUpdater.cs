@@ -127,6 +127,7 @@ public class PocketCoreUpdater : Base
         if (_backupSaves)
         {
             AssetsService.BackupSaves(GlobalHelper.UpdateDirectory, _backupSavesLocation);
+            AssetsService.BackupMemories(GlobalHelper.UpdateDirectory, _backupSavesLocation);
         }
 
         if (_downloadFirmware && id == null)

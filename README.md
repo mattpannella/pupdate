@@ -1,5 +1,5 @@
 
-[![Current Release](https://img.shields.io/github/v/release/mattpannella/pocket-updater-utility?label=Current%20Release)](https://github.com/mattpannella/pocket-updater-utility/releases/latest) ![Downloads](https://img.shields.io/github/downloads/mattpannella/pocket-updater-utility/latest/total?label=Downloads) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?business=YEERX89E75HQ8&no_recurring=1&currency_code=USD)
+[![Current Release](https://img.shields.io/github/v/release/mattpannella/pupdate?label=Current%20Release)](https://github.com/mattpannella/pupdate/releases/latest) ![Downloads](https://img.shields.io/github/downloads/mattpannella/pupdate/latest/total?label=Downloads) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?business=YEERX89E75HQ8&no_recurring=1&currency_code=USD)
 
   
 
@@ -13,7 +13,7 @@ I can't (and don't want to) support old versions, so please make sure you downlo
 
 ## Easy Mode ##
 
-If you just want to use this utility, do not clone the source repository. Just download the [latest release](https://github.com/mattpannella/pocket-updater-utility/releases/latest/). Unzip it, put the executable file for your platform (windows, mac os, or linux) in the root of your sd card, and run the program.
+If you just want to use this utility, do not clone the source repository. Just download the [latest release](https://github.com/mattpannella/pupdate/releases/latest/). Unzip it, put the executable file for your platform (windows, mac os, or linux) in the root of your sd card, and run the program.
 
   
 
@@ -59,18 +59,19 @@ Checks for missing required assets for each core you have selected (mainly arcad
 |-------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Download Firmware Updates           | Check for firmware updates when running "Update All"                                                                                                                                                                                                                |
 | Download Missing Assets             | Check for missing assets (ROMs, BIOS files, etc) when running "Update All"                                                                                                                                                                                          |
+| Download Game & Watch ROMS          | Download Game & Watch ROMS when running "Update All"                                                                                                                                                                                          |
 | Build game JSON Files               | Run the Instance JSON builder during "Update All"                                                                                                                                                                                                                   |
 | Delete untracked cores              | Any core that is available, but you have not chosen in the "Core Selector" will be uninstalled, if found on your SD card when running "Update All"                                                                                                                  |
 | Automatically rename Jotego cores   | Jotego's cores will be renamed to the correct titles of the platforms they are emulating, when running "Update All". example: jtcontra is Contra                                                                                                                    |
 | Use CRC check                       | Use CRC file hashes to verify Asset files, and re-download if needed. When running "Update All" or "Download Required Assets"                                                                                                                                       |
 | Preserve Platforms folder           | Don't overwrite changes made to files in the Platforms folder when running "Update All"                                                                                                                                                                             |
 | Skip alternative ROMs               | Ignore files if they are in a folder named "_alternatives" when checking for Assets (Note: this is on by default)                                                                                                                                                   |
-| Compress and backup Saves directory | This will compress and backup the Saves directory to the specified location. By default, a Backups directory will be created off the root. The location can be changed manually by setting the "backup_saves_location" with the absolute path in the settings file. | 
+| Compress and backup Saves and Memories | This will compress and backup the Saves and Memories directory to the specified location. By default, a Backups directory will be created off the root. The location can be changed manually by setting the "backup_saves_location" with the absolute path in the settings file. | 
 | Use custom archive                  | Allows you to use a custom site for Asset file checking (there is a pre-configured site available). The actual URL of the custom site can be set manually by editing the settings file in an editor.                                                                |
 
 ### Additional Settings
 
- The following settings can be set by editing `pocket_updater_settings.json` in a text editor.
+ The following settings can be set by editing `pupdate_settings.json` in a text editor.
 
 |                              |                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -262,8 +263,10 @@ Special thanks to [RetroDriven](https://github.com/RetroDriven/) for maintaining
 
 And [dyreschlock](https://github.com/dyreschlock/pocket-platform-images/tree/main/arcade/Platforms) for hosting the updated platform files for Jotego's cores
 
-  
 
+And [espiox](https://github.com/espiox) for maintaining the game & watch rom archive
+
+  
 And if you're looking for something with a few more features and a user interface, check out this updater. [https://github.com/RetroDriven/Pocket_Updater](https://github.com/RetroDriven/Pocket_Updater)
 
   

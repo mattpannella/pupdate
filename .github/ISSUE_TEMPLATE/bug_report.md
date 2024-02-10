@@ -29,4 +29,4 @@ If applicable, add screenshots to help explain your problem.
 
 
 **Contents of settings file**
-please attach the contents of pocket_updater_settings.json
+please attach the contents of pupdate_settings.json
