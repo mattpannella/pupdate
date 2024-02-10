@@ -1,85 +1,143 @@
-using System.ComponentModel;
-using System.Reflection;
-using System.Security.Cryptography;
 using ConsoleTools;
 using Pannella.Helpers;
 using Pannella.Models;
 using Pannella.Models.Settings;
+using Pannella.Services;
 
 namespace Pannella;
 
 internal partial class Program
 {
-    private enum MainMenuItems
-    {
-        None = 0,
-        [Description("Update All")]
-        UpdateAll = 1,
-        [Description("Update Firmware")]
-        UpdateFirmware,
-        [Description("Download Required Assets")]
-        DownloadRequiredAssets,
-        [Description("Select Cores")]
-        SelectCores,
-        [Description("Reinstall Cores")]
-        ReinstallCores,
-        [Description("Uninstall Cores")]
-        UninstallCores,
-        [Description("Download Platform Image Packs")]
-        DownloadPlatformImagePacks,
-        [Description("Generate Instance JSON Files")]
-        GenerateInstanceJsonFiles,
-        [Description("Generate Game and Watch ROMS")]
-        GenerateGameAndWatchRoms,
-        [Description("Enable All Display Modes")]
-        EnableAllDisplayModes,
-        [Description("Backup Saves and Memories")]
-        BackupSavesDirectory,
-        [Description("Settings")]
-        Settings,
-        [Description("Exit")]
-        Exit
-    }
-
-    private static MainMenuItems DisplayMenuNew()
+    private static void DisplayMenuNew(string path, PocketCoreUpdater coreUpdater)
     {
         Console.Clear();
 
         Random random = new Random();
         int i = random.Next(0, WELCOME_MESSAGES.Length);
         string welcome = WELCOME_MESSAGES[i];
-        MainMenuItems choice = MainMenuItems.None;
+
+        var menuConfig = new MenuConfig
+        {
+            Selector = "=>",
+            Title = $"{welcome}\r\n{GetRandomSponsorLinks()}\r\n",
+            EnableWriteTitle = true,
+            WriteHeaderAction = () => Console.WriteLine("Choose your destiny:"),
+            SelectedItemBackgroundColor = Console.ForegroundColor,
+            SelectedItemForegroundColor = Console.BackgroundColor,
+        };
+
+        var pocketSetupMenu = new ConsoleMenu()
+            .Configure(menuConfig)
+            .Add("Download Platform Image Packs", async _ =>
+            {
+                await ImagePackSelector(path);
+            })
+            .Add("Generate Instance JSON Files (PC Engine CD)", () =>
+            {
+                RunInstanceGenerator(coreUpdater);
+                Pause();
+            })
+            .Add("Generate Game & Watch ROMs", async _ =>
+            {
+                await BuildGameAndWatchRoms(path);
+                Pause();
+            })
+            .Add("Enable All Display Modes", () =>
+            {
+                coreUpdater.ForceDisplayModes();
+                Pause();
+            })
+            .Add("Go Back", ConsoleMenu.Close);
+
+        var pocketMaintenanceMenu = new ConsoleMenu()
+            .Configure(menuConfig)
+            .Add("Reinstall All Cores", async _ =>
+            {
+                await coreUpdater.RunUpdates(null, true);
+                Pause();
+            })
+            .Add("Reinstall Select Cores", async _ =>
+            {
+                var results = ShowCoresMenu(
+                    GlobalHelper.InstalledCores,
+                    "Which cores would you like to reinstall?",
+                    false);
+
+                foreach (var item in results.Where(x => x.Value))
+                {
+                    await coreUpdater.RunUpdates(item.Key, true);
+                }
+
+                Pause();
+            })
+            .Add("Uninstall Select Cores", () =>
+            {
+                var results = ShowCoresMenu(
+                    GlobalHelper.InstalledCores,
+                    "Which cores would you like to uninstall?",
+                    false);
+
+                bool nuke = AskAboutCoreSpecificAssets();
+
+                foreach (var item in results.Where(x => x.Value))
+                {
+                    coreUpdater.DeleteCore(GlobalHelper.GetCore(item.Key), true, nuke);
+                }
+
+                Pause();
+            })
+            .Add("Go Back", ConsoleMenu.Close);
 
         var menu = new ConsoleMenu()
-            .Configure(config =>
+            .Configure(menuConfig)
+            .Add("Update All", async _ =>
             {
-                config.Selector = "=>";
-                config.Title = $"{welcome}\r\n{GetRandomSponsorLinks()}\r\n";
-                config.EnableWriteTitle = true;
-                config.WriteHeaderAction = () => Console.WriteLine("Choose your destiny:");
-                config.SelectedItemBackgroundColor = Console.ForegroundColor;
-                config.SelectedItemForegroundColor = Console.BackgroundColor;
-            });
-
-        foreach (var item in Enum.GetValues<MainMenuItems>())
-        {
-            if (item == MainMenuItems.None)
-                continue;
-
-            FieldInfo fi = item.GetType().GetField(item.ToString());
-            DescriptionAttribute[] attributes = (DescriptionAttribute[])fi!.GetCustomAttributes(typeof(DescriptionAttribute), false);
-            var itemDescription = attributes.Length > 0 ? attributes[0].Description : item.ToString();
-
-            menu.Add(itemDescription, thisMenu =>
+                Console.WriteLine("Starting update process...");
+                await coreUpdater.RunUpdates();
+                Pause();
+            })
+            .Add("Update Firmware", async _ =>
             {
-                choice = item;
-                thisMenu.CloseMenu();
-            });
-        }
+                await coreUpdater.UpdateFirmware();
+                Pause();
+            })
+            .Add("Select Cores", () =>
+            {
+                AskAboutNewCores(true);
+                RunCoreSelector(GlobalHelper.Cores);
+                // Is reloading the settings file necessary?
+                GlobalHelper.ReloadSettings();
+            })
+            .Add("Download Assets", async _ =>
+            {
+                Console.WriteLine("Checking for required files...");
+                await coreUpdater.RunAssetDownloader();
+                Pause();
+            })
+            .Add("Backup Saves and Memories", () =>
+            {
+                AssetsService.BackupSaves(path, GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
+                AssetsService.BackupMemories(path, GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
+                Pause();
+            })
+            .Add("Pocket Setup", pocketSetupMenu.Show)
+            .Add("Pocket Maintenance", pocketMaintenanceMenu.Show)
+            .Add("Settings", () =>
+            {
+                SettingsMenu();
+
+                coreUpdater.DeleteSkippedCores(GlobalHelper.SettingsManager.GetConfig().delete_skipped_cores);
+                coreUpdater.DownloadFirmware(GlobalHelper.SettingsManager.GetConfig().download_firmware);
+                coreUpdater.DownloadAssets(GlobalHelper.SettingsManager.GetConfig().download_assets);
+                coreUpdater.RenameJotegoCores(GlobalHelper.SettingsManager.GetConfig().fix_jt_names);
+                coreUpdater.BackupSaves(GlobalHelper.SettingsManager.GetConfig().backup_saves,
+                    GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
+                // Is reloading the settings file necessary?
+                GlobalHelper.ReloadSettings();
+            })
+            .Add("Exit", ConsoleMenu.Close);
 
         menu.Show();
-
-        return choice;
     }
 
     private static void AskAboutNewCores(bool force = false)
@@ -241,7 +299,7 @@ internal partial class Program
         {
             { "download_firmware", "Download Firmware Updates during 'Update All'" },
             { "download_assets", "Download Missing Assets (ROMs and BIOS Files) during 'Update All'" },
-            { "download_gnw_roms", "Download Game n Watch ROMS during 'Update All'" },
+            { "download_gnw_roms", "Download Game & Watch ROMs during 'Update All'" },
             { "build_instance_jsons", "Build game JSON files for supported cores during 'Update All'" },
             { "delete_skipped_cores", "Delete untracked cores during 'Update All'" },
             { "fix_jt_names", "Automatically rename Jotego cores during 'Update All'" },
@@ -267,7 +325,7 @@ internal partial class Program
         foreach (var (name, text) in menuItems)
         {
             var property = type.GetProperty(name);
-            var value = (bool)property.GetValue(GlobalHelper.SettingsManager.GetConfig());
+            var value = (bool)property!.GetValue(GlobalHelper.SettingsManager.GetConfig())!;
             var title = MenuItemName(text, value);
 
             menu.Add(title, thisMenu =>

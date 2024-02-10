@@ -11,11 +11,13 @@ internal partial class Program
 {
     private static bool CLI_MODE;
 
+    //private static readonly PocketCoreUpdater coreUpdater = new();
+
     private static async Task Main(string[] args)
     {
         try
         {
-            string location = Process.GetCurrentProcess().MainModule.FileName;
+            string location = Environment.ProcessPath;
             string path = Path.GetDirectoryName(location);
             bool preservePlatformsFolder = false;
             bool forceUpdate = false;
@@ -371,114 +373,7 @@ internal partial class Program
             }
             else
             {
-                bool flag = true;
-
-                while (flag)
-                {
-                    MainMenuItems choice = DisplayMenuNew();
-
-                    switch (choice)
-                    {
-                        case MainMenuItems.UpdateFirmware:
-                            await coreUpdater.UpdateFirmware();
-                            Pause();
-                            break;
-
-                        case MainMenuItems.DownloadRequiredAssets:
-                            Console.WriteLine("Checking for required files...");
-                            await coreUpdater.RunAssetDownloader();
-                            Pause();
-                            break;
-
-                        case MainMenuItems.SelectCores:
-                            List<Core> cores = await CoresService.GetCores();
-                            AskAboutNewCores(true);
-                            RunCoreSelector(cores);
-                            // Is reloading the settings file necessary?
-                            GlobalHelper.ReloadSettings();
-                            break;
-
-                        case MainMenuItems.DownloadPlatformImagePacks:
-                            await ImagePackSelector(path);
-                            break;
-
-                        case MainMenuItems.GenerateInstanceJsonFiles:
-                            RunInstanceGenerator(coreUpdater);
-                            Pause();
-                            break;
-
-                        case MainMenuItems.GenerateGameAndWatchRoms:
-                            await BuildGameAndWatchRoms(path);
-                            Pause();
-                            break;
-
-                        case MainMenuItems.EnableAllDisplayModes:
-                            coreUpdater.ForceDisplayModes();
-                            Pause();
-                            break;
-
-                        case MainMenuItems.BackupSavesDirectory:
-                            AssetsService.BackupSaves(path, GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
-                            AssetsService.BackupMemories(path, GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
-                            Pause();
-                            break;
-
-                        case MainMenuItems.ReinstallCores:
-                        {
-                            var results = ShowCoresMenu(
-                                GlobalHelper.InstalledCores,
-                                "Which cores would you like to reinstall?",
-                                false);
-
-                            foreach (var item in results.Where(x => x.Value))
-                            {
-                                await coreUpdater.RunUpdates(item.Key, true);
-                            }
-
-                            break;
-                        }
-
-                        case MainMenuItems.UninstallCores:
-                        {
-                            var results = ShowCoresMenu(
-                                GlobalHelper.InstalledCores,
-                                "Which cores would you like to uninstall?",
-                                false);
-
-                            nuke = AskAboutCoreSpecificAssets();
-
-                            foreach (var item in results.Where(x => x.Value))
-                            {
-                                coreUpdater.DeleteCore(GlobalHelper.GetCore(item.Key), true, nuke);
-                            }
-
-                            break;
-                        }
-
-                        case MainMenuItems.Settings:
-                            SettingsMenu();
-
-                            coreUpdater.DeleteSkippedCores(GlobalHelper.SettingsManager.GetConfig().delete_skipped_cores);
-                            coreUpdater.DownloadFirmware(GlobalHelper.SettingsManager.GetConfig().download_firmware);
-                            coreUpdater.DownloadAssets(GlobalHelper.SettingsManager.GetConfig().download_assets);
-                            coreUpdater.RenameJotegoCores(GlobalHelper.SettingsManager.GetConfig().fix_jt_names);
-                            coreUpdater.BackupSaves(GlobalHelper.SettingsManager.GetConfig().backup_saves,
-                                GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
-                            // Is reloading the settings file necessary?
-                            GlobalHelper.ReloadSettings();
-                            break;
-
-                        case MainMenuItems.Exit:
-                            flag = false;
-                            break;
-
-                        default:
-                            Console.WriteLine("Starting update process...");
-                            await coreUpdater.RunUpdates();
-                            Pause();
-                            break;
-                    }
-                }
+                DisplayMenuNew(path, coreUpdater);
             }
         }
         catch (Exception e)
