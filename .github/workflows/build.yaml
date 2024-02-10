@@ -40,13 +40,13 @@ jobs:
           release_name="App-$tag-${{ matrix.target }}"
 
           # Build everything
-          dotnet publish pupdate.csproj -r ${{ matrix.target }}-x64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly
+          dotnet publish pupdate.csproj -r ${{ matrix.target }}-x64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly -p:TrimMode=partial
           if ${{ matrix.arm }}; then
             mv ${release_name}/pupdate ${release_name}/pupdate_x64
-            dotnet publish pupdate.csproj -r ${{ matrix.target }}-arm64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly
+            dotnet publish pupdate.csproj -r ${{ matrix.target }}-arm64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly -p:TrimMode=partial
             mv ${release_name}/pupdate ${release_name}/pupdate_arm64
             if [ "${{ matrix.target }}" == "linux" ]; then
-              dotnet publish pupdate.csproj -r ${{ matrix.target }}-arm --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly
+              dotnet publish pupdate.csproj -r ${{ matrix.target }}-arm --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly -p:TrimMode=partial
               mv ${release_name}/pupdate ${release_name}/pupdate_arm32
             fi
           fi
