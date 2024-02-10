@@ -10,9 +10,9 @@ internal partial class Program
 
     private const string USER = "mattpannella";
 
-    private const string REPOSITORY = "pocket-updater-utility";
+    private const string REPOSITORY = "pupdate";
 
-    private const string RELEASE_URL = "https://github.com/mattpannella/pocket-updater-utility/releases/download/{0}/pupdate_{1}.zip";
+    private const string RELEASE_URL = "https://github.com/mattpannella/pupdate/releases/download/{0}/pupdate_{1}.zip";
 
     private static readonly string[] WELCOME_MESSAGES =
     {

@@ -70,7 +70,7 @@ public static class GithubApiService
             RequestUri = new Uri(url)
         };
 
-        var agent = new ProductInfoHeaderValue("Analogue-Pocket-Updater-Utility", "1.0");
+        var agent = new ProductInfoHeaderValue("Pupdate", "1.0");
 
         request.Headers.UserAgent.Add(agent);
 
