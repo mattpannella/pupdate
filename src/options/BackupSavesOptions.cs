@@ -2,7 +2,7 @@ using CommandLine;
 
 namespace Pannella.Options;
 
-[Verb("backup-saves", HelpText = "Create a compressed zip file of the Saves directory.")]
+[Verb("backup-saves", HelpText = "Create a compressed zip file of the Saves & Memories directories.")]
 public class BackupSavesOptions
 {
     [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
