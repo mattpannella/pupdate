@@ -12,7 +12,11 @@ public static class ImagePacksService
 
     public static async Task<ImagePack[]> GetImagePacks()
     {
+#if DEBUG
+        string json = await File.ReadAllTextAsync("image_packs.json");
+#else
         string json = await HttpHelper.Instance.GetHTML(END_POINT);
+#endif
         ImagePack[] packs = JsonSerializer.Deserialize<ImagePack[]>(json);
 
         return packs ?? Array.Empty<ImagePack>();
