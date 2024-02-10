@@ -109,9 +109,10 @@ internal partial class Program
                 await coreUpdater.RunAssetDownloader();
                 Pause();
             })
-            .Add("Backup Saves", () =>
+            .Add("Backup Saves and Memories", () =>
             {
                 AssetsService.BackupSaves(path, GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
+                AssetsService.BackupMemories(path, GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
                 Pause();
             })
             .Add("Pocket Setup", pocketSetupMenu.Show)
@@ -300,7 +301,7 @@ internal partial class Program
             { "crc_check", "Use CRC check when checking ROMs and BIOS files" },
             { "preserve_platforms_folder", "Preserve 'Platforms' folder during 'Update All'" },
             { "skip_alternative_assets", "Skip alternative roms when downloading assets" },
-            { "backup_saves", "Compress and backup Saves directory during 'Update All'" },
+            { "backup_saves", "Compress and backup Saves and Memories directories during 'Update All'" },
             { "use_custom_archive", "Use custom asset archive" }
         };
 

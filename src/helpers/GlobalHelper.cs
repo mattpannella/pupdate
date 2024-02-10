@@ -90,10 +90,33 @@ public static class GlobalHelper
             UpdateDirectory = path;
             SettingsManager = new SettingsManager(path);
             Cores = await CoresService.GetCores();
+            Cores.AddRange(GetLocalCores());
             SettingsManager.InitializeCoreSettings(Cores);
             RefreshInstalledCores();
             Blacklist = await AssetsService.GetBlacklist();
         }
+    }
+
+    private static List<Core> GetLocalCores()
+    {
+        string coresDirectory = Path.Combine(UpdateDirectory, "Cores");
+        string[] directories = Directory.GetDirectories(coresDirectory, "*", SearchOption.TopDirectoryOnly);
+        List<Core> all = new List<Core>();
+
+        foreach (string name in directories)
+        {
+            string n = Path.GetFileName(name);
+            var matches = Cores.Where(i => i.identifier == n);
+
+            if (!matches.Any())
+            {
+                Core c = new Core { identifier = n };
+                c.platform = c.ReadPlatformFile();
+                all.Add(c);
+            }
+        }
+
+        return all;
     }
 
     public static void ReloadSettings()
