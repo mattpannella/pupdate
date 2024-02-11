@@ -124,7 +124,7 @@ Checks for missing required assets for each core you have selected (mainly arcad
   instancegenerator    Run the instance JSON generator
     -p, --path               Absolute path to install location
 
-  backup-saves         Compress and backup Saves directory
+  backup-saves         Compress and backup Saves & Memories directories
     -p, --path               Absolute path to install location
     -l, --location           Absolute path to backup location. Required
     -s, --save               Save settings to the config file for use during 'Update All'
