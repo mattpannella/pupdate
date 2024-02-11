@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using CommandLine;
+﻿using CommandLine;
 using Pannella.Helpers;
 using Pannella.Models;
 using Pannella.Options;
@@ -10,8 +9,6 @@ namespace Pannella;
 internal partial class Program
 {
     private static bool CLI_MODE;
-
-    //private static readonly PocketCoreUpdater coreUpdater = new();
 
     private static async Task Main(string[] args)
     {
@@ -39,7 +36,9 @@ internal partial class Program
 
             #region Command Line Arguments
 
-            Parser.Default.ParseArguments<MenuOptions, FundOptions, UpdateOptions,
+            Parser parser = new Parser(config => config.HelpWriter = null);
+
+            parser.ParseArguments<MenuOptions, FundOptions, UpdateOptions,
                     AssetsOptions, FirmwareOptions, ImagesOptions, InstanceGeneratorOptions,
                     UpdateSelfOptions, UninstallOptions, BackupSavesOptions, GameBoyPalettesOptions,
                     PocketLibraryImagesOptions>(args)
@@ -183,8 +182,13 @@ internal partial class Program
                         CLI_MODE = true;
                         path = o.InstallPath;
                     })
-                .WithNotParsed(_ =>
+                .WithNotParsed(e =>
                     {
+                        if (e.IsHelp())
+                        {
+                            Console.WriteLine(HELP_TEXT);
+                        }
+
                         Environment.Exit(1);
                     });
 

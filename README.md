@@ -124,7 +124,7 @@ Checks for missing required assets for each core you have selected (mainly arcad
   instance-generator       Run the instance JSON generator for PC Engine CD
     -p, --path                Absolute path to install location
 
-  backup-saves             Compress and backup Saves directory
+  backup-saves             Compress and backup Saves & Memories directories
     -p, --path                Absolute path to install location
     -l, --location            Absolute path to backup location. Required
     -s, --save                Save settings to the config file for use during 'Update All'
@@ -269,8 +269,10 @@ Special thanks to [RetroDriven](https://github.com/RetroDriven/) for maintaining
 
 And [dyreschlock](https://github.com/dyreschlock/pocket-platform-images/tree/main/arcade/Platforms) for hosting the updated platform files for Jotego's cores
 
-  
 
+And [espiox](https://github.com/espiox) for maintaining the game & watch rom archive
+
+  
 And if you're looking for something with a few more features and a user interface, check out this updater. [https://github.com/RetroDriven/Pocket_Updater](https://github.com/RetroDriven/Pocket_Updater)
 
   
