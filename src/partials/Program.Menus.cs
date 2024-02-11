@@ -126,6 +126,12 @@ internal partial class Program
                     path, coreUpdater);
                 Pause();
             })
+            .Add("Download Pocket Extras for Toaplan Version 2 Hardware Combination Core", async _ =>
+            {
+                await DownloadPocketExtrasPlatform("toaplan2_c", "pocket-extras-toaplan2_c",
+                    path, coreUpdater);
+                Pause();
+            })
             .Add("Go Back", ConsoleMenu.Close);
 
         var menu = new ConsoleMenu()

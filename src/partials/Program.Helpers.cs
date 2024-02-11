@@ -62,12 +62,17 @@ internal partial class Program
             .Where(c => c.GetConfig().framework.sleep_supported)
             .Select(c => c.identifier)
             .ToArray();
-        string list = string.Join(", ", sleepSupported);
 
-        Console.WriteLine();
-        Console.WriteLine("Fun fact! The ONLY cores that support save states and sleep are the following:");
-        Console.WriteLine(list);
-        Console.WriteLine("Please don't bother the developers of the other cores about this feature. It's a lot of work and most likely will not be coming.");
+        if (!sleepSupported.Any())
+        {
+            string list = string.Join(", ", sleepSupported);
+
+            Console.WriteLine();
+            Console.WriteLine("Fun fact! The ONLY cores that support save states and sleep are the following:");
+            Console.WriteLine(list);
+            Console.WriteLine(
+                "Please don't bother the developers of the other cores about this feature. It's a lot of work and most likely will not be coming.");
+        }
     }
 
     private static string GetSystemPlatform()

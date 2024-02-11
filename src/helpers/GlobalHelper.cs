@@ -92,9 +92,7 @@ public static class GlobalHelper
             UpdateDirectory = path;
             SettingsManager = new SettingsManager(path);
             Cores = await CoresService.GetCores();
-            Cores.AddRange(GetLocalCores());
-            SettingsManager.InitializeCoreSettings(Cores);
-            RefreshInstalledCores();
+            RefreshLocalCores();
             Blacklist = await AssetsService.GetBlacklist();
         }
     }
@@ -124,6 +122,13 @@ public static class GlobalHelper
     public static void ReloadSettings()
     {
         SettingsManager = new SettingsManager(UpdateDirectory, Cores);
+    }
+
+    public static void RefreshLocalCores()
+    {
+        Cores.AddRange(GetLocalCores());
+        SettingsManager.InitializeCoreSettings(Cores);
+        RefreshInstalledCores();
     }
 
     public static void RefreshInstalledCores()

@@ -28,9 +28,14 @@ public class PocketCoreUpdater : Base
     public PocketCoreUpdater()
     {
         Directory.CreateDirectory(Path.Combine(GlobalHelper.UpdateDirectory, "Cores"));
+        this.RefreshStatusUpdater();
+    }
 
+    public void RefreshStatusUpdater()
+    {
         foreach (Core core in GlobalHelper.Cores)
         {
+            core.ClearStatusUpdated();
             core.StatusUpdated += updater_StatusUpdated; // attach handler to bubble event up
         }
     }

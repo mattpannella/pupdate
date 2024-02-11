@@ -1,6 +1,8 @@
 using System.IO.Compression;
 using Pannella.Helpers;
+using Pannella.Models;
 using Pannella.Models.Github;
+using Pannella.Models.Settings;
 using Pannella.Services;
 using File = System.IO.File;
 
@@ -8,7 +10,95 @@ namespace Pannella;
 
 internal partial class Program
 {
-    private static async Task DownloadPocketExtras(string coreIdentifier, string assetName, string path, PocketCoreUpdater coreUpdater)
+    private static async Task DownloadPocketExtrasPlatform(string platformName, string assetName, string path,
+        PocketCoreUpdater coreUpdater)
+    {
+        Release release = await GithubApiService.GetLatestRelease("dyreschlock", "pocket-extras");
+        Asset asset = release.assets.FirstOrDefault(x => x.name.StartsWith(assetName));
+
+        if (asset == null)
+        {
+            Console.WriteLine($"Pocket Extras asset for the '{platformName}' core was not found.");
+            return;
+        }
+
+        string localFile = Path.Combine(path, asset.name);
+        string extractPath = Path.Combine(path, "temp");
+
+        try
+        {
+            Console.WriteLine($"Downloading asset '{asset.name}'...");
+            await HttpHelper.Instance.DownloadFileAsync(asset.browser_download_url, localFile);
+            Console.WriteLine("Download complete.");
+
+            if (Directory.Exists(extractPath))
+                Directory.Delete(extractPath, true);
+
+            ZipFile.ExtractToDirectory(localFile, extractPath);
+            File.Delete(localFile);
+
+            var placeFiles = Directory.GetFiles(extractPath, "PLACE_*", SearchOption.AllDirectories);
+
+            if (!placeFiles.Any())
+                throw new FileNotFoundException("Core RBF_R file locators not found.");
+
+            Console.WriteLine("Downloading core file placeholders...");
+
+            foreach (var placeFile in placeFiles)
+            {
+                string contents = await File.ReadAllTextAsync(placeFile);
+                Uri uri = new Uri(contents);
+                string placeFileName = Path.GetFileName(uri.LocalPath);
+                string localPlaceFileName = Path.Combine(Path.GetDirectoryName(placeFile)!, placeFileName);
+
+                Console.WriteLine($"Downloading '{placeFileName}'");
+                await HttpHelper.Instance.DownloadFileAsync(uri.ToString(), localPlaceFileName);
+
+                File.Delete(placeFile);
+            }
+
+            string destinationAssetsMra = Path.Combine(extractPath, "Assets", platformName, "mra");
+
+            if (Directory.Exists(destinationAssetsMra))
+                Directory.Delete(destinationAssetsMra, true);
+
+            Console.WriteLine("Download complete.");
+            Console.WriteLine("Installing...");
+            Util.CopyDirectory(extractPath, path, true, true);
+            Directory.Delete(extractPath, true);
+            Console.WriteLine("Complete.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Something happened while trying to install the asset files...");
+            Console.WriteLine(ex);
+            return;
+        }
+
+        Console.WriteLine("Downloading assets...");
+        GlobalHelper.RefreshLocalCores();
+        coreUpdater.RefreshStatusUpdater();
+
+        foreach (var coreDirectory in Directory.GetDirectories(Path.Combine(extractPath, "Cores")))
+        {
+            string coreIdentifier = Path.GetFileName(coreDirectory);
+            Core core = GlobalHelper.GetCore(coreIdentifier);
+            CoreSettings coreSettings = GlobalHelper.SettingsManager.GetCoreSettings(core.identifier);
+
+            coreSettings.skip = false;
+            coreSettings.pocket_extras = true;
+
+            // should I call await core.DownloadAssets here instead?
+            await coreUpdater.RunAssetDownloader(coreIdentifier, true);
+        }
+
+        GlobalHelper.SettingsManager.SaveSettings();
+
+        Console.WriteLine("Complete.");
+    }
+
+    private static async Task DownloadPocketExtras(string coreIdentifier, string assetName, string path,
+        PocketCoreUpdater coreUpdater)
     {
         var core = GlobalHelper.GetCore(coreIdentifier);
 
@@ -37,7 +127,7 @@ internal partial class Program
 
             if (!core.IsInstalled())
             {
-                //Console.WriteLine("The core still isn't installed.");
+                // Console.WriteLine("The core still isn't installed.");
                 return;
             }
         }
@@ -109,12 +199,14 @@ internal partial class Program
         await coreUpdater.RunAssetDownloader(core.identifier, true);
         Console.WriteLine("Complete.");
 
-        GlobalHelper.SettingsManager.GetCoreSettings(core.identifier).pocket_extras = true;
+        CoreSettings coreSettings = GlobalHelper.SettingsManager.GetCoreSettings(core.identifier);
+
+        coreSettings.skip = false;
+        coreSettings.pocket_extras = true;
+
         GlobalHelper.SettingsManager.SaveSettings();
 
         // TODO: Modify 'Update All' and 'Update {core}' to check the pocket_extras flag and act accordingly when true.
-        // TODO: Provide uninstall capability for the pocket_extras additions
-
-        // TODO: During core uninstall, ask if roms and saves should also be deleted.
+        // TODO: Provide uninstall capability for the pocket_extras additions -- maybe?
     }
 }
