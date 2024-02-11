@@ -3,6 +3,7 @@ using Pannella.Helpers;
 using Pannella.Models;
 using Pannella.Models.Github;
 using Pannella.Models.Settings;
+using Pannella.Options;
 using Pannella.Services;
 using File = System.IO.File;
 
@@ -208,5 +209,40 @@ internal partial class Program
 
         // TODO: Modify 'Update All' and 'Update {core}' to check the pocket_extras flag and act accordingly when true.
         // TODO: Provide uninstall capability for the pocket_extras additions -- maybe?
+    }
+
+    private static async Task DownloadDonkeyKongPocketExtras(string path, PocketCoreUpdater coreUpdater)
+    {
+        await DownloadPocketExtras("ericlewis.DonkeyKong", "pocket-extras-dk", path, coreUpdater);
+    }
+
+    private static async Task DownloadRadarScopePocketExtras(string path, PocketCoreUpdater coreUpdater)
+    {
+        await DownloadPocketExtras("ericlewis.RadarScope", "pocket-extras-dk", path, coreUpdater);
+    }
+
+    private static async Task DownloadBubbleBobblePocketExtras(string path, PocketCoreUpdater coreUpdater)
+    {
+        await DownloadPocketExtras("jotego.jtbubl", "pocket-extras-jotego", path, coreUpdater);
+    }
+
+    private static async Task DownloadCapcomCps15PocketExtras(string path, PocketCoreUpdater coreUpdater)
+    {
+        await DownloadPocketExtras("jotego.jtcps15", "pocket-extras-jotego", path, coreUpdater);
+    }
+
+    private static async Task DownloadCapcomCps2PocketExtras(string path, PocketCoreUpdater coreUpdater)
+    {
+        await DownloadPocketExtras("jotego.jtcps2", "pocket-extras-jotego", path, coreUpdater);
+    }
+
+    private static async Task DownloadPangPocketExtras(string path, PocketCoreUpdater coreUpdater)
+    {
+        await DownloadPocketExtras("jotego.jtpang", "pocket-extras-jotego", path, coreUpdater);
+    }
+
+    private static async Task DownloadToaplan2cPocketExtras(string path, PocketCoreUpdater coreUpdater)
+    {
+        await DownloadPocketExtrasPlatform("toaplan2_c", "pocket-extras-toaplan2_c", path, coreUpdater);
     }
 }

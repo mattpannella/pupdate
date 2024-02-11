@@ -129,6 +129,12 @@ Checks for missing required assets for each core you have selected (mainly arcad
     -l, --location           Absolute path to backup location. Required
     -s, --save               Save settings to the config file for use during 'Update All'
     
+  pocket-extras        Download Pocket Extras
+    -p, --path               Absolute path to install location
+    -n, --name               The name of the extra to install. Required
+                               Values: DonkeyKong, RadarScope, jtbubl, jtcps15, jtcps2
+                                       jtpang, toaplan2_c
+
   update-self          Check for updates to pupdate
 
   help                 Display more information on a specific command.

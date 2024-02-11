@@ -30,6 +30,7 @@ internal partial class Program
             bool cleanInstall = false;
             string backupSaves_Path = null;
             bool backupSaves_SaveConfig = false;
+            string pocket_extras = null;
 
             string verb = "menu";
             Dictionary<string, object> data = new Dictionary<string, object>();
@@ -40,7 +41,7 @@ internal partial class Program
 
             parser.ParseArguments<MenuOptions, FundOptions, UpdateOptions,
                     AssetsOptions, FirmwareOptions, ImagesOptions, InstanceGeneratorOptions,
-                    UpdateSelfOptions, UninstallOptions, BackupSavesOptions>(args)
+                    UpdateSelfOptions, UninstallOptions, BackupSavesOptions, PocketExtrasOptions>(args)
                 .WithParsed<UpdateSelfOptions>(_ => { selfUpdate = true; })
                 .WithParsed<FundOptions>(o =>
                     {
@@ -169,6 +170,13 @@ internal partial class Program
                         backupSaves_Path = o.BackupPath;
                         backupSaves_SaveConfig = o.Save;
                     })
+                .WithParsed<PocketExtrasOptions>(o =>
+                {
+                    verb = "pocket-extras";
+                    CLI_MODE = true;
+                    path = o.InstallPath;
+                    pocket_extras = o.Name;
+                })
                 .WithNotParsed(e =>
                     {
                         if (e.IsHelp())
@@ -373,6 +381,39 @@ internal partial class Program
                     config.backup_saves_location = backupSaves_Path;
 
                     GlobalHelper.SettingsManager.SaveSettings();
+                }
+            }
+            else if (verb == "pocket-extras")
+            {
+                switch (pocket_extras)
+                {
+                    case "DonkeyKong":
+                        await DownloadDonkeyKongPocketExtras(path, coreUpdater);
+                        break;
+
+                    case "RadarScope":
+                        await DownloadRadarScopePocketExtras(path, coreUpdater);
+                        break;
+
+                    case "jtbubl":
+                        await DownloadBubbleBobblePocketExtras(path, coreUpdater);
+                        break;
+
+                    case "jtcps15":
+                        await DownloadCapcomCps15PocketExtras(path, coreUpdater);
+                        break;
+
+                    case "jtcps2":
+                        await DownloadCapcomCps2PocketExtras(path, coreUpdater);
+                        break;
+
+                    case "jtpang":
+                        await DownloadPangPocketExtras(path, coreUpdater);
+                        break;
+
+                    case "toaplan2_c":
+                        await DownloadToaplan2cPocketExtras(path, coreUpdater);
+                        break;
                 }
             }
             else

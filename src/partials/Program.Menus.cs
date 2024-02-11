@@ -92,44 +92,37 @@ internal partial class Program
             .Configure(menuConfig)
             .Add("Download Pocket Extras for ericlewis.DonkeyKong", async _ =>
             {
-                await DownloadPocketExtras("ericlewis.DonkeyKong", "pocket-extras-dk",
-                    path, coreUpdater);
+                await DownloadDonkeyKongPocketExtras(path, coreUpdater);
                 Pause();
             })
             .Add("Download Pocket Extras for ericlewis.RadarScope", async _ =>
             {
-                await DownloadPocketExtras("ericlewis.RadarScope", "pocket-extras-dk",
-                    path, coreUpdater);
+                await DownloadRadarScopePocketExtras(path, coreUpdater);
                 Pause();
             })
             .Add("Download Pocket Extras for jotego.jtbubl", async _ =>
             {
-                await DownloadPocketExtras("jotego.jtbubl", "pocket-extras-jotego",
-                    path, coreUpdater);
+                await DownloadBubbleBobblePocketExtras(path, coreUpdater);
                 Pause();
             })
             .Add("Download Pocket Extras for jotego.jtcps15", async _ =>
             {
-                await DownloadPocketExtras("jotego.jtcps15", "pocket-extras-jotego",
-                    path, coreUpdater);
+                await DownloadCapcomCps15PocketExtras(path, coreUpdater);
                 Pause();
             })
             .Add("Download Pocket Extras for jotego.jtcps2", async _ =>
             {
-                await DownloadPocketExtras("jotego.jtcps2", "pocket-extras-jotego",
-                    path, coreUpdater);
+                await DownloadCapcomCps2PocketExtras(path, coreUpdater);
                 Pause();
             })
             .Add("Download Pocket Extras for jotego.jtpang", async _ =>
             {
-                await DownloadPocketExtras("jotego.jtpang", "pocket-extras-jotego",
-                    path, coreUpdater);
+                await DownloadPangPocketExtras(path, coreUpdater);
                 Pause();
             })
             .Add("Download Pocket Extras for Toaplan Version 2 Hardware Combination Core", async _ =>
             {
-                await DownloadPocketExtrasPlatform("toaplan2_c", "pocket-extras-toaplan2_c",
-                    path, coreUpdater);
+                await DownloadToaplan2cPocketExtras(path, coreUpdater);
                 Pause();
             })
             .Add("Go Back", ConsoleMenu.Close);
