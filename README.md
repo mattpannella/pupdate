@@ -135,11 +135,11 @@ Checks for missing required assets for each core you have selected (mainly arcad
   pocket-library-images    Run the instance JSON generator
     -p, --path                Absolute path to install location
 
-  update-self          Check for updates to pupdate
+  update-self              Check for updates to pupdate
 
-  help                 Display more information on a specific command.
+  help                     Display more information on a specific command.
 
-  version              Display version information.
+  version                  Display version information.
 
 ```
 
