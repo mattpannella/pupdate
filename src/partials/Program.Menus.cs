@@ -32,6 +32,16 @@ internal partial class Program
             {
                 await ImagePackSelector(path);
             })
+            .Add("Download Pocket Library Images", async _ =>
+            {
+                await DownloadPockLibraryImages(path);
+                Pause();
+            })
+            .Add("Download GameBoy Palettes", async _ =>
+            {
+                await DownloadGameBoyPalettes(path);
+                Pause();
+            })
             .Add("Generate Instance JSON Files (PC Engine CD)", () =>
             {
                 RunInstanceGenerator(coreUpdater);
