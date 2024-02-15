@@ -3,7 +3,6 @@ using Pannella.Helpers;
 using Pannella.Models;
 using Pannella.Models.Github;
 using Pannella.Models.Settings;
-using Pannella.Options;
 using Pannella.Services;
 using File = System.IO.File;
 
@@ -66,7 +65,6 @@ internal partial class Program
             Console.WriteLine("Download complete.");
             Console.WriteLine("Installing...");
             Util.CopyDirectory(extractPath, path, true, true);
-            Directory.Delete(extractPath, true);
             Console.WriteLine("Complete.");
         }
         catch (Exception ex)
@@ -94,6 +92,7 @@ internal partial class Program
         }
 
         GlobalHelper.SettingsManager.SaveSettings();
+        Directory.Delete(extractPath, true);
 
         Console.WriteLine("Complete.");
     }
@@ -208,7 +207,6 @@ internal partial class Program
         GlobalHelper.SettingsManager.SaveSettings();
 
         // TODO: Modify 'Update All' and 'Update {core}' to check the pocket_extras flag and act accordingly when true.
-        // TODO: Provide uninstall capability for the pocket_extras additions -- maybe?
     }
 
     private static async Task DownloadDonkeyKongPocketExtras(string path, PocketCoreUpdater coreUpdater)
@@ -224,6 +222,11 @@ internal partial class Program
     private static async Task DownloadBubbleBobblePocketExtras(string path, PocketCoreUpdater coreUpdater)
     {
         await DownloadPocketExtras("jotego.jtbubl", "pocket-extras-jotego", path, coreUpdater);
+    }
+
+    private static async Task DownloadCapcomCps1PocketExtras(string path, PocketCoreUpdater coreUpdater)
+    {
+        await DownloadPocketExtras("jotego.jtcps1", "pocket-extras-jotego", path, coreUpdater);
     }
 
     private static async Task DownloadCapcomCps15PocketExtras(string path, PocketCoreUpdater coreUpdater)

@@ -115,6 +115,11 @@ internal partial class Program
                 await DownloadBubbleBobblePocketExtras(path, coreUpdater);
                 Pause();
             })
+            .Add("Download Pocket Extras for jotego.jtcps1", async _ =>
+            {
+                await DownloadCapcomCps1PocketExtras(path, coreUpdater);
+                Pause();
+            })
             .Add("Download Pocket Extras for jotego.jtcps15", async _ =>
             {
                 await DownloadCapcomCps15PocketExtras(path, coreUpdater);
