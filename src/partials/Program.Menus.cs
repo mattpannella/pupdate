@@ -100,44 +100,49 @@ internal partial class Program
 
         var pocketExtrasMenu = new ConsoleMenu()
             .Configure(menuConfig)
-            .Add("Download Pocket Extras for ericlewis.DonkeyKong", async _ =>
+            .Add("Download extras for ericlewis.DonkeyKong", async _ =>
             {
                 await DownloadDonkeyKongPocketExtras(path, coreUpdater);
                 Pause();
             })
-            .Add("Download Pocket Extras for ericlewis.RadarScope", async _ =>
+            .Add("Download extras for ericlewis.RadarScope", async _ =>
             {
                 await DownloadRadarScopePocketExtras(path, coreUpdater);
                 Pause();
             })
-            .Add("Download Pocket Extras for jotego.jtbubl", async _ =>
+            .Add("Download extras for jotego.jtbubl", async _ =>
             {
                 await DownloadBubbleBobblePocketExtras(path, coreUpdater);
                 Pause();
             })
-            .Add("Download Pocket Extras for jotego.jtcps1", async _ =>
+            .Add("Download extras for jotego.jtcps1", async _ =>
             {
                 await DownloadCapcomCps1PocketExtras(path, coreUpdater);
                 Pause();
             })
-            .Add("Download Pocket Extras for jotego.jtcps15", async _ =>
+            .Add("Download extras for jotego.jtcps15", async _ =>
             {
                 await DownloadCapcomCps15PocketExtras(path, coreUpdater);
                 Pause();
             })
-            .Add("Download Pocket Extras for jotego.jtcps2", async _ =>
+            .Add("Download extras for jotego.jtcps2", async _ =>
             {
                 await DownloadCapcomCps2PocketExtras(path, coreUpdater);
                 Pause();
             })
-            .Add("Download Pocket Extras for jotego.jtpang", async _ =>
+            .Add("Download extras for jotego.jtpang", async _ =>
             {
                 await DownloadPangPocketExtras(path, coreUpdater);
                 Pause();
             })
-            .Add("Download Pocket Extras for Toaplan Version 2 Hardware Combination Core", async _ =>
+            .Add("Download Toaplan Version 2 Hardware Combination Core", async _ =>
             {
                 await DownloadToaplan2cPocketExtras(path, coreUpdater);
+                Pause();
+            })
+            .Add("Download Jotego Sega System 16 Combination Core", async _ =>
+            {
+                await DownloadSegaSystem16cPocketExtras(path, coreUpdater);
                 Pause();
             })
             .Add("Go Back", ConsoleMenu.Close);

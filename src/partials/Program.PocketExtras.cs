@@ -10,10 +10,10 @@ namespace Pannella;
 
 internal partial class Program
 {
-    private static async Task DownloadPocketExtrasPlatform(string platformName, string assetName, string path,
-        PocketCoreUpdater coreUpdater)
+    private static async Task DownloadPocketExtrasPlatform(string user, string repository, string platformName,
+        string assetName, string path, PocketCoreUpdater coreUpdater, bool skipPlaceholderFiles = false)
     {
-        Release release = await GithubApiService.GetLatestRelease("dyreschlock", "pocket-extras");
+        Release release = await GithubApiService.GetLatestRelease(user, repository);
         Asset asset = release.assets.FirstOrDefault(x => x.name.StartsWith(assetName));
 
         if (asset == null)
@@ -37,24 +37,27 @@ internal partial class Program
             ZipFile.ExtractToDirectory(localFile, extractPath);
             File.Delete(localFile);
 
-            var placeFiles = Directory.GetFiles(extractPath, "PLACE_*", SearchOption.AllDirectories);
-
-            if (!placeFiles.Any())
-                throw new FileNotFoundException("Core RBF_R file locators not found.");
-
-            Console.WriteLine("Downloading core file placeholders...");
-
-            foreach (var placeFile in placeFiles)
+            if (!skipPlaceholderFiles)
             {
-                string contents = await File.ReadAllTextAsync(placeFile);
-                Uri uri = new Uri(contents);
-                string placeFileName = Path.GetFileName(uri.LocalPath);
-                string localPlaceFileName = Path.Combine(Path.GetDirectoryName(placeFile)!, placeFileName);
+                var placeFiles = Directory.GetFiles(extractPath, "PLACE_*", SearchOption.AllDirectories);
 
-                Console.WriteLine($"Downloading '{placeFileName}'");
-                await HttpHelper.Instance.DownloadFileAsync(uri.ToString(), localPlaceFileName);
+                if (!placeFiles.Any())
+                    throw new FileNotFoundException("Core RBF_R file locators not found.");
 
-                File.Delete(placeFile);
+                Console.WriteLine("Downloading core file placeholders...");
+
+                foreach (var placeFile in placeFiles)
+                {
+                    string contents = await File.ReadAllTextAsync(placeFile);
+                    Uri uri = new Uri(contents);
+                    string placeFileName = Path.GetFileName(uri.LocalPath);
+                    string localPlaceFileName = Path.Combine(Path.GetDirectoryName(placeFile)!, placeFileName);
+
+                    Console.WriteLine($"Downloading '{placeFileName}'");
+                    await HttpHelper.Instance.DownloadFileAsync(uri.ToString(), localPlaceFileName);
+
+                    File.Delete(placeFile);
+                }
             }
 
             string destinationAssetsMra = Path.Combine(extractPath, "Assets", platformName, "mra");
@@ -97,8 +100,8 @@ internal partial class Program
         Console.WriteLine("Complete.");
     }
 
-    private static async Task DownloadPocketExtras(string coreIdentifier, string assetName, string path,
-        PocketCoreUpdater coreUpdater)
+    private static async Task DownloadPocketExtras(string user, string repository, string coreIdentifier,
+        string assetName, string path, PocketCoreUpdater coreUpdater)
     {
         var core = GlobalHelper.GetCore(coreIdentifier);
 
@@ -132,7 +135,7 @@ internal partial class Program
             }
         }
 
-        Release release = await GithubApiService.GetLatestRelease("dyreschlock", "pocket-extras");
+        Release release = await GithubApiService.GetLatestRelease(user, repository);
         Asset asset = release.assets.FirstOrDefault(x => x.name.StartsWith(assetName));
 
         if (asset == null)
@@ -211,41 +214,55 @@ internal partial class Program
 
     private static async Task DownloadDonkeyKongPocketExtras(string path, PocketCoreUpdater coreUpdater)
     {
-        await DownloadPocketExtras("ericlewis.DonkeyKong", "pocket-extras-dk", path, coreUpdater);
+        await DownloadPocketExtras("dyreschlock", "pocket-extras", "ericlewis.DonkeyKong",
+            "pocket-extras-dk", path, coreUpdater);
     }
 
     private static async Task DownloadRadarScopePocketExtras(string path, PocketCoreUpdater coreUpdater)
     {
-        await DownloadPocketExtras("ericlewis.RadarScope", "pocket-extras-dk", path, coreUpdater);
+        await DownloadPocketExtras("dyreschlock", "pocket-extras", "ericlewis.RadarScope",
+            "pocket-extras-dk", path, coreUpdater);
     }
 
     private static async Task DownloadBubbleBobblePocketExtras(string path, PocketCoreUpdater coreUpdater)
     {
-        await DownloadPocketExtras("jotego.jtbubl", "pocket-extras-jotego", path, coreUpdater);
+        await DownloadPocketExtras("dyreschlock", "pocket-extras", "jotego.jtbubl",
+            "pocket-extras-jotego", path, coreUpdater);
     }
 
     private static async Task DownloadCapcomCps1PocketExtras(string path, PocketCoreUpdater coreUpdater)
     {
-        await DownloadPocketExtras("jotego.jtcps1", "pocket-extras-jotego", path, coreUpdater);
+        await DownloadPocketExtras("dyreschlock", "pocket-extras", "jotego.jtcps1",
+            "pocket-extras-jotego", path, coreUpdater);
     }
 
     private static async Task DownloadCapcomCps15PocketExtras(string path, PocketCoreUpdater coreUpdater)
     {
-        await DownloadPocketExtras("jotego.jtcps15", "pocket-extras-jotego", path, coreUpdater);
+        await DownloadPocketExtras("dyreschlock", "pocket-extras", "jotego.jtcps15",
+            "pocket-extras-jotego", path, coreUpdater);
     }
 
     private static async Task DownloadCapcomCps2PocketExtras(string path, PocketCoreUpdater coreUpdater)
     {
-        await DownloadPocketExtras("jotego.jtcps2", "pocket-extras-jotego", path, coreUpdater);
+        await DownloadPocketExtras("dyreschlock", "pocket-extras", "jotego.jtcps2",
+            "pocket-extras-jotego", path, coreUpdater);
     }
 
     private static async Task DownloadPangPocketExtras(string path, PocketCoreUpdater coreUpdater)
     {
-        await DownloadPocketExtras("jotego.jtpang", "pocket-extras-jotego", path, coreUpdater);
+        await DownloadPocketExtras("dyreschlock", "pocket-extras", "jotego.jtpang",
+            "pocket-extras-jotego", path, coreUpdater);
     }
 
     private static async Task DownloadToaplan2cPocketExtras(string path, PocketCoreUpdater coreUpdater)
     {
-        await DownloadPocketExtrasPlatform("toaplan2_c", "pocket-extras-toaplan2_c", path, coreUpdater);
+        await DownloadPocketExtrasPlatform("dyreschlock", "pocket-extras","toaplan2_c",
+            "pocket-extras-toaplan2_c", path, coreUpdater);
+    }
+
+    private static async Task DownloadSegaSystem16cPocketExtras(string path, PocketCoreUpdater coreUpdater)
+    {
+        await DownloadPocketExtrasPlatform("espiox", "jts16_complete", "jts16_c",
+            "jts16_complete", path, coreUpdater, true);
     }
 }

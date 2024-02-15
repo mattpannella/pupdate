@@ -437,6 +437,10 @@ internal partial class Program
                         case "toaplan2_c":
                             await DownloadToaplan2cPocketExtras(path, coreUpdater);
                             break;
+
+                        case "jtc16_c":
+                            await DownloadSegaSystem16cPocketExtras(path, coreUpdater);
+                            break;
                     }
 
                     break;
