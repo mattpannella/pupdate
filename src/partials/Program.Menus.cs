@@ -1,7 +1,6 @@
 using ConsoleTools;
 using Pannella.Helpers;
 using Pannella.Models;
-using Pannella.Models.Extras;
 using Pannella.Models.Settings;
 using Pannella.Services;
 
@@ -109,7 +108,7 @@ internal partial class Program
 
             pocketExtrasMenu.Add(name, async _ =>
             {
-                await GetPocketExtra(pocketExtra, path, coreUpdater);
+                await GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, path, true);
                 Pause();
             });
         }

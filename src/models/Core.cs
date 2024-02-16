@@ -8,6 +8,7 @@ using Pannella.Models.Analogue.Data;
 using Pannella.Models.Analogue.Instance;
 using Pannella.Models.Analogue.Instance.Simple;
 using Pannella.Models.Analogue.Video;
+using Pannella.Models.Extras;
 using Pannella.Models.InstancePackager;
 using Pannella.Models.Updater;
 using AnalogueCore = Pannella.Models.Analogue.Core.Core;
@@ -65,11 +66,28 @@ public class Core : Base
         if (await InstallGithubAsset(preservePlatformsFolder))
         {
             this.ReplaceCheck();
+            await this.PocketExtraCheck();
 
             return true;
         }
 
         return false;
+    }
+
+    private async Task PocketExtraCheck()
+    {
+        var coreSettings = GlobalHelper.SettingsManager.GetCoreSettings(this.identifier);
+
+        if (coreSettings.pocket_extras)
+        {
+            PocketExtra pocketExtra = GlobalHelper.GetPocketExtra(this.identifier);
+
+            if (pocketExtra != null)
+            {
+                WriteMessage("Reapplying Pocket Extras...");
+                await GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, GlobalHelper.UpdateDirectory, false);
+            }
+        }
     }
 
     private async Task<bool> InstallGithubAsset(bool preservePlatformsFolder)
@@ -198,7 +216,7 @@ public class Core : Base
         }
 
         CheckUpdateDirectory();
-        WriteMessage("Looking for Assets");
+        WriteMessage("Looking for Assets...");
         AnalogueCore info = this.GetConfig();
         string updateDirectory = GlobalHelper.UpdateDirectory;
         // cores with multiple platforms won't work...not sure any exist right now?

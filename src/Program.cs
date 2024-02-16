@@ -203,6 +203,7 @@ internal partial class Program
             #endregion
 
             await GlobalHelper.Initialize(path);
+            GlobalHelper.PocketExtrasService.StatusUpdated += coreUpdater_StatusUpdated;
 
             if (!CLI_MODE)
             {
@@ -411,7 +412,7 @@ internal partial class Program
 
                     if (pocketExtra != null)
                     {
-                        await GetPocketExtra(pocketExtra, path, coreUpdater);
+                        await GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, path, true);
                     }
                     else
                     {
@@ -463,7 +464,7 @@ internal partial class Program
                 Console.WriteLine(asset);
             }
 
-            Console.WriteLine("");
+            Console.WriteLine();
         }
 
         if (e.SkippedAssets.Count > 0)

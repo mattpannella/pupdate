@@ -82,6 +82,7 @@ public static class GlobalHelper
     public static List<Core> InstalledCores { get; private set; }
     public static List<Core> InstalledCoresWithSponsors { get; private set; }
     public static List<PocketExtra> PocketExtras { get; private set; }
+    public static PocketExtrasService PocketExtrasService { get; private set; }
 
     private static bool isInitialized;
 
@@ -96,6 +97,7 @@ public static class GlobalHelper
             RefreshLocalCores();
             Blacklist = await AssetsService.GetBlacklist();
             PocketExtras = await PocketExtrasService.GetPocketExtrasList();
+            PocketExtrasService = new PocketExtrasService();
         }
     }
 

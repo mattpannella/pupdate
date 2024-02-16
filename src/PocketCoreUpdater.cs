@@ -126,7 +126,7 @@ public class PocketCoreUpdater : Base
 
         if (GlobalHelper.Cores == null)
         {
-            throw new Exception("Must initialize updater before running update process");
+            throw new Exception("Must initialize updater before running update process.");
         }
 
         if (_backupSaves)
@@ -203,12 +203,12 @@ public class PocketCoreUpdater : Base
 
                     if (localVersion != null)
                     {
-                        WriteMessage("local core found: " + localVersion);
+                        WriteMessage("Local core found: " + localVersion);
                     }
 
                     if (mostRecentRelease != localVersion || clean)
                     {
-                        WriteMessage("Updating core");
+                        WriteMessage("Updating core...");
                     }
                     else
                     {
@@ -231,7 +231,7 @@ public class PocketCoreUpdater : Base
                 }
                 else
                 {
-                    WriteMessage("Downloading core");
+                    WriteMessage("Downloading core...");
                 }
 
                 if (await core.Install(_preservePlatformsFolder, clean))
@@ -269,9 +269,11 @@ public class PocketCoreUpdater : Base
             }
         }
 
+        DeleteBetaKeys();
+
         UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs
         {
-            Message = "Update Process Complete",
+            Message = "Update Process Complete.",
             InstalledCores = installed,
             InstalledAssets = installedAssets,
             SkippedAssets = skippedAssets,
@@ -379,6 +381,14 @@ public class PocketCoreUpdater : Base
         }
     }
 
+    private void DeleteBetaKeys()
+    {
+        string keyPath = Path.Combine(GlobalHelper.UpdateDirectory, "betakeys");
+
+        if (Directory.Exists(keyPath))
+            Directory.Delete(keyPath, true);
+    }
+
     public async Task RunAssetDownloader(string id = null, bool skipOutro = false)
     {
         List<string> installedAssets = new List<string>();
@@ -387,7 +397,7 @@ public class PocketCoreUpdater : Base
 
         if (GlobalHelper.Cores == null)
         {
-            throw new Exception("Must initialize updater before running update process");
+            throw new Exception("Must initialize updater before running update process.");
         }
 
         foreach (var core in GlobalHelper.Cores.Where(core => id == null || core.identifier == id)
@@ -409,8 +419,8 @@ public class PocketCoreUpdater : Base
 
                 var results = await core.DownloadAssets();
 
-                installedAssets.AddRange(results["installed"] as List<string>);
-                skippedAssets.AddRange(results["skipped"] as List<string>);
+                installedAssets.AddRange((List<string>)results["installed"]);
+                skippedAssets.AddRange((List<string>)results["skipped"]);
 
                 if ((bool)results["missingBetaKey"])
                 {
@@ -442,7 +452,7 @@ public class PocketCoreUpdater : Base
     {
         if (GlobalHelper.Cores == null)
         {
-            throw new Exception("Must initialize updater before running update process");
+            throw new Exception("Must initialize updater before running update process.");
         }
 
         foreach (var core in GlobalHelper.Cores.Where(core => id == null || core.identifier == id)
@@ -504,7 +514,7 @@ public class PocketCoreUpdater : Base
 
             await HttpHelper.Instance.DownloadFileAsync(details.download_url, Path.Combine(GlobalHelper.UpdateDirectory, filename));
 
-            WriteMessage("Download Complete");
+            WriteMessage("Download Complete.");
             WriteMessage(Path.Combine(GlobalHelper.UpdateDirectory, filename));
 
             foreach (string oldFile in oldFiles)
