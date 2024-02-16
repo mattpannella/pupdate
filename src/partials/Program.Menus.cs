@@ -147,10 +147,10 @@ internal partial class Program
                 AssetsService.BackupMemories(path, GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
                 Pause();
             })
-            .Add("Pocket Setup", pocketSetupMenu.Show)
-            .Add("Pocket Maintenance", pocketMaintenanceMenu.Show)
-            .Add("Pocket Extras", pocketExtrasMenu.Show)
-            .Add("Settings", () =>
+            .Add("Pocket Setup            >", pocketSetupMenu.Show)
+            .Add("Pocket Maintenance      >", pocketMaintenanceMenu.Show)
+            .Add("Pocket Extras           >", pocketExtrasMenu.Show)
+            .Add("Settings                >", () =>
             {
                 SettingsMenu();
 

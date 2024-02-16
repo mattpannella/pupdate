@@ -42,7 +42,7 @@ internal partial class Program
             parser.ParseArguments<MenuOptions, FundOptions, UpdateOptions,
                     AssetsOptions, FirmwareOptions, ImagesOptions, InstanceGeneratorOptions,
                     UpdateSelfOptions, UninstallOptions, BackupSavesOptions, GameBoyPalettesOptions,
-                    PocketExtrasOptions>(args)
+                    PocketLibraryImagesOptions, PocketExtrasOptions>(args)
                 .WithParsed<UpdateSelfOptions>(_ => { selfUpdate = true; })
                 .WithParsed<FundOptions>(o =>
                     {
