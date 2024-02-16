@@ -121,7 +121,7 @@ Checks for missing required assets for each core you have selected (mainly arcad
     -i, --imagepack           Github repo name for image pack
     -v, --variant             The optional variant
 
-  instancegenerator        Run the instance JSON generator
+  instance-generator       Run the instance JSON generator for PC Engine CD
     -p, --path                Absolute path to install location
 
   backup-saves             Compress and backup Saves & Memories directories
@@ -141,7 +141,7 @@ Checks for missing required assets for each core you have selected (mainly arcad
                                  Values: DonkeyKong, RadarScope, jtbubl, jtcps1, jtcps15,
                                          jtcps2, jtpang, toaplan2_c, jtc16_c
 
-  update-self          Check for updates to pupdate
+  update-self              Check for updates to pupdate
 
   help                     Display more information on a specific command.
 
