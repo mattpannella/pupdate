@@ -412,7 +412,7 @@ internal partial class Program
 
                     if (pocketExtra != null)
                     {
-                        await GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, path, true);
+                        await GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, path, true, true);
                     }
                     else
                     {

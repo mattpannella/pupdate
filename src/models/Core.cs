@@ -85,7 +85,8 @@ public class Core : Base
             if (pocketExtra != null)
             {
                 WriteMessage("Reapplying Pocket Extras...");
-                await GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, GlobalHelper.UpdateDirectory, false);
+                await GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, GlobalHelper.UpdateDirectory,
+                    false, false);
             }
         }
     }
@@ -140,7 +141,7 @@ public class Core : Base
         }
     }
 
-    private void Delete(bool nuke = false)
+    public void Delete(bool nuke = false)
     {
         List<string> folders = new List<string> { "Cores", "Presets", "Settings" };
 

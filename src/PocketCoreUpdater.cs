@@ -3,6 +3,7 @@ using System.IO.Compression;
 using System.Text.Json;
 using Pannella.Helpers;
 using Pannella.Models;
+using Pannella.Models.Extras;
 using Pannella.Services;
 using File = System.IO.File;
 using AnalogueCore = Pannella.Models.Analogue.Core.Core;
@@ -147,9 +148,11 @@ public class PocketCoreUpdater : Base
             core.download_assets = _downloadAssets && id == null;
             core.build_instances = GlobalHelper.SettingsManager.GetConfig().build_instance_jsons && id == null;
 
+            var coreSettings = GlobalHelper.SettingsManager.GetCoreSettings(core.identifier);
+
             try
             {
-                if (GlobalHelper.SettingsManager.GetCoreSettings(core.identifier).skip)
+                if (coreSettings.skip)
                 {
                     DeleteCore(core);
                     continue;
@@ -170,7 +173,20 @@ public class PocketCoreUpdater : Base
                 }
 
                 WriteMessage("Checking Core: " + name);
-                var mostRecentRelease = core.version;
+                string mostRecentRelease;
+                PocketExtra pocketExtra = GlobalHelper.GetPocketExtra(name);
+                bool isPocketExtraCombinationPlatform = coreSettings.pocket_extras &&
+                                                        pocketExtra != null &&
+                                                        pocketExtra.type == PocketExtraType.combination_platform;
+
+                if (isPocketExtraCombinationPlatform)
+                {
+                    mostRecentRelease = await GlobalHelper.PocketExtrasService.GetMostRecentRelease(pocketExtra);
+                }
+                else
+                {
+                    mostRecentRelease = core.version;
+                }
 
                 Dictionary<string, object> results;
 
@@ -199,7 +215,16 @@ public class PocketCoreUpdater : Base
                 if (core.IsInstalled())
                 {
                     AnalogueCore localCore = core.GetConfig();
-                    string localVersion = localCore.metadata.version;
+                    string localVersion;
+
+                    if (isPocketExtraCombinationPlatform)
+                    {
+                        localVersion = coreSettings.pocket_extras_version;
+                    }
+                    else
+                    {
+                        localVersion = localCore.metadata.version;
+                    }
 
                     if (localVersion != null)
                     {
@@ -234,7 +259,26 @@ public class PocketCoreUpdater : Base
                     WriteMessage("Downloading core...");
                 }
 
-                if (await core.Install(_preservePlatformsFolder, clean))
+                if (isPocketExtraCombinationPlatform)
+                {
+                    if (clean && core.IsInstalled())
+                    {
+                        core.Delete();
+                    }
+
+                    await GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, GlobalHelper.UpdateDirectory,
+                        false, false);
+
+                    Dictionary<string, string> summary = new Dictionary<string, string>
+                    {
+                        { "version", mostRecentRelease },
+                        { "core", core.identifier },
+                        { "platform", core.platform.name }
+                    };
+
+                    installed.Add(summary);
+                }
+                else if (await core.Install(_preservePlatformsFolder, clean))
                 {
                     Dictionary<string, string> summary = new Dictionary<string, string>
                     {

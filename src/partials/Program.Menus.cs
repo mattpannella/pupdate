@@ -108,7 +108,7 @@ internal partial class Program
 
             pocketExtrasMenu.Add(name, async _ =>
             {
-                await GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, path, true);
+                await GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, path, true, true);
                 Pause();
             });
         }

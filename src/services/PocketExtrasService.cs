@@ -28,7 +28,7 @@ public class PocketExtrasService : BaseService
     }
 
     private async Task DownloadPocketExtrasPlatform(string user, string repository, string platformName,
-        string assetName, string path, bool downloadAssets, bool skipPlaceholderFiles)
+        string assetName, string path, bool downloadAssets, bool skipPlaceholderFiles, bool refreshLocalCores)
     {
         Release release = await GithubApiService.GetLatestRelease(user, repository);
         Asset asset = release.assets.FirstOrDefault(x => x.name.StartsWith(assetName));
@@ -95,7 +95,10 @@ public class PocketExtrasService : BaseService
         }
 
         WriteMessage("Downloading assets...");
-        GlobalHelper.RefreshLocalCores();
+
+        if (refreshLocalCores)
+            GlobalHelper.RefreshLocalCores();
+
         //coreUpdater.RefreshStatusUpdater();
 
         foreach (var coreDirectory in Directory.GetDirectories(Path.Combine(extractPath, "Cores")))
@@ -240,7 +243,7 @@ public class PocketExtrasService : BaseService
         // TODO: Modify 'Update All' and 'Update {core}' to check the pocket_extras flag and act accordingly when true.
     }
 
-    public async Task GetPocketExtra(PocketExtra pocketExtra, string path, bool downloadAssets)
+    public async Task GetPocketExtra(PocketExtra pocketExtra, string path, bool downloadAssets, bool refreshLocalCores)
     {
         switch (pocketExtra.type)
         {
@@ -253,8 +256,15 @@ public class PocketExtrasService : BaseService
             case PocketExtraType.combination_platform:
                 await DownloadPocketExtrasPlatform(pocketExtra.github_user, pocketExtra.github_repository,
                     pocketExtra.platform_name, pocketExtra.github_asset_prefix, path, downloadAssets,
-                    !pocketExtra.has_placeholders);
+                    !pocketExtra.has_placeholders, refreshLocalCores);
                 break;
         }
+    }
+
+    public async Task<string> GetMostRecentRelease(PocketExtra pocketExtra)
+    {
+        Release release = await GithubApiService.GetLatestRelease(pocketExtra.github_user, pocketExtra.github_repository);
+
+        return release.tag_name;
     }
 }
