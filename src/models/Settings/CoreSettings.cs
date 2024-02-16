@@ -10,4 +10,7 @@ public class CoreSettings
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool pocket_extras { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public string pocket_extras_version { get; set; } = null;
 }

@@ -407,44 +407,17 @@ internal partial class Program
                     break;
 
                 case "pocket-extras":
-                {
-                    switch (pocket_extras)
+                    var pocketExtra = GlobalHelper.GetPocketExtra(pocket_extras);
+
+                    if (pocketExtra != null)
                     {
-                        case "DonkeyKong":
-                            await DownloadDonkeyKongPocketExtras(path, coreUpdater);
-                            break;
-
-                        case "RadarScope":
-                            await DownloadRadarScopePocketExtras(path, coreUpdater);
-                            break;
-
-                        case "jtbubl":
-                            await DownloadBubbleBobblePocketExtras(path, coreUpdater);
-                            break;
-
-                        case "jtcps15":
-                            await DownloadCapcomCps15PocketExtras(path, coreUpdater);
-                            break;
-
-                        case "jtcps2":
-                            await DownloadCapcomCps2PocketExtras(path, coreUpdater);
-                            break;
-
-                        case "jtpang":
-                            await DownloadPangPocketExtras(path, coreUpdater);
-                            break;
-
-                        case "toaplan2_c":
-                            await DownloadToaplan2cPocketExtras(path, coreUpdater);
-                            break;
-
-                        case "jtc16_c":
-                            await DownloadSegaSystem16cPocketExtras(path, coreUpdater);
-                            break;
+                        await GetPocketExtra(pocketExtra, path, coreUpdater);
                     }
-
+                    else
+                    {
+                        Console.WriteLine($"Pocket Extra '{pocket_extras}' not found.");
+                    }
                     break;
-                }
 
                 default:
                     DisplayMenuNew(path, coreUpdater);

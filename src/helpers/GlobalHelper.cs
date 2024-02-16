@@ -1,5 +1,6 @@
 using Pannella.Models;
 using Pannella.Models.Archive;
+using Pannella.Models.Extras;
 using Pannella.Services;
 
 namespace Pannella.Helpers;
@@ -79,8 +80,8 @@ public static class GlobalHelper
     public static string[] Blacklist { get; private set; }
     public static List<Core> Cores { get; private set; }
     public static List<Core> InstalledCores { get; private set; }
-
     public static List<Core> InstalledCoresWithSponsors { get; private set; }
+    public static List<PocketExtra> PocketExtras { get; private set; }
 
     private static bool isInitialized;
 
@@ -94,6 +95,7 @@ public static class GlobalHelper
             Cores = await CoresService.GetCores();
             RefreshLocalCores();
             Blacklist = await AssetsService.GetBlacklist();
+            PocketExtras = await PocketExtrasService.GetPocketExtrasList();
         }
     }
 
@@ -140,5 +142,10 @@ public static class GlobalHelper
     public static Core GetCore(string identifier)
     {
         return Cores.Find(i => i.identifier == identifier);
+    }
+
+    public static PocketExtra GetPocketExtra(string idOrCoreName)
+    {
+        return PocketExtras.Find(e => e.id == idOrCoreName || e.core_identifiers.Any(i => i == idOrCoreName));
     }
 }

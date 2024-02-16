@@ -1,0 +1,100 @@
+{
+  "pocket_extras": [
+    {
+      "id": "DonkeyKong",
+      "type": "additional_assets",
+      "core_identifiers": [
+        "ericlewis.DonkeyKong"
+      ],
+      "github_user": "dyreschlock",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "pocket-extras-dk"
+    },
+    {
+      "id": "RadarScope",
+      "type": "additional_assets",
+      "core_identifiers": [
+        "ericlewis.RadarScope"
+      ],
+      "github_user": "dyreschlock",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "pocket-extras-dk"
+    },
+    {
+      "id": "jtbubl",
+      "type": "additional_assets",
+      "core_identifiers": [
+        "jotego.jtbubl"
+      ],
+      "github_user": "dyreschlock",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "pocket-extras-jotego"
+    },
+    {
+      "id": "jtcps1",
+      "type": "additional_assets",
+      "core_identifiers": [
+        "jotego.jtcps1"
+      ],
+      "github_user": "dyreschlock",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "pocket-extras-jotego"
+    },
+    {
+      "id": "jtcps15",
+      "type": "additional_assets",
+      "core_identifiers": [
+        "jotego.jtcps15"
+      ],
+      "github_user": "dyreschlock",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "pocket-extras-jotego"
+    },
+    {
+      "id": "jtcps2",
+      "type": "additional_assets",
+      "core_identifiers": [
+        "jotego.jtcps2"
+      ],
+      "github_user": "dyreschlock",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "pocket-extras-jotego"
+    },
+    {
+      "id": "jtpang",
+      "type": "additional_assets",
+      "core_identifiers": [
+        "jotego.jtpang"
+      ],
+      "github_user": "dyreschlock",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "pocket-extras-jotego"
+    },
+    {
+      "id": "toaplan2_c",
+      "name": "Toaplan Version 2 Hardware Combination Core",
+      "type": "combination_platform",
+      "platform_name": "toaplan2_c",
+      "core_identifiers": [
+        "coinop.Toaplan_V2_Rotated",
+        "coinop.Toaplan_V2_Standard"
+      ],
+      "has_placeholders": true,
+      "github_user": "dyreschlock",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "pocket_extras_toaplan2_c"
+    },
+    {
+      "id": "jts16_c",
+      "name": "Sega System 16 Combination Core",
+      "type": "combination_platform",
+      "platform_name": "jts16_c",
+      "core_identifiers": [
+        "jts16_c "
+      ],
+      "github_user": "espiox",
+      "github_repository": "jts16_complete",
+      "github_asset_prefix": "jts16_complete"
+    }
+  ]
+}

@@ -138,8 +138,8 @@ Checks for missing required assets for each core you have selected (mainly arcad
   pocket-extras            Download Pocket Extras
     -p, --path                Absolute path to install location
     -n, --name                The name of the extra to install. Required
-                                 Values: DonkeyKong, RadarScope, jtbubl, jtcps15, jtcps2
-                                         jtpang, toaplan2_c, jtc16_c
+                                 Values: DonkeyKong, RadarScope, jtbubl, jtcps1, jtcps15,
+                                         jtcps2, jtpang, toaplan2_c, jtc16_c
 
   update-self          Check for updates to pupdate
 

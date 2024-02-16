@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using Pannella.Helpers;
 using Pannella.Models;
+using Pannella.Models.Extras;
 using Pannella.Models.Github;
 using Pannella.Models.Settings;
 using Pannella.Services;
@@ -89,6 +90,7 @@ internal partial class Program
 
             coreSettings.skip = false;
             coreSettings.pocket_extras = true;
+            coreSettings.pocket_extras_version = release.tag_name;
 
             // should I call await core.DownloadAssets here instead?
             await coreUpdater.RunAssetDownloader(coreIdentifier, true);
@@ -206,63 +208,28 @@ internal partial class Program
 
         coreSettings.skip = false;
         coreSettings.pocket_extras = true;
+        coreSettings.pocket_extras_version = release.tag_name;
 
         GlobalHelper.SettingsManager.SaveSettings();
 
         // TODO: Modify 'Update All' and 'Update {core}' to check the pocket_extras flag and act accordingly when true.
     }
 
-    private static async Task DownloadDonkeyKongPocketExtras(string path, PocketCoreUpdater coreUpdater)
+    public static async Task GetPocketExtra(PocketExtra pocketExtra, string path, PocketCoreUpdater coreUpdater)
     {
-        await DownloadPocketExtras("dyreschlock", "pocket-extras", "ericlewis.DonkeyKong",
-            "pocket-extras-dk", path, coreUpdater);
-    }
+        switch (pocketExtra.type)
+        {
+            case PocketExtraType.additional_assets:
+                await DownloadPocketExtras(pocketExtra.github_user, pocketExtra.github_repository,
+                    pocketExtra.core_identifiers[0], pocketExtra.github_asset_prefix,
+                    path, coreUpdater);
+                break;
 
-    private static async Task DownloadRadarScopePocketExtras(string path, PocketCoreUpdater coreUpdater)
-    {
-        await DownloadPocketExtras("dyreschlock", "pocket-extras", "ericlewis.RadarScope",
-            "pocket-extras-dk", path, coreUpdater);
-    }
-
-    private static async Task DownloadBubbleBobblePocketExtras(string path, PocketCoreUpdater coreUpdater)
-    {
-        await DownloadPocketExtras("dyreschlock", "pocket-extras", "jotego.jtbubl",
-            "pocket-extras-jotego", path, coreUpdater);
-    }
-
-    private static async Task DownloadCapcomCps1PocketExtras(string path, PocketCoreUpdater coreUpdater)
-    {
-        await DownloadPocketExtras("dyreschlock", "pocket-extras", "jotego.jtcps1",
-            "pocket-extras-jotego", path, coreUpdater);
-    }
-
-    private static async Task DownloadCapcomCps15PocketExtras(string path, PocketCoreUpdater coreUpdater)
-    {
-        await DownloadPocketExtras("dyreschlock", "pocket-extras", "jotego.jtcps15",
-            "pocket-extras-jotego", path, coreUpdater);
-    }
-
-    private static async Task DownloadCapcomCps2PocketExtras(string path, PocketCoreUpdater coreUpdater)
-    {
-        await DownloadPocketExtras("dyreschlock", "pocket-extras", "jotego.jtcps2",
-            "pocket-extras-jotego", path, coreUpdater);
-    }
-
-    private static async Task DownloadPangPocketExtras(string path, PocketCoreUpdater coreUpdater)
-    {
-        await DownloadPocketExtras("dyreschlock", "pocket-extras", "jotego.jtpang",
-            "pocket-extras-jotego", path, coreUpdater);
-    }
-
-    private static async Task DownloadToaplan2cPocketExtras(string path, PocketCoreUpdater coreUpdater)
-    {
-        await DownloadPocketExtrasPlatform("dyreschlock", "pocket-extras","toaplan2_c",
-            "pocket-extras-toaplan2_c", path, coreUpdater);
-    }
-
-    private static async Task DownloadSegaSystem16cPocketExtras(string path, PocketCoreUpdater coreUpdater)
-    {
-        await DownloadPocketExtrasPlatform("espiox", "jts16_complete", "jts16_c",
-            "jts16_complete", path, coreUpdater, true);
+            case PocketExtraType.combination_platform:
+                await DownloadPocketExtrasPlatform(pocketExtra.github_user, pocketExtra.github_repository,
+                    pocketExtra.platform_name, pocketExtra.github_asset_prefix, path, coreUpdater,
+                    !pocketExtra.has_placeholders);
+                break;
+        }
     }
 }
