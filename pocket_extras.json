@@ -90,7 +90,7 @@
       "type": "combination_platform",
       "platform_name": "jts16_c",
       "core_identifiers": [
-        "jts16_c "
+        "jts16_c"
       ],
       "github_user": "espiox",
       "github_repository": "jts16_complete",
