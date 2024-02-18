@@ -111,18 +111,22 @@ public class SettingsManager
         }
     }
 
-    public void EnableCore(string name)
+    public void EnableCore(string name, bool? pocketExtras = null, string pocketExtrasVersion = null)
     {
-        if (_settings.coreSettings.TryGetValue(name, out CoreSettings value))
+        if (!_settings.coreSettings.TryGetValue(name, out CoreSettings coreSettings))
         {
-            value.skip = false;
-        }
-        else
-        {
-            CoreSettings core = new CoreSettings { skip = false };
+            coreSettings = new CoreSettings();
 
-            _settings.coreSettings.Add(name, core);
+            _settings.coreSettings.Add(name, coreSettings);
         }
+
+        coreSettings.skip = false;
+
+        if (pocketExtras.HasValue)
+            coreSettings.pocket_extras = pocketExtras.Value;
+
+        if (!string.IsNullOrEmpty(pocketExtrasVersion))
+            coreSettings.pocket_extras_version = pocketExtrasVersion;
     }
 
     public CoreSettings GetCoreSettings(string name)

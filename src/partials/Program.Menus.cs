@@ -1,6 +1,7 @@
 using ConsoleTools;
 using Pannella.Helpers;
 using Pannella.Models;
+using Pannella.Models.Extras;
 using Pannella.Models.Settings;
 using Pannella.Services;
 
@@ -57,6 +58,44 @@ internal partial class Program
                 coreUpdater.ForceDisplayModes();
                 Pause();
             })
+            .Add("Apply 8:7 Aspect Ratio to Super GameBoy cores", () =>
+            {
+                var results = ShowCoresMenu(
+                    GlobalHelper.InstalledCores.Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
+                    "Which Super GameBoy cores would you like to change to the 8:7 aspect ratio?\n",
+                    false);
+
+                foreach (var item in results.Where(x => x.Value))
+                {
+                    var core = GlobalHelper.InstalledCores.First(c => c.identifier == item.Key);
+
+                    Console.WriteLine($"Updating '{core.identifier}'...");
+                    core.ChangeAspectRatio(4, 3, 8, 7);
+                    Console.WriteLine("Complete.");
+                    Console.WriteLine();
+                }
+
+                Pause();
+            })
+            .Add("Restore 4:3 Aspect Ratio to Super GameBoy cores", () =>
+            {
+                var results = ShowCoresMenu(
+                    GlobalHelper.InstalledCores.Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
+                    "Which Super GameBoy cores would you like to change to the 8:7 aspect ratio?\n",
+                    false);
+
+                foreach (var item in results.Where(x => x.Value))
+                {
+                    var core = GlobalHelper.InstalledCores.First(c => c.identifier == item.Key);
+
+                    Console.WriteLine($"Updating '{core.identifier}'...");
+                    core.ChangeAspectRatio(8, 7, 4, 3);
+                    Console.WriteLine("Complete.");
+                    Console.WriteLine();
+                }
+
+                Pause();
+            })
             .Add("Go Back", ConsoleMenu.Close);
 
         var pocketMaintenanceMenu = new ConsoleMenu()
@@ -98,22 +137,40 @@ internal partial class Program
             })
             .Add("Go Back", ConsoleMenu.Close);
 
-        var pocketExtrasMenu = new ConsoleMenu().Configure(menuConfig);
+        var additionalAssetsMenu = new ConsoleMenu().Configure(menuConfig);
+        var combinationPlatformsMenu = new ConsoleMenu().Configure(menuConfig);
+        var variantCoresMenu = new ConsoleMenu().Configure(menuConfig);
+        var pocketExtrasMenu = new ConsoleMenu()
+            .Configure(menuConfig)
+            .Add("Additional Assets     >", additionalAssetsMenu.Show)
+            .Add("Combination Platforms >", combinationPlatformsMenu.Show)
+            .Add("Variant Cores         >", variantCoresMenu.Show)
+            .Add("Go Back", ConsoleMenu.Close);
 
         foreach (var pocketExtra in GlobalHelper.PocketExtras)
         {
-            string name = string.IsNullOrWhiteSpace(pocketExtra.name)
+            var name = string.IsNullOrWhiteSpace(pocketExtra.name)
                 ? $"Download extras for {pocketExtra.core_identifiers[0]}"
                 : $"Download {pocketExtra.name}";
 
-            pocketExtrasMenu.Add(name, async _ =>
+            var consoleMenu = pocketExtra.type switch
+            {
+                PocketExtraType.additional_assets => additionalAssetsMenu,
+                PocketExtraType.combination_platform => combinationPlatformsMenu,
+                PocketExtraType.variant_core => variantCoresMenu,
+                _ => pocketExtrasMenu
+            };
+
+            consoleMenu.Add(name, async _ =>
             {
                 await GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, path, true, true);
                 Pause();
             });
         }
 
-        pocketExtrasMenu.Add("Go Back", ConsoleMenu.Close);
+        additionalAssetsMenu.Add("Go Back", ConsoleMenu.Close);
+        combinationPlatformsMenu.Add("Go Back", ConsoleMenu.Close);
+        variantCoresMenu.Add("Go Back", ConsoleMenu.Close);
 
         var menu = new ConsoleMenu()
             .Configure(menuConfig)

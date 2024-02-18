@@ -95,6 +95,30 @@
       "github_user": "espiox",
       "github_repository": "jts16_complete",
       "github_asset_prefix": "jts16_complete"
+    },
+    {
+      "id": "sgb2",
+      "name": "Super GameBoy 2",
+      "type": "variant_core",
+      "platform_name": "sgb",
+      "core_identifiers": [
+        "sgb2"
+      ],
+      "github_user": "hallem",
+      "github_repository": "openFPGA-Super-GB",
+      "github_asset_prefix": "super-gameboy-extras-sgb2.zip"
+    },
+    {
+      "id": "sgb2vw",
+      "name": "Super GameBoy 2: Vaporwave Edition",
+      "type": "variant_core",
+      "platform_name": "sgb",
+      "core_identifiers": [
+        "sgb2vw"
+      ],
+      "github_user": "hallem",
+      "github_repository": "openFPGA-Super-GB",
+      "github_asset_prefix": "super-gameboy-extras-sgb2vw.zip"
     }
   ]
 }

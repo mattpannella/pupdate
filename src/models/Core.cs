@@ -828,6 +828,26 @@ public class Core : Base
         return config;
     }
 
+    public void ChangeAspectRatio(int fromWidth, int fromHeight, int toWidth, int toHeight)
+    {
+        var video = GetVideoConfig();
+
+        foreach (var scalarMode in video.scaler_modes)
+        {
+            if (scalarMode.aspect_w == fromWidth && scalarMode.aspect_h == fromHeight)
+            {
+                scalarMode.aspect_w = toWidth;
+                scalarMode.aspect_h = toHeight;
+            }
+        }
+
+        Dictionary<string, Video> output = new Dictionary<string, Video> { { "video", video } };
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        string json = JsonSerializer.Serialize(output, options);
+
+        File.WriteAllText(Path.Combine(GlobalHelper.UpdateDirectory, "Cores", this.identifier, "video.json"), json);
+    }
+
     public void AddDisplayModes()
     {
         var info = this.GetConfig();

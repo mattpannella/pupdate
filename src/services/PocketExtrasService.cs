@@ -5,7 +5,6 @@ using Pannella.Helpers;
 using Pannella.Models;
 using Pannella.Models.Extras;
 using Pannella.Models.Github;
-using Pannella.Models.Settings;
 using File = System.IO.File;
 
 namespace Pannella.Services;
@@ -72,6 +71,7 @@ public class PocketExtrasService : BaseService
 
                     WriteMessage($"Downloading '{placeFileName}'");
                     await HttpHelper.Instance.DownloadFileAsync(uri.ToString(), localPlaceFileName);
+                    WriteMessage("Download complete.");
 
                     File.Delete(placeFile);
                 }
@@ -82,7 +82,6 @@ public class PocketExtrasService : BaseService
             if (Directory.Exists(destinationAssetsMra))
                 Directory.Delete(destinationAssetsMra, true);
 
-            WriteMessage("Download complete.");
             WriteMessage("Installing...");
             Util.CopyDirectory(extractPath, path, true, true);
             WriteMessage("Complete.");
@@ -105,25 +104,42 @@ public class PocketExtrasService : BaseService
         {
             string coreIdentifier = Path.GetFileName(coreDirectory);
             Core core = GlobalHelper.GetCore(coreIdentifier);
-            CoreSettings coreSettings = GlobalHelper.SettingsManager.GetCoreSettings(core.identifier);
 
-            coreSettings.skip = false;
-            coreSettings.pocket_extras = true;
-            coreSettings.pocket_extras_version = release.tag_name;
+            core.StatusUpdated += this.core_StatusUpdated;
+
+            // CoreSettings coreSettings = GlobalHelper.SettingsManager.GetCoreSettings(core.identifier);
+            //
+            // coreSettings.skip = false;
+            // coreSettings.pocket_extras = true;
+            // coreSettings.pocket_extras_version = release.tag_name;
+            GlobalHelper.SettingsManager.EnableCore(core.identifier, true, release.tag_name);
 
             if (downloadAssets)
             {
                 // should I call await core.DownloadAssets here instead?
                 //await coreUpdater.RunAssetDownloader(coreIdentifier, true);
-                WriteMessage(coreIdentifier);
-                await core.DownloadAssets();
+                WriteMessage($"\n{coreIdentifier}");
+                var results = await core.DownloadAssets();
+
+                UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs
+                {
+                    Message = "Complete.",
+                    InstalledAssets = (List<string>)results["installed"],
+                    SkippedAssets = (List<string>)results["skipped"],
+                    MissingBetaKeys = (bool)results["missingBetaKey"]
+                        ? new List<string> { core.identifier }
+                        : new List<string>(),
+                    SkipOutro = true,
+                };
+
+                OnUpdateProcessComplete(args);
             }
         }
 
         GlobalHelper.SettingsManager.SaveSettings();
         Directory.Delete(extractPath, true);
 
-        WriteMessage("Complete.");
+        //WriteMessage("Complete.");
     }
 
     private async Task DownloadPocketExtras(string user, string repository, string coreIdentifier, string assetName,
@@ -228,19 +244,31 @@ public class PocketExtrasService : BaseService
             WriteMessage("Downloading assets...");
             // should I call await core.DownloadAssets here instead?
             //await coreUpdater.RunAssetDownloader(core.identifier, true);
-            await core.DownloadAssets();
-            WriteMessage("Complete.");
+            var results = await core.DownloadAssets();
+
+            UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs
+            {
+                Message = "Complete.",
+                InstalledAssets = (List<string>)results["installed"],
+                SkippedAssets = (List<string>)results["skipped"],
+                MissingBetaKeys = (bool)results["missingBetaKey"]
+                    ? new List<string> { core.identifier }
+                    : new List<string>(),
+                SkipOutro = true,
+            };
+
+            OnUpdateProcessComplete(args);
+            //WriteMessage("Complete.");
         }
 
-        CoreSettings coreSettings = GlobalHelper.SettingsManager.GetCoreSettings(core.identifier);
+        // CoreSettings coreSettings = GlobalHelper.SettingsManager.GetCoreSettings(core.identifier);
+        //
+        // coreSettings.skip = false;
+        // coreSettings.pocket_extras = true;
+        // coreSettings.pocket_extras_version = release.tag_name;
 
-        coreSettings.skip = false;
-        coreSettings.pocket_extras = true;
-        coreSettings.pocket_extras_version = release.tag_name;
-
+        GlobalHelper.SettingsManager.EnableCore(core.identifier, true, release.tag_name);
         GlobalHelper.SettingsManager.SaveSettings();
-
-        // TODO: Modify 'Update All' and 'Update {core}' to check the pocket_extras flag and act accordingly when true.
     }
 
     public async Task GetPocketExtra(PocketExtra pocketExtra, string path, bool downloadAssets, bool refreshLocalCores)
@@ -254,6 +282,7 @@ public class PocketExtrasService : BaseService
                 break;
 
             case PocketExtraType.combination_platform:
+            case PocketExtraType.variant_core:
                 await DownloadPocketExtrasPlatform(pocketExtra.github_user, pocketExtra.github_repository,
                     pocketExtra.platform_name, pocketExtra.github_asset_prefix, path, downloadAssets,
                     !pocketExtra.has_placeholders, refreshLocalCores);
@@ -266,5 +295,10 @@ public class PocketExtrasService : BaseService
         Release release = await GithubApiService.GetLatestRelease(pocketExtra.github_user, pocketExtra.github_repository);
 
         return release.tag_name;
+    }
+
+    private void core_StatusUpdated(object sender, StatusUpdatedEventArgs e)
+    {
+        this.OnStatusUpdated(e);
     }
 }

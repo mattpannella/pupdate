@@ -3,5 +3,6 @@ namespace Pannella.Models.Extras;
 public enum PocketExtraType
 {
     additional_assets,
-    combination_platform
+    combination_platform,
+    variant_core,
 }

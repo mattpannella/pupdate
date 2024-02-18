@@ -204,6 +204,7 @@ internal partial class Program
 
             await GlobalHelper.Initialize(path);
             GlobalHelper.PocketExtrasService.StatusUpdated += coreUpdater_StatusUpdated;
+            GlobalHelper.PocketExtrasService.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
 
             if (!CLI_MODE)
             {
