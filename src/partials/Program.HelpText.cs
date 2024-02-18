@@ -53,7 +53,7 @@ internal partial class Program
     -p, --path                Absolute path to install location
     -n, --name                The name of the extra to install. Required
                                  Values: DonkeyKong, RadarScope, jtbubl, jtcps1, jtcps15,
-                                         jtcps2, jtpang, toaplan2_c, jtc16_c
+                                         jtcps2, jtpang, toaplan2_c, jtc16_c, sgb2, sgbvw
 
   update-self              Check for updates to pupdate
 
