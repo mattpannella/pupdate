@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Text;
 using Force.Crc32;
 
 namespace Pannella.Helpers;
@@ -149,5 +150,32 @@ public class Util
         }
 
         return hash.Equals(checksum, StringComparison.CurrentCultureIgnoreCase);
+    }
+
+    public static string WordWrap(string line, int width, string padding = "")
+    {
+        string[] parts = line.Split(' ');
+        StringBuilder message = new();
+        int length = 0;
+
+        message.Append(padding);
+
+        foreach (var part in parts)
+        {
+            if (length + part.Length + 1 > width)
+            {
+                message.AppendLine();
+                message.Append(padding);
+                length = 0;
+            }
+            else
+            {
+                length += part.Length + 1;
+            }
+
+            message.Append($"{part} ");
+        }
+
+        return message.ToString();
     }
 }

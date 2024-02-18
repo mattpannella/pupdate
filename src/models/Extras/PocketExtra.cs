@@ -25,6 +25,6 @@ namespace Pannella.Models.Extras
 
         public string github_asset_prefix { get; set; }
 
-        public List<string> additional_links { get; set; }
+        public List<string> additional_links { get; set; } = new();
     }
 }

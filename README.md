@@ -256,8 +256,8 @@ This contains a list of alternate core setups. These take existing cores and mak
   pocket-extras            Download Pocket Extras
     -p, --path                Absolute path to install location
     -n, --name                The name of the extra to install. Required
-                                 Values: DonkeyKong, RadarScope, jtbubl, jtcps1, jtcps15,
-                                         jtcps2, jtpang, toaplan2_c, jtc16_c, sgb2, sgb2vw
+    -i, --info                Shows the details for the specified 'name'
+    -l, --list                Lists out all of the values for 'name' and their details
 
   update-self              Check for updates to pupdate
 

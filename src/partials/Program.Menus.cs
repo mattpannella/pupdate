@@ -169,26 +169,7 @@ internal partial class Program
                 if (GlobalHelper.SettingsManager.GetConfig().show_menu_descriptions &&
                     !string.IsNullOrEmpty(pocketExtra.description))
                 {
-                    string[] parts = pocketExtra.description.Split(' ');
-                    StringBuilder message = new();
-                    int length = 0;
-
-                    foreach (var part in parts)
-                    {
-                        if (length + part.Length + 1 > 80)
-                        {
-                            message.AppendLine();
-                            length = 0;
-                        }
-                        else
-                        {
-                            length += part.Length + 1;
-                        }
-
-                        message.Append($"{part} ");
-                    }
-
-                    Console.WriteLine(message);
+                    Console.WriteLine(Util.WordWrap(pocketExtra.description, 80));
                     Console.WriteLine($"More info: https://github.com/{pocketExtra.github_user}/{pocketExtra.github_repository}");
 
                     foreach (var additionalLink in pocketExtra.additional_links)
