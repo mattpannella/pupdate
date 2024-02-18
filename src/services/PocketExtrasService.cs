@@ -105,20 +105,17 @@ public class PocketExtrasService : BaseService
             string coreIdentifier = Path.GetFileName(coreDirectory);
             Core core = GlobalHelper.GetCore(coreIdentifier);
 
-            core.StatusUpdated += this.core_StatusUpdated;
+            if (!core.IsStatusUpdateRegistered())
+            {
+                core.StatusUpdated += this.core_StatusUpdated;
+            }
 
-            // CoreSettings coreSettings = GlobalHelper.SettingsManager.GetCoreSettings(core.identifier);
-            //
-            // coreSettings.skip = false;
-            // coreSettings.pocket_extras = true;
-            // coreSettings.pocket_extras_version = release.tag_name;
             GlobalHelper.SettingsManager.EnableCore(core.identifier, true, release.tag_name);
 
             if (downloadAssets)
             {
-                // should I call await core.DownloadAssets here instead?
-                //await coreUpdater.RunAssetDownloader(coreIdentifier, true);
                 WriteMessage($"\n{coreIdentifier}");
+
                 var results = await core.DownloadAssets();
 
                 UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs
@@ -167,8 +164,6 @@ public class PocketExtrasService : BaseService
             if (!result.Value)
                 return;
 
-            // should I call core.Install here instead?
-            //await coreUpdater.RunUpdates(coreIdentifier, skipOutro: true);
             await core.Install(GlobalHelper.SettingsManager.GetConfig().preserve_platforms_folder);
 
             if (!core.IsInstalled())
@@ -242,8 +237,7 @@ public class PocketExtrasService : BaseService
         if (downloadAssets)
         {
             WriteMessage("Downloading assets...");
-            // should I call await core.DownloadAssets here instead?
-            //await coreUpdater.RunAssetDownloader(core.identifier, true);
+
             var results = await core.DownloadAssets();
 
             UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs
@@ -258,14 +252,7 @@ public class PocketExtrasService : BaseService
             };
 
             OnUpdateProcessComplete(args);
-            //WriteMessage("Complete.");
         }
-
-        // CoreSettings coreSettings = GlobalHelper.SettingsManager.GetCoreSettings(core.identifier);
-        //
-        // coreSettings.skip = false;
-        // coreSettings.pocket_extras = true;
-        // coreSettings.pocket_extras_version = release.tag_name;
 
         GlobalHelper.SettingsManager.EnableCore(core.identifier, true, release.tag_name);
         GlobalHelper.SettingsManager.SaveSettings();
