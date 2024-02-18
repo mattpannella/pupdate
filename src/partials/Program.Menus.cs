@@ -1,3 +1,4 @@
+using System.Text;
 using ConsoleTools;
 using Pannella.Helpers;
 using Pannella.Models;
@@ -126,7 +127,7 @@ internal partial class Program
                     "Which cores would you like to uninstall?",
                     false);
 
-                bool nuke = AskAboutCoreSpecificAssets();
+                bool nuke = AskYesNoQuestion("Would you like to remove the core specific assets for the selected cores?");
 
                 foreach (var item in results.Where(x => x.Value))
                 {
@@ -163,8 +164,48 @@ internal partial class Program
 
             consoleMenu.Add(name, async _ =>
             {
-                await GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, path, true, true);
-                Pause();
+                bool result = true;
+
+                if (GlobalHelper.SettingsManager.GetConfig().show_menu_descriptions &&
+                    !string.IsNullOrEmpty(pocketExtra.description))
+                {
+                    string[] parts = pocketExtra.description.Split(' ');
+                    StringBuilder message = new();
+                    int length = 0;
+
+                    foreach (var part in parts)
+                    {
+                        if (length + part.Length + 1 > 80)
+                        {
+                            message.AppendLine();
+                            length = 0;
+                        }
+                        else
+                        {
+                            length += part.Length + 1;
+                        }
+
+                        message.Append($"{part} ");
+                    }
+
+                    Console.WriteLine(message);
+                    Console.WriteLine($"More info: https://github.com/{pocketExtra.github_user}/{pocketExtra.github_repository}");
+
+                    foreach (var additionalLink in pocketExtra.additional_links)
+                    {
+                        Console.WriteLine($"           {additionalLink}");
+                    }
+
+                    Console.WriteLine();
+
+                    result = AskYesNoQuestion("Would you like to install this?");
+                }
+
+                if (result)
+                {
+                    await GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, path, true, true);
+                    Pause();
+                }
             });
         }
 
@@ -245,9 +286,9 @@ internal partial class Program
         }
     }
 
-    private static bool AskAboutCoreSpecificAssets()
+    private static bool AskYesNoQuestion(string question)
     {
-        Console.WriteLine("Would you like to remove the core specific assets for the selected cores? [Y]es, [N]o");
+        Console.WriteLine($"{question} [Y]es, [N]o");
 
         bool? result = null;
 
@@ -387,7 +428,8 @@ internal partial class Program
             { "preserve_platforms_folder", "Preserve 'Platforms' folder during 'Update All'" },
             { "skip_alternative_assets", "Skip alternative roms when downloading assets" },
             { "backup_saves", "Compress and backup Saves and Memories directories during 'Update All'" },
-            { "use_custom_archive", "Use custom asset archive" }
+            { "show_menu_descriptions", "Show descriptions for advanced menu items" },
+            { "use_custom_archive", "Use custom asset archive" },
         };
 
         var type = typeof(Config);
