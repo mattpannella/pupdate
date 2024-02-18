@@ -13,6 +13,10 @@ If you just want to use this utility, do not clone the source repository. Just d
 
 At the main menu run `Settings` to have it walk through the available settings for you.
 
+## Interactive Console Menu ##
+
+For a full view of the interactive console menu, see [here](MENU.md).
+
 ## RTFM ##
 
 [Update All](#update-all) |
