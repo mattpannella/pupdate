@@ -259,6 +259,7 @@ public class PocketExtrasService : BaseService
                     !pocketExtra.has_placeholders, refreshLocalCores);
                 break;
         }
+        WriteMessage($"{Environment.NewLine}Please go to https://www.github.com/{pocketExtra.github_user}/{pocketExtra.github_repository} for more information and to support the author of the Extra.");
     }
 
     public async Task<string> GetMostRecentRelease(PocketExtra pocketExtra)
