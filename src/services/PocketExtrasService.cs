@@ -13,7 +13,7 @@ namespace Pannella.Services;
 [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
 public class PocketExtrasService : BaseService
 {
-    private const string END_POINT = "https://raw.githubusercontent.com/mattpannella/pupdate/main/blacklist.json";
+    private const string END_POINT = "https://raw.githubusercontent.com/mattpannella/pupdate/main/pocket_extras.json";
 
     public static async Task<List<PocketExtra>> GetPocketExtrasList()
     {
