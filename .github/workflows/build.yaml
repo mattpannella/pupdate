@@ -54,19 +54,19 @@ jobs:
           # Pack files
           if [ "${{ matrix.target }}" == "win" ]; then
             # Pack to zip for Windows
-            7z a -tzip "pupdate_win.zip" "./${release_name}/pupdate.exe" "./${release_name}/pocket_extras.json"
+            7z a -tzip "pupdate_win.zip" "./${release_name}/pupdate.exe"
           elif [ "${{ matrix.target }}" == "osx" ]; then
             cd $release_name
             lipo -create -output pupdate pupdate_arm64 pupdate_x64
             rm pupdate_arm64
             rm pupdate_x64
-            zip "../pupdate_mac.zip" "pupdate" "pocket_extras.json"; cd ..;
+            zip "../pupdate_mac.zip" "pupdate"; cd ..;
           else
             cd $release_name
             mv pupdate_x64 pupdate
-            zip "../pupdate_linux.zip" "pupdate" "pocket_extras.json"
-            zip "../pupdate_linux_arm64.zip" "pupdate_arm64" "pocket_extras.json"
-            zip "../pupdate_linux_arm32.zip" "pupdate_arm32" "pocket_extras.json"
+            zip "../pupdate_linux.zip" "pupdate"
+            zip "../pupdate_linux_arm64.zip" "pupdate_arm64"
+            zip "../pupdate_linux_arm32.zip" "pupdate_arm32"
             cd ..
           fi
 
