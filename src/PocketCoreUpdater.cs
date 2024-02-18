@@ -3,6 +3,7 @@ using System.IO.Compression;
 using System.Text.Json;
 using Pannella.Helpers;
 using Pannella.Models;
+using Pannella.Models.Extras;
 using Pannella.Services;
 using File = System.IO.File;
 using AnalogueCore = Pannella.Models.Analogue.Core.Core;
@@ -28,9 +29,14 @@ public class PocketCoreUpdater : Base
     public PocketCoreUpdater()
     {
         Directory.CreateDirectory(Path.Combine(GlobalHelper.UpdateDirectory, "Cores"));
+        this.RefreshStatusUpdater();
+    }
 
+    public void RefreshStatusUpdater()
+    {
         foreach (Core core in GlobalHelper.Cores)
         {
+            core.ClearStatusUpdated();
             core.StatusUpdated += updater_StatusUpdated; // attach handler to bubble event up
         }
     }
@@ -111,7 +117,7 @@ public class PocketCoreUpdater : Base
     /// <summary>
     /// Run the full openFPGA core download and update process
     /// </summary>
-    public async Task RunUpdates(string id = null, bool clean = false)
+    public async Task RunUpdates(string id = null, bool clean = false, bool skipOutro = false)
     {
         List<Dictionary<string, string>> installed = new List<Dictionary<string, string>>();
         List<string> installedAssets = new List<string>();
@@ -121,7 +127,7 @@ public class PocketCoreUpdater : Base
 
         if (GlobalHelper.Cores == null)
         {
-            throw new Exception("Must initialize updater before running update process");
+            throw new Exception("Must initialize updater before running update process.");
         }
 
         if (_backupSaves)
@@ -142,9 +148,11 @@ public class PocketCoreUpdater : Base
             core.download_assets = _downloadAssets && id == null;
             core.build_instances = GlobalHelper.SettingsManager.GetConfig().build_instance_jsons && id == null;
 
+            var coreSettings = GlobalHelper.SettingsManager.GetCoreSettings(core.identifier);
+
             try
             {
-                if (GlobalHelper.SettingsManager.GetCoreSettings(core.identifier).skip)
+                if (coreSettings.skip)
                 {
                     DeleteCore(core);
                     continue;
@@ -152,7 +160,8 @@ public class PocketCoreUpdater : Base
 
                 if (core.requires_license && !_jtBeta)
                 {
-                    continue; //skip if you don't have the key
+                    missingBetaKeys.Add(core.identifier);
+                    continue; // skip if you don't have the key
                 }
 
                 string name = core.identifier;
@@ -164,7 +173,20 @@ public class PocketCoreUpdater : Base
                 }
 
                 WriteMessage("Checking Core: " + name);
-                var mostRecentRelease = core.version;
+                string mostRecentRelease;
+                PocketExtra pocketExtra = GlobalHelper.GetPocketExtra(name);
+                bool isPocketExtraCombinationPlatform = coreSettings.pocket_extras &&
+                                                        pocketExtra != null &&
+                                                        pocketExtra.type == PocketExtraType.combination_platform;
+
+                if (isPocketExtraCombinationPlatform)
+                {
+                    mostRecentRelease = await GlobalHelper.PocketExtrasService.GetMostRecentRelease(pocketExtra);
+                }
+                else
+                {
+                    mostRecentRelease = core.version;
+                }
 
                 Dictionary<string, object> results;
 
@@ -193,16 +215,25 @@ public class PocketCoreUpdater : Base
                 if (core.IsInstalled())
                 {
                     AnalogueCore localCore = core.GetConfig();
-                    string localVersion = localCore.metadata.version;
+                    string localVersion;
+
+                    if (isPocketExtraCombinationPlatform)
+                    {
+                        localVersion = coreSettings.pocket_extras_version;
+                    }
+                    else
+                    {
+                        localVersion = localCore.metadata.version;
+                    }
 
                     if (localVersion != null)
                     {
-                        WriteMessage("local core found: " + localVersion);
+                        WriteMessage("Local core found: " + localVersion);
                     }
 
                     if (mostRecentRelease != localVersion || clean)
                     {
-                        WriteMessage("Updating core");
+                        WriteMessage("Updating core...");
                     }
                     else
                     {
@@ -225,10 +256,29 @@ public class PocketCoreUpdater : Base
                 }
                 else
                 {
-                    WriteMessage("Downloading core");
+                    WriteMessage("Downloading core...");
                 }
 
-                if (await core.Install(_preservePlatformsFolder, clean))
+                if (isPocketExtraCombinationPlatform)
+                {
+                    if (clean && core.IsInstalled())
+                    {
+                        core.Delete();
+                    }
+
+                    await GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, GlobalHelper.UpdateDirectory,
+                        false, false);
+
+                    Dictionary<string, string> summary = new Dictionary<string, string>
+                    {
+                        { "version", mostRecentRelease },
+                        { "core", core.identifier },
+                        { "platform", core.platform.name }
+                    };
+
+                    installed.Add(summary);
+                }
+                else if (await core.Install(_preservePlatformsFolder, clean))
                 {
                     Dictionary<string, string> summary = new Dictionary<string, string>
                     {
@@ -263,14 +313,17 @@ public class PocketCoreUpdater : Base
             }
         }
 
+        DeleteBetaKeys();
+
         UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs
         {
-            Message = "Update Process Complete",
+            Message = "Update Process Complete.",
             InstalledCores = installed,
             InstalledAssets = installedAssets,
             SkippedAssets = skippedAssets,
             MissingBetaKeys = missingBetaKeys,
-            FirmwareUpdated = firmwareDownloaded
+            FirmwareUpdated = firmwareDownloaded,
+            SkipOutro = skipOutro,
         };
 
         GlobalHelper.RefreshInstalledCores();
@@ -372,7 +425,15 @@ public class PocketCoreUpdater : Base
         }
     }
 
-    public async Task RunAssetDownloader(string id = null)
+    private void DeleteBetaKeys()
+    {
+        string keyPath = Path.Combine(GlobalHelper.UpdateDirectory, "betakeys");
+
+        if (Directory.Exists(keyPath))
+            Directory.Delete(keyPath, true);
+    }
+
+    public async Task RunAssetDownloader(string id = null, bool skipOutro = false)
     {
         List<string> installedAssets = new List<string>();
         List<string> skippedAssets = new List<string>();
@@ -380,7 +441,7 @@ public class PocketCoreUpdater : Base
 
         if (GlobalHelper.Cores == null)
         {
-            throw new Exception("Must initialize updater before running update process");
+            throw new Exception("Must initialize updater before running update process.");
         }
 
         foreach (var core in GlobalHelper.Cores.Where(core => id == null || core.identifier == id)
@@ -402,8 +463,8 @@ public class PocketCoreUpdater : Base
 
                 var results = await core.DownloadAssets();
 
-                installedAssets.AddRange(results["installed"] as List<string>);
-                skippedAssets.AddRange(results["skipped"] as List<string>);
+                installedAssets.AddRange((List<string>)results["installed"]);
+                skippedAssets.AddRange((List<string>)results["skipped"]);
 
                 if ((bool)results["missingBetaKey"])
                 {
@@ -424,7 +485,8 @@ public class PocketCoreUpdater : Base
             Message = "All Done",
             InstalledAssets = installedAssets,
             SkippedAssets = skippedAssets,
-            MissingBetaKeys = missingBetaKeys
+            MissingBetaKeys = missingBetaKeys,
+            SkipOutro = skipOutro,
         };
 
         OnUpdateProcessComplete(args);
@@ -434,7 +496,7 @@ public class PocketCoreUpdater : Base
     {
         if (GlobalHelper.Cores == null)
         {
-            throw new Exception("Must initialize updater before running update process");
+            throw new Exception("Must initialize updater before running update process.");
         }
 
         foreach (var core in GlobalHelper.Cores.Where(core => id == null || core.identifier == id)
@@ -496,7 +558,7 @@ public class PocketCoreUpdater : Base
 
             await HttpHelper.Instance.DownloadFileAsync(details.download_url, Path.Combine(GlobalHelper.UpdateDirectory, filename));
 
-            WriteMessage("Download Complete");
+            WriteMessage("Download Complete.");
             WriteMessage(Path.Combine(GlobalHelper.UpdateDirectory, filename));
 
             foreach (string oldFile in oldFiles)
@@ -544,4 +606,5 @@ public class UpdateProcessCompleteEventArgs : EventArgs
     public List<string> SkippedAssets { get; set; }
     public string FirmwareUpdated { get; set; } = string.Empty;
     public List<string> MissingBetaKeys { get; set; }
+    public bool SkipOutro;
 }

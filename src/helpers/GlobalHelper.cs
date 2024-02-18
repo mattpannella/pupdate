@@ -1,5 +1,6 @@
 using Pannella.Models;
 using Pannella.Models.Archive;
+using Pannella.Models.Extras;
 using Pannella.Services;
 
 namespace Pannella.Helpers;
@@ -79,6 +80,9 @@ public static class GlobalHelper
     public static string[] Blacklist { get; private set; }
     public static List<Core> Cores { get; private set; }
     public static List<Core> InstalledCores { get; private set; }
+    public static List<Core> InstalledCoresWithSponsors { get; private set; }
+    public static List<PocketExtra> PocketExtras { get; private set; }
+    public static PocketExtrasService PocketExtrasService { get; private set; }
 
     private static bool isInitialized;
 
@@ -90,10 +94,10 @@ public static class GlobalHelper
             UpdateDirectory = path;
             SettingsManager = new SettingsManager(path);
             Cores = await CoresService.GetCores();
-            Cores.AddRange(GetLocalCores());
-            SettingsManager.InitializeCoreSettings(Cores);
-            RefreshInstalledCores();
+            RefreshLocalCores();
             Blacklist = await AssetsService.GetBlacklist();
+            PocketExtras = await PocketExtrasService.GetPocketExtrasList();
+            PocketExtrasService = new PocketExtrasService();
         }
     }
 
@@ -124,13 +128,26 @@ public static class GlobalHelper
         SettingsManager = new SettingsManager(UpdateDirectory, Cores);
     }
 
+    public static void RefreshLocalCores()
+    {
+        Cores.AddRange(GetLocalCores());
+        SettingsManager.InitializeCoreSettings(Cores);
+        RefreshInstalledCores();
+    }
+
     public static void RefreshInstalledCores()
     {
         InstalledCores = Cores.Where(c => c.IsInstalled()).ToList();
+        InstalledCoresWithSponsors = InstalledCores.Where(c => c.sponsor != null).ToList();
     }
 
     public static Core GetCore(string identifier)
     {
         return Cores.Find(i => i.identifier == identifier);
+    }
+
+    public static PocketExtra GetPocketExtra(string idOrCoreName)
+    {
+        return PocketExtras.Find(e => e.id == idOrCoreName || e.core_identifiers.Any(i => i == idOrCoreName));
     }
 }

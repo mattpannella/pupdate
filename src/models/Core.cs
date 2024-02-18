@@ -8,6 +8,7 @@ using Pannella.Models.Analogue.Data;
 using Pannella.Models.Analogue.Instance;
 using Pannella.Models.Analogue.Instance.Simple;
 using Pannella.Models.Analogue.Video;
+using Pannella.Models.Extras;
 using Pannella.Models.InstancePackager;
 using Pannella.Models.Updater;
 using AnalogueCore = Pannella.Models.Analogue.Core.Core;
@@ -65,11 +66,29 @@ public class Core : Base
         if (await InstallGithubAsset(preservePlatformsFolder))
         {
             this.ReplaceCheck();
+            await this.PocketExtraCheck();
 
             return true;
         }
 
         return false;
+    }
+
+    private async Task PocketExtraCheck()
+    {
+        var coreSettings = GlobalHelper.SettingsManager.GetCoreSettings(this.identifier);
+
+        if (coreSettings.pocket_extras)
+        {
+            PocketExtra pocketExtra = GlobalHelper.GetPocketExtra(this.identifier);
+
+            if (pocketExtra != null)
+            {
+                WriteMessage("Reapplying Pocket Extras...");
+                await GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, GlobalHelper.UpdateDirectory,
+                    false, false);
+            }
+        }
     }
 
     private async Task<bool> InstallGithubAsset(bool preservePlatformsFolder)
@@ -122,7 +141,7 @@ public class Core : Base
         }
     }
 
-    private void Delete(bool nuke = false)
+    public void Delete(bool nuke = false)
     {
         List<string> folders = new List<string> { "Cores", "Presets", "Settings" };
 
@@ -198,7 +217,7 @@ public class Core : Base
         }
 
         CheckUpdateDirectory();
-        WriteMessage("Looking for Assets");
+        WriteMessage("Looking for Assets...");
         AnalogueCore info = this.GetConfig();
         string updateDirectory = GlobalHelper.UpdateDirectory;
         // cores with multiple platforms won't work...not sure any exist right now?
@@ -223,6 +242,9 @@ public class Core : Base
                     else
                     {
                         path = Path.Combine(platformPath, "common");
+
+                        if (!Directory.Exists(path))
+                            Directory.CreateDirectory(path);
                     }
 
                     List<string> files = new List<string> { slot.filename };
@@ -276,6 +298,9 @@ public class Core : Base
         if (this.identifier is "agg23.GameAndWatch" && GlobalHelper.SettingsManager.GetConfig().download_gnw_roms)
         {
             string commonPath = Path.Combine(platformPath, "common");
+
+            if (!Directory.Exists(commonPath))
+                Directory.CreateDirectory(commonPath);
 
             foreach (var f in GlobalHelper.GameAndWatchArchiveFiles.files)
             {
@@ -368,7 +393,12 @@ public class Core : Base
 
                             if (!GlobalHelper.Blacklist.Contains(slot.filename) && !slot.filename.EndsWith(".sav"))
                             {
-                                string slotPath = Path.Combine(platformPath, "common", dataPath, slot.filename);
+                                string commonPath = Path.Combine(platformPath, "common");
+
+                                if (!Directory.Exists(commonPath))
+                                    Directory.CreateDirectory(commonPath);
+
+                                string slotPath = Path.Combine(commonPath, dataPath, slot.filename);
 
                                 if (File.Exists(slotPath) && CheckCRC(slotPath, GlobalHelper.ArchiveFiles))
                                 {

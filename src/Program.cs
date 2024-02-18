@@ -30,6 +30,7 @@ internal partial class Program
             bool cleanInstall = false;
             string backupSaves_Path = null;
             bool backupSaves_SaveConfig = false;
+            string pocket_extras = null;
 
             string verb = "menu";
             Dictionary<string, object> data = new Dictionary<string, object>();
@@ -41,7 +42,7 @@ internal partial class Program
             parser.ParseArguments<MenuOptions, FundOptions, UpdateOptions,
                     AssetsOptions, FirmwareOptions, ImagesOptions, InstanceGeneratorOptions,
                     UpdateSelfOptions, UninstallOptions, BackupSavesOptions, GameBoyPalettesOptions,
-                    PocketLibraryImagesOptions>(args)
+                    PocketLibraryImagesOptions, PocketExtrasOptions>(args)
                 .WithParsed<UpdateSelfOptions>(_ => { selfUpdate = true; })
                 .WithParsed<FundOptions>(o =>
                     {
@@ -182,6 +183,13 @@ internal partial class Program
                         CLI_MODE = true;
                         path = o.InstallPath;
                     })
+                .WithParsed<PocketExtrasOptions>(o =>
+                    {
+                        verb = "pocket-extras";
+                        CLI_MODE = true;
+                        path = o.InstallPath;
+                        pocket_extras = o.Name;
+                    })
                 .WithNotParsed(e =>
                     {
                         if (e.IsHelp())
@@ -195,6 +203,7 @@ internal partial class Program
             #endregion
 
             await GlobalHelper.Initialize(path);
+            GlobalHelper.PocketExtrasService.StatusUpdated += coreUpdater_StatusUpdated;
 
             if (!CLI_MODE)
             {
@@ -398,6 +407,19 @@ internal partial class Program
                     await DownloadPockLibraryImages(path);
                     break;
 
+                case "pocket-extras":
+                    var pocketExtra = GlobalHelper.GetPocketExtra(pocket_extras);
+
+                    if (pocketExtra != null)
+                    {
+                        await GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, path, true, true);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Pocket Extra '{pocket_extras}' not found.");
+                    }
+                    break;
+
                 default:
                     DisplayMenuNew(path, coreUpdater);
                     break;
@@ -442,7 +464,7 @@ internal partial class Program
                 Console.WriteLine(asset);
             }
 
-            Console.WriteLine("");
+            Console.WriteLine();
         }
 
         if (e.SkippedAssets.Count > 0)
@@ -474,7 +496,14 @@ internal partial class Program
             Console.WriteLine();
         }
 
-        Console.WriteLine(GetRandomSponsorLinks());
-        FunFacts();
+        if (!e.SkipOutro)
+        {
+            var links = GetRandomSponsorLinks();
+
+            if (!string.IsNullOrEmpty(links))
+                Console.WriteLine(links);
+
+            FunFacts();
+        }
     }
 }

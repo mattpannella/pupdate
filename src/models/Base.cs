@@ -6,6 +6,17 @@ public class Base
 
     public event EventHandler<StatusUpdatedEventArgs> StatusUpdated;
 
+    public void ClearStatusUpdated()
+    {
+        if (StatusUpdated != null)
+        {
+            foreach (Delegate d in StatusUpdated.GetInvocationList())
+            {
+                StatusUpdated -= d as EventHandler<StatusUpdatedEventArgs>;
+            }
+        }
+    }
+
     protected void Divide()
     {
         WriteMessage("-------------");
