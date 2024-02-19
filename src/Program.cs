@@ -16,7 +16,6 @@ internal partial class Program
         try
         {
             string path = null;
-            bool preservePlatformsFolder = false;
             string downloadAssets = null;
             string coreName = null;
             string imagePackOwner = null;
@@ -32,7 +31,6 @@ internal partial class Program
             bool pocket_extras_info = false;
 
             string verb = "menu";
-            Dictionary<string, object> data = new Dictionary<string, object>();
 
             #region Command Line Arguments
 
@@ -52,11 +50,6 @@ internal partial class Program
                     verb = "update";
                     CLI_MODE = true;
                     path = o.InstallPath;
-
-                    if (o.PreservePlatformsFolder)
-                    {
-                        preservePlatformsFolder = true;
-                    }
 
                     if (o.CleanInstall)
                     {
@@ -206,9 +199,7 @@ internal partial class Program
 
             PocketCoreUpdater coreUpdater = new PocketCoreUpdater();
 
-            // how should the logic work here? what takes priority, the command line parameter or the config setting?
-            // currently this well preserve the platforms folder if either is set to true
-            if (preservePlatformsFolder || GlobalHelper.SettingsManager.GetConfig().preserve_platforms_folder)
+            if (GlobalHelper.SettingsManager.GetConfig().preserve_platforms_folder)
             {
                 coreUpdater.PreservePlatformsFolder(true);
             }
