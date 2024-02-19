@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -12,6 +13,8 @@ public static class GithubApiService
 {
     private const string RELEASES = "https://api.github.com/repos/{0}/{1}/releases";
     private const string CONTENTS = "https://api.github.com/repos/{0}/{1}/contents/{2}";
+
+    private static int remainingCalls = 60; //default without a token
 
     public static async Task<List<Release>> GetReleases(string user, string repository)
     {
@@ -83,8 +86,20 @@ public static class GithubApiService
 
         response.EnsureSuccessStatusCode();
 
+        IEnumerable<string> values;
+        if(response.Headers.TryGetValues("x-ratelimit-remaining", out values))
+        {
+            string remaining = values.First();
+            remainingCalls = int.Parse(remaining);
+        }
+
         var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
         return responseBody;
+    }
+
+    public static int GetRateLimitRemaining()
+    {
+        return remainingCalls;
     }
 }
