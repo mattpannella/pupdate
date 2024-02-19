@@ -237,10 +237,6 @@ internal partial class Program
 
             #endregion
 
-            await GlobalHelper.Initialize(path);
-            GlobalHelper.PocketExtrasService.StatusUpdated += coreUpdater_StatusUpdated;
-            GlobalHelper.PocketExtrasService.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
-
             if (!CLI_MODE)
             {
                 Console.WriteLine("Pupdate v" + VERSION);
@@ -253,16 +249,11 @@ internal partial class Program
 
                     do
                     {
-                        if (SYSTEM_OS_PLATFORM is "win" or "linux" or "mac")
-                        {
-                            Console.Write("Would you like to [i]nstall the update, [c]ontinue with the current version, or [q]uit? [i/c/q]: ");
-                        }
-                        else
-                        {
-                            Console.Write("Update downloaded. Would you like to [c]ontinue with the current version, or [q]uit? [c/q]: ");
-                        }
+                        Console.Write(SYSTEM_OS_PLATFORM is "win" or "linux" or "mac"
+                            ? "Would you like to [i]nstall the update, [c]ontinue with the current version, or [q]uit? [i/c/q]: "
+                            : "Update downloaded. Would you like to [c]ontinue with the current version, or [q]uit? [c/q]: ");
 
-                        response = Console.ReadKey(false).Key;
+                        response = Console.ReadKey(true).Key;
                         Console.WriteLine();
                     }
                     while (!acceptedInputs.Contains(response));
@@ -278,7 +269,7 @@ internal partial class Program
                             break;
 
                         case ConsoleKey.Q:
-                            Console.WriteLine("Come again soon");
+                            Console.WriteLine("Come again soon!");
                             PauseExit();
                             break;
                     }
@@ -289,6 +280,10 @@ internal partial class Program
                     Environment.Exit(0);
                 }
             }
+
+            await GlobalHelper.Initialize(path);
+            GlobalHelper.PocketExtrasService.StatusUpdated += coreUpdater_StatusUpdated;
+            GlobalHelper.PocketExtrasService.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
 
             PocketCoreUpdater coreUpdater = new PocketCoreUpdater();
 
