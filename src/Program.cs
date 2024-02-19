@@ -15,8 +15,7 @@ internal partial class Program
     {
         try
         {
-            string location = Environment.ProcessPath;
-            string path = Path.GetDirectoryName(location);
+            string path = null;
             bool preservePlatformsFolder = false;
             bool forceUpdate = false;
             bool forceInstanceGenerator = false;
@@ -48,192 +47,155 @@ internal partial class Program
                     PocketLibraryImagesOptions, PocketExtrasOptions>(args)
                 .WithParsed<UpdateSelfOptions>(_ => { selfUpdate = true; })
                 .WithParsed<FundOptions>(o =>
-                    {
-                        verb = "fund";
-                        data.Add("core", null);
+                {
+                    verb = "fund";
+                    data.Add("core", null);
 
-                        if (!string.IsNullOrEmpty(o.Core))
-                        {
-                            data["core"] = o.Core;
-                        }
-                    })
+                    if (!string.IsNullOrEmpty(o.Core))
+                    {
+                        data["core"] = o.Core;
+                    }
+                })
                 .WithParsed<UpdateOptions>(o =>
+                {
+                    verb = "update";
+                    CLI_MODE = true;
+                    forceUpdate = true;
+                    path = o.InstallPath;
+
+                    if (o.PreservePlatformsFolder)
                     {
-                        verb = "update";
-                        CLI_MODE = true;
-                        forceUpdate = true;
+                        preservePlatformsFolder = true;
+                    }
 
-                        if (!string.IsNullOrEmpty(o.InstallPath))
-                        {
-                            path = o.InstallPath;
-                        }
-
-                        if (o.PreservePlatformsFolder)
-                        {
-                            preservePlatformsFolder = true;
-                        }
-
-                        if (o.CleanInstall)
-                        {
-                            cleanInstall = true;
-                        }
-
-                        if (!string.IsNullOrEmpty(o.CoreName))
-                        {
-                            coreName = o.CoreName;
-                        }
-                    })
-                .WithParsed<UninstallOptions>(o =>
+                    if (o.CleanInstall)
                     {
-                        verb = "uninstall";
-                        CLI_MODE = true;
+                        cleanInstall = true;
+                    }
+
+                    if (!string.IsNullOrEmpty(o.CoreName))
+                    {
                         coreName = o.CoreName;
+                    }
+                })
+                .WithParsed<UninstallOptions>(o =>
+                {
+                    verb = "uninstall";
+                    CLI_MODE = true;
+                    coreName = o.CoreName;
+                    path = o.InstallPath;
 
-                        if (!string.IsNullOrEmpty(o.InstallPath))
-                        {
-                            path = o.InstallPath;
-                        }
-
-                        if (o.DeleteAssets)
-                        {
-                            nuke = true;
-                        }
-                    })
+                    if (o.DeleteAssets)
+                    {
+                        nuke = true;
+                    }
+                })
                 .WithParsed<AssetsOptions>(o =>
+                {
+                    verb = "assets";
+                    CLI_MODE = true;
+                    downloadAssets = "all";
+                    path = o.InstallPath;
+
+                    if (o.CoreName != null)
                     {
-                        verb = "assets";
-                        CLI_MODE = true;
-                        downloadAssets = "all";
-
-                        if (!string.IsNullOrEmpty(o.InstallPath))
-                        {
-                            path = o.InstallPath;
-                        }
-
-                        if (o.CoreName != null)
-                        {
-                            downloadAssets = o.CoreName;
-                        }
-                    })
+                        downloadAssets = o.CoreName;
+                    }
+                })
                 .WithParsed<FirmwareOptions>(o =>
-                    {
-                        verb = "firmware";
-                        CLI_MODE = true;
-                        downloadFirmware = true;
-
-                        if (!string.IsNullOrEmpty(o.InstallPath))
-                        {
-                            path = o.InstallPath;
-                        }
-                    })
+                {
+                    verb = "firmware";
+                    CLI_MODE = true;
+                    downloadFirmware = true;
+                    path = o.InstallPath;
+                })
                 .WithParsed<ImagesOptions>(o =>
+                {
+                    verb = "images";
+                    CLI_MODE = true;
+                    path = o.InstallPath;
+
+                    if (o.ImagePackOwner != null)
                     {
-                        verb = "images";
-                        CLI_MODE = true;
-
-                        if (!string.IsNullOrEmpty(o.InstallPath))
-                        {
-                            path = o.InstallPath;
-                        }
-
-                        if (o.ImagePackOwner != null)
-                        {
-                            imagePackOwner = o.ImagePackOwner;
-                            imagePackRepo = o.ImagePackRepo;
-                            imagePackVariant = o.ImagePackVariant;
-                        }
-                    })
+                        imagePackOwner = o.ImagePackOwner;
+                        imagePackRepo = o.ImagePackRepo;
+                        imagePackVariant = o.ImagePackVariant;
+                    }
+                })
                 .WithParsed<InstanceGeneratorOptions>(o =>
-                    {
-                        verb = "instancegenerator";
-                        CLI_MODE = true;
-                        forceInstanceGenerator = true;
-
-                        if (!string.IsNullOrEmpty(o.InstallPath))
-                        {
-                            path = o.InstallPath;
-                        }
-                    })
+                {
+                    verb = "instance-generator";
+                    CLI_MODE = true;
+                    forceInstanceGenerator = true;
+                    path = o.InstallPath;
+                })
                 .WithParsed<MenuOptions>(o =>
-                    {
-                        if (!string.IsNullOrEmpty(o.InstallPath))
-                        {
-                            path = o.InstallPath;
-                        }
+                {
+                    path = o.InstallPath;
 
-                        if (o.SkipUpdate)
-                        {
-                            CLI_MODE = true;
-                        }
-                    })
+                    if (o.SkipUpdate)
+                    {
+                        CLI_MODE = true;
+                    }
+                })
                 .WithParsed<BackupSavesOptions>(o =>
-                    {
-                        verb = "backup-saves";
-                        CLI_MODE = true;
-                        backupSaves_Path = o.BackupPath;
-                        backupSaves_SaveConfig = o.Save;
-
-                        if (!string.IsNullOrEmpty(o.InstallPath))
-                        {
-                            path = o.InstallPath;
-                        }
-                    })
+                {
+                    verb = "backup-saves";
+                    CLI_MODE = true;
+                    backupSaves_Path = o.BackupPath;
+                    backupSaves_SaveConfig = o.Save;
+                    path = o.InstallPath;
+                })
                 .WithParsed<GameBoyPalettesOptions>(o =>
-                    {
-                        verb = "gameboy-palettes";
-                        CLI_MODE = true;
-
-                        if (!string.IsNullOrEmpty(o.InstallPath))
-                        {
-                            path = o.InstallPath;
-                        }
-                    })
+                {
+                    verb = "gameboy-palettes";
+                    CLI_MODE = true;
+                    path = o.InstallPath;
+                })
                 .WithParsed<PocketLibraryImagesOptions>(o =>
-                    {
-                        verb = "pocket-library-images";
-                        CLI_MODE = true;
-
-                        if (!string.IsNullOrEmpty(o.InstallPath))
-                        {
-                            path = o.InstallPath;
-                        }
-                    })
+                {
+                    verb = "pocket-library-images";
+                    CLI_MODE = true;
+                    path = o.InstallPath;
+                })
                 .WithParsed<PocketExtrasOptions>(o =>
-                    {
-                        verb = "pocket-extras";
-                        CLI_MODE = true;
-                        pocket_extras_name = o.Name;
-                        pocket_extras_list = o.List;
-                        pocket_extras_info = o.Info;
-
-                        if (!string.IsNullOrEmpty(o.InstallPath))
-                        {
-                            path = o.InstallPath;
-                        }
-                    })
+                {
+                    verb = "pocket-extras";
+                    CLI_MODE = true;
+                    pocket_extras_name = o.Name;
+                    pocket_extras_list = o.List;
+                    pocket_extras_info = o.Info;
+                    path = o.InstallPath;
+                })
                 .WithNotParsed(errors =>
+                {
+                    foreach (var error in errors)
                     {
-                        foreach (var error in errors)
+                        switch (error)
                         {
-                            switch (error)
-                            {
-                                case MissingRequiredOptionError mro:
-                                    Console.WriteLine($"Missing required parameter: -{mro.NameInfo.ShortName} or --{mro.NameInfo.LongName}.");
-                                    break;
+                            case MissingRequiredOptionError mro:
+                                Console.WriteLine(
+                                    $"Missing required parameter: -{mro.NameInfo.ShortName} or --{mro.NameInfo.LongName}.");
+                                break;
 
-                                case HelpRequestedError:
-                                case HelpVerbRequestedError:
-                                    Console.WriteLine(HELP_TEXT);
-                                    break;
+                            case HelpRequestedError:
+                            case HelpVerbRequestedError:
+                                Console.WriteLine(HELP_TEXT);
+                                break;
 
-                                case VersionRequestedError:
-                                    Console.WriteLine("Pupdate v" + VERSION);
-                                    break;
-                            }
+                            case VersionRequestedError:
+                                Console.WriteLine("Pupdate v" + VERSION);
+                                break;
                         }
+                    }
 
-                        Environment.Exit(1);
-                    });
+                    Environment.Exit(1);
+                });
+
+            if (string.IsNullOrEmpty(path))
+            {
+                path = Path.GetDirectoryName(Environment.ProcessPath);
+            }
 
             #endregion
 
