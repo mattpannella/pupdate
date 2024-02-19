@@ -17,6 +17,11 @@ public class Base
         }
     }
 
+    public bool IsStatusUpdateRegistered()
+    {
+        return this.StatusUpdated != null;
+    }
+
     protected void Divide()
     {
         WriteMessage("-------------");

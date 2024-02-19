@@ -8,6 +8,8 @@ namespace Pannella.Models.Extras
 
         public string name { get; set; }
 
+        public string description { get; set; }
+
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public PocketExtraType type { get; set; }
 
@@ -22,5 +24,7 @@ namespace Pannella.Models.Extras
         public string github_repository { get; set; }
 
         public string github_asset_prefix { get; set; }
+
+        public List<string> additional_links { get; set; } = new();
     }
 }

@@ -1,6 +1,7 @@
 ﻿using CommandLine;
 using Pannella.Helpers;
 using Pannella.Models;
+using Pannella.Models.Extras;
 using Pannella.Options;
 using Pannella.Services;
 
@@ -30,7 +31,9 @@ internal partial class Program
             bool cleanInstall = false;
             string backupSaves_Path = null;
             bool backupSaves_SaveConfig = false;
-            string pocket_extras = null;
+            string pocket_extras_name = null;
+            bool pocket_extras_list = false;
+            bool pocket_extras_info = false;
 
             string verb = "menu";
             Dictionary<string, object> data = new Dictionary<string, object>();
@@ -39,7 +42,7 @@ internal partial class Program
 
             Parser parser = new Parser(config => config.HelpWriter = null);
 
-            parser.ParseArguments<MenuOptions, FundOptions, UpdateOptions,
+            var parserResult = parser.ParseArguments<MenuOptions, FundOptions, UpdateOptions,
                     AssetsOptions, FirmwareOptions, ImagesOptions, InstanceGeneratorOptions,
                     UpdateSelfOptions, UninstallOptions, BackupSavesOptions, GameBoyPalettesOptions,
                     PocketLibraryImagesOptions, PocketExtrasOptions>(args)
@@ -167,34 +170,66 @@ internal partial class Program
                     {
                         verb = "backup-saves";
                         CLI_MODE = true;
-                        path = o.InstallPath;
                         backupSaves_Path = o.BackupPath;
                         backupSaves_SaveConfig = o.Save;
+
+                        if (!string.IsNullOrEmpty(o.InstallPath))
+                        {
+                            path = o.InstallPath;
+                        }
                     })
                 .WithParsed<GameBoyPalettesOptions>(o =>
                     {
                         verb = "gameboy-palettes";
                         CLI_MODE = true;
-                        path = o.InstallPath;
+
+                        if (!string.IsNullOrEmpty(o.InstallPath))
+                        {
+                            path = o.InstallPath;
+                        }
                     })
                 .WithParsed<PocketLibraryImagesOptions>(o =>
                     {
                         verb = "pocket-library-images";
                         CLI_MODE = true;
-                        path = o.InstallPath;
+
+                        if (!string.IsNullOrEmpty(o.InstallPath))
+                        {
+                            path = o.InstallPath;
+                        }
                     })
                 .WithParsed<PocketExtrasOptions>(o =>
                     {
                         verb = "pocket-extras";
                         CLI_MODE = true;
-                        path = o.InstallPath;
-                        pocket_extras = o.Name;
-                    })
-                .WithNotParsed(e =>
-                    {
-                        if (e.IsHelp())
+                        pocket_extras_name = o.Name;
+                        pocket_extras_list = o.List;
+                        pocket_extras_info = o.Info;
+
+                        if (!string.IsNullOrEmpty(o.InstallPath))
                         {
-                            Console.WriteLine(HELP_TEXT);
+                            path = o.InstallPath;
+                        }
+                    })
+                .WithNotParsed(errors =>
+                    {
+                        foreach (var error in errors)
+                        {
+                            switch (error)
+                            {
+                                case MissingRequiredOptionError mro:
+                                    Console.WriteLine($"Missing required parameter: -{mro.NameInfo.ShortName} or --{mro.NameInfo.LongName}.");
+                                    break;
+
+                                case HelpRequestedError:
+                                case HelpVerbRequestedError:
+                                    Console.WriteLine(HELP_TEXT);
+                                    break;
+
+                                case VersionRequestedError:
+                                    Console.WriteLine("Pupdate v" + VERSION);
+                                    break;
+                            }
                         }
 
                         Environment.Exit(1);
@@ -204,6 +239,7 @@ internal partial class Program
 
             await GlobalHelper.Initialize(path);
             GlobalHelper.PocketExtrasService.StatusUpdated += coreUpdater_StatusUpdated;
+            GlobalHelper.PocketExtrasService.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
 
             if (!CLI_MODE)
             {
@@ -408,16 +444,41 @@ internal partial class Program
                     break;
 
                 case "pocket-extras":
-                    var pocketExtra = GlobalHelper.GetPocketExtra(pocket_extras);
-
-                    if (pocketExtra != null)
+                    if (pocket_extras_list)
                     {
-                        await GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, path, true, true);
+                        Console.WriteLine();
+
+                        foreach (var extra in GlobalHelper.PocketExtras)
+                        {
+                            PrintPocketExtraInfo(extra);
+                        }
+                    }
+                    else if (!string.IsNullOrEmpty(pocket_extras_name))
+                    {
+                        var extra = GlobalHelper.GetPocketExtra(pocket_extras_name);
+
+                        if (extra != null)
+                        {
+                            if (pocket_extras_info)
+                            {
+                                Console.WriteLine();
+                                PrintPocketExtraInfo(extra);
+                            }
+                            else
+                            {
+                                await GlobalHelper.PocketExtrasService.GetPocketExtra(extra, path, true, true);
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Pocket Extra '{pocket_extras_name}' not found.");
+                        }
                     }
                     else
                     {
-                        Console.WriteLine($"Pocket Extra '{pocket_extras}' not found.");
+                        Console.WriteLine($"Missing required parameter: -n or --name");
                     }
+
                     break;
 
                 default:
@@ -431,6 +492,23 @@ internal partial class Program
             Console.WriteLine(e);
             Pause();
         }
+    }
+
+    private static void PrintPocketExtraInfo(PocketExtra extra)
+    {
+        Console.WriteLine(extra.id);
+        Console.WriteLine(string.IsNullOrEmpty(extra.name)
+            ? $"  {extra.core_identifiers[0]}"
+            : $"  {extra.name}");
+        Console.WriteLine(Util.WordWrap(extra.description, 80, "    "));
+        Console.WriteLine($"    More info: https://github.com/{extra.github_user}/{extra.github_repository}");
+
+        foreach (var additionalLink in extra.additional_links)
+        {
+            Console.WriteLine($"                {additionalLink}");
+        }
+
+        Console.WriteLine();
     }
 
     private static void coreUpdater_StatusUpdated(object sender, StatusUpdatedEventArgs e)

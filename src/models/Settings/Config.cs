@@ -18,6 +18,7 @@ public class Config
     public bool skip_alternative_assets { get; set; } = true;
     public bool backup_saves { get; set; }
     public string backup_saves_location { get; set; } = "Backups";
+    public bool show_menu_descriptions { get; set; } = true;
     public bool use_custom_archive { get; set; } = false;
 
     public Dictionary<string, string> custom_archive { get; set; } = new()

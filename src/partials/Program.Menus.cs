@@ -1,6 +1,8 @@
+using System.Text;
 using ConsoleTools;
 using Pannella.Helpers;
 using Pannella.Models;
+using Pannella.Models.Extras;
 using Pannella.Models.Settings;
 using Pannella.Services;
 
@@ -57,6 +59,44 @@ internal partial class Program
                 coreUpdater.ForceDisplayModes();
                 Pause();
             })
+            .Add("Apply 8:7 Aspect Ratio to Super GameBoy cores", () =>
+            {
+                var results = ShowCoresMenu(
+                    GlobalHelper.InstalledCores.Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
+                    "Which Super GameBoy cores would you like to change to the 8:7 aspect ratio?\n",
+                    false);
+
+                foreach (var item in results.Where(x => x.Value))
+                {
+                    var core = GlobalHelper.InstalledCores.First(c => c.identifier == item.Key);
+
+                    Console.WriteLine($"Updating '{core.identifier}'...");
+                    core.ChangeAspectRatio(4, 3, 8, 7);
+                    Console.WriteLine("Complete.");
+                    Console.WriteLine();
+                }
+
+                Pause();
+            })
+            .Add("Restore 4:3 Aspect Ratio to Super GameBoy cores", () =>
+            {
+                var results = ShowCoresMenu(
+                    GlobalHelper.InstalledCores.Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
+                    "Which Super GameBoy cores would you like to change to the 8:7 aspect ratio?\n",
+                    false);
+
+                foreach (var item in results.Where(x => x.Value))
+                {
+                    var core = GlobalHelper.InstalledCores.First(c => c.identifier == item.Key);
+
+                    Console.WriteLine($"Updating '{core.identifier}'...");
+                    core.ChangeAspectRatio(8, 7, 4, 3);
+                    Console.WriteLine("Complete.");
+                    Console.WriteLine();
+                }
+
+                Pause();
+            })
             .Add("Go Back", ConsoleMenu.Close);
 
         var pocketMaintenanceMenu = new ConsoleMenu()
@@ -87,7 +127,7 @@ internal partial class Program
                     "Which cores would you like to uninstall?",
                     false);
 
-                bool nuke = AskAboutCoreSpecificAssets();
+                bool nuke = AskYesNoQuestion("Would you like to remove the core specific assets for the selected cores?");
 
                 foreach (var item in results.Where(x => x.Value))
                 {
@@ -98,22 +138,61 @@ internal partial class Program
             })
             .Add("Go Back", ConsoleMenu.Close);
 
-        var pocketExtrasMenu = new ConsoleMenu().Configure(menuConfig);
+        var additionalAssetsMenu = new ConsoleMenu().Configure(menuConfig);
+        var combinationPlatformsMenu = new ConsoleMenu().Configure(menuConfig);
+        var variantCoresMenu = new ConsoleMenu().Configure(menuConfig);
+        var pocketExtrasMenu = new ConsoleMenu()
+            .Configure(menuConfig)
+            .Add("Additional Assets     >", additionalAssetsMenu.Show)
+            .Add("Combination Platforms >", combinationPlatformsMenu.Show)
+            .Add("Variant Cores         >", variantCoresMenu.Show)
+            .Add("Go Back", ConsoleMenu.Close);
 
         foreach (var pocketExtra in GlobalHelper.PocketExtras)
         {
-            string name = string.IsNullOrWhiteSpace(pocketExtra.name)
+            var name = string.IsNullOrWhiteSpace(pocketExtra.name)
                 ? $"Download extras for {pocketExtra.core_identifiers[0]}"
                 : $"Download {pocketExtra.name}";
 
-            pocketExtrasMenu.Add(name, async _ =>
+            var consoleMenu = pocketExtra.type switch
             {
-                await GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, path, true, true);
-                Pause();
+                PocketExtraType.additional_assets => additionalAssetsMenu,
+                PocketExtraType.combination_platform => combinationPlatformsMenu,
+                PocketExtraType.variant_core => variantCoresMenu,
+                _ => pocketExtrasMenu
+            };
+
+            consoleMenu.Add(name, async _ =>
+            {
+                bool result = true;
+
+                if (GlobalHelper.SettingsManager.GetConfig().show_menu_descriptions &&
+                    !string.IsNullOrEmpty(pocketExtra.description))
+                {
+                    Console.WriteLine(Util.WordWrap(pocketExtra.description, 80));
+                    Console.WriteLine($"More info: https://github.com/{pocketExtra.github_user}/{pocketExtra.github_repository}");
+
+                    foreach (var additionalLink in pocketExtra.additional_links)
+                    {
+                        Console.WriteLine($"           {additionalLink}");
+                    }
+
+                    Console.WriteLine();
+
+                    result = AskYesNoQuestion("Would you like to install this?");
+                }
+
+                if (result)
+                {
+                    await GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, path, true, true);
+                    Pause();
+                }
             });
         }
 
-        pocketExtrasMenu.Add("Go Back", ConsoleMenu.Close);
+        additionalAssetsMenu.Add("Go Back", ConsoleMenu.Close);
+        combinationPlatformsMenu.Add("Go Back", ConsoleMenu.Close);
+        variantCoresMenu.Add("Go Back", ConsoleMenu.Close);
 
         var menu = new ConsoleMenu()
             .Configure(menuConfig)
@@ -188,9 +267,9 @@ internal partial class Program
         }
     }
 
-    private static bool AskAboutCoreSpecificAssets()
+    private static bool AskYesNoQuestion(string question)
     {
-        Console.WriteLine("Would you like to remove the core specific assets for the selected cores? [Y]es, [N]o");
+        Console.WriteLine($"{question} [Y]es, [N]o");
 
         bool? result = null;
 
@@ -330,7 +409,8 @@ internal partial class Program
             { "preserve_platforms_folder", "Preserve 'Platforms' folder during 'Update All'" },
             { "skip_alternative_assets", "Skip alternative roms when downloading assets" },
             { "backup_saves", "Compress and backup Saves and Memories directories during 'Update All'" },
-            { "use_custom_archive", "Use custom asset archive" }
+            { "show_menu_descriptions", "Show descriptions for advanced menu items" },
+            { "use_custom_archive", "Use custom asset archive" },
         };
 
         var type = typeof(Config);
