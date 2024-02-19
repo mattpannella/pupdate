@@ -17,14 +17,11 @@ internal partial class Program
         {
             string path = null;
             bool preservePlatformsFolder = false;
-            bool forceUpdate = false;
-            bool forceInstanceGenerator = false;
             string downloadAssets = null;
             string coreName = null;
             string imagePackOwner = null;
             string imagePackRepo = null;
             string imagePackVariant = null;
-            bool downloadFirmware = false;
             bool selfUpdate = false;
             bool nuke = false;
             bool cleanInstall = false;
@@ -46,21 +43,15 @@ internal partial class Program
                     UpdateSelfOptions, UninstallOptions, BackupSavesOptions, GameBoyPalettesOptions,
                     PocketLibraryImagesOptions, PocketExtrasOptions>(args)
                 .WithParsed<UpdateSelfOptions>(_ => { selfUpdate = true; })
-                .WithParsed<FundOptions>(o =>
+                .WithParsed<FundOptions>(fundOptions =>
                 {
-                    verb = "fund";
-                    data.Add("core", null);
-
-                    if (!string.IsNullOrEmpty(o.Core))
-                    {
-                        data["core"] = o.Core;
-                    }
+                    Funding(fundOptions.Core);
+                    Environment.Exit(1);
                 })
                 .WithParsed<UpdateOptions>(o =>
                 {
                     verb = "update";
                     CLI_MODE = true;
-                    forceUpdate = true;
                     path = o.InstallPath;
 
                     if (o.PreservePlatformsFolder)
@@ -106,7 +97,6 @@ internal partial class Program
                 {
                     verb = "firmware";
                     CLI_MODE = true;
-                    downloadFirmware = true;
                     path = o.InstallPath;
                 })
                 .WithParsed<ImagesOptions>(o =>
@@ -126,7 +116,6 @@ internal partial class Program
                 {
                     verb = "instance-generator";
                     CLI_MODE = true;
-                    forceInstanceGenerator = true;
                     path = o.InstallPath;
                 })
                 .WithParsed<MenuOptions>(o =>
@@ -203,44 +192,7 @@ internal partial class Program
             {
                 Console.WriteLine("Pupdate v" + VERSION);
                 Console.WriteLine("Checking for updates...");
-
-                if (await CheckVersion(path) && !selfUpdate)
-                {
-                    ConsoleKey[] acceptedInputs = { ConsoleKey.I, ConsoleKey.C, ConsoleKey.Q };
-                    ConsoleKey response;
-
-                    do
-                    {
-                        Console.Write(SYSTEM_OS_PLATFORM is "win" or "linux" or "mac"
-                            ? "Would you like to [i]nstall the update, [c]ontinue with the current version, or [q]uit? [i/c/q]: "
-                            : "Update downloaded. Would you like to [c]ontinue with the current version, or [q]uit? [c/q]: ");
-
-                        response = Console.ReadKey(true).Key;
-                        Console.WriteLine();
-                    }
-                    while (!acceptedInputs.Contains(response));
-
-                    switch (response)
-                    {
-                        case ConsoleKey.I:
-                            int result = UpdateSelfAndRun(path, args);
-                            Environment.Exit(result);
-                            break;
-
-                        case ConsoleKey.C:
-                            break;
-
-                        case ConsoleKey.Q:
-                            Console.WriteLine("Come again soon!");
-                            PauseExit();
-                            break;
-                    }
-                }
-
-                if (selfUpdate)
-                {
-                    Environment.Exit(0);
-                }
+                await CheckForUpdates(path, selfUpdate, args);
             }
 
             await GlobalHelper.Initialize(path);
@@ -248,14 +200,6 @@ internal partial class Program
             GlobalHelper.PocketExtrasService.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
 
             PocketCoreUpdater coreUpdater = new PocketCoreUpdater();
-
-            switch (verb)
-            {
-                case "fund":
-                    Funding((string)data["core"]);
-                    Environment.Exit(1);
-                    break;
-            }
 
             // how should the logic work here? what takes priority, the command line parameter or the config setting?
             // currently this well preserve the platforms folder if either is set to true
@@ -274,98 +218,43 @@ internal partial class Program
                 GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
 
             // If we have any missing cores, handle them.
-            if (GlobalHelper.SettingsManager.GetMissingCores().Any())
+            CheckForMissingCores(CLI_MODE);
+
+            switch (verb)
             {
-                Console.WriteLine("\nNew cores found since the last run.");
-                AskAboutNewCores();
+                case "update":
+                    Console.WriteLine("Starting update process...");
+                    await coreUpdater.RunUpdates(coreName, cleanInstall);
+                    Pause();
+                    break;
 
-                string downloadNewCores = GlobalHelper.SettingsManager.GetConfig().download_new_cores?.ToLowerInvariant();
+                case "firmware":
+                    await coreUpdater.UpdateFirmware();
+                    break;
 
-                switch (downloadNewCores)
-                {
-                    case "yes":
-                        Console.WriteLine("The following cores have been enabled:");
+                case "instance-generator":
+                    RunInstanceGenerator(coreUpdater, true);
+                    break;
 
-                        foreach (Core core in GlobalHelper.SettingsManager.GetMissingCores())
-                        {
-                            Console.WriteLine($"- {core.identifier}");
-                        }
+                case "images":
+                    ImagePack pack = new ImagePack
+                    {
+                        owner = imagePackOwner,
+                        repository = imagePackRepo,
+                        variant = imagePackVariant
+                    };
 
-                        GlobalHelper.SettingsManager.EnableMissingCores(GlobalHelper.SettingsManager.GetMissingCores());
-                        GlobalHelper.SettingsManager.SaveSettings();
-                        break;
+                    await pack.Install(path);
+                    break;
 
-                    case "no":
-                        Console.WriteLine("The following cores have been disabled:");
+                case "assets":
+                    if (downloadAssets == "all")
+                        await coreUpdater.RunAssetDownloader();
+                    else
+                        await coreUpdater.RunAssetDownloader(downloadAssets);
 
-                        foreach (Core core in GlobalHelper.SettingsManager.GetMissingCores())
-                        {
-                            Console.WriteLine($"- {core.identifier}");
-                        }
+                    break;
 
-                        GlobalHelper.SettingsManager.DisableMissingCores(GlobalHelper.SettingsManager.GetMissingCores());
-                        GlobalHelper.SettingsManager.SaveSettings();
-                        break;
-
-                    default:
-                        var newOnes = GlobalHelper.SettingsManager.GetMissingCores();
-
-                        GlobalHelper.SettingsManager.EnableMissingCores(newOnes);
-
-                        if (CLI_MODE)
-                        {
-                            GlobalHelper.SettingsManager.SaveSettings();
-                        }
-                        else
-                        {
-                            RunCoreSelector(newOnes, "New cores are available!");
-                        }
-
-                        break;
-                }
-
-                // Is reloading the settings file necessary?
-                GlobalHelper.ReloadSettings();
-            }
-
-            if (forceUpdate)
-            {
-                Console.WriteLine("Starting update process...");
-                await coreUpdater.RunUpdates(coreName, cleanInstall);
-                Pause();
-            }
-            else if (downloadFirmware)
-            {
-                await coreUpdater.UpdateFirmware();
-            }
-            else if (forceInstanceGenerator)
-            {
-                RunInstanceGenerator(coreUpdater, true);
-            }
-            else if (downloadAssets != null)
-            {
-                if (downloadAssets == "all")
-                {
-                    await coreUpdater.RunAssetDownloader();
-                }
-                else
-                {
-                    await coreUpdater.RunAssetDownloader(downloadAssets);
-                }
-            }
-            else if (imagePackOwner != null)
-            {
-                ImagePack pack = new ImagePack
-                {
-                    owner = imagePackOwner,
-                    repository = imagePackRepo,
-                    variant = imagePackVariant
-                };
-
-                await pack.Install(path);
-            }
-            else switch (verb)
-            {
                 case "uninstall" when GlobalHelper.GetCore(coreName) == null:
                     Console.WriteLine($"Unknown core '{coreName}'");
                     break;
@@ -375,7 +264,6 @@ internal partial class Program
                     break;
 
                 case "backup-saves":
-                {
                     AssetsService.BackupSaves(path, backupSaves_Path);
                     AssetsService.BackupMemories(path, backupSaves_Path);
 
@@ -390,7 +278,6 @@ internal partial class Program
                     }
 
                     break;
-                }
 
                 case "gameboy-palettes":
                     await DownloadGameBoyPalettes(path);
