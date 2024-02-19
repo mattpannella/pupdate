@@ -42,7 +42,7 @@ internal partial class Program
 
             Parser parser = new Parser(config => config.HelpWriter = null);
 
-            parser.ParseArguments<MenuOptions, FundOptions, UpdateOptions,
+            var parserResult = parser.ParseArguments<MenuOptions, FundOptions, UpdateOptions,
                     AssetsOptions, FirmwareOptions, ImagesOptions, InstanceGeneratorOptions,
                     UpdateSelfOptions, UninstallOptions, BackupSavesOptions, GameBoyPalettesOptions,
                     PocketLibraryImagesOptions, PocketExtrasOptions>(args)
@@ -211,11 +211,25 @@ internal partial class Program
                             path = o.InstallPath;
                         }
                     })
-                .WithNotParsed(e =>
+                .WithNotParsed(errors =>
                     {
-                        if (e.IsHelp())
+                        foreach (var error in errors)
                         {
-                            Console.WriteLine(HELP_TEXT);
+                            switch (error)
+                            {
+                                case MissingRequiredOptionError mro:
+                                    Console.WriteLine($"Missing required parameter: -{mro.NameInfo.ShortName} or --{mro.NameInfo.LongName}.");
+                                    break;
+
+                                case HelpRequestedError:
+                                case HelpVerbRequestedError:
+                                    Console.WriteLine(HELP_TEXT);
+                                    break;
+
+                                case VersionRequestedError:
+                                    Console.WriteLine("Pupdate v" + VERSION);
+                                    break;
+                            }
                         }
 
                         Environment.Exit(1);
@@ -462,7 +476,7 @@ internal partial class Program
                     }
                     else
                     {
-                        Console.WriteLine("Missing Pocket Extra name. -n or --name is required.");
+                        Console.WriteLine($"Missing required parameter: -n or --name");
                     }
 
                     break;
