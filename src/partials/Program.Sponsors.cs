@@ -32,33 +32,34 @@ internal partial class Program
     {
         if (GlobalHelper.InstalledCores.Count == 0)
         {
+            Console.WriteLine("You must install cores to see their funding information.");
             return;
         }
 
-        List<Core> cores = new List<Core>();
+        List<Core> cores;
 
-        if (identifier == null)
+        if (string.IsNullOrEmpty(identifier))
         {
             cores = GlobalHelper.InstalledCores;
         }
         else
         {
-            var c = GlobalHelper.GetCore(identifier);
+            cores = new List<Core>();
 
-            if (c != null && c.IsInstalled())
+            var core = GlobalHelper.GetInstalledCore(identifier);
+
+            if (core != null)
             {
-                cores.Add(c);
+                cores.Add(core);
             }
         }
 
-        foreach (Core core in cores)
+        Console.WriteLine();
+
+        foreach (var core in cores.Where(core => core.sponsor != null))
         {
-            if (core.sponsor != null)
-            {
-                Console.WriteLine();
-                Console.WriteLine($"{core.identifier}:");
-                Console.WriteLine(core.sponsor);
-            }
+            Console.WriteLine($"{core.identifier}:");
+            Console.WriteLine(core.sponsor.ToString("    "));
         }
     }
 }

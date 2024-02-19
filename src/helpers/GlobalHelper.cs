@@ -146,6 +146,11 @@ public static class GlobalHelper
         return Cores.Find(i => i.identifier == identifier);
     }
 
+    public static Core GetInstalledCore(string identifier)
+    {
+        return InstalledCores.Find(i => i.identifier == identifier);
+    }
+
     public static PocketExtra GetPocketExtra(string idOrCoreName)
     {
         return PocketExtras.Find(e => e.id == idOrCoreName || e.core_identifiers.Any(i => i == idOrCoreName));

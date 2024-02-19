@@ -66,11 +66,12 @@ internal partial class Program
         if (sleepSupported.Any())
         {
             string list = string.Join(", ", sleepSupported);
+            string wrapped = Util.WordWrap(list, 75, "    ");
 
-            Console.WriteLine();
+            // Console.WriteLine();
             Console.WriteLine("Fun fact! The ONLY cores that support save states and sleep are the following:");
-            Console.WriteLine(list);
-            Console.WriteLine("Please don't bother the developers of the other cores about this feature. It's a lot of work and most likely will not be coming.");
+            Console.WriteLine(wrapped);
+            Console.WriteLine("Please don't bother the developers of the other cores about this feature. It's a lot\nof work and most likely will not be coming.");
         }
     }
 

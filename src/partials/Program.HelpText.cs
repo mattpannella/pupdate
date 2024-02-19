@@ -9,6 +9,7 @@ internal partial class Program
     -s, --skip-update         Go straight to the menu, without looking for an update
 
   fund                     List sponsor links. Lists all if no core is provided
+    -p, --path                Absolute path to install location
     -c, --core                The core to check funding links for
     
   update                   Run update all. (Can be configured via the settings menu)

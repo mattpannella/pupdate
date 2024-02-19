@@ -45,8 +45,7 @@ internal partial class Program
                 .WithParsed<UpdateSelfOptions>(_ => { selfUpdate = true; })
                 .WithParsed<FundOptions>(fundOptions =>
                 {
-                    Funding(fundOptions.Core);
-                    Environment.Exit(1);
+                    path = fundOptions.InstallPath;
                 })
                 .WithParsed<UpdateOptions>(o =>
                 {
@@ -188,16 +187,22 @@ internal partial class Program
 
             #endregion
 
-            if (!CLI_MODE)
-            {
-                Console.WriteLine("Pupdate v" + VERSION);
-                Console.WriteLine("Checking for updates...");
-                await CheckForUpdates(path, selfUpdate, args);
-            }
-
             await GlobalHelper.Initialize(path);
             GlobalHelper.PocketExtrasService.StatusUpdated += coreUpdater_StatusUpdated;
             GlobalHelper.PocketExtrasService.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
+
+            switch (parserResult.Value)
+            {
+                case MenuOptions:
+                case UpdateSelfOptions:
+                    await CheckForUpdates(path, selfUpdate, args);
+                    break;
+
+                case FundOptions fundOptions:
+                    Funding(fundOptions.Core);
+                    Environment.Exit(1);
+                    break;
+            }
 
             PocketCoreUpdater coreUpdater = new PocketCoreUpdater();
 
@@ -427,7 +432,10 @@ internal partial class Program
             var links = GetRandomSponsorLinks();
 
             if (!string.IsNullOrEmpty(links))
+            {
+                Console.WriteLine();
                 Console.WriteLine(links);
+            }
 
             FunFacts();
         }
