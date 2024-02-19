@@ -18,7 +18,7 @@ internal partial class Program
         int i = random.Next(0, WELCOME_MESSAGES.Length);
         string welcome = WELCOME_MESSAGES[i];
         int remaining = GithubApiService.GetRateLimitRemaining();
-        string rateLimitMessage = $"Remaining Github API calls: {remaining}";
+        string rateLimitMessage = $"Remaining GitHub API calls: {remaining}";
         if (remaining <= 5)
         {
             rateLimitMessage = string.Concat(rateLimitMessage, Environment.NewLine, "Consider adding a Github Token to your settings file, to avoid hitting the rate limit.");
