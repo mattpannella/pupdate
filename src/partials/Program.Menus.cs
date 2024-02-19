@@ -17,11 +17,25 @@ internal partial class Program
         Random random = new Random();
         int i = random.Next(0, WELCOME_MESSAGES.Length);
         string welcome = WELCOME_MESSAGES[i];
+        int remaining = GithubApiService.GetRateLimitRemaining();
+        string rateLimitMessage = $"Remaining Github API calls: {remaining}";
+        if (remaining <= 5)
+        {
+            rateLimitMessage = string.Concat(rateLimitMessage, Environment.NewLine, "Consider adding a Github Token to your settings file, to avoid hitting the rate limit.");
+        }
+
 
         var menuConfig = new MenuConfig
         {
             Selector = "=>",
-            Title = $"{welcome}\r\n{GetRandomSponsorLinks()}\r\n",
+            Title = string.Concat(
+                        welcome,
+                        Environment.NewLine,
+                        GetRandomSponsorLinks(),
+                        Environment.NewLine,
+                        Environment.NewLine,
+                        rateLimitMessage, 
+                        Environment.NewLine),
             EnableWriteTitle = true,
             WriteHeaderAction = () => Console.WriteLine("Choose your destiny:"),
             SelectedItemBackgroundColor = Console.ForegroundColor,
