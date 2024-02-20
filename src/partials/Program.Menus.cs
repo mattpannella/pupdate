@@ -1,4 +1,3 @@
-using System.Text;
 using ConsoleTools;
 using Pannella.Helpers;
 using Pannella.Models;
@@ -19,11 +18,12 @@ internal partial class Program
         string welcome = WELCOME_MESSAGES[i];
         int remaining = GithubApiService.GetRateLimitRemaining();
         string rateLimitMessage = $"Remaining GitHub API calls: {remaining}";
+
         if (remaining <= 5)
         {
-            rateLimitMessage = string.Concat(rateLimitMessage, Environment.NewLine, "Consider adding a Github Token to your settings file, to avoid hitting the rate limit.");
+            rateLimitMessage = string.Concat(rateLimitMessage, Environment.NewLine,
+                "Consider adding a Github Token to your settings file, to avoid hitting the rate limit.");
         }
-
 
         var menuConfig = new MenuConfig
         {
@@ -247,12 +247,15 @@ internal partial class Program
             {
                 SettingsMenu();
 
-                coreUpdater.DeleteSkippedCores(GlobalHelper.SettingsManager.GetConfig().delete_skipped_cores);
-                coreUpdater.DownloadFirmware(GlobalHelper.SettingsManager.GetConfig().download_firmware);
-                coreUpdater.DownloadAssets(GlobalHelper.SettingsManager.GetConfig().download_assets);
-                coreUpdater.RenameJotegoCores(GlobalHelper.SettingsManager.GetConfig().fix_jt_names);
-                coreUpdater.BackupSaves(GlobalHelper.SettingsManager.GetConfig().backup_saves,
-                    GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
+                coreUpdater.UpdateSettings(
+                    GlobalHelper.SettingsManager.GetConfig().fix_jt_names,
+                    GlobalHelper.SettingsManager.GetConfig().download_assets,
+                    null, // Should this be updated if the setting is changed?
+                    GlobalHelper.SettingsManager.GetConfig().download_firmware,
+                    GlobalHelper.SettingsManager.GetConfig().backup_saves,
+                    GlobalHelper.SettingsManager.GetConfig().backup_saves_location,
+                    GlobalHelper.SettingsManager.GetConfig().delete_skipped_cores);
+
                 // Is reloading the settings file necessary?
                 GlobalHelper.ReloadSettings();
             })

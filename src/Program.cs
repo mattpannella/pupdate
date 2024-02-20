@@ -90,21 +90,17 @@ internal partial class Program
             // If not, auto enable them.
             CheckForMissingCores(enableMissingCores);
 
-            PocketCoreUpdater coreUpdater = new PocketCoreUpdater();
+            PocketCoreUpdater coreUpdater = new PocketCoreUpdater(
+                GlobalHelper.SettingsManager.GetConfig().fix_jt_names,
+                GlobalHelper.SettingsManager.GetConfig().download_assets,
+                GlobalHelper.SettingsManager.GetConfig().preserve_platforms_folder,
+                GlobalHelper.SettingsManager.GetConfig().download_firmware,
+                GlobalHelper.SettingsManager.GetConfig().backup_saves,
+                GlobalHelper.SettingsManager.GetConfig().backup_saves_location,
+                GlobalHelper.SettingsManager.GetConfig().delete_skipped_cores);
 
-            if (GlobalHelper.SettingsManager.GetConfig().preserve_platforms_folder)
-            {
-                coreUpdater.PreservePlatformsFolder(true);
-            }
-
-            coreUpdater.DeleteSkippedCores(GlobalHelper.SettingsManager.GetConfig().delete_skipped_cores);
-            coreUpdater.DownloadFirmware(GlobalHelper.SettingsManager.GetConfig().download_firmware);
-            coreUpdater.RenameJotegoCores(GlobalHelper.SettingsManager.GetConfig().fix_jt_names);
             coreUpdater.StatusUpdated += coreUpdater_StatusUpdated;
             coreUpdater.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
-            coreUpdater.DownloadAssets(GlobalHelper.SettingsManager.GetConfig().download_assets);
-            coreUpdater.BackupSaves(GlobalHelper.SettingsManager.GetConfig().backup_saves,
-                GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
 
             switch (parserResult.Value)
             {

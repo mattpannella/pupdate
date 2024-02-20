@@ -26,80 +26,57 @@ public class PocketCoreUpdater : Base
     private string _backupSavesLocation;
     private Dictionary<string, string> _platformFiles = new();
 
-    public PocketCoreUpdater()
+    public PocketCoreUpdater(
+        bool? renameJotegoCores = null,
+        bool? downloadAssets = null,
+        bool? preservePlatformsFolder = null,
+        bool? downloadFirmware = null,
+        bool? backupSaves = null,
+        string backupSavesLocation = null,
+        bool? deleteSkippedCores = null)
     {
         Directory.CreateDirectory(Path.Combine(GlobalHelper.UpdateDirectory, "Cores"));
-        this.RefreshStatusUpdater();
-    }
 
-    public void RefreshStatusUpdater()
-    {
         foreach (Core core in GlobalHelper.Cores)
         {
             core.ClearStatusUpdated();
             core.StatusUpdated += updater_StatusUpdated; // attach handler to bubble event up
         }
+
+        this.UpdateSettings(renameJotegoCores, downloadAssets, preservePlatformsFolder, downloadFirmware, backupSaves,
+            backupSavesLocation, deleteSkippedCores);
     }
 
-    #region Settings
-
-    /// <summary>
-    /// Turn on/off renaming the Jotego cores
-    /// </summary>
-    /// <param name="set">Set to true to rename the Jotego cores</param>
-    public void RenameJotegoCores(bool set)
+    public void UpdateSettings(
+        bool? renameJotegoCores = null,
+        bool? downloadAssets = null,
+        bool? preservePlatformsFolder = null,
+        bool? downloadFirmware = null,
+        bool? backupSaves = null,
+        string backupSavesLocation = null,
+        bool? deleteSkippedCores = null)
     {
-        _renameJotegoCores = set;
-    }
+        if (renameJotegoCores.HasValue)
+            _renameJotegoCores = renameJotegoCores.Value;
 
-    /// <summary>
-    /// Turn on/off the automatic BIOS downloader
-    /// </summary>
-    /// <param name="set">Set to true to enable automatic BIOS downloading</param>
-    public void DownloadAssets(bool set)
-    {
-        _downloadAssets = set;
-    }
+        if (downloadAssets.HasValue)
+            _downloadAssets = downloadAssets.Value;
 
-    /// <summary>
-    /// Turn on/off preserving customizations to /Platforms
-    /// </summary>
-    /// <param name="set">Set to true to enable preserving custom /Platforms changes</param>
-    public void PreservePlatformsFolder(bool set)
-    {
-        _preservePlatformsFolder = set;
-    }
+        if (preservePlatformsFolder.HasValue)
+            _preservePlatformsFolder = preservePlatformsFolder.Value;
 
-    /// <summary>
-    /// Turn on/off downloading the Analogue Pocket firmware
-    /// </summary>
-    /// <param name="set">Set to true to download the latest Analogue Pocket firmware</param>
-    public void DownloadFirmware(bool set)
-    {
-        _downloadFirmware = set;
-    }
+        if (downloadFirmware.HasValue)
+            _downloadFirmware = downloadFirmware.Value;
 
-    /// <summary>
-    /// Turn on/off compressing and backing up the /Saves directory
-    /// </summary>
-    /// <param name="set">Set to true to compress and backup the /Saves directory</param>
-    /// <param name="location">The absolute path to the backup location</param>
-    public void BackupSaves(bool set, string location)
-    {
-        _backupSaves = set;
-        _backupSavesLocation = location;
-    }
+        if (backupSaves.HasValue)
+            _backupSaves = backupSaves.Value;
 
-    /// <summary>
-    /// Turn on/off the deletion of skipped cores
-    /// </summary>
-    /// <param name="set">Set to true to delete the skipped cores</param>
-    public void DeleteSkippedCores(bool set)
-    {
-        _deleteSkippedCores = set;
-    }
+        if (backupSavesLocation != null)
+            _backupSavesLocation = backupSavesLocation;
 
-    #endregion
+        if (deleteSkippedCores.HasValue)
+            _deleteSkippedCores = deleteSkippedCores.Value;
+    }
 
     public void BuildInstanceJson(bool overwrite = false, string coreName = null)
     {
