@@ -15,7 +15,9 @@ public static class ImagePacksService
 #if DEBUG
         string json = await File.ReadAllTextAsync("image_packs.json");
 #else
-        string json = await HttpHelper.Instance.GetHTML(END_POINT);
+        string json = GlobalHelper.SettingsManager.GetConfig().use_local_image_packs
+            ? await File.ReadAllTextAsync("image_packs.json")
+            : await HttpHelper.Instance.GetHTML(END_POINT);
 #endif
         ImagePack[] packs = JsonSerializer.Deserialize<ImagePack[]>(json);
 

@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Pannella.Models.Settings;
 
 public class Config
@@ -20,6 +22,15 @@ public class Config
     public string backup_saves_location { get; set; } = "Backups";
     public bool show_menu_descriptions { get; set; } = true;
     public bool use_custom_archive { get; set; } = false;
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool use_local_blacklist { get; set; } = false;
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool use_local_image_packs { get; set; } = false;
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool use_local_pocket_extras { get; set; } = false;
 
     public Dictionary<string, string> custom_archive { get; set; } = new()
     {

@@ -57,7 +57,9 @@ public static class AssetsService
 #if DEBUG
         string json = await File.ReadAllTextAsync("blacklist.json");
 #else
-        string json = await HttpHelper.Instance.GetHTML(BLACKLIST);
+        string json = GlobalHelper.SettingsManager.GetConfig().use_local_blacklist
+            ? await File.ReadAllTextAsync("blacklist.json")
+            : await HttpHelper.Instance.GetHTML(BLACKLIST);
 #endif
         string[] files = JsonSerializer.Deserialize<string[]>(json);
 

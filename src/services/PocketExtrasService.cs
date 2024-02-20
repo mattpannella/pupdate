@@ -19,7 +19,9 @@ public class PocketExtrasService : BaseService
 #if DEBUG
         string json = await File.ReadAllTextAsync("pocket_extras.json");
 #else
-        string json = await HttpHelper.Instance.GetHTML(END_POINT);
+        string json = GlobalHelper.SettingsManager.GetConfig().use_local_pocket_extras
+            ? await File.ReadAllTextAsync("pocket_extras.json")
+            : await HttpHelper.Instance.GetHTML(END_POINT);
 #endif
         PocketExtras files = JsonSerializer.Deserialize<PocketExtras>(json);
 
