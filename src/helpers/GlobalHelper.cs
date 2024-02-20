@@ -83,6 +83,8 @@ public static class GlobalHelper
     public static List<Core> InstalledCoresWithSponsors { get; private set; }
     public static List<PocketExtra> PocketExtras { get; private set; }
     public static PocketExtrasService PocketExtrasService { get; private set; }
+    public static ImagePack[] PlatformImagePacks { get; private set; }
+    public static ImagePacksService PlatformImagePacksService { get; private set; }
 
     private static bool isInitialized;
 
@@ -98,6 +100,8 @@ public static class GlobalHelper
             Blacklist = await AssetsService.GetBlacklist();
             PocketExtras = await PocketExtrasService.GetPocketExtrasList();
             PocketExtrasService = new PocketExtrasService();
+            PlatformImagePacks = await ImagePacksService.GetImagePacks();
+            PlatformImagePacksService = new ImagePacksService();
         }
     }
 

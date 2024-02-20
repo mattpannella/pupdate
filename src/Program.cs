@@ -62,6 +62,8 @@ internal partial class Program
             await GlobalHelper.Initialize(path);
             GlobalHelper.PocketExtrasService.StatusUpdated += coreUpdater_StatusUpdated;
             GlobalHelper.PocketExtrasService.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
+            GlobalHelper.PlatformImagePacksService.StatusUpdated += coreUpdater_StatusUpdated;
+            GlobalHelper.PlatformImagePacksService.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
 
             bool enableMissingCores = false;
 
@@ -119,14 +121,8 @@ internal partial class Program
                     break;
 
                 case ImagesOptions options:
-                    ImagePack pack = new ImagePack
-                    {
-                        owner = options.ImagePackOwner,
-                        repository = options.ImagePackRepo,
-                        variant = options.ImagePackVariant
-                    };
-
-                    await pack.Install(GlobalHelper.UpdateDirectory);
+                    await GlobalHelper.PlatformImagePacksService.Install(GlobalHelper.UpdateDirectory,
+                        options.ImagePackOwner, options.ImagePackRepo, options.ImagePackVariant);
                     break;
 
                 case AssetsOptions options:
