@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using Pannella.Helpers;
+using Pannella.Models.Extras;
 using Pannella.Services;
 using GithubRelease = Pannella.Models.Github.Release;
 
@@ -49,6 +50,23 @@ internal partial class Program
             Console.WriteLine(e);
             return false;
         }
+    }
+
+    private static void PrintPocketExtraInfo(PocketExtra extra)
+    {
+        Console.WriteLine(extra.id);
+        Console.WriteLine(string.IsNullOrEmpty(extra.name)
+            ? $"  {extra.core_identifiers[0]}"
+            : $"  {extra.name}");
+        Console.WriteLine(Util.WordWrap(extra.description, 80, "    "));
+        Console.WriteLine($"    More info: https://github.com/{extra.github_user}/{extra.github_repository}");
+
+        foreach (var additionalLink in extra.additional_links)
+        {
+            Console.WriteLine($"                {additionalLink}");
+        }
+
+        Console.WriteLine();
     }
 
     private static void FunFacts()
@@ -104,17 +122,7 @@ internal partial class Program
 
     private static void Pause()
     {
-        if (!CLI_MODE)
-        {
-            Console.WriteLine("Press any key to continue.");
-            Console.ReadKey(true);
-        }
-    }
-
-    private static void PauseExit(int exitCode = 0)
-    {
-        Console.WriteLine("Press any key to exit.");
-        Console.ReadKey(true); // wait for input so the console doesn't auto close in windows
-        Environment.Exit(exitCode);
+        Console.WriteLine("Press any key to continue.");
+        Console.ReadKey(true);
     }
 }

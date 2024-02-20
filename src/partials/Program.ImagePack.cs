@@ -47,21 +47,19 @@ internal partial class Program
             if (choice < packs.Length && choice >= 0)
             {
                 await packs[choice].Install(path);
-                Pause();
             }
             else if (choice == packs.Length)
             {
+                // What causes this?
             }
             else
             {
                 Console.WriteLine("You fucked up.");
-                Pause();
             }
         }
         else
         {
             Console.WriteLine("None found. Have a nice day.");
-            Pause();
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using CommandLine;
 using Pannella.Helpers;
 using Pannella.Models;
-using Pannella.Models.Extras;
 using Pannella.Options;
 using Pannella.Services;
 
@@ -9,15 +8,10 @@ namespace Pannella;
 
 internal partial class Program
 {
-    private static bool CLI_MODE;
-
     private static async Task Main(string[] args)
     {
         try
         {
-            string path = null;
-            bool selfUpdate = false;
-
             #region Command Line Arguments
 
             Parser parser = new Parser(config => config.HelpWriter = null);
@@ -26,70 +20,6 @@ internal partial class Program
                     AssetsOptions, FirmwareOptions, ImagesOptions, InstanceGeneratorOptions,
                     UpdateSelfOptions, UninstallOptions, BackupSavesOptions, GameBoyPalettesOptions,
                     PocketLibraryImagesOptions, PocketExtrasOptions>(args)
-                .WithParsed<UpdateSelfOptions>(_ => { selfUpdate = true; })
-                .WithParsed<FundOptions>(o =>
-                {
-                    path = o.InstallPath;
-                })
-                .WithParsed<UpdateOptions>(o =>
-                {
-                    CLI_MODE = true;
-                    path = o.InstallPath;
-                })
-                .WithParsed<UninstallOptions>(o =>
-                {
-                    CLI_MODE = true;
-                    path = o.InstallPath;
-                })
-                .WithParsed<AssetsOptions>(o =>
-                {
-                    CLI_MODE = true;
-                    path = o.InstallPath;
-                })
-                .WithParsed<FirmwareOptions>(o =>
-                {
-                    CLI_MODE = true;
-                    path = o.InstallPath;
-                })
-                .WithParsed<ImagesOptions>(o =>
-                {
-                    CLI_MODE = true;
-                    path = o.InstallPath;
-                })
-                .WithParsed<InstanceGeneratorOptions>(o =>
-                {
-                    CLI_MODE = true;
-                    path = o.InstallPath;
-                })
-                .WithParsed<MenuOptions>(o =>
-                {
-                    path = o.InstallPath;
-
-                    if (o.SkipUpdate)
-                    {
-                        CLI_MODE = true;
-                    }
-                })
-                .WithParsed<BackupSavesOptions>(o =>
-                {
-                    CLI_MODE = true;
-                    path = o.InstallPath;
-                })
-                .WithParsed<GameBoyPalettesOptions>(o =>
-                {
-                    CLI_MODE = true;
-                    path = o.InstallPath;
-                })
-                .WithParsed<PocketLibraryImagesOptions>(o =>
-                {
-                    CLI_MODE = true;
-                    path = o.InstallPath;
-                })
-                .WithParsed<PocketExtrasOptions>(o =>
-                {
-                    CLI_MODE = true;
-                    path = o.InstallPath;
-                })
                 .WithNotParsed(errors =>
                 {
                     foreach (var error in errors)
@@ -115,9 +45,16 @@ internal partial class Program
                     Environment.Exit(1);
                 });
 
-            if (string.IsNullOrEmpty(path))
+            string path;
+
+            if (parserResult.Value is UpdateSelfOptions ||
+                string.IsNullOrEmpty(((BaseOptions)parserResult.Value).InstallPath))
             {
                 path = Path.GetDirectoryName(Environment.ProcessPath);
+            }
+            else
+            {
+                path = ((BaseOptions)parserResult.Value).InstallPath;
             }
 
             #endregion
@@ -126,11 +63,20 @@ internal partial class Program
             GlobalHelper.PocketExtrasService.StatusUpdated += coreUpdater_StatusUpdated;
             GlobalHelper.PocketExtrasService.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
 
+            bool enableMissingCores = false;
+
             switch (parserResult.Value)
             {
-                case MenuOptions:
+                case MenuOptions options:
+                    if (!options.SkipUpdate)
+                        await CheckForUpdates(GlobalHelper.UpdateDirectory, false, args);
+                    else
+                        enableMissingCores = true;
+                    break;
+
                 case UpdateSelfOptions:
-                    await CheckForUpdates(path, selfUpdate, args);
+                    await CheckForUpdates(GlobalHelper.UpdateDirectory, true, args);
+                    // CheckForUpdates will terminate execution when necessary.
                     break;
 
                 case FundOptions options:
@@ -138,6 +84,11 @@ internal partial class Program
                     Environment.Exit(1);
                     break;
             }
+
+            // If we have any missing cores, handle them.
+            // If we're in Menu mode, show the core selector.
+            // If not, auto enable them.
+            CheckForMissingCores(enableMissingCores);
 
             PocketCoreUpdater coreUpdater = new PocketCoreUpdater();
 
@@ -154,9 +105,6 @@ internal partial class Program
             coreUpdater.DownloadAssets(GlobalHelper.SettingsManager.GetConfig().download_assets);
             coreUpdater.BackupSaves(GlobalHelper.SettingsManager.GetConfig().backup_saves,
                 GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
-
-            // If we have any missing cores, handle them.
-            CheckForMissingCores(CLI_MODE);
 
             switch (parserResult.Value)
             {
@@ -182,7 +130,7 @@ internal partial class Program
                         variant = options.ImagePackVariant
                     };
 
-                    await pack.Install(path);
+                    await pack.Install(GlobalHelper.UpdateDirectory);
                     break;
 
                 case AssetsOptions options:
@@ -203,8 +151,8 @@ internal partial class Program
                     break;
 
                 case BackupSavesOptions options:
-                    AssetsService.BackupSaves(path, options.BackupPath);
-                    AssetsService.BackupMemories(path, options.BackupPath);
+                    AssetsService.BackupSaves(GlobalHelper.UpdateDirectory, options.BackupPath);
+                    AssetsService.BackupMemories(GlobalHelper.UpdateDirectory, options.BackupPath);
 
                     if (options.Save)
                     {
@@ -219,11 +167,11 @@ internal partial class Program
                     break;
 
                 case GameBoyPalettesOptions:
-                    await DownloadGameBoyPalettes(path);
+                    await DownloadGameBoyPalettes(GlobalHelper.UpdateDirectory);
                     break;
 
                 case PocketLibraryImagesOptions:
-                    await DownloadPockLibraryImages(path);
+                    await DownloadPockLibraryImages(GlobalHelper.UpdateDirectory);
                     break;
 
                 case PocketExtrasOptions options:
@@ -249,7 +197,8 @@ internal partial class Program
                             }
                             else
                             {
-                                await GlobalHelper.PocketExtrasService.GetPocketExtra(extra, path, true, true);
+                                await GlobalHelper.PocketExtrasService.GetPocketExtra(extra, GlobalHelper.UpdateDirectory,
+                                    true, true);
                             }
                         }
                         else
@@ -265,7 +214,7 @@ internal partial class Program
                     break;
 
                 default:
-                    DisplayMenuNew(path, coreUpdater);
+                    DisplayMenuNew(GlobalHelper.UpdateDirectory, coreUpdater);
                     break;
             }
         }
@@ -279,23 +228,6 @@ internal partial class Program
 #endif
             Pause();
         }
-    }
-
-    private static void PrintPocketExtraInfo(PocketExtra extra)
-    {
-        Console.WriteLine(extra.id);
-        Console.WriteLine(string.IsNullOrEmpty(extra.name)
-            ? $"  {extra.core_identifiers[0]}"
-            : $"  {extra.name}");
-        Console.WriteLine(Util.WordWrap(extra.description, 80, "    "));
-        Console.WriteLine($"    More info: https://github.com/{extra.github_user}/{extra.github_repository}");
-
-        foreach (var additionalLink in extra.additional_links)
-        {
-            Console.WriteLine($"                {additionalLink}");
-        }
-
-        Console.WriteLine();
     }
 
     private static void coreUpdater_StatusUpdated(object sender, StatusUpdatedEventArgs e)

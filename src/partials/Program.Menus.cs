@@ -46,6 +46,7 @@ internal partial class Program
             .Add("Download Platform Image Packs", async _ =>
             {
                 await ImagePackSelector(path);
+                Pause();
             })
             .Add("Download Pocket Library Images", async _ =>
             {
