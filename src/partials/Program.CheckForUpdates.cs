@@ -35,7 +35,8 @@ internal partial class Program
 
                 case ConsoleKey.Q:
                     Console.WriteLine("Come again soon!");
-                    Pause();
+                    // Not pausing here. Do we need to?
+                    Environment.Exit(0);
                     break;
             }
         }
