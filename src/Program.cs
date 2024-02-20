@@ -16,21 +16,7 @@ internal partial class Program
         try
         {
             string path = null;
-            string downloadAssets = null;
-            string coreName = null;
-            string imagePackOwner = null;
-            string imagePackRepo = null;
-            string imagePackVariant = null;
             bool selfUpdate = false;
-            bool nuke = false;
-            bool cleanInstall = false;
-            string backupSaves_Path = null;
-            bool backupSaves_SaveConfig = false;
-            string pocket_extras_name = null;
-            bool pocket_extras_list = false;
-            bool pocket_extras_info = false;
-
-            string verb = "menu";
 
             #region Command Line Arguments
 
@@ -41,72 +27,37 @@ internal partial class Program
                     UpdateSelfOptions, UninstallOptions, BackupSavesOptions, GameBoyPalettesOptions,
                     PocketLibraryImagesOptions, PocketExtrasOptions>(args)
                 .WithParsed<UpdateSelfOptions>(_ => { selfUpdate = true; })
-                .WithParsed<FundOptions>(fundOptions =>
+                .WithParsed<FundOptions>(o =>
                 {
-                    path = fundOptions.InstallPath;
+                    path = o.InstallPath;
                 })
                 .WithParsed<UpdateOptions>(o =>
                 {
-                    verb = "update";
                     CLI_MODE = true;
                     path = o.InstallPath;
-
-                    if (o.CleanInstall)
-                    {
-                        cleanInstall = true;
-                    }
-
-                    if (!string.IsNullOrEmpty(o.CoreName))
-                    {
-                        coreName = o.CoreName;
-                    }
                 })
                 .WithParsed<UninstallOptions>(o =>
                 {
-                    verb = "uninstall";
                     CLI_MODE = true;
-                    coreName = o.CoreName;
                     path = o.InstallPath;
-
-                    if (o.DeleteAssets)
-                    {
-                        nuke = true;
-                    }
                 })
                 .WithParsed<AssetsOptions>(o =>
                 {
-                    verb = "assets";
                     CLI_MODE = true;
-                    downloadAssets = "all";
                     path = o.InstallPath;
-
-                    if (o.CoreName != null)
-                    {
-                        downloadAssets = o.CoreName;
-                    }
                 })
                 .WithParsed<FirmwareOptions>(o =>
                 {
-                    verb = "firmware";
                     CLI_MODE = true;
                     path = o.InstallPath;
                 })
                 .WithParsed<ImagesOptions>(o =>
                 {
-                    verb = "images";
                     CLI_MODE = true;
                     path = o.InstallPath;
-
-                    if (o.ImagePackOwner != null)
-                    {
-                        imagePackOwner = o.ImagePackOwner;
-                        imagePackRepo = o.ImagePackRepo;
-                        imagePackVariant = o.ImagePackVariant;
-                    }
                 })
                 .WithParsed<InstanceGeneratorOptions>(o =>
                 {
-                    verb = "instance-generator";
                     CLI_MODE = true;
                     path = o.InstallPath;
                 })
@@ -121,31 +72,22 @@ internal partial class Program
                 })
                 .WithParsed<BackupSavesOptions>(o =>
                 {
-                    verb = "backup-saves";
                     CLI_MODE = true;
-                    backupSaves_Path = o.BackupPath;
-                    backupSaves_SaveConfig = o.Save;
                     path = o.InstallPath;
                 })
                 .WithParsed<GameBoyPalettesOptions>(o =>
                 {
-                    verb = "gameboy-palettes";
                     CLI_MODE = true;
                     path = o.InstallPath;
                 })
                 .WithParsed<PocketLibraryImagesOptions>(o =>
                 {
-                    verb = "pocket-library-images";
                     CLI_MODE = true;
                     path = o.InstallPath;
                 })
                 .WithParsed<PocketExtrasOptions>(o =>
                 {
-                    verb = "pocket-extras";
                     CLI_MODE = true;
-                    pocket_extras_name = o.Name;
-                    pocket_extras_list = o.List;
-                    pocket_extras_info = o.Info;
                     path = o.InstallPath;
                 })
                 .WithNotParsed(errors =>
@@ -191,8 +133,8 @@ internal partial class Program
                     await CheckForUpdates(path, selfUpdate, args);
                     break;
 
-                case FundOptions fundOptions:
-                    Funding(fundOptions.Core);
+                case FundOptions options:
+                    Funding(options.Core);
                     Environment.Exit(1);
                     break;
             }
@@ -216,75 +158,76 @@ internal partial class Program
             // If we have any missing cores, handle them.
             CheckForMissingCores(CLI_MODE);
 
-            switch (verb)
+            switch (parserResult.Value)
             {
-                case "update":
+                case UpdateOptions options:
                     Console.WriteLine("Starting update process...");
-                    await coreUpdater.RunUpdates(coreName, cleanInstall);
+                    await coreUpdater.RunUpdates(options.CoreName, options.CleanInstall);
                     Pause();
                     break;
 
-                case "firmware":
+                case FirmwareOptions:
                     await coreUpdater.UpdateFirmware();
                     break;
 
-                case "instance-generator":
+                case InstanceGeneratorOptions:
                     RunInstanceGenerator(coreUpdater, true);
                     break;
 
-                case "images":
+                case ImagesOptions options:
                     ImagePack pack = new ImagePack
                     {
-                        owner = imagePackOwner,
-                        repository = imagePackRepo,
-                        variant = imagePackVariant
+                        owner = options.ImagePackOwner,
+                        repository = options.ImagePackRepo,
+                        variant = options.ImagePackVariant
                     };
 
                     await pack.Install(path);
                     break;
 
-                case "assets":
-                    if (downloadAssets == "all")
+                case AssetsOptions options:
+                    // can likely just use the option value without the check
+                    if (string.IsNullOrEmpty(options.CoreName))
                         await coreUpdater.RunAssetDownloader();
                     else
-                        await coreUpdater.RunAssetDownloader(downloadAssets);
+                        await coreUpdater.RunAssetDownloader(options.CoreName);
 
                     break;
 
-                case "uninstall" when GlobalHelper.GetCore(coreName) == null:
-                    Console.WriteLine($"Unknown core '{coreName}'");
+                case UninstallOptions options when GlobalHelper.GetCore(options.CoreName) == null:
+                    Console.WriteLine($"Unknown core '{options.CoreName}'");
                     break;
 
-                case "uninstall":
-                    coreUpdater.DeleteCore(GlobalHelper.GetCore(coreName), true, nuke);
+                case UninstallOptions options:
+                    coreUpdater.DeleteCore(GlobalHelper.GetCore(options.CoreName), true, options.DeleteAssets);
                     break;
 
-                case "backup-saves":
-                    AssetsService.BackupSaves(path, backupSaves_Path);
-                    AssetsService.BackupMemories(path, backupSaves_Path);
+                case BackupSavesOptions options:
+                    AssetsService.BackupSaves(path, options.BackupPath);
+                    AssetsService.BackupMemories(path, options.BackupPath);
 
-                    if (backupSaves_SaveConfig)
+                    if (options.Save)
                     {
                         var config = GlobalHelper.SettingsManager.GetConfig();
 
                         config.backup_saves = true;
-                        config.backup_saves_location = backupSaves_Path;
+                        config.backup_saves_location = options.BackupPath;
 
                         GlobalHelper.SettingsManager.SaveSettings();
                     }
 
                     break;
 
-                case "gameboy-palettes":
+                case GameBoyPalettesOptions:
                     await DownloadGameBoyPalettes(path);
                     break;
 
-                case "pocket-library-images":
+                case PocketLibraryImagesOptions:
                     await DownloadPockLibraryImages(path);
                     break;
 
-                case "pocket-extras":
-                    if (pocket_extras_list)
+                case PocketExtrasOptions options:
+                    if (options.List)
                     {
                         Console.WriteLine();
 
@@ -293,13 +236,13 @@ internal partial class Program
                             PrintPocketExtraInfo(extra);
                         }
                     }
-                    else if (!string.IsNullOrEmpty(pocket_extras_name))
+                    else if (!string.IsNullOrEmpty(options.Name))
                     {
-                        var extra = GlobalHelper.GetPocketExtra(pocket_extras_name);
+                        var extra = GlobalHelper.GetPocketExtra(options.Name);
 
                         if (extra != null)
                         {
-                            if (pocket_extras_info)
+                            if (options.Info)
                             {
                                 Console.WriteLine();
                                 PrintPocketExtraInfo(extra);
@@ -311,7 +254,7 @@ internal partial class Program
                         }
                         else
                         {
-                            Console.WriteLine($"Pocket Extra '{pocket_extras_name}' not found.");
+                            Console.WriteLine($"Pocket Extra '{options.Name}' not found.");
                         }
                     }
                     else
