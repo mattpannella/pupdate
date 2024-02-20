@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Reflection;
+using System.Text;
 
 namespace Pannella;
 
@@ -44,15 +45,28 @@ internal partial class Program
             // Execute
             Console.WriteLine($"Executing {execLocation}");
 
+            // Rebuild the arguments, quoting the values
+            // First element is always the verb, quote every element
+            //   that starts with a dash (denoting a switch)
+            StringBuilder args = new();
+
+            for (int i = 0; i < updaterArgs.Length; i++)
+            {
+                if (i != 0 && updaterArgs[i][0] != '-')
+                    args.Append($"\"{updaterArgs[i]}\" ");
+                else
+                    args.Append($"{updaterArgs[i]} ");
+            }
+
             ProcessStartInfo pInfo = new ProcessStartInfo(execLocation)
             {
-                Arguments = string.Join(' ', updaterArgs),
+                Arguments = args.ToString(),
                 UseShellExecute = false
             };
 
             Process p = Process.Start(pInfo);
 
-            p.WaitForExit();
+            p!.WaitForExit();
 
             exitCode = p.ExitCode;
         }
