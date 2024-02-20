@@ -35,10 +35,14 @@ internal partial class Program
                 Directory.Delete(extractPath, true);
                 Console.WriteLine("Complete.");
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 Console.WriteLine("Something happened while trying to install the asset files...");
-                Console.WriteLine(ex);
+#if DEBUG
+                Console.WriteLine(e);
+#else
+                Console.WriteLine(e.message);
+#endif
             }
         }
     }

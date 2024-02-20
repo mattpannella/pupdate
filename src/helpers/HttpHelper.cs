@@ -34,9 +34,9 @@ public class HttpHelper
 
             console = true;
         }
-        catch (Exception)
+        catch
         {
-            // Do Nothing.
+            // Ignore
         }
 
         using var cts = new CancellationTokenSource();

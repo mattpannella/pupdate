@@ -429,7 +429,11 @@ public class Core : Base
                 catch (Exception e)
                 {
                     WriteMessage($"Error while processing '{file}'");
+#if DEBUG
+                    WriteMessage(e.ToString());
+#else
                     WriteMessage(e.Message);
+#endif
                 }
             }
         }
@@ -540,14 +544,21 @@ public class Core : Base
             {
                 WriteMessage($"There was a problem downloading '{fileName}'");
             }
-
+#if DEBUG
+            WriteMessage(e.ToString());
+#else
+            WriteMessage(e.Message);
+#endif
             return false;
         }
         catch (Exception e)
         {
             WriteMessage($"Something went wrong with '{fileName}'");
+#if DEBUG
             WriteMessage(e.ToString());
-
+#else
+            WriteMessage(e.Message);
+#endif
             return false;
         }
 

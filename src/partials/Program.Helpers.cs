@@ -47,7 +47,11 @@ internal partial class Program
         }
         catch (HttpRequestException e)
         {
+#if DEBUG
             Console.WriteLine(e);
+#else
+            Console.WriteLine(e.Message);
+#endif
             return false;
         }
     }

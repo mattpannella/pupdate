@@ -32,7 +32,7 @@ public static class ArchiveService
 
             return result;
         }
-        catch (Exception)
+        catch
         {
             return null;
         }

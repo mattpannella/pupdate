@@ -13,19 +13,11 @@ public static class CoresService
     public static async Task<List<Core>> GetCores()
     {
         string json = await HttpHelper.Instance.GetHTML(END_POINT);
+        Dictionary<string, List<Core>> parsed = JsonSerializer.Deserialize<Dictionary<string, List<Core>>>(json);
 
-        try
+        if (parsed.TryGetValue("data", out var cores))
         {
-            Dictionary<string, List<Core>> parsed = JsonSerializer.Deserialize<Dictionary<string, List<Core>>>(json);
-
-            if (parsed.TryGetValue("data", out var cores))
-            {
-                return cores;
-            }
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
+            return cores;
         }
 
         throw new Exception("Error communicating with openFPGA Cores API");

@@ -286,7 +286,11 @@ public class PocketCoreUpdater : Base
             catch (Exception e)
             {
                 WriteMessage("Uh oh something went wrong.");
+#if DEBUG
+                WriteMessage(e.ToString());
+#else
                 WriteMessage(e.Message);
+#endif
             }
         }
 
@@ -332,10 +336,15 @@ public class PocketCoreUpdater : Base
 
             _platformFiles = platformFiles;
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            WriteMessage("Unable to retrieve archive contents. Asset download may not work.");
             _platformFiles = new Dictionary<string, string>();
+            WriteMessage("Unable to retrieve archive contents. Asset download may not work.");
+#if DEBUG
+            WriteMessage(e.ToString());
+#else
+            WriteMessage(e.Message);
+#endif
         }
     }
 
@@ -453,7 +462,11 @@ public class PocketCoreUpdater : Base
             catch (Exception e)
             {
                 WriteMessage("Uh oh something went wrong.");
+#if DEBUG
+                WriteMessage(e.ToString());
+#else
                 WriteMessage(e.Message);
+#endif
             }
         }
 
@@ -498,7 +511,11 @@ public class PocketCoreUpdater : Base
             catch (Exception e)
             {
                 WriteMessage("Uh oh something went wrong.");
+#if DEBUG
+                WriteMessage(e.ToString());
+#else
                 WriteMessage(e.Message);
+#endif
             }
         }
 

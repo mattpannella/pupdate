@@ -88,10 +88,14 @@ public class PocketExtrasService : BaseService
             Util.CopyDirectory(extractPath, path, true, true);
             WriteMessage("Complete.");
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
             WriteMessage("Something happened while trying to install the asset files...");
-            WriteMessage(ex.ToString());
+#if DEBUG
+            WriteMessage(e.ToString());
+#else
+            WriteMessage(e.Message);
+#endif
             return;
         }
 
@@ -229,10 +233,14 @@ public class PocketExtrasService : BaseService
             Directory.Delete(extractPath, true);
             WriteMessage("Complete.");
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
             WriteMessage("Something happened while trying to install the asset files...");
-            WriteMessage(ex.ToString());
+#if DEBUG
+            WriteMessage(e.ToString());
+#else
+            WriteMessage(e.Message);
+#endif
             return;
         }
 
