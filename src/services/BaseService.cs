@@ -18,6 +18,11 @@ public abstract class BaseService
         OnStatusUpdated(args);
     }
 
+    protected void Divide()
+    {
+        WriteMessage("-------------");
+    }
+
     protected void OnStatusUpdated(StatusUpdatedEventArgs e)
     {
         EventHandler<StatusUpdatedEventArgs> handler = StatusUpdated;

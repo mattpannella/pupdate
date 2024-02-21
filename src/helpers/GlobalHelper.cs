@@ -86,7 +86,7 @@ public static class GlobalHelper
 
     public static List<ImagePack> PlatformImagePacks
     {
-        get { return platformImagePacks ??= ImagePacksService.GetImagePacks().Result; }
+        get { return platformImagePacks ??= Services.PlatformImagePacksService.GetImagePacks().Result; }
     }
 
     private static List<PocketExtra> pocketExtras;
@@ -102,8 +102,9 @@ public static class GlobalHelper
     public static List<Core> InstalledCores { get; private set; }
     public static List<Core> InstalledCoresWithSponsors { get; private set; }
     public static PocketExtrasService PocketExtrasService { get; private set; }
-    public static ImagePacksService PlatformImagePacksService { get; private set; }
-    public static AnalogueFirmwareService FirmwareService { get; private set; }
+    public static PlatformImagePacksService PlatformImagePacksService { get; private set; }
+    public static FirmwareService FirmwareService { get; private set; }
+    public static CoresService CoresService { get; private set; }
 
     private static bool isInitialized;
 
@@ -117,25 +118,25 @@ public static class GlobalHelper
             SettingsManager = new SettingsManager(path);
             Cores = await CoresService.GetCores();
             RefreshLocalCores();
-            //Blacklist = await AssetsService.GetBlacklist();
-            //PocketExtras = await PocketExtrasService.GetPocketExtrasList();
             PocketExtrasService = new PocketExtrasService();
-            //PlatformImagePacks = await ImagePacksService.GetImagePacks();
-            PlatformImagePacksService = new ImagePacksService();
-            FirmwareService = new AnalogueFirmwareService();
+            PlatformImagePacksService = new PlatformImagePacksService();
+            FirmwareService = new FirmwareService();
+            CoresService = new CoresService();
 
             if (statusUpdated != null)
             {
                 PocketExtrasService.StatusUpdated += statusUpdated;
                 PlatformImagePacksService.StatusUpdated += statusUpdated;
                 FirmwareService.StatusUpdated += statusUpdated;
+                CoresService.StatusUpdated += statusUpdated;
             }
 
             if (updateProcessComplete != null)
             {
                 PocketExtrasService.UpdateProcessComplete += updateProcessComplete;
-                PlatformImagePacksService.UpdateProcessComplete += updateProcessComplete;
-                FirmwareService.UpdateProcessComplete += updateProcessComplete;
+                //PlatformImagePacksService.UpdateProcessComplete += updateProcessComplete;
+                //FirmwareService.UpdateProcessComplete += updateProcessComplete;
+                //CoresService.UpdateProcessComplete += updateProcessComplete;
             }
         }
     }

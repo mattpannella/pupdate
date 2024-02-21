@@ -481,46 +481,6 @@ public class PocketCoreUpdater : Base
         OnUpdateProcessComplete(args);
     }
 
-    public void ForceDisplayModes(string id = null)
-    {
-        if (GlobalHelper.Cores == null)
-        {
-            throw new Exception("Must initialize updater before running update process.");
-        }
-
-        foreach (var core in GlobalHelper.Cores.Where(core => id == null || core.identifier == id)
-                                               .Where(core => !GlobalHelper.SettingsManager.GetCoreSettings(core.identifier).skip))
-        {
-            core.download_assets = true;
-
-            try
-            {
-                string name = core.identifier;
-
-                if (name == null)
-                {
-                    WriteMessage("Core Name is required. Skipping.");
-                    continue;
-                }
-
-                WriteMessage("Updating " + core.identifier);
-                core.AddDisplayModes();
-                Divide();
-            }
-            catch (Exception e)
-            {
-                WriteMessage("Uh oh something went wrong.");
-#if DEBUG
-                WriteMessage(e.ToString());
-#else
-                WriteMessage(e.Message);
-#endif
-            }
-        }
-
-        WriteMessage("Finished.");
-    }
-
     private void OnUpdateProcessComplete(UpdateProcessCompleteEventArgs e)
     {
         EventHandler<UpdateProcessCompleteEventArgs> handler = UpdateProcessComplete;
@@ -544,15 +504,4 @@ public class PocketCoreUpdater : Base
     }
 
     public event EventHandler<UpdateProcessCompleteEventArgs> UpdateProcessComplete;
-}
-
-public class UpdateProcessCompleteEventArgs : EventArgs
-{
-    public string Message { get; set; }
-    public List<Dictionary<string, string>> InstalledCores { get; set; }
-    public List<string> InstalledAssets { get; set; }
-    public List<string> SkippedAssets { get; set; }
-    public string FirmwareUpdated { get; set; } = string.Empty;
-    public List<string> MissingBetaKeys { get; set; }
-    public bool SkipOutro;
 }

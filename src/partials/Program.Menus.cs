@@ -70,7 +70,7 @@ internal partial class Program
             })
             .Add("Enable All Display Modes", () =>
             {
-                coreUpdater.ForceDisplayModes();
+                GlobalHelper.CoresService.ForceDisplayModes();
                 Pause();
             })
             .Add("Apply 8:7 Aspect Ratio to Super GameBoy cores", () =>
