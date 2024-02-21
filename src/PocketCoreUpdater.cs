@@ -13,7 +13,7 @@ using GithubFile = Pannella.Models.Github.File;
 namespace Pannella;
 
 [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-public class PocketCoreUpdater : Base
+public class PocketCoreUpdater : BaseProcess
 {
     private bool _downloadAssets;
     private bool _preservePlatformsFolder;
@@ -480,15 +480,6 @@ public class PocketCoreUpdater : Base
         OnUpdateProcessComplete(args);
     }
 
-    private void OnUpdateProcessComplete(UpdateProcessCompleteEventArgs e)
-    {
-        EventHandler<UpdateProcessCompleteEventArgs> handler = UpdateProcessComplete;
-
-        handler?.Invoke(this, e);
-
-        GlobalHelper.RefreshInstalledCores();
-    }
-
     public void DeleteCore(Core core, bool force = false, bool nuke = false)
     {
         if (_deleteSkippedCores || force)
@@ -501,6 +492,4 @@ public class PocketCoreUpdater : Base
     {
         this.OnStatusUpdated(e);
     }
-
-    public event EventHandler<UpdateProcessCompleteEventArgs> UpdateProcessComplete;
 }

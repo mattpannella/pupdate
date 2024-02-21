@@ -135,9 +135,6 @@ public static class GlobalHelper
             if (updateProcessComplete != null)
             {
                 PocketExtrasService.UpdateProcessComplete += updateProcessComplete;
-                //PlatformImagePacksService.UpdateProcessComplete += updateProcessComplete;
-                //FirmwareService.UpdateProcessComplete += updateProcessComplete;
-                //CoresService.UpdateProcessComplete += updateProcessComplete;
             }
         }
     }

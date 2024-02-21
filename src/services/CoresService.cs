@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Pannella.Helpers;
+using Pannella.Models;
 using Pannella.Models.OpenFPGA_Cores_Inventory;
 
 namespace Pannella.Services;
@@ -8,7 +9,7 @@ namespace Pannella.Services;
 [UnconditionalSuppressMessage("Trimming",
     "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
     Justification = "<Pending>")]
-public class CoresService : BaseService
+public class CoresService : Base
 {
     private const string END_POINT = "https://openfpga-cores-inventory.github.io/analogue-pocket/api/v2/cores.json";
 

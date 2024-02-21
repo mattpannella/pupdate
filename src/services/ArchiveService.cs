@@ -12,7 +12,7 @@ public static class ArchiveService
 {
     private const string METADATA = "https://archive.org/metadata/{0}";
 
-    private const string DOWNLOAD = "https://archive.org/download/{0}/{1}";
+    public const string DOWNLOAD = "https://archive.org/download/{0}/{1}";
 
     public static Archive GetFiles(string archive)
     {

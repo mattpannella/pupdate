@@ -12,6 +12,7 @@ using Pannella.Models.Analogue.Video;
 using Pannella.Models.Extras;
 using Pannella.Models.InstancePackager;
 using Pannella.Models.Updater;
+using Pannella.Services;
 using AnalogueCore = Pannella.Models.Analogue.Core.Core;
 using ArchiveFile = Pannella.Models.Archive.File;
 using DataSlot = Pannella.Models.Analogue.Shared.DataSlot;
@@ -521,7 +522,7 @@ public class Core : Base
             }
             else
             {
-                url = $"{ARCHIVE_BASE_URL}/{archiveName}/{fileName}";
+                url = string.Format(ArchiveService.DOWNLOAD, archiveName, fileName);
             }
 
             int count = 0;

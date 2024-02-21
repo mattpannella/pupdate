@@ -11,7 +11,7 @@ using File = System.IO.File;
 namespace Pannella.Services;
 
 [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-public class PocketExtrasService : BaseService
+public class PocketExtrasService : BaseProcess
 {
     private const string END_POINT = "https://raw.githubusercontent.com/mattpannella/pupdate/main/pocket_extras.json";
 
@@ -112,7 +112,7 @@ public class PocketExtrasService : BaseService
             string coreIdentifier = Path.GetFileName(coreDirectory);
             Core core = GlobalHelper.GetCore(coreIdentifier);
 
-            if (!core.IsStatusUpdateRegistered())
+            if (!core.IsStatusUpdatedRegistered())
             {
                 core.StatusUpdated += this.core_StatusUpdated;
             }
