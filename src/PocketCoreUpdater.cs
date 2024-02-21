@@ -14,8 +14,6 @@ namespace Pannella;
 [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
 public class PocketCoreUpdater : Base
 {
-    private const string FIRMWARE_FILENAME_PATTERN = "pocket_firmware_*.bin";
-
     private bool _downloadAssets;
     private bool _preservePlatformsFolder;
     private bool _downloadFirmware = true;
@@ -115,7 +113,8 @@ public class PocketCoreUpdater : Base
 
         if (_downloadFirmware && id == null)
         {
-            firmwareDownloaded = await UpdateFirmware();
+            firmwareDownloaded = await GlobalHelper.FirmwareService.UpdateFirmware();
+            Divide();
         }
 
         ExtractBetaKey();
@@ -529,51 +528,6 @@ public class PocketCoreUpdater : Base
         handler?.Invoke(this, e);
 
         GlobalHelper.RefreshInstalledCores();
-    }
-
-    public async Task<string> UpdateFirmware()
-    {
-        string version = string.Empty;
-
-        WriteMessage("Checking for firmware updates...");
-
-        var details = await AnalogueFirmwareService.GetDetails();
-        string[] parts = details.download_url.Split("/");
-        string filename = parts[parts.Length - 1];
-        string filepath = Path.Combine(GlobalHelper.UpdateDirectory, filename);
-
-        if (!File.Exists(filepath) || !Util.CompareChecksum(filepath, details.md5, Util.HashTypes.MD5))
-        {
-            version = filename;
-
-            var oldFiles = Directory.GetFiles(GlobalHelper.UpdateDirectory, FIRMWARE_FILENAME_PATTERN);
-
-            WriteMessage("Firmware update found. Downloading...");
-
-            await HttpHelper.Instance.DownloadFileAsync(details.download_url, Path.Combine(GlobalHelper.UpdateDirectory, filename));
-
-            WriteMessage("Download Complete.");
-            WriteMessage(Path.Combine(GlobalHelper.UpdateDirectory, filename));
-
-            foreach (string oldFile in oldFiles)
-            {
-                if (File.Exists(oldFile) && Path.GetFileName(oldFile) != filename)
-                {
-                    WriteMessage("Deleting old firmware file...");
-                    File.Delete(oldFile);
-                }
-            }
-
-            WriteMessage("To install firmware, restart your Pocket.");
-        }
-        else
-        {
-            WriteMessage("Firmware up to date.");
-        }
-
-        Divide();
-
-        return version;
     }
 
     public void DeleteCore(Core core, bool force = false, bool nuke = false)

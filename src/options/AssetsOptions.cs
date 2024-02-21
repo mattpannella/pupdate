@@ -1,5 +1,4 @@
 using CommandLine;
-using Pannella.Models;
 
 namespace Pannella.Options;
 

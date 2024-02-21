@@ -59,11 +59,7 @@ internal partial class Program
 
             #endregion
 
-            await GlobalHelper.Initialize(path);
-            GlobalHelper.PocketExtrasService.StatusUpdated += coreUpdater_StatusUpdated;
-            GlobalHelper.PocketExtrasService.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
-            GlobalHelper.PlatformImagePacksService.StatusUpdated += coreUpdater_StatusUpdated;
-            GlobalHelper.PlatformImagePacksService.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
+            await GlobalHelper.Initialize(path, coreUpdater_StatusUpdated, coreUpdater_UpdateProcessComplete);
 
             bool enableMissingCores = false;
 
@@ -81,10 +77,13 @@ internal partial class Program
                     // CheckForUpdates will terminate execution when necessary.
                     break;
 
+                case FirmwareOptions:
+                    await GlobalHelper.FirmwareService.UpdateFirmware();
+                    return;
+
                 case FundOptions options:
                     Funding(options.Core);
-                    Environment.Exit(1);
-                    break;
+                    return;
             }
 
             // If we have any missing cores, handle them.
@@ -110,10 +109,6 @@ internal partial class Program
                     Console.WriteLine("Starting update process...");
                     await coreUpdater.RunUpdates(options.CoreName, options.CleanInstall);
                     Pause();
-                    break;
-
-                case FirmwareOptions:
-                    await coreUpdater.UpdateFirmware();
                     break;
 
                 case InstanceGeneratorOptions:

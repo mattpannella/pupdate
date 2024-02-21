@@ -75,20 +75,40 @@ public static class GlobalHelper
         }
     }
 
+    private static List<string> blacklist;
+
+    public static List<string> Blacklist
+    {
+        get { return blacklist ??= AssetsService.GetBlacklist().Result; }
+    }
+
+    private static List<ImagePack> platformImagePacks;
+
+    public static List<ImagePack> PlatformImagePacks
+    {
+        get { return platformImagePacks ??= ImagePacksService.GetImagePacks().Result; }
+    }
+
+    private static List<PocketExtra> pocketExtras;
+
+    public static List<PocketExtra> PocketExtras
+    {
+        get { return pocketExtras ??= PocketExtrasService.GetPocketExtrasList().Result; }
+    }
+
     public static SettingsManager SettingsManager { get; private set ;}
     public static string UpdateDirectory { get; private set; }
-    public static string[] Blacklist { get; private set; }
     public static List<Core> Cores { get; private set; }
     public static List<Core> InstalledCores { get; private set; }
     public static List<Core> InstalledCoresWithSponsors { get; private set; }
-    public static List<PocketExtra> PocketExtras { get; private set; }
     public static PocketExtrasService PocketExtrasService { get; private set; }
-    public static ImagePack[] PlatformImagePacks { get; private set; }
     public static ImagePacksService PlatformImagePacksService { get; private set; }
+    public static AnalogueFirmwareService FirmwareService { get; private set; }
 
     private static bool isInitialized;
 
-    public static async Task Initialize(string path)
+    public static async Task Initialize(string path, EventHandler<StatusUpdatedEventArgs> statusUpdated = null,
+        EventHandler<UpdateProcessCompleteEventArgs> updateProcessComplete = null)
     {
         if (!isInitialized)
         {
@@ -97,17 +117,37 @@ public static class GlobalHelper
             SettingsManager = new SettingsManager(path);
             Cores = await CoresService.GetCores();
             RefreshLocalCores();
-            Blacklist = await AssetsService.GetBlacklist();
-            PocketExtras = await PocketExtrasService.GetPocketExtrasList();
+            //Blacklist = await AssetsService.GetBlacklist();
+            //PocketExtras = await PocketExtrasService.GetPocketExtrasList();
             PocketExtrasService = new PocketExtrasService();
-            PlatformImagePacks = await ImagePacksService.GetImagePacks();
+            //PlatformImagePacks = await ImagePacksService.GetImagePacks();
             PlatformImagePacksService = new ImagePacksService();
+            FirmwareService = new AnalogueFirmwareService();
+
+            if (statusUpdated != null)
+            {
+                PocketExtrasService.StatusUpdated += statusUpdated;
+                PlatformImagePacksService.StatusUpdated += statusUpdated;
+                FirmwareService.StatusUpdated += statusUpdated;
+            }
+
+            if (updateProcessComplete != null)
+            {
+                PocketExtrasService.UpdateProcessComplete += updateProcessComplete;
+                PlatformImagePacksService.UpdateProcessComplete += updateProcessComplete;
+                FirmwareService.UpdateProcessComplete += updateProcessComplete;
+            }
         }
     }
 
     private static List<Core> GetLocalCores()
     {
         string coresDirectory = Path.Combine(UpdateDirectory, "Cores");
+
+        // Create if it doesn't exist. -- Should we do this?
+        // Stops error from being thrown if we do.
+        Directory.CreateDirectory(coresDirectory);
+
         string[] directories = Directory.GetDirectories(coresDirectory, "*", SearchOption.TopDirectoryOnly);
         List<Core> all = new List<Core>();
 

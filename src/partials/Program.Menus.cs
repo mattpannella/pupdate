@@ -218,7 +218,7 @@ internal partial class Program
             })
             .Add("Update Firmware", async _ =>
             {
-                await coreUpdater.UpdateFirmware();
+                await GlobalHelper.FirmwareService.UpdateFirmware();
                 Pause();
             })
             .Add("Select Cores            >", () => // \u00BB
@@ -414,7 +414,7 @@ internal partial class Program
     {
         Console.Clear();
 
-        if (GlobalHelper.PlatformImagePacks.Length > 0)
+        if (GlobalHelper.PlatformImagePacks.Count > 0)
         {
             int choice = 0;
             var menu = new ConsoleMenu()
@@ -438,18 +438,18 @@ internal partial class Program
 
             menu.Add("Go Back", thisMenu =>
             {
-                choice = GlobalHelper.PlatformImagePacks.Length;
+                choice = GlobalHelper.PlatformImagePacks.Count;
                 thisMenu.CloseMenu();
             });
 
             await menu.ShowAsync();
 
-            if (choice < GlobalHelper.PlatformImagePacks.Length && choice >= 0)
+            if (choice < GlobalHelper.PlatformImagePacks.Count && choice >= 0)
             {
                 await GlobalHelper.PlatformImagePacksService.Install(path, GlobalHelper.PlatformImagePacks[choice].owner,
                     GlobalHelper.PlatformImagePacks[choice].repository, GlobalHelper.PlatformImagePacks[choice].variant);
             }
-            else if (choice == GlobalHelper.PlatformImagePacks.Length)
+            else if (choice == GlobalHelper.PlatformImagePacks.Count)
             {
                 // What causes this?
             }
