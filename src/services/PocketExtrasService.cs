@@ -17,6 +17,13 @@ public class PocketExtrasService : BaseProcess
 {
     private const string END_POINT = "https://raw.githubusercontent.com/mattpannella/pupdate/main/pocket_extras.json";
 
+    public string GithubToken { get; set; }
+
+    public PocketExtrasService(string githubToken = null)
+    {
+        this.GithubToken = githubToken;
+    }
+
     public static List<PocketExtra> GetPocketExtrasList()
     {
 #if DEBUG
@@ -34,7 +41,7 @@ public class PocketExtrasService : BaseProcess
     private void DownloadPocketExtrasPlatform(string user, string repository, string platformName,
         string assetName, string path, bool downloadAssets, bool skipPlaceholderFiles, bool refreshLocalCores)
     {
-        Release release = GithubApiService.GetLatestRelease(user, repository);
+        Release release = GithubApiService.GetLatestRelease(user, repository, this.GithubToken);
         Asset asset = release.assets.FirstOrDefault(x => x.name.StartsWith(assetName));
 
         if (asset == null)
@@ -182,7 +189,7 @@ public class PocketExtrasService : BaseProcess
             }
         }
 
-        Release release = GithubApiService.GetLatestRelease(user, repository);
+        Release release = GithubApiService.GetLatestRelease(user, repository, this.GithubToken);
         Asset asset = release.assets.FirstOrDefault(x => x.name.StartsWith(assetName));
 
         if (asset == null)
@@ -289,12 +296,17 @@ public class PocketExtrasService : BaseProcess
                 break;
         }
 
-        WriteMessage($"{Environment.NewLine}Please go to https://www.github.com/{pocketExtra.github_user}/{pocketExtra.github_repository} for more information and to support the author of the Extra.");
+        WriteMessage(string.Concat(
+            Environment.NewLine,
+            $"Please go to https://www.github.com/{pocketExtra.github_user}/{pocketExtra.github_repository} ",
+            "for more information and to support the author of the Extra."
+        ));
     }
 
-    public static string GetMostRecentRelease(PocketExtra pocketExtra)
+    public string GetMostRecentRelease(PocketExtra pocketExtra)
     {
-        Release release = GithubApiService.GetLatestRelease(pocketExtra.github_user, pocketExtra.github_repository);
+        Release release = GithubApiService.GetLatestRelease(pocketExtra.github_user, pocketExtra.github_repository,
+            this.GithubToken);
 
         return release.tag_name;
     }

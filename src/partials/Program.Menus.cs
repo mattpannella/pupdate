@@ -16,7 +16,7 @@ internal partial class Program
         Random random = new Random();
         int i = random.Next(0, WELCOME_MESSAGES.Length);
         string welcome = WELCOME_MESSAGES[i];
-        int remaining = GithubApiService.GetRateLimitRemaining();
+        int remaining = GithubApiService.RemainingCalls;
         string rateLimitMessage = $"Remaining GitHub API calls: {remaining}";
 
         if (remaining <= 5)
@@ -70,7 +70,10 @@ internal partial class Program
             })
             .Add("Enable All Display Modes", () =>
             {
-                GlobalHelper.CoresService.ForceDisplayModes();
+                var cores = GlobalHelper.Cores.Where(core =>
+                    !GlobalHelper.SettingsManager.GetCoreSettings(core.identifier).skip).ToList();
+
+                GlobalHelper.CoresService.ForceDisplayModes(cores);
                 Pause();
             })
             .Add("Apply 8:7 Aspect Ratio to Super GameBoy cores", () =>
@@ -218,7 +221,7 @@ internal partial class Program
             })
             .Add("Update Firmware", _ =>
             {
-                GlobalHelper.FirmwareService.UpdateFirmware();
+                GlobalHelper.FirmwareService.UpdateFirmware(GlobalHelper.UpdateDirectory);
                 Pause();
             })
             .Add("Select Cores            >", () => // \u00BB
@@ -447,7 +450,8 @@ internal partial class Program
             if (choice < GlobalHelper.PlatformImagePacks.Count && choice >= 0)
             {
                 GlobalHelper.PlatformImagePacksService.Install(path, GlobalHelper.PlatformImagePacks[choice].owner,
-                    GlobalHelper.PlatformImagePacks[choice].repository, GlobalHelper.PlatformImagePacks[choice].variant);
+                    GlobalHelper.PlatformImagePacks[choice].repository, GlobalHelper.PlatformImagePacks[choice].variant,
+                    GlobalHelper.SettingsManager.GetConfig().github_token);
             }
             else if (choice == GlobalHelper.PlatformImagePacks.Count)
             {

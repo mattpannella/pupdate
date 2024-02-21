@@ -36,7 +36,7 @@ public class FirmwareService : Base
         return details;
     }
 
-    public string UpdateFirmware()
+    public string UpdateFirmware(string path)
     {
         string version = string.Empty;
 
@@ -45,20 +45,20 @@ public class FirmwareService : Base
         var details = GetDetails();
         string[] parts = details.download_url.Split("/");
         string filename = parts[parts.Length - 1];
-        string filepath = Path.Combine(GlobalHelper.UpdateDirectory, filename);
+        string filepath = Path.Combine(path, filename);
 
         if (!File.Exists(filepath) || !Util.CompareChecksum(filepath, details.md5, Util.HashTypes.MD5))
         {
             version = filename;
 
-            var oldFiles = Directory.GetFiles(GlobalHelper.UpdateDirectory, FILENAME_PATTERN);
+            var oldFiles = Directory.GetFiles(path, FILENAME_PATTERN);
 
             WriteMessage("Firmware update found. Downloading...");
 
-            HttpHelper.Instance.DownloadFile(details.download_url, Path.Combine(GlobalHelper.UpdateDirectory, filename));
+            HttpHelper.Instance.DownloadFile(details.download_url, Path.Combine(path, filename));
 
             WriteMessage("Download Complete.");
-            WriteMessage(Path.Combine(GlobalHelper.UpdateDirectory, filename));
+            WriteMessage(Path.Combine(path, filename));
 
             foreach (string oldFile in oldFiles)
             {

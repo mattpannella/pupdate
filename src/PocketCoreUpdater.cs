@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.IO.Compression;
 using System.Text.Json;
 using Pannella.Helpers;
 using Pannella.Models;
@@ -8,7 +7,6 @@ using Pannella.Models.OpenFPGA_Cores_Inventory;
 using Pannella.Services;
 using File = System.IO.File;
 using AnalogueCore = Pannella.Models.Analogue.Core.Core;
-using GithubFile = Pannella.Models.Github.File;
 
 namespace Pannella;
 
@@ -25,7 +23,6 @@ public class PocketCoreUpdater : BaseProcess
     private bool _jtBeta;
     private bool _backupSaves;
     private string _backupSavesLocation;
-    private Dictionary<string, string> _platformFiles = new();
 
     public PocketCoreUpdater(
         bool? renameJotegoCores = null,
@@ -116,11 +113,11 @@ public class PocketCoreUpdater : BaseProcess
 
         if (_downloadFirmware && id == null)
         {
-            firmwareDownloaded = GlobalHelper.FirmwareService.UpdateFirmware();
+            firmwareDownloaded = GlobalHelper.FirmwareService.UpdateFirmware(GlobalHelper.UpdateDirectory);
             Divide();
         }
 
-        ExtractBetaKey();
+        _jtBeta = GlobalHelper.JotegoService.ExtractBetaKey();
 
         foreach (var core in GlobalHelper.Cores.Where(core => id == null || core.identifier == id))
         {
@@ -160,7 +157,7 @@ public class PocketCoreUpdater : BaseProcess
 
                 if (isPocketExtraCombinationPlatform)
                 {
-                    mostRecentRelease = PocketExtrasService.GetMostRecentRelease(pocketExtra);
+                    mostRecentRelease = GlobalHelper.PocketExtrasService.GetMostRecentRelease(pocketExtra);
                 }
                 else
                 {
@@ -173,7 +170,8 @@ public class PocketCoreUpdater : BaseProcess
                 {
                     WriteMessage("No releases found. Skipping");
 
-                    CopyBetaKey(core);
+                    if (core.JTBetaCheck())
+                        GlobalHelper.JotegoService.CopyBetaKey(core);
 
                     results = core.DownloadAssets();
                     installedAssets.AddRange(results["installed"] as List<string>);
@@ -216,7 +214,9 @@ public class PocketCoreUpdater : BaseProcess
                     }
                     else
                     {
-                        CopyBetaKey(core);
+                        if (core.JTBetaCheck())
+                            GlobalHelper.JotegoService.CopyBetaKey(core);
+
                         results = core.DownloadAssets();
                         JotegoRename(core);
 
@@ -270,7 +270,9 @@ public class PocketCoreUpdater : BaseProcess
                 }
 
                 JotegoRename(core);
-                CopyBetaKey(core);
+
+                if (core.JTBetaCheck())
+                    GlobalHelper.JotegoService.CopyBetaKey(core);
 
                 results = core.DownloadAssets();
                 installedAssets.AddRange(results["installed"] as List<string>);
@@ -296,7 +298,7 @@ public class PocketCoreUpdater : BaseProcess
             }
         }
 
-        DeleteBetaKeys();
+        JotegoService.DeleteBetaKey();
 
         UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs
         {
@@ -313,49 +315,12 @@ public class PocketCoreUpdater : BaseProcess
         OnUpdateProcessComplete(args);
     }
 
-    private void LoadPlatformFiles()
-    {
-        try
-        {
-            List<GithubFile> files = GithubApiService.GetFiles("dyreschlock", "pocket-platform-images",
-                "arcade/Platforms");
-            Dictionary<string, string> platformFiles = new();
-
-            foreach (GithubFile file in files)
-            {
-                string url = file.download_url;
-                string filename = file.name;
-
-                if (filename.EndsWith(".json"))
-                {
-                    string platform = Path.GetFileNameWithoutExtension(filename);
-
-                    platformFiles.Add(platform, url);
-                }
-            }
-
-            _platformFiles = platformFiles;
-        }
-        catch (Exception e)
-        {
-            _platformFiles = new Dictionary<string, string>();
-            WriteMessage("Unable to retrieve archive contents. Asset download may not work.");
-#if DEBUG
-            WriteMessage(e.ToString());
-#else
-            WriteMessage(e.Message);
-#endif
-        }
-    }
-
     private void JotegoRename(Core core)
     {
         if (_renameJotegoCores &&
             GlobalHelper.SettingsManager.GetCoreSettings(core.identifier).platform_rename &&
             core.identifier.Contains("jotego"))
         {
-            LoadPlatformFiles();
-
             core.platform_id = core.identifier.Split('.')[1]; //whatever
 
             string path = Path.Combine(GlobalHelper.UpdateDirectory, "Platforms", core.platform_id + ".json");
@@ -363,60 +328,14 @@ public class PocketCoreUpdater : BaseProcess
             Dictionary<string, Platform> data = JsonSerializer.Deserialize<Dictionary<string, Platform>>(json);
             Platform platform = data["platform"];
 
-            if (_platformFiles.TryGetValue(core.platform_id, out string value) && platform.name == core.platform_id)
+            if (GlobalHelper.JotegoRenamedPlatformFiles.TryGetValue(core.platform_id, out string value) &&
+                platform.name == core.platform_id)
             {
                 WriteMessage("Updating JT Platform Name...");
                 HttpHelper.Instance.DownloadFile(value, path);
                 WriteMessage("Complete");
             }
         }
-    }
-
-    private void CopyBetaKey(Core core)
-    {
-        if (core.JTBetaCheck())
-        {
-            AnalogueCore info = core.GetConfig();
-            string path = Path.Combine(
-                GlobalHelper.UpdateDirectory,
-                "Assets",
-                info.metadata.platform_ids[core.beta_slot_platform_id_index],
-                "common");
-
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
-
-            string keyPath = Path.Combine(GlobalHelper.UpdateDirectory, "betakeys");
-
-            if (Directory.Exists(keyPath) && Directory.Exists(path))
-            {
-                Util.CopyDirectory(keyPath, path, false, true);
-                WriteMessage("Beta key copied to common directory.");
-            }
-        }
-    }
-
-    private void ExtractBetaKey()
-    {
-        string keyPath = Path.Combine(GlobalHelper.UpdateDirectory, "betakeys");
-        string file = Path.Combine(GlobalHelper.UpdateDirectory, "jtbeta.zip");
-
-        if (File.Exists(file))
-        {
-            _jtBeta = true;
-            WriteMessage("Extracting JT beta key...");
-            ZipFile.ExtractToDirectory(file, keyPath, true);
-        }
-    }
-
-    private void DeleteBetaKeys()
-    {
-        string keyPath = Path.Combine(GlobalHelper.UpdateDirectory, "betakeys");
-
-        if (Directory.Exists(keyPath))
-            Directory.Delete(keyPath, true);
     }
 
     public void RunAssetDownloader(string id = null, bool skipOutro = false)

@@ -10,7 +10,8 @@ internal partial class Program
 {
     private static void DownloadGameBoyPalettes(string directory)
     {
-        Release release = GithubApiService.GetLatestRelease("davewongillies", "openfpga-palettes");
+        Release release = GithubApiService.GetLatestRelease("davewongillies", "openfpga-palettes",
+            GlobalHelper.SettingsManager.GetConfig().github_token);
         Asset asset = release.assets.FirstOrDefault(a => a.name.EndsWith(".zip"));
 
         if (asset != null)

@@ -13,10 +13,11 @@ internal partial class Program
     {
         try
         {
-            List<GithubRelease> releases = GithubApiService.GetReleases(USER, REPOSITORY);
+            List<GithubRelease> releases = GithubApiService.GetReleases(USER, REPOSITORY,
+                GlobalHelper.SettingsManager.GetConfig().github_token);
 
-            string tag_name = releases[0].tag_name;
-            string v = SemverUtil.FindSemver(tag_name);
+            string tagName = releases[0].tag_name;
+            string v = SemverUtil.FindSemver(tagName);
 
             if (v != null)
             {
@@ -26,7 +27,7 @@ internal partial class Program
                 {
                     Console.WriteLine("A new version is available. Downloading now...");
 
-                    string url = string.Format(RELEASE_URL, tag_name, SYSTEM_OS_PLATFORM);
+                    string url = string.Format(RELEASE_URL, tagName, SYSTEM_OS_PLATFORM);
                     string saveLocation = Path.Combine(path, "pupdate.zip");
 
                     HttpHelper.Instance.DownloadFile(url, saveLocation);

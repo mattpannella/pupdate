@@ -97,6 +97,13 @@ public static class GlobalHelper
         get { return pocketExtras ??= PocketExtrasService.GetPocketExtrasList(); }
     }
 
+    private static Dictionary<string, string> jotegoRenamedPlatformFiles;
+
+    public static Dictionary<string, string> JotegoRenamedPlatformFiles
+    {
+        get { return jotegoRenamedPlatformFiles ??= JotegoService.LoadRenamedPlatformFiles(); }
+    }
+
     public static SettingsManager SettingsManager { get; private set ;}
     public static string UpdateDirectory { get; private set; }
     public static List<Core> Cores { get; private set; }
@@ -106,6 +113,7 @@ public static class GlobalHelper
     public static PlatformImagePacksService PlatformImagePacksService { get; private set; }
     public static FirmwareService FirmwareService { get; private set; }
     public static CoresService CoresService { get; private set; }
+    public static JotegoService JotegoService { get; private set; }
 
     private static bool isInitialized;
 
@@ -117,12 +125,13 @@ public static class GlobalHelper
             isInitialized = true;
             UpdateDirectory = path;
             SettingsManager = new SettingsManager(path);
-            Cores = CoresService.GetCores();
+            Cores = CoresService.GetOpenFpgaCoresInventory();
             RefreshLocalCores();
-            PocketExtrasService = new PocketExtrasService();
+            PocketExtrasService = new PocketExtrasService(SettingsManager.GetConfig().github_token);
             PlatformImagePacksService = new PlatformImagePacksService();
             FirmwareService = new FirmwareService();
             CoresService = new CoresService();
+            JotegoService = new JotegoService(SettingsManager.GetConfig().github_token);
 
             if (statusUpdated != null)
             {
@@ -130,6 +139,7 @@ public static class GlobalHelper
                 PlatformImagePacksService.StatusUpdated += statusUpdated;
                 FirmwareService.StatusUpdated += statusUpdated;
                 CoresService.StatusUpdated += statusUpdated;
+                JotegoService.StatusUpdated += statusUpdated;
             }
 
             if (updateProcessComplete != null)
@@ -139,7 +149,7 @@ public static class GlobalHelper
         }
     }
 
-    private static List<Core> GetLocalCores()
+    private static IEnumerable<Core> GetLocalCores()
     {
         string coresDirectory = Path.Combine(UpdateDirectory, "Cores");
 

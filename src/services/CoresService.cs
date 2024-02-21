@@ -13,7 +13,7 @@ public class CoresService : Base
 {
     private const string END_POINT = "https://openfpga-cores-inventory.github.io/analogue-pocket/api/v2/cores.json";
 
-    public static List<Core> GetCores()
+    public static List<Core> GetOpenFpgaCoresInventory()
     {
         string json = HttpHelper.Instance.GetHTML(END_POINT);
         Dictionary<string, List<Core>> parsed = JsonSerializer.Deserialize<Dictionary<string, List<Core>>>(json);
@@ -26,40 +26,51 @@ public class CoresService : Base
         throw new Exception("Error communicating with openFPGA Cores API");
     }
 
-    public void ForceDisplayModes(string id = null)
+    public void ForceDisplayModes(List<Core> cores)
     {
-        if (GlobalHelper.Cores == null)
+        if (cores == null)
         {
-            throw new Exception("Must initialize updater before running update process.");
+            WriteMessage("List of cores is required.");
+            return;
         }
 
-        foreach (var core in GlobalHelper.Cores.Where(core => id == null || core.identifier == id)
-                                               .Where(core => !GlobalHelper.SettingsManager.GetCoreSettings(core.identifier).skip))
+        foreach (var core in cores)
         {
-            core.download_assets = true;
+            this.ForceDisplayModes(core);
+        }
+    }
 
-            try
+    public void ForceDisplayModes(Core core)
+    {
+        if (core == null)
+        {
+            WriteMessage("Core is required.");
+            return;
+        }
+
+        core.download_assets = true;
+
+        try
+        {
+            // not sure if this check is still needed
+            if (core.identifier == null)
             {
-                // not sure if this check is still needed
-                if (core.identifier == null)
-                {
-                    WriteMessage("Core Name is required. Skipping.");
-                    continue;
-                }
-
-                WriteMessage("Updating " + core.identifier);
-                core.AddDisplayModes();
-                Divide();
+                WriteMessage("Core Name is required. Skipping.");
+                return;
             }
-            catch (Exception e)
-            {
-                WriteMessage("Uh oh something went wrong.");
+
+            WriteMessage("Updating " + core.identifier);
+            core.AddDisplayModes();
+            Divide();
+        }
+        catch (Exception e)
+        {
+            WriteMessage("Uh oh something went wrong.");
 #if DEBUG
-                WriteMessage(e.ToString());
+            WriteMessage(e.ToString());
 #else
-                WriteMessage(e.Message);
+            WriteMessage(e.Message);
 #endif
-            }
         }
 
         WriteMessage("Finished.");

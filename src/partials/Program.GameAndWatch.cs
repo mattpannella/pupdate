@@ -12,7 +12,8 @@ internal partial class Program
 {
     private static void BuildGameAndWatchRoms(string directory)
     {
-        Release release = GithubApiService.GetLatestRelease("agg23", "fpga-gameandwatch");
+        Release release = GithubApiService.GetLatestRelease("agg23", "fpga-gameandwatch",
+            GlobalHelper.SettingsManager.GetConfig().github_token);
 
         foreach (GithubAsset asset in release.assets)
         {

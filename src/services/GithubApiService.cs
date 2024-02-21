@@ -15,54 +15,54 @@ public static class GithubApiService
     private const string RELEASES = "https://api.github.com/repos/{0}/{1}/releases";
     private const string CONTENTS = "https://api.github.com/repos/{0}/{1}/contents/{2}";
 
-    private static int remainingCalls = 60; //default without a token
+    public static int RemainingCalls { get; private set; } = 60; // default without a token
 
-    public static List<Release> GetReleases(string user, string repository)
+    public static List<Release> GetReleases(string user, string repository, string githubToken = null)
     {
         string url = string.Format(RELEASES, user, repository);
-        var responseBody = CallAPI(url, GlobalHelper.SettingsManager.GetConfig().github_token);
+        var responseBody = CallApi(url, githubToken);
         List<Release> releases = JsonSerializer.Deserialize<List<Release>>(responseBody) ?? new List<Release>();
 
         return releases;
     }
 
-    public static Release GetRelease(string user, string repository, string tagName)
+    public static Release GetRelease(string user, string repository, string tagName, string githubToken = null)
     {
         string url = string.Format(RELEASES, user, repository) + "/tags/" + tagName;
-        var responseBody = CallAPI(url, GlobalHelper.SettingsManager.GetConfig().github_token);
+        var responseBody = CallApi(url, githubToken);
         Release release = JsonSerializer.Deserialize<Release>(responseBody);
 
         return release;
     }
 
-    public static Release GetLatestRelease(string user, string repository)
+    public static Release GetLatestRelease(string user, string repository, string githubToken = null)
     {
         string url = string.Format(RELEASES, user, repository) + "/latest";
-        var responseBody = CallAPI(url, GlobalHelper.SettingsManager.GetConfig().github_token);
+        var responseBody = CallApi(url, githubToken);
         Release release = JsonSerializer.Deserialize<Release>(responseBody);
 
         return release;
     }
 
-    public static GithubFile GetFile(string user, string repository, string path)
+    public static GithubFile GetFile(string user, string repository, string path, string githubToken = null)
     {
         string url = string.Format(CONTENTS, user, repository, path);
-        var responseBody = CallAPI(url, GlobalHelper.SettingsManager.GetConfig().github_token);
+        var responseBody = CallApi(url, githubToken);
         GithubFile file = JsonSerializer.Deserialize<GithubFile>(responseBody);
 
         return file;
     }
 
-    public static List<GithubFile> GetFiles(string user, string repository, string path)
+    public static List<GithubFile> GetFiles(string user, string repository, string path, string githubToken = null)
     {
         string url = string.Format(CONTENTS, user, repository, path);
-        var responseBody = CallAPI(url, GlobalHelper.SettingsManager.GetConfig().github_token);
+        var responseBody = CallApi(url, githubToken);
         List<GithubFile> files = JsonSerializer.Deserialize<List<GithubFile>>(responseBody);
 
         return files;
     }
 
-    private static string CallAPI(string url, string token)
+    private static string CallApi(string url, string token)
     {
         var client = new HttpClient();
 
@@ -87,19 +87,15 @@ public static class GithubApiService
 
         response.EnsureSuccessStatusCode();
 
-        if(response.Headers.TryGetValues("x-ratelimit-remaining", out var values))
+        if (response.Headers.TryGetValues("x-ratelimit-remaining", out var values))
         {
             string remaining = values.First();
-            remainingCalls = int.Parse(remaining);
+
+            RemainingCalls = int.Parse(remaining);
         }
 
         var responseBody = response.Content.ReadAsStringAsync().Result;
 
         return responseBody;
-    }
-
-    public static int GetRateLimitRemaining()
-    {
-        return remainingCalls;
     }
 }

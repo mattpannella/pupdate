@@ -77,7 +77,7 @@ internal partial class Program
                     break;
 
                 case FirmwareOptions:
-                    GlobalHelper.FirmwareService.UpdateFirmware();
+                    GlobalHelper.FirmwareService.UpdateFirmware(GlobalHelper.UpdateDirectory);
                     return;
 
                 case FundOptions options:
@@ -116,7 +116,8 @@ internal partial class Program
 
                 case ImagesOptions options:
                     GlobalHelper.PlatformImagePacksService.Install(GlobalHelper.UpdateDirectory,
-                        options.ImagePackOwner, options.ImagePackRepo, options.ImagePackVariant);
+                        options.ImagePackOwner, options.ImagePackRepo, options.ImagePackVariant,
+                        GlobalHelper.SettingsManager.GetConfig().github_token);
                     break;
 
                 case AssetsOptions options:

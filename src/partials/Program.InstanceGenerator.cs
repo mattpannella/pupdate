@@ -7,7 +7,7 @@ internal partial class Program
         if (!force)
         {
             Console.Write("Do you want to overwrite existing json files? [Y/N] ");
-            Console.WriteLine("");
+            Console.WriteLine();
 
             var response = Console.ReadKey(false).Key;
 

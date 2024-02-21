@@ -29,16 +29,16 @@ public class PlatformImagePacksService : Base
         return packs ?? new List<PlatformImagePack>();
     }
 
-    public void Install(string path, string owner, string repository, string variant)
+    public void Install(string path, string owner, string repository, string variant, string githubToken)
     {
-        string filepath = FetchImagePack(path, owner, repository, variant);
+        string filepath = FetchImagePack(path, owner, repository, variant, githubToken);
 
         InstallImagePack(path, filepath);
     }
 
-    private string FetchImagePack(string path, string owner, string repository, string variant)
+    private string FetchImagePack(string path, string owner, string repository, string variant, string githubToken)
     {
-        Release release = GithubApiService.GetLatestRelease(owner, repository);
+        Release release = GithubApiService.GetLatestRelease(owner, repository, githubToken);
 
         if (release.assets == null)
         {
