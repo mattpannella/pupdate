@@ -890,12 +890,3 @@ public class Core : Base
         File.WriteAllText(Path.Combine(GlobalHelper.UpdateDirectory, "Cores", this.identifier, "video.json"), json);
     }
 }
-
-public class ReverseComparer : IComparer
-{
-    // Calls CaseInsensitiveComparer.Compare with the parameters reversed.
-    int IComparer.Compare(object x, object y)
-    {
-        return new CaseInsensitiveComparer().Compare(y, x);
-    }
-}
