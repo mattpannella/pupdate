@@ -1,5 +1,6 @@
 using ConsoleTools;
 using Pannella.Helpers;
+using Pannella.Models;
 using Pannella.Models.Extras;
 using Pannella.Models.OpenFPGA_Cores_Inventory;
 using Pannella.Models.Settings;
@@ -73,7 +74,40 @@ internal partial class Program
                 var cores = GlobalHelper.Cores.Where(core =>
                     !GlobalHelper.SettingsManager.GetCoreSettings(core.identifier).skip).ToList();
 
-                GlobalHelper.CoresService.ForceDisplayModes(cores);
+                foreach (var core in cores)
+                {
+                    if (core == null)
+                    {
+                        Console.WriteLine("Core name is required. Skipping");
+                        return;
+                    }
+
+                    core.download_assets = true;
+
+                    try
+                    {
+                        // not sure if this check is still needed
+                        if (core.identifier == null)
+                        {
+                            Console.WriteLine("Core Name is required. Skipping.");
+                            continue;
+                        }
+
+                        Console.WriteLine("Updating " + core.identifier);
+                        core.AddDisplayModes();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Uh oh something went wrong.");
+#if DEBUG
+                        Console.WriteLine(e.ToString());
+#else
+                        Console.WriteLine(e.Message);
+#endif
+                    }
+                }
+
+                Console.WriteLine("Finished.");
                 Pause();
             })
             .Add("Apply 8:7 Aspect Ratio to Super GameBoy cores", () =>
