@@ -7,7 +7,9 @@ using GithubFile = Pannella.Models.Github.File;
 
 namespace Pannella.Services;
 
-[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+[UnconditionalSuppressMessage("Trimming",
+    "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+    Justification = "<Pending>")]
 public static class GithubApiService
 {
     private const string RELEASES = "https://api.github.com/repos/{0}/{1}/releases";

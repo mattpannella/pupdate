@@ -7,7 +7,9 @@ using File = Pannella.Models.Archive.File;
 
 namespace Pannella.Services;
 
-[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+[UnconditionalSuppressMessage("Trimming",
+    "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+    Justification = "<Pending>")]
 public static class ArchiveService
 {
     private const string METADATA = "https://archive.org/metadata/{0}";
