@@ -13,7 +13,7 @@ public class PlatformImagePacksService : BaseService
 {
     private const string END_POINT = "https://raw.githubusercontent.com/mattpannella/pupdate/main/image_packs.json";
 
-    public static async Task<List<ImagePack>> GetImagePacks()
+    public static async Task<List<PlatformImagePack>> GetImagePacks()
     {
 #if DEBUG
         string json = await File.ReadAllTextAsync("image_packs.json");
@@ -22,9 +22,9 @@ public class PlatformImagePacksService : BaseService
             ? await File.ReadAllTextAsync("image_packs.json")
             : await HttpHelper.Instance.GetHTML(END_POINT);
 #endif
-        var packs = JsonSerializer.Deserialize<List<ImagePack>>(json);
+        var packs = JsonSerializer.Deserialize<List<PlatformImagePack>>(json);
 
-        return packs ?? new List<ImagePack>();
+        return packs ?? new List<PlatformImagePack>();
     }
 
     public async Task Install(string path, string owner, string repository, string variant)

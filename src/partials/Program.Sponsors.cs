@@ -1,6 +1,6 @@
 using System.Text;
 using Pannella.Helpers;
-using Pannella.Models;
+using Pannella.Models.OpenFPGA_Cores_Inventory;
 
 namespace Pannella;
 

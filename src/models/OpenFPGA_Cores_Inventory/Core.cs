@@ -4,6 +4,7 @@ using System.IO.Compression;
 using System.Net;
 using System.Text.Json;
 using Pannella.Helpers;
+using Pannella.Models;
 using Pannella.Models.Analogue.Data;
 using Pannella.Models.Analogue.Instance;
 using Pannella.Models.Analogue.Instance.Simple;
@@ -16,13 +17,13 @@ using ArchiveFile = Pannella.Models.Archive.File;
 using DataSlot = Pannella.Models.Analogue.Shared.DataSlot;
 using InstancePackagerDataSlot =  Pannella.Models.InstancePackager.DataSlot;
 
-namespace Pannella.Models;
+namespace Pannella.Models.OpenFPGA_Cores_Inventory;
 
 [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
 public class Core : Base
 {
     public string identifier { get; set; }
-    public Repo repository { get; set; }
+    public Repository repository { get; set; }
     public Platform platform { get; set; }
     public string platform_id { get; set; }
     public Sponsor sponsor { get; set; }
@@ -492,7 +493,7 @@ public class Core : Base
         return File.Exists(localCoreFile);
     }
 
-    private async Task<bool> DownloadAsset(string fileName, string destination, Archive.Archive archive,
+    private async Task<bool> DownloadAsset(string fileName, string destination, Models.Archive.Archive archive,
         string archiveName, bool useCustomArchive = false)
     {
         if (archive != null)
@@ -565,7 +566,7 @@ public class Core : Base
         return true;
     }
 
-    private bool CheckCRC(string filepath, Archive.Archive archive)
+    private bool CheckCRC(string filepath, Models.Archive.Archive archive)
     {
         if (archive == null || !GlobalHelper.SettingsManager.GetConfig().crc_check)
         {

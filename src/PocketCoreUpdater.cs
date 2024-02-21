@@ -4,6 +4,7 @@ using System.Text.Json;
 using Pannella.Helpers;
 using Pannella.Models;
 using Pannella.Models.Extras;
+using Pannella.Models.OpenFPGA_Cores_Inventory;
 using Pannella.Services;
 using File = System.IO.File;
 using AnalogueCore = Pannella.Models.Analogue.Core.Core;

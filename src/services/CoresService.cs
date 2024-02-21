@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Pannella.Helpers;
-using Pannella.Models;
+using Pannella.Models.OpenFPGA_Cores_Inventory;
 
 namespace Pannella.Services;
 

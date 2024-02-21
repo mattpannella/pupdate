@@ -1,6 +1,7 @@
 using Pannella.Models;
 using Pannella.Models.Archive;
 using Pannella.Models.Extras;
+using Pannella.Models.OpenFPGA_Cores_Inventory;
 using Pannella.Services;
 
 namespace Pannella.Helpers;
@@ -82,9 +83,9 @@ public static class GlobalHelper
         get { return blacklist ??= AssetsService.GetBlacklist().Result; }
     }
 
-    private static List<ImagePack> platformImagePacks;
+    private static List<PlatformImagePack> platformImagePacks;
 
-    public static List<ImagePack> PlatformImagePacks
+    public static List<PlatformImagePack> PlatformImagePacks
     {
         get { return platformImagePacks ??= Services.PlatformImagePacksService.GetImagePacks().Result; }
     }

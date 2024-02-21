@@ -1,6 +1,6 @@
 namespace Pannella.Models;
 
-public class ImagePack
+public class PlatformImagePack
 {
     public string owner { get; set; }
     public string repository { get; set; }
