@@ -43,19 +43,19 @@ internal partial class Program
 
         var pocketSetupMenu = new ConsoleMenu()
             .Configure(menuConfig)
-            .Add("Download Platform Image Packs", async _ =>
+            .Add("Download Platform Image Packs", _ =>
             {
-                await ImagePackSelector(path);
+                PlatformImagePackSelector(path);
                 Pause();
             })
-            .Add("Download Pocket Library Images", async _ =>
+            .Add("Download Pocket Library Images", _ =>
             {
-                await DownloadPockLibraryImages(path);
+                DownloadPockLibraryImages(path);
                 Pause();
             })
-            .Add("Download GameBoy Palettes", async _ =>
+            .Add("Download GameBoy Palettes", _ =>
             {
-                await DownloadGameBoyPalettes(path);
+                DownloadGameBoyPalettes(path);
                 Pause();
             })
             .Add("Generate Instance JSON Files (PC Engine CD)", () =>
@@ -63,9 +63,9 @@ internal partial class Program
                 RunInstanceGenerator(coreUpdater);
                 Pause();
             })
-            .Add("Generate Game & Watch ROMs", async _ =>
+            .Add("Generate Game & Watch ROMs", _ =>
             {
-                await BuildGameAndWatchRoms(path);
+                BuildGameAndWatchRoms(path);
                 Pause();
             })
             .Add("Enable All Display Modes", () =>
@@ -115,12 +115,12 @@ internal partial class Program
 
         var pocketMaintenanceMenu = new ConsoleMenu()
             .Configure(menuConfig)
-            .Add("Reinstall All Cores", async _ =>
+            .Add("Reinstall All Cores", _ =>
             {
-                await coreUpdater.RunUpdates(null, true);
+                coreUpdater.RunUpdates(null, true);
                 Pause();
             })
-            .Add("Reinstall Select Cores", async _ =>
+            .Add("Reinstall Select Cores", _ =>
             {
                 var results = ShowCoresMenu(
                     GlobalHelper.InstalledCores,
@@ -129,7 +129,7 @@ internal partial class Program
 
                 foreach (var item in results.Where(x => x.Value))
                 {
-                    await coreUpdater.RunUpdates(item.Key, true);
+                    coreUpdater.RunUpdates(item.Key, true);
                 }
 
                 Pause();
@@ -176,7 +176,7 @@ internal partial class Program
                 _ => pocketExtrasMenu
             };
 
-            consoleMenu.Add(name, async _ =>
+            consoleMenu.Add(name, _ =>
             {
                 bool result = true;
 
@@ -198,7 +198,7 @@ internal partial class Program
 
                 if (result)
                 {
-                    await GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, path, true, true);
+                    GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, path, true, true);
                     Pause();
                 }
             });
@@ -210,15 +210,15 @@ internal partial class Program
 
         var menu = new ConsoleMenu()
             .Configure(menuConfig)
-            .Add("Update All", async _ =>
+            .Add("Update All", _ =>
             {
                 Console.WriteLine("Starting update process...");
-                await coreUpdater.RunUpdates();
+                coreUpdater.RunUpdates();
                 Pause();
             })
-            .Add("Update Firmware", async _ =>
+            .Add("Update Firmware", _ =>
             {
-                await GlobalHelper.FirmwareService.UpdateFirmware();
+                GlobalHelper.FirmwareService.UpdateFirmware();
                 Pause();
             })
             .Add("Select Cores            >", () => // \u00BB
@@ -228,10 +228,10 @@ internal partial class Program
                 // Is reloading the settings file necessary?
                 GlobalHelper.ReloadSettings();
             })
-            .Add("Download Assets", async _ =>
+            .Add("Download Assets", _ =>
             {
                 Console.WriteLine("Checking for required files...");
-                await coreUpdater.RunAssetDownloader();
+                coreUpdater.RunAssetDownloader();
                 Pause();
             })
             .Add("Backup Saves & Memories", () =>
@@ -410,7 +410,7 @@ internal partial class Program
         GlobalHelper.SettingsManager.SaveSettings();
     }
 
-    private static async Task ImagePackSelector(string path)
+    private static void PlatformImagePackSelector(string path)
     {
         Console.Clear();
 
@@ -442,11 +442,11 @@ internal partial class Program
                 thisMenu.CloseMenu();
             });
 
-            await menu.ShowAsync();
+            menu.Show();
 
             if (choice < GlobalHelper.PlatformImagePacks.Count && choice >= 0)
             {
-                await GlobalHelper.PlatformImagePacksService.Install(path, GlobalHelper.PlatformImagePacks[choice].owner,
+                GlobalHelper.PlatformImagePacksService.Install(path, GlobalHelper.PlatformImagePacks[choice].owner,
                     GlobalHelper.PlatformImagePacks[choice].repository, GlobalHelper.PlatformImagePacks[choice].variant);
             }
             else if (choice == GlobalHelper.PlatformImagePacks.Count)

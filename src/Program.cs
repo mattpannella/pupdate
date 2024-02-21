@@ -8,7 +8,7 @@ namespace Pannella;
 
 internal partial class Program
 {
-    private static async Task Main(string[] args)
+    private static void Main(string[] args)
     {
         try
         {
@@ -27,8 +27,7 @@ internal partial class Program
                         switch (error)
                         {
                             case MissingRequiredOptionError mro:
-                                Console.WriteLine(
-                                    $"Missing required parameter: -{mro.NameInfo.ShortName} or --{mro.NameInfo.LongName}.");
+                                Console.WriteLine($"Missing required parameter: -{mro.NameInfo.ShortName} or --{mro.NameInfo.LongName}.");
                                 break;
 
                             case HelpRequestedError:
@@ -59,7 +58,7 @@ internal partial class Program
 
             #endregion
 
-            await GlobalHelper.Initialize(path, coreUpdater_StatusUpdated, coreUpdater_UpdateProcessComplete);
+            GlobalHelper.Initialize(path, coreUpdater_StatusUpdated, coreUpdater_UpdateProcessComplete);
 
             bool enableMissingCores = false;
 
@@ -67,18 +66,18 @@ internal partial class Program
             {
                 case MenuOptions options:
                     if (!options.SkipUpdate)
-                        await CheckForUpdates(GlobalHelper.UpdateDirectory, false, args);
+                        CheckForUpdates(GlobalHelper.UpdateDirectory, false, args);
                     else
                         enableMissingCores = true;
                     break;
 
                 case UpdateSelfOptions:
-                    await CheckForUpdates(GlobalHelper.UpdateDirectory, true, args);
+                    CheckForUpdates(GlobalHelper.UpdateDirectory, true, args);
                     // CheckForUpdates will terminate execution when necessary.
                     break;
 
                 case FirmwareOptions:
-                    await GlobalHelper.FirmwareService.UpdateFirmware();
+                    GlobalHelper.FirmwareService.UpdateFirmware();
                     return;
 
                 case FundOptions options:
@@ -107,7 +106,7 @@ internal partial class Program
             {
                 case UpdateOptions options:
                     Console.WriteLine("Starting update process...");
-                    await coreUpdater.RunUpdates(options.CoreName, options.CleanInstall);
+                    coreUpdater.RunUpdates(options.CoreName, options.CleanInstall);
                     Pause();
                     break;
 
@@ -116,16 +115,16 @@ internal partial class Program
                     break;
 
                 case ImagesOptions options:
-                    await GlobalHelper.PlatformImagePacksService.Install(GlobalHelper.UpdateDirectory,
+                    GlobalHelper.PlatformImagePacksService.Install(GlobalHelper.UpdateDirectory,
                         options.ImagePackOwner, options.ImagePackRepo, options.ImagePackVariant);
                     break;
 
                 case AssetsOptions options:
                     // can likely just use the option value without the check
                     if (string.IsNullOrEmpty(options.CoreName))
-                        await coreUpdater.RunAssetDownloader();
+                        coreUpdater.RunAssetDownloader();
                     else
-                        await coreUpdater.RunAssetDownloader(options.CoreName);
+                        coreUpdater.RunAssetDownloader(options.CoreName);
 
                     break;
 
@@ -154,11 +153,11 @@ internal partial class Program
                     break;
 
                 case GameBoyPalettesOptions:
-                    await DownloadGameBoyPalettes(GlobalHelper.UpdateDirectory);
+                    DownloadGameBoyPalettes(GlobalHelper.UpdateDirectory);
                     break;
 
                 case PocketLibraryImagesOptions:
-                    await DownloadPockLibraryImages(GlobalHelper.UpdateDirectory);
+                    DownloadPockLibraryImages(GlobalHelper.UpdateDirectory);
                     break;
 
                 case PocketExtrasOptions options:
@@ -184,7 +183,7 @@ internal partial class Program
                             }
                             else
                             {
-                                await GlobalHelper.PocketExtrasService.GetPocketExtra(extra, GlobalHelper.UpdateDirectory,
+                                GlobalHelper.PocketExtrasService.GetPocketExtra(extra, GlobalHelper.UpdateDirectory,
                                     true, true);
                             }
                         }

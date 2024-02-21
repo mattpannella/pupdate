@@ -49,7 +49,7 @@ public class Core : Base
         return platform.name;
     }
 
-    public async Task<bool> Install(bool preservePlatformsFolder, bool clean = false)
+    public bool Install(bool preservePlatformsFolder, bool clean = false)
     {
         if (this.repository == null)
         {
@@ -64,10 +64,10 @@ public class Core : Base
         }
 
         // iterate through assets to find the zip release
-        if (await InstallGithubAsset(preservePlatformsFolder))
+        if (InstallGithubAsset(preservePlatformsFolder))
         {
             this.ReplaceCheck();
-            await this.PocketExtraCheck();
+            this.PocketExtraCheck();
 
             return true;
         }
@@ -75,7 +75,7 @@ public class Core : Base
         return false;
     }
 
-    private async Task PocketExtraCheck()
+    private void PocketExtraCheck()
     {
         var coreSettings = GlobalHelper.SettingsManager.GetCoreSettings(this.identifier);
 
@@ -86,13 +86,13 @@ public class Core : Base
             if (pocketExtra != null)
             {
                 WriteMessage("Reapplying Pocket Extras...");
-                await GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, GlobalHelper.UpdateDirectory,
+                GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, GlobalHelper.UpdateDirectory,
                     false, false);
             }
         }
     }
 
-    private async Task<bool> InstallGithubAsset(bool preservePlatformsFolder)
+    private bool InstallGithubAsset(bool preservePlatformsFolder)
     {
         if (this.download_url == null)
         {
@@ -106,7 +106,7 @@ public class Core : Base
         string zipPath = Path.Combine(GlobalHelper.UpdateDirectory, ZIP_FILE_NAME);
         string extractPath = GlobalHelper.UpdateDirectory;
 
-        await HttpHelper.Instance.DownloadFileAsync(this.download_url, zipPath);
+        HttpHelper.Instance.DownloadFile(this.download_url, zipPath);
 
         WriteMessage("Extracting...");
 
@@ -200,7 +200,7 @@ public class Core : Base
         return p["platform"];
     }
 
-    public async Task<Dictionary<string, object>> DownloadAssets()
+    public Dictionary<string, object> DownloadAssets()
     {
         List<string> installed = new List<string>();
         List<string> skipped = new List<string>();
@@ -265,7 +265,7 @@ public class Core : Base
                         }
                         else
                         {
-                            bool result = await DownloadAsset(
+                            bool result = DownloadAsset(
                                 f,
                                 filepath,
                                 GlobalHelper.ArchiveFiles,
@@ -319,7 +319,7 @@ public class Core : Base
                 }
                 else
                 {
-                    bool result = await DownloadAsset(
+                    bool result = DownloadAsset(
                         f.name,
                         filePath,
                         GlobalHelper.GameAndWatchArchiveFiles,
@@ -407,7 +407,7 @@ public class Core : Base
                                 }
                                 else
                                 {
-                                    bool result = await DownloadAsset(
+                                    bool result = DownloadAsset(
                                         slot.filename,
                                         slotPath,
                                         GlobalHelper.ArchiveFiles,
@@ -493,7 +493,7 @@ public class Core : Base
         return File.Exists(localCoreFile);
     }
 
-    private async Task<bool> DownloadAsset(string fileName, string destination, Models.Archive.Archive archive,
+    private bool DownloadAsset(string fileName, string destination, Models.Archive.Archive archive,
         string archiveName, bool useCustomArchive = false)
     {
         if (archive != null)
@@ -529,7 +529,7 @@ public class Core : Base
             do
             {
                 WriteMessage($"Downloading '{fileName}'");
-                await HttpHelper.Instance.DownloadFileAsync(url, destination, 600);
+                HttpHelper.Instance.DownloadFile(url, destination, 600);
                 WriteMessage($"Finished downloading '{fileName}'");
                 count++;
             }

@@ -15,52 +15,52 @@ public static class GithubApiService
 
     private static int remainingCalls = 60; //default without a token
 
-    public static async Task<List<Release>> GetReleases(string user, string repository)
+    public static List<Release> GetReleases(string user, string repository)
     {
         string url = string.Format(RELEASES, user, repository);
-        var responseBody = await CallAPI(url, GlobalHelper.SettingsManager.GetConfig().github_token);
+        var responseBody = CallAPI(url, GlobalHelper.SettingsManager.GetConfig().github_token);
         List<Release> releases = JsonSerializer.Deserialize<List<Release>>(responseBody) ?? new List<Release>();
 
         return releases;
     }
 
-    public static async Task<Release> GetRelease(string user, string repository, string tagName)
+    public static Release GetRelease(string user, string repository, string tagName)
     {
         string url = string.Format(RELEASES, user, repository) + "/tags/" + tagName;
-        var responseBody = await CallAPI(url, GlobalHelper.SettingsManager.GetConfig().github_token);
+        var responseBody = CallAPI(url, GlobalHelper.SettingsManager.GetConfig().github_token);
         Release release = JsonSerializer.Deserialize<Release>(responseBody);
 
         return release;
     }
 
-    public static async Task<Release> GetLatestRelease(string user, string repository)
+    public static Release GetLatestRelease(string user, string repository)
     {
         string url = string.Format(RELEASES, user, repository) + "/latest";
-        var responseBody = await CallAPI(url, GlobalHelper.SettingsManager.GetConfig().github_token);
+        var responseBody = CallAPI(url, GlobalHelper.SettingsManager.GetConfig().github_token);
         Release release = JsonSerializer.Deserialize<Release>(responseBody);
 
         return release;
     }
 
-    public static async Task<GithubFile> GetFile(string user, string repository, string path)
+    public static GithubFile GetFile(string user, string repository, string path)
     {
         string url = string.Format(CONTENTS, user, repository, path);
-        var responseBody = await CallAPI(url, GlobalHelper.SettingsManager.GetConfig().github_token);
+        var responseBody = CallAPI(url, GlobalHelper.SettingsManager.GetConfig().github_token);
         GithubFile file = JsonSerializer.Deserialize<GithubFile>(responseBody);
 
         return file;
     }
 
-    public static async Task<List<GithubFile>> GetFiles(string user, string repository, string path)
+    public static List<GithubFile> GetFiles(string user, string repository, string path)
     {
         string url = string.Format(CONTENTS, user, repository, path);
-        var responseBody = await CallAPI(url, GlobalHelper.SettingsManager.GetConfig().github_token);
+        var responseBody = CallAPI(url, GlobalHelper.SettingsManager.GetConfig().github_token);
         List<GithubFile> files = JsonSerializer.Deserialize<List<GithubFile>>(responseBody);
 
         return files;
     }
 
-    private static async Task<string> CallAPI(string url, string token)
+    private static string CallAPI(string url, string token)
     {
         var client = new HttpClient();
 
@@ -81,18 +81,17 @@ public static class GithubApiService
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("token", token);
         }
 
-        var response = await client.SendAsync(request).ConfigureAwait(false);
+        var response = client.Send(request);
 
         response.EnsureSuccessStatusCode();
 
-        IEnumerable<string> values;
-        if(response.Headers.TryGetValues("x-ratelimit-remaining", out values))
+        if(response.Headers.TryGetValues("x-ratelimit-remaining", out var values))
         {
             string remaining = values.First();
             remainingCalls = int.Parse(remaining);
         }
 
-        var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var responseBody = response.Content.ReadAsStringAsync().Result;
 
         return responseBody;
     }

@@ -15,24 +15,24 @@ public class PocketExtrasService : BaseService
 {
     private const string END_POINT = "https://raw.githubusercontent.com/mattpannella/pupdate/main/pocket_extras.json";
 
-    public static async Task<List<PocketExtra>> GetPocketExtrasList()
+    public static List<PocketExtra> GetPocketExtrasList()
     {
 #if DEBUG
-        string json = await File.ReadAllTextAsync("pocket_extras.json");
+        string json = File.ReadAllText("pocket_extras.json");
 #else
         string json = GlobalHelper.SettingsManager.GetConfig().use_local_pocket_extras
-            ? await File.ReadAllTextAsync("pocket_extras.json")
-            : await HttpHelper.Instance.GetHTML(END_POINT);
+            ? File.ReadAllText("pocket_extras.json")
+            : HttpHelper.Instance.GetHTML(END_POINT);
 #endif
         PocketExtras files = JsonSerializer.Deserialize<PocketExtras>(json);
 
         return files.pocket_extras;
     }
 
-    private async Task DownloadPocketExtrasPlatform(string user, string repository, string platformName,
+    private void DownloadPocketExtrasPlatform(string user, string repository, string platformName,
         string assetName, string path, bool downloadAssets, bool skipPlaceholderFiles, bool refreshLocalCores)
     {
-        Release release = await GithubApiService.GetLatestRelease(user, repository);
+        Release release = GithubApiService.GetLatestRelease(user, repository);
         Asset asset = release.assets.FirstOrDefault(x => x.name.StartsWith(assetName));
 
         if (asset == null)
@@ -47,7 +47,7 @@ public class PocketExtrasService : BaseService
         try
         {
             WriteMessage($"Downloading asset '{asset.name}'...");
-            await HttpHelper.Instance.DownloadFileAsync(asset.browser_download_url, localFile);
+            HttpHelper.Instance.DownloadFile(asset.browser_download_url, localFile);
             WriteMessage("Download complete.");
 
             if (Directory.Exists(extractPath))
@@ -67,13 +67,13 @@ public class PocketExtrasService : BaseService
 
                 foreach (var placeFile in placeFiles)
                 {
-                    string contents = await File.ReadAllTextAsync(placeFile);
+                    string contents = File.ReadAllText(placeFile);
                     Uri uri = new Uri(contents);
                     string placeFileName = Path.GetFileName(uri.LocalPath);
                     string localPlaceFileName = Path.Combine(Path.GetDirectoryName(placeFile)!, placeFileName);
 
                     WriteMessage($"Downloading '{placeFileName}'");
-                    await HttpHelper.Instance.DownloadFileAsync(uri.ToString(), localPlaceFileName);
+                    HttpHelper.Instance.DownloadFile(uri.ToString(), localPlaceFileName);
                     WriteMessage("Download complete.");
 
                     File.Delete(placeFile);
@@ -123,7 +123,7 @@ public class PocketExtrasService : BaseService
             {
                 WriteMessage($"\n{coreIdentifier}");
 
-                var results = await core.DownloadAssets();
+                var results = core.DownloadAssets();
 
                 UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs
                 {
@@ -146,7 +146,7 @@ public class PocketExtrasService : BaseService
         //WriteMessage("Complete.");
     }
 
-    private async Task DownloadPocketExtras(string user, string repository, string coreIdentifier, string assetName,
+    private void DownloadPocketExtras(string user, string repository, string coreIdentifier, string assetName,
         string path, bool downloadAssets)
     {
         var core = GlobalHelper.GetCore(coreIdentifier);
@@ -171,7 +171,7 @@ public class PocketExtrasService : BaseService
             if (!result.Value)
                 return;
 
-            await core.Install(GlobalHelper.SettingsManager.GetConfig().preserve_platforms_folder);
+            core.Install(GlobalHelper.SettingsManager.GetConfig().preserve_platforms_folder);
 
             if (!core.IsInstalled())
             {
@@ -180,7 +180,7 @@ public class PocketExtrasService : BaseService
             }
         }
 
-        Release release = await GithubApiService.GetLatestRelease(user, repository);
+        Release release = GithubApiService.GetLatestRelease(user, repository);
         Asset asset = release.assets.FirstOrDefault(x => x.name.StartsWith(assetName));
 
         if (asset == null)
@@ -197,7 +197,7 @@ public class PocketExtrasService : BaseService
         try
         {
             WriteMessage($"Downloading asset '{asset.name}'...");
-            await HttpHelper.Instance.DownloadFileAsync(asset.browser_download_url, localFile);
+            HttpHelper.Instance.DownloadFile(asset.browser_download_url, localFile);
             WriteMessage("Download complete.");
             WriteMessage("Installing...");
 
@@ -249,7 +249,7 @@ public class PocketExtrasService : BaseService
         {
             WriteMessage("Downloading assets...");
 
-            var results = await core.DownloadAssets();
+            var results = core.DownloadAssets();
 
             UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs
             {
@@ -269,29 +269,30 @@ public class PocketExtrasService : BaseService
         GlobalHelper.SettingsManager.SaveSettings();
     }
 
-    public async Task GetPocketExtra(PocketExtra pocketExtra, string path, bool downloadAssets, bool refreshLocalCores)
+    public void GetPocketExtra(PocketExtra pocketExtra, string path, bool downloadAssets, bool refreshLocalCores)
     {
         switch (pocketExtra.type)
         {
             case PocketExtraType.additional_assets:
-                await DownloadPocketExtras(pocketExtra.github_user, pocketExtra.github_repository,
+                DownloadPocketExtras(pocketExtra.github_user, pocketExtra.github_repository,
                     pocketExtra.core_identifiers[0], pocketExtra.github_asset_prefix,
                     path, downloadAssets);
                 break;
 
             case PocketExtraType.combination_platform:
             case PocketExtraType.variant_core:
-                await DownloadPocketExtrasPlatform(pocketExtra.github_user, pocketExtra.github_repository,
+                DownloadPocketExtrasPlatform(pocketExtra.github_user, pocketExtra.github_repository,
                     pocketExtra.platform_name, pocketExtra.github_asset_prefix, path, downloadAssets,
                     !pocketExtra.has_placeholders, refreshLocalCores);
                 break;
         }
+
         WriteMessage($"{Environment.NewLine}Please go to https://www.github.com/{pocketExtra.github_user}/{pocketExtra.github_repository} for more information and to support the author of the Extra.");
     }
 
-    public async Task<string> GetMostRecentRelease(PocketExtra pocketExtra)
+    public static string GetMostRecentRelease(PocketExtra pocketExtra)
     {
-        Release release = await GithubApiService.GetLatestRelease(pocketExtra.github_user, pocketExtra.github_repository);
+        Release release = GithubApiService.GetLatestRelease(pocketExtra.github_user, pocketExtra.github_repository);
 
         return release.tag_name;
     }

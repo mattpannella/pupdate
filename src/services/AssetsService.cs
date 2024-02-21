@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
 using System.Text.Json;
+using Pannella.Helpers;
 
 namespace Pannella.Services;
 
@@ -51,14 +52,14 @@ public static class AssetsService
         }
     }
 
-    public static async Task<List<string>> GetBlacklist()
+    public static List<string> GetBlacklist()
     {
 #if DEBUG
-        string json = await File.ReadAllTextAsync("blacklist.json");
+        string json = File.ReadAllText("blacklist.json");
 #else
         string json = GlobalHelper.SettingsManager.GetConfig().use_local_blacklist
-            ? await File.ReadAllTextAsync("blacklist.json")
-            : await HttpHelper.Instance.GetHTML(BLACKLIST);
+            ? File.ReadAllText("blacklist.json")
+            : HttpHelper.Instance.GetHTML(BLACKLIST);
 #endif
         var files = JsonSerializer.Deserialize<List<string>>(json);
 

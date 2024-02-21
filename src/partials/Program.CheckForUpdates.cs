@@ -2,12 +2,12 @@ namespace Pannella;
 
 internal partial class Program
 {
-    private static async Task CheckForUpdates(string path, bool selfUpdate, string[] args)
+    private static void CheckForUpdates(string path, bool selfUpdate, string[] args)
     {
         Console.WriteLine("Pupdate v" + VERSION);
         Console.WriteLine("Checking for updates...");
 
-        if (await CheckVersion(path) && !selfUpdate)
+        if (CheckVersion(path) && !selfUpdate)
         {
             ConsoleKey[] acceptedInputs = { ConsoleKey.I, ConsoleKey.C, ConsoleKey.Q };
             ConsoleKey response;

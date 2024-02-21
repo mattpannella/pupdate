@@ -8,9 +8,9 @@ namespace Pannella;
 
 internal partial class Program
 {
-    private static async Task DownloadGameBoyPalettes(string directory)
+    private static void DownloadGameBoyPalettes(string directory)
     {
-        Release release = await GithubApiService.GetLatestRelease("davewongillies", "openfpga-palettes");
+        Release release = GithubApiService.GetLatestRelease("davewongillies", "openfpga-palettes");
         Asset asset = release.assets.FirstOrDefault(a => a.name.EndsWith(".zip"));
 
         if (asset != null)
@@ -21,7 +21,7 @@ internal partial class Program
             try
             {
                 Console.WriteLine($"Downloading asset '{asset.name}'...");
-                await HttpHelper.Instance.DownloadFileAsync(asset.browser_download_url, localFile);
+                HttpHelper.Instance.DownloadFile(asset.browser_download_url, localFile);
                 Console.WriteLine("Download complete.");
                 Console.WriteLine("Installing...");
 
@@ -41,7 +41,7 @@ internal partial class Program
 #if DEBUG
                 Console.WriteLine(e);
 #else
-                Console.WriteLine(e.message);
+                Console.WriteLine(e.Message);
 #endif
             }
         }

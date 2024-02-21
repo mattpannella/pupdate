@@ -93,7 +93,7 @@ public class PocketCoreUpdater : Base
     /// <summary>
     /// Run the full openFPGA core download and update process
     /// </summary>
-    public async Task RunUpdates(string id = null, bool clean = false, bool skipOutro = false)
+    public void RunUpdates(string id = null, bool clean = false, bool skipOutro = false)
     {
         List<Dictionary<string, string>> installed = new List<Dictionary<string, string>>();
         List<string> installedAssets = new List<string>();
@@ -114,7 +114,7 @@ public class PocketCoreUpdater : Base
 
         if (_downloadFirmware && id == null)
         {
-            firmwareDownloaded = await GlobalHelper.FirmwareService.UpdateFirmware();
+            firmwareDownloaded = GlobalHelper.FirmwareService.UpdateFirmware();
             Divide();
         }
 
@@ -158,7 +158,7 @@ public class PocketCoreUpdater : Base
 
                 if (isPocketExtraCombinationPlatform)
                 {
-                    mostRecentRelease = await GlobalHelper.PocketExtrasService.GetMostRecentRelease(pocketExtra);
+                    mostRecentRelease = PocketExtrasService.GetMostRecentRelease(pocketExtra);
                 }
                 else
                 {
@@ -173,7 +173,7 @@ public class PocketCoreUpdater : Base
 
                     CopyBetaKey(core);
 
-                    results = await core.DownloadAssets();
+                    results = core.DownloadAssets();
                     installedAssets.AddRange(results["installed"] as List<string>);
                     skippedAssets.AddRange(results["skipped"] as List<string>);
 
@@ -182,7 +182,7 @@ public class PocketCoreUpdater : Base
                         missingBetaKeys.Add(core.identifier);
                     }
 
-                    await JotegoRename(core);
+                    JotegoRename(core);
                     Divide();
                     continue;
                 }
@@ -215,8 +215,8 @@ public class PocketCoreUpdater : Base
                     else
                     {
                         CopyBetaKey(core);
-                        results = await core.DownloadAssets();
-                        await JotegoRename(core);
+                        results = core.DownloadAssets();
+                        JotegoRename(core);
 
                         installedAssets.AddRange(results["installed"] as List<string>);
                         skippedAssets.AddRange(results["skipped"] as List<string>);
@@ -243,7 +243,7 @@ public class PocketCoreUpdater : Base
                         core.Delete();
                     }
 
-                    await GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, GlobalHelper.UpdateDirectory,
+                    GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, GlobalHelper.UpdateDirectory,
                         false, false);
 
                     Dictionary<string, string> summary = new Dictionary<string, string>
@@ -255,7 +255,7 @@ public class PocketCoreUpdater : Base
 
                     installed.Add(summary);
                 }
-                else if (await core.Install(_preservePlatformsFolder, clean))
+                else if (core.Install(_preservePlatformsFolder, clean))
                 {
                     Dictionary<string, string> summary = new Dictionary<string, string>
                     {
@@ -267,10 +267,10 @@ public class PocketCoreUpdater : Base
                     installed.Add(summary);
                 }
 
-                await JotegoRename(core);
+                JotegoRename(core);
                 CopyBetaKey(core);
 
-                results = await core.DownloadAssets();
+                results = core.DownloadAssets();
                 installedAssets.AddRange(results["installed"] as List<string>);
                 skippedAssets.AddRange(results["skipped"] as List<string>);
 
@@ -311,13 +311,11 @@ public class PocketCoreUpdater : Base
         OnUpdateProcessComplete(args);
     }
 
-    private async Task LoadPlatformFiles()
+    private void LoadPlatformFiles()
     {
         try
         {
-            List<GithubFile> files = await GithubApiService.GetFiles(
-                "dyreschlock",
-                "pocket-platform-images",
+            List<GithubFile> files = GithubApiService.GetFiles("dyreschlock", "pocket-platform-images",
                 "arcade/Platforms");
             Dictionary<string, string> platformFiles = new();
 
@@ -348,25 +346,25 @@ public class PocketCoreUpdater : Base
         }
     }
 
-    private async Task JotegoRename(Core core)
+    private void JotegoRename(Core core)
     {
         if (_renameJotegoCores &&
             GlobalHelper.SettingsManager.GetCoreSettings(core.identifier).platform_rename &&
             core.identifier.Contains("jotego"))
         {
-            await LoadPlatformFiles();
+            LoadPlatformFiles();
 
             core.platform_id = core.identifier.Split('.')[1]; //whatever
 
             string path = Path.Combine(GlobalHelper.UpdateDirectory, "Platforms", core.platform_id + ".json");
-            string json = await File.ReadAllTextAsync(path);
+            string json = File.ReadAllText(path);
             Dictionary<string, Platform> data = JsonSerializer.Deserialize<Dictionary<string, Platform>>(json);
             Platform platform = data["platform"];
 
             if (_platformFiles.TryGetValue(core.platform_id, out string value) && platform.name == core.platform_id)
             {
                 WriteMessage("Updating JT Platform Name...");
-                await HttpHelper.Instance.DownloadFileAsync(value, path);
+                HttpHelper.Instance.DownloadFile(value, path);
                 WriteMessage("Complete");
             }
         }
@@ -419,7 +417,7 @@ public class PocketCoreUpdater : Base
             Directory.Delete(keyPath, true);
     }
 
-    public async Task RunAssetDownloader(string id = null, bool skipOutro = false)
+    public void RunAssetDownloader(string id = null, bool skipOutro = false)
     {
         List<string> installedAssets = new List<string>();
         List<string> skippedAssets = new List<string>();
@@ -447,7 +445,7 @@ public class PocketCoreUpdater : Base
 
                 WriteMessage(core.identifier);
 
-                var results = await core.DownloadAssets();
+                var results = core.DownloadAssets();
 
                 installedAssets.AddRange((List<string>)results["installed"]);
                 skippedAssets.AddRange((List<string>)results["skipped"]);

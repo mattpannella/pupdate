@@ -7,7 +7,7 @@ namespace Pannella;
 
 internal partial class Program
 {
-    private static async Task DownloadPockLibraryImages(string directory)
+    private static void DownloadPockLibraryImages(string directory)
     {
         const string fileName = "Library_Image_Set_v1.0.zip";
         ArchiveFile archiveFile = GlobalHelper.ArchiveFiles.GetFile(fileName);
@@ -19,7 +19,7 @@ internal partial class Program
 
             try
             {
-                await ArchiveService.DownloadArchiveFile(GlobalHelper.SettingsManager.GetConfig().archive_name,
+                ArchiveService.DownloadArchiveFile(GlobalHelper.SettingsManager.GetConfig().archive_name,
                     archiveFile, directory);
                 Console.WriteLine("Installing...");
 

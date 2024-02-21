@@ -10,9 +10,9 @@ namespace Pannella;
 
 internal partial class Program
 {
-    private static async Task BuildGameAndWatchRoms(string directory)
+    private static void BuildGameAndWatchRoms(string directory)
     {
-        Release release = await GithubApiService.GetLatestRelease("agg23", "fpga-gameandwatch");
+        Release release = GithubApiService.GetLatestRelease("agg23", "fpga-gameandwatch");
 
         foreach (GithubAsset asset in release.assets)
         {
@@ -24,7 +24,7 @@ internal partial class Program
                 if (!File.Exists(filename))
                 {
                     Directory.CreateDirectory(downloadPath);
-                    await HttpHelper.Instance.DownloadFileAsync(asset.browser_download_url, filename);
+                    HttpHelper.Instance.DownloadFile(asset.browser_download_url, filename);
                     ZipFile.ExtractToDirectory(filename, downloadPath, true);
                 }
 

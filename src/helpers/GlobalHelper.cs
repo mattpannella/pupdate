@@ -24,11 +24,11 @@ public static class GlobalHelper
                     Uri baseUrl = new Uri(custom["url"]);
                     Uri url = new Uri(baseUrl, custom["index"]);
 
-                    archiveFiles = ArchiveService.GetFilesCustom(url.ToString()).Result;
+                    archiveFiles = ArchiveService.GetFilesCustom(url.ToString());
                 }
                 else
                 {
-                    archiveFiles = ArchiveService.GetFiles(SettingsManager.GetConfig().archive_name).Result;
+                    archiveFiles = ArchiveService.GetFiles(SettingsManager.GetConfig().archive_name);
                 }
             }
 
@@ -51,7 +51,7 @@ public static class GlobalHelper
 
                 if (gnwArchiveName != archiveName)
                 {
-                    gameAndWatchArchiveFiles = ArchiveService.GetFiles(gnwArchiveName).Result;
+                    gameAndWatchArchiveFiles = ArchiveService.GetFiles(gnwArchiveName);
 
                     // remove the metadata files since we're processing the entire json list
                     gameAndWatchArchiveFiles.files.RemoveAll(file =>
@@ -80,21 +80,21 @@ public static class GlobalHelper
 
     public static List<string> Blacklist
     {
-        get { return blacklist ??= AssetsService.GetBlacklist().Result; }
+        get { return blacklist ??= AssetsService.GetBlacklist(); }
     }
 
     private static List<PlatformImagePack> platformImagePacks;
 
     public static List<PlatformImagePack> PlatformImagePacks
     {
-        get { return platformImagePacks ??= Services.PlatformImagePacksService.GetImagePacks().Result; }
+        get { return platformImagePacks ??= PlatformImagePacksService.GetPlatformImagePacks(); }
     }
 
     private static List<PocketExtra> pocketExtras;
 
     public static List<PocketExtra> PocketExtras
     {
-        get { return pocketExtras ??= PocketExtrasService.GetPocketExtrasList().Result; }
+        get { return pocketExtras ??= PocketExtrasService.GetPocketExtrasList(); }
     }
 
     public static SettingsManager SettingsManager { get; private set ;}
@@ -109,7 +109,7 @@ public static class GlobalHelper
 
     private static bool isInitialized;
 
-    public static async Task Initialize(string path, EventHandler<StatusUpdatedEventArgs> statusUpdated = null,
+    public static void Initialize(string path, EventHandler<StatusUpdatedEventArgs> statusUpdated = null,
         EventHandler<UpdateProcessCompleteEventArgs> updateProcessComplete = null)
     {
         if (!isInitialized)
@@ -117,7 +117,7 @@ public static class GlobalHelper
             isInitialized = true;
             UpdateDirectory = path;
             SettingsManager = new SettingsManager(path);
-            Cores = await CoresService.GetCores();
+            Cores = CoresService.GetCores();
             RefreshLocalCores();
             PocketExtrasService = new PocketExtrasService();
             PlatformImagePacksService = new PlatformImagePacksService();

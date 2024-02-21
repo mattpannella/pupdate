@@ -14,20 +14,20 @@ public static class ArchiveService
 
     private const string DOWNLOAD = "https://archive.org/download/{0}/{1}";
 
-    public static async Task<Archive> GetFiles(string archive)
+    public static Archive GetFiles(string archive)
     {
         string url = string.Format(METADATA, archive);
-        string json = await HttpHelper.Instance.GetHTML(url);
+        string json = HttpHelper.Instance.GetHTML(url);
         Archive result = JsonSerializer.Deserialize<Archive>(json);
 
         return result;
     }
 
-    public static async Task<Archive> GetFilesCustom(string url)
+    public static Archive GetFilesCustom(string url)
     {
         try
         {
-            string json = await HttpHelper.Instance.GetHTML(url);
+            string json = HttpHelper.Instance.GetHTML(url);
             Archive result = JsonSerializer.Deserialize<Archive>(json);
 
             return result;
@@ -38,7 +38,7 @@ public static class ArchiveService
         }
     }
 
-    public static async Task DownloadArchiveFile(string archiveName, File archiveFile, string destination)
+    public static void DownloadArchiveFile(string archiveName, File archiveFile, string destination)
     {
         try
         {
@@ -49,7 +49,7 @@ public static class ArchiveService
             do
             {
                 Console.WriteLine($"Downloading '{archiveFile.name}'");
-                await HttpHelper.Instance.DownloadFileAsync(url, destinationFileName, 600);
+                HttpHelper.Instance.DownloadFile(url, destinationFileName, 600);
                 Console.WriteLine($"Finished downloading '{archiveFile.name}'");
                 count++;
             }

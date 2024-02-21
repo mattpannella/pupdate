@@ -9,11 +9,11 @@ namespace Pannella;
 internal partial class Program
 {
     // return true if newer version is available
-    private static async Task<bool> CheckVersion(string path)
+    private static bool CheckVersion(string path)
     {
         try
         {
-            List<GithubRelease> releases = await GithubApiService.GetReleases(USER, REPOSITORY);
+            List<GithubRelease> releases = GithubApiService.GetReleases(USER, REPOSITORY);
 
             string tag_name = releases[0].tag_name;
             string v = SemverUtil.FindSemver(tag_name);
@@ -29,7 +29,7 @@ internal partial class Program
                     string url = string.Format(RELEASE_URL, tag_name, SYSTEM_OS_PLATFORM);
                     string saveLocation = Path.Combine(path, "pupdate.zip");
 
-                    await HttpHelper.Instance.DownloadFileAsync(url, saveLocation);
+                    HttpHelper.Instance.DownloadFile(url, saveLocation);
 
                     Console.WriteLine("Download complete.");
                     Console.WriteLine(saveLocation);

@@ -14,7 +14,7 @@ public class FirmwareService : BaseService
 
     private static ReleaseDetails latest;
 
-    private static async Task<ReleaseDetails> GetDetails(string version = "latest")
+    private static ReleaseDetails GetDetails(string version = "latest")
     {
         if (latest != null)
         {
@@ -22,7 +22,7 @@ public class FirmwareService : BaseService
         }
 
         string url = string.Format(BASE_URL + DETAILS, version);
-        string response = await HttpHelper.Instance.GetHTML(url);
+        string response = HttpHelper.Instance.GetHTML(url);
         ReleaseDetails details = JsonSerializer.Deserialize<ReleaseDetails>(response);
 
         if (version == "latest")
@@ -33,13 +33,13 @@ public class FirmwareService : BaseService
         return details;
     }
 
-    public async Task<string> UpdateFirmware()
+    public string UpdateFirmware()
     {
         string version = string.Empty;
 
         WriteMessage("Checking for firmware updates...");
 
-        var details = await GetDetails();
+        var details = GetDetails();
         string[] parts = details.download_url.Split("/");
         string filename = parts[parts.Length - 1];
         string filepath = Path.Combine(GlobalHelper.UpdateDirectory, filename);
@@ -52,7 +52,7 @@ public class FirmwareService : BaseService
 
             WriteMessage("Firmware update found. Downloading...");
 
-            await HttpHelper.Instance.DownloadFileAsync(details.download_url, Path.Combine(GlobalHelper.UpdateDirectory, filename));
+            HttpHelper.Instance.DownloadFile(details.download_url, Path.Combine(GlobalHelper.UpdateDirectory, filename));
 
             WriteMessage("Download Complete.");
             WriteMessage(Path.Combine(GlobalHelper.UpdateDirectory, filename));
