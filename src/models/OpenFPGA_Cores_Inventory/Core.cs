@@ -66,7 +66,7 @@ public class Core : Base
         }
 
         // iterate through assets to find the zip release
-        if (InstallGithubAsset(preservePlatformsFolder))
+        if (this.InstallGithubAsset(preservePlatformsFolder))
         {
             this.ReplaceCheck();
             this.PocketExtraCheck();
@@ -83,7 +83,7 @@ public class Core : Base
 
         if (coreSettings.pocket_extras)
         {
-            PocketExtra pocketExtra = GlobalHelper.GetPocketExtra(this.identifier);
+            PocketExtra pocketExtra = PocketExtrasService.GetPocketExtra(this.identifier);
 
             if (pocketExtra != null)
             {
@@ -236,7 +236,7 @@ public class Core : Base
             foreach (DataSlot slot in dataJson.data.data_slots)
             {
                 if (slot.filename != null && !slot.filename.EndsWith(".sav") &&
-                    !GlobalHelper.Blacklist.Contains(slot.filename))
+                    !AssetsService.Blacklist.Contains(slot.filename))
                 {
                     if (slot.IsCoreSpecific())
                     {
@@ -254,14 +254,14 @@ public class Core : Base
 
                     if (slot.alternate_filenames != null)
                     {
-                        files.AddRange(slot.alternate_filenames.Where(f => !GlobalHelper.Blacklist.Contains(f)));
+                        files.AddRange(slot.alternate_filenames.Where(f => !AssetsService.Blacklist.Contains(f)));
                     }
 
                     foreach (string f in files)
                     {
                         string filepath = Path.Combine(path, f);
 
-                        if (File.Exists(filepath) && CheckCRC(filepath, GlobalHelper.ArchiveFiles))
+                        if (File.Exists(filepath) && CheckCRC(filepath, GlobalHelper.ArchiveService.ArchiveFiles))
                         {
                             WriteMessage($"Already installed: {f}");
                         }
@@ -270,7 +270,7 @@ public class Core : Base
                             bool result = DownloadAsset(
                                 f,
                                 filepath,
-                                GlobalHelper.ArchiveFiles,
+                                GlobalHelper.ArchiveService.ArchiveFiles,
                                 GlobalHelper.SettingsManager.GetConfig().archive_name,
                                 GlobalHelper.SettingsManager.GetConfig().use_custom_archive);
 
@@ -305,7 +305,7 @@ public class Core : Base
             if (!Directory.Exists(commonPath))
                 Directory.CreateDirectory(commonPath);
 
-            foreach (var f in GlobalHelper.GameAndWatchArchiveFiles.files)
+            foreach (var f in GlobalHelper.ArchiveService.GameAndWatchArchiveFiles.files)
             {
                 string filePath = Path.Combine(commonPath, f.name);
                 string subDirectory = Path.GetDirectoryName(f.name);
@@ -315,7 +315,7 @@ public class Core : Base
                     Directory.CreateDirectory(Path.Combine(commonPath, subDirectory));
                 }
 
-                if (File.Exists(filePath) && CheckCRC(filePath, GlobalHelper.GameAndWatchArchiveFiles))
+                if (File.Exists(filePath) && CheckCRC(filePath, GlobalHelper.ArchiveService.GameAndWatchArchiveFiles))
                 {
                     WriteMessage($"Already installed: {f.name}");
                 }
@@ -324,7 +324,7 @@ public class Core : Base
                     bool result = DownloadAsset(
                         f.name,
                         filePath,
-                        GlobalHelper.GameAndWatchArchiveFiles,
+                        GlobalHelper.ArchiveService.GameAndWatchArchiveFiles,
                         GlobalHelper.SettingsManager.GetConfig().gnw_archive_name);
 
                     if (result)
@@ -394,7 +394,7 @@ public class Core : Base
                                 missingBetaKey = true;
                             }
 
-                            if (!GlobalHelper.Blacklist.Contains(slot.filename) && !slot.filename.EndsWith(".sav"))
+                            if (!AssetsService.Blacklist.Contains(slot.filename) && !slot.filename.EndsWith(".sav"))
                             {
                                 string commonPath = Path.Combine(platformPath, "common");
 
@@ -403,7 +403,7 @@ public class Core : Base
 
                                 string slotPath = Path.Combine(commonPath, dataPath, slot.filename);
 
-                                if (File.Exists(slotPath) && CheckCRC(slotPath, GlobalHelper.ArchiveFiles))
+                                if (File.Exists(slotPath) && CheckCRC(slotPath, GlobalHelper.ArchiveService.ArchiveFiles))
                                 {
                                     WriteMessage($"Already installed: {slot.filename}");
                                 }
@@ -412,7 +412,7 @@ public class Core : Base
                                     bool result = DownloadAsset(
                                         slot.filename,
                                         slotPath,
-                                        GlobalHelper.ArchiveFiles,
+                                        GlobalHelper.ArchiveService.ArchiveFiles,
                                         GlobalHelper.SettingsManager.GetConfig().archive_name,
                                         GlobalHelper.SettingsManager.GetConfig().use_custom_archive);
 
@@ -516,7 +516,7 @@ public class Core : Base
             if (useCustomArchive)
             {
                 var custom = GlobalHelper.SettingsManager.GetConfig().custom_archive;
-                Uri baseUri = new Uri(custom["url"]);
+                Uri baseUri = new Uri(custom.url);
                 Uri uri = new Uri(baseUri, fileName);
 
                 url = uri.ToString();
@@ -535,7 +535,7 @@ public class Core : Base
                 WriteMessage($"Finished downloading '{fileName}'");
                 count++;
             }
-            while (count < 3 && !CheckCRC(destination, GlobalHelper.ArchiveFiles));
+            while (count < 3 && !CheckCRC(destination, GlobalHelper.ArchiveService.ArchiveFiles));
         }
         catch (HttpRequestException e)
         {

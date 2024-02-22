@@ -15,70 +15,40 @@ namespace Pannella;
     Justification = "<Pending>")]
 public class PocketCoreUpdater : BaseProcess
 {
-    private bool _downloadAssets;
-    private bool _preservePlatformsFolder;
-    private bool _downloadFirmware = true;
-    private bool _deleteSkippedCores = true;
-    private bool _renameJotegoCores = true;
-    private bool _jtBeta;
-    private bool _backupSaves;
-    private string _backupSavesLocation;
+    public string InstallPath { get; set; }
+    public List<Core> Cores { get; set; }
+    public FirmwareService FirmwareService { get; set; }
+    public JotegoService JotegoService { get; set; }
+    public PocketExtrasService PocketExtrasService { get; set; }
+    public SettingsManager SettingsManager { get; set; }
 
     public PocketCoreUpdater(
-        bool? renameJotegoCores = null,
-        bool? downloadAssets = null,
-        bool? preservePlatformsFolder = null,
-        bool? downloadFirmware = null,
-        bool? backupSaves = null,
-        string backupSavesLocation = null,
-        bool? deleteSkippedCores = null)
+        string path,
+        List<Core> cores,
+        FirmwareService firmwareService = null,
+        JotegoService jotegoService = null,
+        PocketExtrasService pocketExtrasService = null,
+        SettingsManager settingsManager = null)
     {
-        Directory.CreateDirectory(Path.Combine(GlobalHelper.UpdateDirectory, "Cores"));
+        this.InstallPath = path;
+        this.Cores = cores;
+        this.FirmwareService = firmwareService;
+        this.JotegoService = jotegoService;
+        this.PocketExtrasService = pocketExtrasService;
+        this.SettingsManager = settingsManager;
 
-        foreach (Core core in GlobalHelper.Cores)
+        Directory.CreateDirectory(Path.Combine(path, "Cores"));
+
+        foreach (Core core in this.Cores)
         {
             core.ClearStatusUpdated();
             core.StatusUpdated += updater_StatusUpdated; // attach handler to bubble event up
         }
-
-        this.UpdateSettings(renameJotegoCores, downloadAssets, preservePlatformsFolder, downloadFirmware, backupSaves,
-            backupSavesLocation, deleteSkippedCores);
-    }
-
-    public void UpdateSettings(
-        bool? renameJotegoCores = null,
-        bool? downloadAssets = null,
-        bool? preservePlatformsFolder = null,
-        bool? downloadFirmware = null,
-        bool? backupSaves = null,
-        string backupSavesLocation = null,
-        bool? deleteSkippedCores = null)
-    {
-        if (renameJotegoCores.HasValue)
-            _renameJotegoCores = renameJotegoCores.Value;
-
-        if (downloadAssets.HasValue)
-            _downloadAssets = downloadAssets.Value;
-
-        if (preservePlatformsFolder.HasValue)
-            _preservePlatformsFolder = preservePlatformsFolder.Value;
-
-        if (downloadFirmware.HasValue)
-            _downloadFirmware = downloadFirmware.Value;
-
-        if (backupSaves.HasValue)
-            _backupSaves = backupSaves.Value;
-
-        if (backupSavesLocation != null)
-            _backupSavesLocation = backupSavesLocation;
-
-        if (deleteSkippedCores.HasValue)
-            _deleteSkippedCores = deleteSkippedCores.Value;
     }
 
     public void BuildInstanceJson(bool overwrite = false, string coreName = null)
     {
-        foreach (Core core in GlobalHelper.Cores)
+        foreach (Core core in this.Cores)
         {
             if (core.CheckInstancePackager() && (coreName == null || coreName == core.identifier))
             {
@@ -98,33 +68,36 @@ public class PocketCoreUpdater : BaseProcess
         List<string> installedAssets = new List<string>();
         List<string> skippedAssets = new List<string>();
         List<string> missingBetaKeys = new List<string>();
-        string firmwareDownloaded = string.Empty;
+        string firmwareDownloaded = null;
 
-        if (GlobalHelper.Cores == null)
+        if (this.SettingsManager.GetConfig().backup_saves)
         {
-            throw new Exception("Must initialize updater before running update process.");
+            AssetsService.BackupSaves(this.InstallPath, this.SettingsManager.GetConfig().backup_saves_location);
+            AssetsService.BackupMemories(this.InstallPath, this.SettingsManager.GetConfig().backup_saves_location);
         }
 
-        if (_backupSaves)
+        if (this.SettingsManager.GetConfig().download_firmware && id == null)
         {
-            AssetsService.BackupSaves(GlobalHelper.UpdateDirectory, _backupSavesLocation);
-            AssetsService.BackupMemories(GlobalHelper.UpdateDirectory, _backupSavesLocation);
-        }
+            if (this.FirmwareService != null)
+            {
+                firmwareDownloaded = this.FirmwareService.UpdateFirmware(this.InstallPath);
+            }
+            else
+            {
+                WriteMessage("Firmware Service is missing.");
+            }
 
-        if (_downloadFirmware && id == null)
-        {
-            firmwareDownloaded = GlobalHelper.FirmwareService.UpdateFirmware(GlobalHelper.UpdateDirectory);
             Divide();
         }
 
-        _jtBeta = GlobalHelper.JotegoService.ExtractBetaKey();
+        bool jtBetaKeyExists = this.JotegoService.ExtractBetaKey();
 
-        foreach (var core in GlobalHelper.Cores.Where(core => id == null || core.identifier == id))
+        foreach (var core in this.Cores.Where(core => id == null || core.identifier == id))
         {
-            core.download_assets = _downloadAssets && id == null;
-            core.build_instances = GlobalHelper.SettingsManager.GetConfig().build_instance_jsons && id == null;
+            core.download_assets = this.SettingsManager.GetConfig().download_assets && id == null;
+            core.build_instances = this.SettingsManager.GetConfig().build_instance_jsons && id == null;
 
-            var coreSettings = GlobalHelper.SettingsManager.GetCoreSettings(core.identifier);
+            var coreSettings = this.SettingsManager.GetCoreSettings(core.identifier);
 
             try
             {
@@ -134,7 +107,7 @@ public class PocketCoreUpdater : BaseProcess
                     continue;
                 }
 
-                if (core.requires_license && !_jtBeta)
+                if (core.requires_license && !jtBetaKeyExists)
                 {
                     missingBetaKeys.Add(core.identifier);
                     continue; // skip if you don't have the key
@@ -149,20 +122,13 @@ public class PocketCoreUpdater : BaseProcess
                 }
 
                 WriteMessage("Checking Core: " + name);
-                string mostRecentRelease;
-                PocketExtra pocketExtra = GlobalHelper.GetPocketExtra(name);
+                PocketExtra pocketExtra = PocketExtrasService.GetPocketExtra(name);
                 bool isPocketExtraCombinationPlatform = coreSettings.pocket_extras &&
                                                         pocketExtra != null &&
                                                         pocketExtra.type == PocketExtraType.combination_platform;
-
-                if (isPocketExtraCombinationPlatform)
-                {
-                    mostRecentRelease = GlobalHelper.PocketExtrasService.GetMostRecentRelease(pocketExtra);
-                }
-                else
-                {
-                    mostRecentRelease = core.version;
-                }
+                string mostRecentRelease = isPocketExtraCombinationPlatform
+                    ? this.PocketExtrasService.GetMostRecentRelease(pocketExtra)
+                    : core.version;
 
                 Dictionary<string, object> results;
 
@@ -171,7 +137,7 @@ public class PocketCoreUpdater : BaseProcess
                     WriteMessage("No releases found. Skipping");
 
                     if (core.JTBetaCheck())
-                        GlobalHelper.JotegoService.CopyBetaKey(core);
+                        this.JotegoService.CopyBetaKey(core);
 
                     results = core.DownloadAssets();
                     installedAssets.AddRange(results["installed"] as List<string>);
@@ -192,16 +158,9 @@ public class PocketCoreUpdater : BaseProcess
                 if (core.IsInstalled())
                 {
                     AnalogueCore localCore = core.GetConfig();
-                    string localVersion;
-
-                    if (isPocketExtraCombinationPlatform)
-                    {
-                        localVersion = coreSettings.pocket_extras_version;
-                    }
-                    else
-                    {
-                        localVersion = localCore.metadata.version;
-                    }
+                    string localVersion = isPocketExtraCombinationPlatform
+                        ? coreSettings.pocket_extras_version
+                        : localCore.metadata.version;
 
                     if (localVersion != null)
                     {
@@ -215,7 +174,7 @@ public class PocketCoreUpdater : BaseProcess
                     else
                     {
                         if (core.JTBetaCheck())
-                            GlobalHelper.JotegoService.CopyBetaKey(core);
+                            this.JotegoService.CopyBetaKey(core);
 
                         results = core.DownloadAssets();
                         JotegoRename(core);
@@ -245,8 +204,7 @@ public class PocketCoreUpdater : BaseProcess
                         core.Delete();
                     }
 
-                    GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, GlobalHelper.UpdateDirectory,
-                        false, false);
+                    this.PocketExtrasService.GetPocketExtra(pocketExtra, this.InstallPath, false, false);
 
                     Dictionary<string, string> summary = new Dictionary<string, string>
                     {
@@ -257,7 +215,7 @@ public class PocketCoreUpdater : BaseProcess
 
                     installed.Add(summary);
                 }
-                else if (core.Install(_preservePlatformsFolder, clean))
+                else if (core.Install(this.SettingsManager.GetConfig().preserve_platforms_folder, clean))
                 {
                     Dictionary<string, string> summary = new Dictionary<string, string>
                     {
@@ -272,7 +230,7 @@ public class PocketCoreUpdater : BaseProcess
                 JotegoRename(core);
 
                 if (core.JTBetaCheck())
-                    GlobalHelper.JotegoService.CopyBetaKey(core);
+                    this.JotegoService.CopyBetaKey(core);
 
                 results = core.DownloadAssets();
                 installedAssets.AddRange(results["installed"] as List<string>);
@@ -311,24 +269,23 @@ public class PocketCoreUpdater : BaseProcess
             SkipOutro = skipOutro,
         };
 
-        GlobalHelper.RefreshInstalledCores();
         OnUpdateProcessComplete(args);
     }
 
     private void JotegoRename(Core core)
     {
-        if (_renameJotegoCores &&
-            GlobalHelper.SettingsManager.GetCoreSettings(core.identifier).platform_rename &&
+        if (this.SettingsManager.GetConfig().fix_jt_names &&
+            this.SettingsManager.GetCoreSettings(core.identifier).platform_rename &&
             core.identifier.Contains("jotego"))
         {
-            core.platform_id = core.identifier.Split('.')[1]; //whatever
+            core.platform_id = core.identifier.Split('.')[1];
 
-            string path = Path.Combine(GlobalHelper.UpdateDirectory, "Platforms", core.platform_id + ".json");
+            string path = Path.Combine(this.InstallPath, "Platforms", core.platform_id + ".json");
             string json = File.ReadAllText(path);
             Dictionary<string, Platform> data = JsonSerializer.Deserialize<Dictionary<string, Platform>>(json);
             Platform platform = data["platform"];
 
-            if (GlobalHelper.JotegoRenamedPlatformFiles.TryGetValue(core.platform_id, out string value) &&
+            if (this.JotegoService.RenamedPlatformFiles.TryGetValue(core.platform_id, out string value) &&
                 platform.name == core.platform_id)
             {
                 WriteMessage("Updating JT Platform Name...");
@@ -338,72 +295,9 @@ public class PocketCoreUpdater : BaseProcess
         }
     }
 
-    public void RunAssetDownloader(string id = null, bool skipOutro = false)
-    {
-        List<string> installedAssets = new List<string>();
-        List<string> skippedAssets = new List<string>();
-        List<string> missingBetaKeys = new List<string>();
-
-        if (GlobalHelper.Cores == null)
-        {
-            throw new Exception("Must initialize updater before running update process.");
-        }
-
-        foreach (var core in GlobalHelper.Cores.Where(core => id == null || core.identifier == id)
-                                               .Where(core => !GlobalHelper.SettingsManager.GetCoreSettings(core.identifier).skip))
-        {
-            core.download_assets = true;
-
-            try
-            {
-                string name = core.identifier;
-
-                if (name == null)
-                {
-                    WriteMessage("Core Name is required. Skipping.");
-                    continue;
-                }
-
-                WriteMessage(core.identifier);
-
-                var results = core.DownloadAssets();
-
-                installedAssets.AddRange((List<string>)results["installed"]);
-                skippedAssets.AddRange((List<string>)results["skipped"]);
-
-                if ((bool)results["missingBetaKey"])
-                {
-                    missingBetaKeys.Add(core.identifier);
-                }
-
-                Divide();
-            }
-            catch (Exception e)
-            {
-                WriteMessage("Uh oh something went wrong.");
-#if DEBUG
-                WriteMessage(e.ToString());
-#else
-                WriteMessage(e.Message);
-#endif
-            }
-        }
-
-        UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs
-        {
-            Message = "All Done",
-            InstalledAssets = installedAssets,
-            SkippedAssets = skippedAssets,
-            MissingBetaKeys = missingBetaKeys,
-            SkipOutro = skipOutro,
-        };
-
-        OnUpdateProcessComplete(args);
-    }
-
     public void DeleteCore(Core core, bool force = false, bool nuke = false)
     {
-        if (_deleteSkippedCores || force)
+        if (this.SettingsManager.GetConfig().delete_skipped_cores || force)
         {
             core.Uninstall(nuke);
         }

@@ -11,6 +11,13 @@ public static class AssetsService
 {
     private const string BLACKLIST = "https://raw.githubusercontent.com/mattpannella/pupdate/main/blacklist.json";
 
+    private static List<string> blacklist;
+
+    public static List<string> Blacklist
+    {
+        get { return blacklist ??= GetBlacklist(); }
+    }
+
     public static void BackupSaves(string directory, string backupLocation)
     {
         BackupDirectory(directory, "Saves", backupLocation);

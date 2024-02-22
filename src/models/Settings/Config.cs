@@ -32,9 +32,9 @@ public class Config
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool use_local_pocket_extras { get; set; } = false;
 
-    public Dictionary<string, string> custom_archive { get; set; } = new()
+    public CustomArchive custom_archive { get; set; } = new()
     {
-        { "url", "https://updater.retrodriven.com" },
-        { "index", "updater.php" }
+        url = "https://updater.retrodriven.com",
+        index = "updater.php",
     };
 }

@@ -15,7 +15,14 @@ public class PlatformImagePacksService : Base
 {
     private const string END_POINT = "https://raw.githubusercontent.com/mattpannella/pupdate/main/image_packs.json";
 
-    public static List<PlatformImagePack> GetPlatformImagePacks()
+    private static List<PlatformImagePack> list;
+
+    public static List<PlatformImagePack> List
+    {
+        get { return list ??= PlatformImagePacksService.GetPlatformImagePacks(); }
+    }
+
+    private static List<PlatformImagePack> GetPlatformImagePacks()
     {
 #if DEBUG
         string json = File.ReadAllText("image_packs.json");

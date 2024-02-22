@@ -19,12 +19,19 @@ public class PocketExtrasService : BaseProcess
 
     public string GithubToken { get; set; }
 
+    private static List<PocketExtra> list;
+
+    public static List<PocketExtra> List
+    {
+        get { return list ??= GetPocketExtrasList(); }
+    }
+
     public PocketExtrasService(string githubToken = null)
     {
         this.GithubToken = githubToken;
     }
 
-    public static List<PocketExtra> GetPocketExtrasList()
+    private static List<PocketExtra> GetPocketExtrasList()
     {
 #if DEBUG
         string json = File.ReadAllText("pocket_extras.json");
@@ -112,9 +119,7 @@ public class PocketExtrasService : BaseProcess
         WriteMessage("Downloading assets...");
 
         if (refreshLocalCores)
-            GlobalHelper.RefreshLocalCores();
-
-        //coreUpdater.RefreshStatusUpdater();
+            GlobalHelper.RefreshLocalCores(); // This doesn't add new cores to the list
 
         foreach (var coreDirectory in Directory.GetDirectories(Path.Combine(extractPath, "Cores")))
         {
@@ -276,6 +281,11 @@ public class PocketExtrasService : BaseProcess
 
         GlobalHelper.SettingsManager.EnableCore(core.identifier, true, release.tag_name);
         GlobalHelper.SettingsManager.SaveSettings();
+    }
+
+    public static PocketExtra GetPocketExtra(string idOrCoreName)
+    {
+        return List.Find(e => e.id == idOrCoreName || e.core_identifiers.Any(i => i == idOrCoreName));
     }
 
     public void GetPocketExtra(PocketExtra pocketExtra, string path, bool downloadAssets, bool refreshLocalCores)

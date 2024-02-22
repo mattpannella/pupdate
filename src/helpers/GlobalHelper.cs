@@ -1,6 +1,5 @@
 using Pannella.Models;
 using Pannella.Models.Archive;
-using Pannella.Models.Extras;
 using Pannella.Models.OpenFPGA_Cores_Inventory;
 using Pannella.Services;
 
@@ -8,102 +7,6 @@ namespace Pannella.Helpers;
 
 public static class GlobalHelper
 {
-    private static Archive archiveFiles;
-
-    public static Archive ArchiveFiles
-    {
-        get
-        {
-            if (archiveFiles == null)
-            {
-                Console.WriteLine("Loading Assets Index...");
-
-                if (SettingsManager.GetConfig().use_custom_archive)
-                {
-                    var custom = SettingsManager.GetConfig().custom_archive;
-                    Uri baseUrl = new Uri(custom["url"]);
-                    Uri url = new Uri(baseUrl, custom["index"]);
-
-                    archiveFiles = ArchiveService.GetFilesCustom(url.ToString());
-                }
-                else
-                {
-                    archiveFiles = ArchiveService.GetFiles(SettingsManager.GetConfig().archive_name);
-                }
-            }
-
-            return archiveFiles;
-        }
-    }
-
-    private static Archive gameAndWatchArchiveFiles;
-
-    public static Archive GameAndWatchArchiveFiles
-    {
-        get
-        {
-            if (gameAndWatchArchiveFiles == null)
-            {
-                Console.WriteLine("Loading Game and Watch Assets Index...");
-
-                string archiveName = SettingsManager.GetConfig().archive_name;
-                string gnwArchiveName = SettingsManager.GetConfig().gnw_archive_name;
-
-                if (gnwArchiveName != archiveName)
-                {
-                    gameAndWatchArchiveFiles = ArchiveService.GetFiles(gnwArchiveName);
-
-                    // remove the metadata files since we're processing the entire json list
-                    gameAndWatchArchiveFiles.files.RemoveAll(file =>
-                        Path.GetExtension(file.name) is ".sqlite" or ".torrent" or ".xml");
-                }
-                else
-                {
-                    // there are GNW files in the openFPGA-files archive as well as the archive maintained by Espiox
-                    // if the GNW archive is set to the openFPGA-files archive, create a second archive
-                    // with just the GNW files from it so things behave correctly
-                    gameAndWatchArchiveFiles = new Archive
-                    {
-                        item_last_updated = ArchiveFiles.item_last_updated,
-                        files = ArchiveFiles.files.Where(file => file.name.EndsWith(".gnw")).ToList()
-                    };
-
-                    gameAndWatchArchiveFiles.files_count = gameAndWatchArchiveFiles.files.Count;
-                }
-            }
-
-            return gameAndWatchArchiveFiles;
-        }
-    }
-
-    private static List<string> blacklist;
-
-    public static List<string> Blacklist
-    {
-        get { return blacklist ??= AssetsService.GetBlacklist(); }
-    }
-
-    private static List<PlatformImagePack> platformImagePacks;
-
-    public static List<PlatformImagePack> PlatformImagePacks
-    {
-        get { return platformImagePacks ??= PlatformImagePacksService.GetPlatformImagePacks(); }
-    }
-
-    private static List<PocketExtra> pocketExtras;
-
-    public static List<PocketExtra> PocketExtras
-    {
-        get { return pocketExtras ??= PocketExtrasService.GetPocketExtrasList(); }
-    }
-
-    private static Dictionary<string, string> jotegoRenamedPlatformFiles;
-
-    public static Dictionary<string, string> JotegoRenamedPlatformFiles
-    {
-        get { return jotegoRenamedPlatformFiles ??= JotegoService.LoadRenamedPlatformFiles(); }
-    }
-
     public static SettingsManager SettingsManager { get; private set ;}
     public static string UpdateDirectory { get; private set; }
     public static List<Core> Cores { get; private set; }
@@ -114,6 +17,7 @@ public static class GlobalHelper
     public static FirmwareService FirmwareService { get; private set; }
     public static CoresService CoresService { get; private set; }
     public static JotegoService JotegoService { get; private set; }
+    public static ArchiveService ArchiveService { get; private set; }
 
     private static bool isInitialized;
 
@@ -125,13 +29,24 @@ public static class GlobalHelper
             isInitialized = true;
             UpdateDirectory = path;
             SettingsManager = new SettingsManager(path);
-            Cores = CoresService.GetOpenFpgaCoresInventory();
+            Cores = CoresService.GetOpenFpgaCoresInventory(); // should move this up before settings manager and pass into constructor
             RefreshLocalCores();
             PocketExtrasService = new PocketExtrasService(SettingsManager.GetConfig().github_token);
             PlatformImagePacksService = new PlatformImagePacksService();
             FirmwareService = new FirmwareService();
             CoresService = new CoresService();
             JotegoService = new JotegoService(SettingsManager.GetConfig().github_token);
+
+            if (SettingsManager.GetConfig().use_custom_archive)
+            {
+                ArchiveService = new ArchiveService(SettingsManager.GetConfig().custom_archive,
+                    SettingsManager.GetConfig().gnw_archive_name);
+            }
+            else
+            {
+                ArchiveService = new ArchiveService(SettingsManager.GetConfig().archive_name,
+                    SettingsManager.GetConfig().gnw_archive_name);
+            }
 
             if (statusUpdated != null)
             {
@@ -184,7 +99,7 @@ public static class GlobalHelper
     public static void RefreshLocalCores()
     {
         Cores.AddRange(GetLocalCores());
-        SettingsManager.InitializeCoreSettings(Cores);
+        SettingsManager.InitializeCoreSettings(Cores); // this doesn't add new cores to the list
         RefreshInstalledCores();
     }
 
@@ -202,10 +117,5 @@ public static class GlobalHelper
     public static Core GetInstalledCore(string identifier)
     {
         return InstalledCores.Find(i => i.identifier == identifier);
-    }
-
-    public static PocketExtra GetPocketExtra(string idOrCoreName)
-    {
-        return PocketExtras.Find(e => e.id == idOrCoreName || e.core_identifiers.Any(i => i == idOrCoreName));
     }
 }

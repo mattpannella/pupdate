@@ -4,6 +4,8 @@ public class Base
 {
     public event EventHandler<StatusUpdatedEventArgs> StatusUpdated;
 
+    public const string DIVIDER = "-------------";
+
     protected void WriteMessage(string message)
     {
         StatusUpdatedEventArgs args = new StatusUpdatedEventArgs
@@ -16,7 +18,7 @@ public class Base
 
     protected void Divide()
     {
-        WriteMessage("-------------");
+        WriteMessage(DIVIDER);
     }
 
     protected void OnStatusUpdated(StatusUpdatedEventArgs e)

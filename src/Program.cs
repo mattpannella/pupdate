@@ -91,13 +91,12 @@ internal partial class Program
             CheckForMissingCores(enableMissingCores);
 
             PocketCoreUpdater coreUpdater = new PocketCoreUpdater(
-                GlobalHelper.SettingsManager.GetConfig().fix_jt_names,
-                GlobalHelper.SettingsManager.GetConfig().download_assets,
-                GlobalHelper.SettingsManager.GetConfig().preserve_platforms_folder,
-                GlobalHelper.SettingsManager.GetConfig().download_firmware,
-                GlobalHelper.SettingsManager.GetConfig().backup_saves,
-                GlobalHelper.SettingsManager.GetConfig().backup_saves_location,
-                GlobalHelper.SettingsManager.GetConfig().delete_skipped_cores);
+                GlobalHelper.UpdateDirectory,
+                GlobalHelper.Cores,
+                GlobalHelper.FirmwareService,
+                GlobalHelper.JotegoService,
+                GlobalHelper.PocketExtrasService,
+                GlobalHelper.SettingsManager);
 
             coreUpdater.StatusUpdated += coreUpdater_StatusUpdated;
             coreUpdater.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
@@ -121,12 +120,12 @@ internal partial class Program
                     break;
 
                 case AssetsOptions options:
-                    // can likely just use the option value without the check
-                    if (string.IsNullOrEmpty(options.CoreName))
-                        coreUpdater.RunAssetDownloader();
-                    else
-                        coreUpdater.RunAssetDownloader(options.CoreName);
+                    var cores = GlobalHelper.Cores
+                        .Where(core => !string.IsNullOrEmpty(options.CoreName) || core.identifier == options.CoreName)
+                        .Where(core => !GlobalHelper.SettingsManager.GetCoreSettings(core.identifier).skip)
+                        .ToList();
 
+                    GlobalHelper.CoresService.DownloadCoreAssets(cores);
                     break;
 
                 case UninstallOptions options when GlobalHelper.GetCore(options.CoreName) == null:
@@ -166,14 +165,14 @@ internal partial class Program
                     {
                         Console.WriteLine();
 
-                        foreach (var extra in GlobalHelper.PocketExtras)
+                        foreach (var extra in PocketExtrasService.List)
                         {
                             PrintPocketExtraInfo(extra);
                         }
                     }
                     else if (!string.IsNullOrEmpty(options.Name))
                     {
-                        var extra = GlobalHelper.GetPocketExtra(options.Name);
+                        var extra = PocketExtrasService.GetPocketExtra(options.Name);
 
                         if (extra != null)
                         {
@@ -224,7 +223,7 @@ internal partial class Program
 
     private static void coreUpdater_UpdateProcessComplete(object sender, UpdateProcessCompleteEventArgs e)
     {
-        Console.WriteLine("-------------");
+        Console.WriteLine(Base.DIVIDER);
         Console.WriteLine(e.Message);
 
         if (e.InstalledCores != null && e.InstalledCores.Count > 0)
@@ -262,9 +261,9 @@ internal partial class Program
             Console.WriteLine();
         }
 
-        if (e.FirmwareUpdated != string.Empty)
+        if (!string.IsNullOrEmpty(e.FirmwareUpdated))
         {
-            Console.WriteLine("New Firmware was downloaded. Restart your Pocket to install");
+            Console.WriteLine("New Firmware was downloaded. Restart your Pocket to install.");
             Console.WriteLine(e.FirmwareUpdated);
             Console.WriteLine();
         }

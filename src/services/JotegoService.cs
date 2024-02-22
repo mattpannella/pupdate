@@ -12,6 +12,13 @@ public class JotegoService : Base
     private const string BETA_KEY_FILENAME = "jtbeta.zip";
     private const string EXTRACT_LOCATION = "betakeys";
 
+    private Dictionary<string, string> renamedPlatformFiles;
+
+    public Dictionary<string, string> RenamedPlatformFiles
+    {
+        get { return renamedPlatformFiles ??= this.LoadRenamedPlatformFiles(); }
+    }
+
     public string GithubToken { get; set; }
 
     public JotegoService(string githubToken = null)
@@ -19,7 +26,7 @@ public class JotegoService : Base
         this.GithubToken = githubToken;
     }
 
-    public Dictionary<string, string> LoadRenamedPlatformFiles()
+    private Dictionary<string, string> LoadRenamedPlatformFiles()
     {
         Dictionary<string, string> platformFiles = new();
 

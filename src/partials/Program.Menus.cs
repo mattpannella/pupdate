@@ -1,6 +1,5 @@
 using ConsoleTools;
 using Pannella.Helpers;
-using Pannella.Models;
 using Pannella.Models.Extras;
 using Pannella.Models.OpenFPGA_Cores_Inventory;
 using Pannella.Models.Settings;
@@ -199,7 +198,7 @@ internal partial class Program
             .Add("Variant Cores         >", variantCoresMenu.Show)
             .Add("Go Back", ConsoleMenu.Close);
 
-        foreach (var pocketExtra in GlobalHelper.PocketExtras)
+        foreach (var pocketExtra in PocketExtrasService.List)
         {
             var name = string.IsNullOrWhiteSpace(pocketExtra.name)
                 ? $"Download extras for {pocketExtra.core_identifiers[0]}"
@@ -251,6 +250,7 @@ internal partial class Program
             {
                 Console.WriteLine("Starting update process...");
                 coreUpdater.RunUpdates();
+                GlobalHelper.RefreshInstalledCores();
                 Pause();
             })
             .Add("Update Firmware", _ =>
@@ -268,7 +268,10 @@ internal partial class Program
             .Add("Download Assets", _ =>
             {
                 Console.WriteLine("Checking for required files...");
-                coreUpdater.RunAssetDownloader();
+                var cores = GlobalHelper.Cores.Where(core =>
+                    !GlobalHelper.SettingsManager.GetCoreSettings(core.identifier).skip).ToList();
+
+                GlobalHelper.CoresService.DownloadCoreAssets(cores);
                 Pause();
             })
             .Add("Backup Saves & Memories", () =>
@@ -283,16 +286,6 @@ internal partial class Program
             .Add("Settings                >", () =>
             {
                 SettingsMenu();
-
-                coreUpdater.UpdateSettings(
-                    GlobalHelper.SettingsManager.GetConfig().fix_jt_names,
-                    GlobalHelper.SettingsManager.GetConfig().download_assets,
-                    null, // Should this be updated if the setting is changed?
-                    GlobalHelper.SettingsManager.GetConfig().download_firmware,
-                    GlobalHelper.SettingsManager.GetConfig().backup_saves,
-                    GlobalHelper.SettingsManager.GetConfig().backup_saves_location,
-                    GlobalHelper.SettingsManager.GetConfig().delete_skipped_cores);
-
                 // Is reloading the settings file necessary?
                 GlobalHelper.ReloadSettings();
             })
@@ -451,7 +444,7 @@ internal partial class Program
     {
         Console.Clear();
 
-        if (GlobalHelper.PlatformImagePacks.Count > 0)
+        if (PlatformImagePacksService.List.Count > 0)
         {
             int choice = 0;
             var menu = new ConsoleMenu()
@@ -464,7 +457,7 @@ internal partial class Program
                     config.SelectedItemForegroundColor = Console.BackgroundColor;
                 });
 
-            foreach (var pack in GlobalHelper.PlatformImagePacks)
+            foreach (var pack in PlatformImagePacksService.List)
             {
                 menu.Add($"{pack.owner}: {pack.repository} {pack.variant ?? string.Empty}", thisMenu =>
                 {
@@ -475,19 +468,19 @@ internal partial class Program
 
             menu.Add("Go Back", thisMenu =>
             {
-                choice = GlobalHelper.PlatformImagePacks.Count;
+                choice = PlatformImagePacksService.List.Count;
                 thisMenu.CloseMenu();
             });
 
             menu.Show();
 
-            if (choice < GlobalHelper.PlatformImagePacks.Count && choice >= 0)
+            if (choice < PlatformImagePacksService.List.Count && choice >= 0)
             {
-                GlobalHelper.PlatformImagePacksService.Install(path, GlobalHelper.PlatformImagePacks[choice].owner,
-                    GlobalHelper.PlatformImagePacks[choice].repository, GlobalHelper.PlatformImagePacks[choice].variant,
+                GlobalHelper.PlatformImagePacksService.Install(path, PlatformImagePacksService.List[choice].owner,
+                    PlatformImagePacksService.List[choice].repository, PlatformImagePacksService.List[choice].variant,
                     GlobalHelper.SettingsManager.GetConfig().github_token);
             }
-            else if (choice == GlobalHelper.PlatformImagePacks.Count)
+            else if (choice == PlatformImagePacksService.List.Count)
             {
                 // What causes this?
             }

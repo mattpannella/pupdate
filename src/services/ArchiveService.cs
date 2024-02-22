@@ -3,6 +3,7 @@ using System.Net;
 using System.Text.Json;
 using Pannella.Helpers;
 using Pannella.Models.Archive;
+using Pannella.Models.Settings;
 using File = Pannella.Models.Archive.File;
 
 namespace Pannella.Services;
@@ -10,13 +11,95 @@ namespace Pannella.Services;
 [UnconditionalSuppressMessage("Trimming",
     "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
     Justification = "<Pending>")]
-public static class ArchiveService
+public class ArchiveService
 {
     private const string METADATA = "https://archive.org/metadata/{0}";
 
     public const string DOWNLOAD = "https://archive.org/download/{0}/{1}";
 
-    public static Archive GetFiles(string archive)
+    private readonly string archiveName;
+    private readonly string gnwArchiveName;
+    private readonly CustomArchive customArchive;
+
+    public ArchiveService(string archiveName, string gnwArchiveName)
+    {
+        this.archiveName = archiveName;
+        this.gnwArchiveName = gnwArchiveName;
+        this.customArchive = null;
+    }
+
+    public ArchiveService(CustomArchive customArchive, string gnwArchiveName)
+    {
+        this.customArchive = customArchive;
+        this.archiveName = string.Empty;
+        this.gnwArchiveName = gnwArchiveName;
+    }
+
+    private Archive archiveFiles;
+
+    public Archive ArchiveFiles
+    {
+        get
+        {
+            if (this.archiveFiles == null)
+            {
+                Console.WriteLine("Loading Assets Index...");
+
+                if (this.customArchive != null)
+                {
+                    Uri baseUrl = new Uri(this.customArchive.url);
+                    Uri url = new Uri(baseUrl, this.customArchive.index);
+
+                    this.archiveFiles = ArchiveService.GetFilesCustom(url.ToString());
+                }
+                else
+                {
+                    this.archiveFiles = ArchiveService.GetFiles(this.archiveName);
+                }
+            }
+
+            return this.archiveFiles;
+        }
+    }
+
+    private Archive gameAndWatchArchiveFiles;
+
+    public Archive GameAndWatchArchiveFiles
+    {
+        get
+        {
+            if (this.gameAndWatchArchiveFiles == null)
+            {
+                Console.WriteLine("Loading Game and Watch Assets Index...");
+
+                if (this.gnwArchiveName != this.archiveName)
+                {
+                    this.gameAndWatchArchiveFiles = ArchiveService.GetFiles(this.gnwArchiveName);
+
+                    // remove the metadata files since we're processing the entire json list
+                    this.gameAndWatchArchiveFiles.files.RemoveAll(file =>
+                        Path.GetExtension(file.name) is ".sqlite" or ".torrent" or ".xml");
+                }
+                else
+                {
+                    // there are GNW files in the openFPGA-files archive as well as the archive maintained by Espiox
+                    // if the GNW archive is set to the openFPGA-files archive, create a second archive
+                    // with just the GNW files from it so things behave correctly
+                    this.gameAndWatchArchiveFiles = new Archive
+                    {
+                        item_last_updated = this.ArchiveFiles.item_last_updated,
+                        files = this.ArchiveFiles.files.Where(file => file.name.EndsWith(".gnw")).ToList()
+                    };
+
+                    this.gameAndWatchArchiveFiles.files_count = this.gameAndWatchArchiveFiles.files.Count;
+                }
+            }
+
+            return this.gameAndWatchArchiveFiles;
+        }
+    }
+
+    private static Archive GetFiles(string archive)
     {
         string url = string.Format(METADATA, archive);
         string json = HttpHelper.Instance.GetHTML(url);
@@ -25,7 +108,7 @@ public static class ArchiveService
         return result;
     }
 
-    public static Archive GetFilesCustom(string url)
+    private static Archive GetFilesCustom(string url)
     {
         try
         {
