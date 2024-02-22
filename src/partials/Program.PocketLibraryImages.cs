@@ -10,17 +10,17 @@ internal partial class Program
     private static void DownloadPockLibraryImages()
     {
         const string fileName = "Library_Image_Set_v1.0.zip";
-        ArchiveFile archiveFile = GlobalHelper.ArchiveService.ArchiveFiles.GetFile(fileName);
+        ArchiveFile archiveFile = ServiceHelper.ArchiveService.ArchiveFiles.GetFile(fileName);
 
         if (archiveFile != null)
         {
-            string localFile = Path.Combine(GlobalHelper.UpdateDirectory, fileName);
-            string extractPath = Path.Combine(GlobalHelper.UpdateDirectory, "temp");
+            string localFile = Path.Combine(ServiceHelper.UpdateDirectory, fileName);
+            string extractPath = Path.Combine(ServiceHelper.UpdateDirectory, "temp");
 
             try
             {
-                GlobalHelper.ArchiveService.DownloadArchiveFile(GlobalHelper.SettingsService.GetConfig().archive_name,
-                    archiveFile, GlobalHelper.UpdateDirectory);
+                ServiceHelper.ArchiveService.DownloadArchiveFile(ServiceHelper.SettingsService.GetConfig().archive_name,
+                    archiveFile, ServiceHelper.UpdateDirectory);
                 Console.WriteLine("Installing...");
 
                 if (Directory.Exists(extractPath))
@@ -28,7 +28,7 @@ internal partial class Program
 
                 ZipFile.ExtractToDirectory(localFile, extractPath);
                 File.Delete(localFile);
-                Util.CopyDirectory(extractPath, GlobalHelper.UpdateDirectory, true, true);
+                Util.CopyDirectory(extractPath, ServiceHelper.UpdateDirectory, true, true);
 
                 Directory.Delete(extractPath, true);
                 Console.WriteLine("Complete.");

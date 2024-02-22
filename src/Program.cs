@@ -58,7 +58,7 @@ internal partial class Program
 
             #endregion
 
-            GlobalHelper.Initialize(path, coreUpdater_StatusUpdated, coreUpdater_UpdateProcessComplete);
+            ServiceHelper.Initialize(path, coreUpdater_StatusUpdated, coreUpdater_UpdateProcessComplete);
 
             bool enableMissingCores = false;
 
@@ -66,18 +66,18 @@ internal partial class Program
             {
                 case MenuOptions options:
                     if (!options.SkipUpdate)
-                        CheckForUpdates(GlobalHelper.UpdateDirectory, false, args);
+                        CheckForUpdates(ServiceHelper.UpdateDirectory, false, args);
                     else
                         enableMissingCores = true;
                     break;
 
                 case UpdateSelfOptions:
-                    CheckForUpdates(GlobalHelper.UpdateDirectory, true, args);
+                    CheckForUpdates(ServiceHelper.UpdateDirectory, true, args);
                     // CheckForUpdates will terminate execution when necessary.
                     break;
 
                 case FirmwareOptions:
-                    GlobalHelper.FirmwareService.UpdateFirmware(GlobalHelper.UpdateDirectory);
+                    ServiceHelper.FirmwareService.UpdateFirmware(ServiceHelper.UpdateDirectory);
                     return;
 
                 case FundOptions options:
@@ -91,12 +91,12 @@ internal partial class Program
             CheckForMissingCores(enableMissingCores);
 
             CoreUpdaterService coreUpdaterService = new CoreUpdaterService(
-                GlobalHelper.UpdateDirectory,
-                GlobalHelper.CoresService.Cores,
-                GlobalHelper.FirmwareService,
-                GlobalHelper.JotegoService,
-                GlobalHelper.PocketExtrasService,
-                GlobalHelper.SettingsService);
+                ServiceHelper.UpdateDirectory,
+                ServiceHelper.CoresService.Cores,
+                ServiceHelper.FirmwareService,
+                ServiceHelper.JotegoService,
+                ServiceHelper.PocketExtrasService,
+                ServiceHelper.SettingsService);
 
             coreUpdaterService.StatusUpdated += coreUpdater_StatusUpdated;
             coreUpdaterService.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
@@ -114,17 +114,17 @@ internal partial class Program
                     break;
 
                 case ImagesOptions options:
-                    GlobalHelper.PlatformImagePacksService.Install(options.ImagePackOwner, options.ImagePackRepo,
+                    ServiceHelper.PlatformImagePacksService.Install(options.ImagePackOwner, options.ImagePackRepo,
                         options.ImagePackVariant);
                     break;
 
                 case AssetsOptions options:
-                    var cores = GlobalHelper.CoresService.Cores
+                    var cores = ServiceHelper.CoresService.Cores
                         .Where(core => !string.IsNullOrEmpty(options.CoreName) || core.identifier == options.CoreName)
-                        .Where(core => !GlobalHelper.SettingsService.GetCoreSettings(core.identifier).skip)
+                        .Where(core => !ServiceHelper.SettingsService.GetCoreSettings(core.identifier).skip)
                         .ToList();
 
-                    GlobalHelper.CoresService.DownloadCoreAssets(cores);
+                    ServiceHelper.CoresService.DownloadCoreAssets(cores);
                     break;
 
                 case UninstallOptions options when CoresService.GetCore(options.CoreName) == null:
@@ -136,17 +136,17 @@ internal partial class Program
                     break;
 
                 case BackupSavesOptions options:
-                    AssetsService.BackupSaves(GlobalHelper.UpdateDirectory, options.BackupPath);
-                    AssetsService.BackupMemories(GlobalHelper.UpdateDirectory, options.BackupPath);
+                    AssetsService.BackupSaves(ServiceHelper.UpdateDirectory, options.BackupPath);
+                    AssetsService.BackupMemories(ServiceHelper.UpdateDirectory, options.BackupPath);
 
                     if (options.Save)
                     {
-                        var config = GlobalHelper.SettingsService.GetConfig();
+                        var config = ServiceHelper.SettingsService.GetConfig();
 
                         config.backup_saves = true;
                         config.backup_saves_location = options.BackupPath;
 
-                        GlobalHelper.SettingsService.Save();
+                        ServiceHelper.SettingsService.Save();
                     }
 
                     break;
@@ -164,14 +164,14 @@ internal partial class Program
                     {
                         Console.WriteLine();
 
-                        foreach (var extra in GlobalHelper.PocketExtrasService.List)
+                        foreach (var extra in ServiceHelper.PocketExtrasService.List)
                         {
                             PrintPocketExtraInfo(extra);
                         }
                     }
                     else if (!string.IsNullOrEmpty(options.Name))
                     {
-                        var extra = GlobalHelper.PocketExtrasService.GetPocketExtra(options.Name);
+                        var extra = ServiceHelper.PocketExtrasService.GetPocketExtra(options.Name);
 
                         if (extra != null)
                         {
@@ -182,7 +182,7 @@ internal partial class Program
                             }
                             else
                             {
-                                GlobalHelper.PocketExtrasService.GetPocketExtra(extra, GlobalHelper.UpdateDirectory, true);
+                                ServiceHelper.PocketExtrasService.GetPocketExtra(extra, ServiceHelper.UpdateDirectory, true);
                             }
                         }
                         else

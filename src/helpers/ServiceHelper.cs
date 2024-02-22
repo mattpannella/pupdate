@@ -3,7 +3,7 @@ using Pannella.Services;
 
 namespace Pannella.Helpers;
 
-public static class GlobalHelper
+public static class ServiceHelper
 {
     public static string UpdateDirectory { get; private set; }
     public static CoresService CoresService { get; private set; }

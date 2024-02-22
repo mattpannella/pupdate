@@ -11,13 +11,13 @@ internal partial class Program
     private static void DownloadGameBoyPalettes()
     {
         Release release = GithubApiService.GetLatestRelease("davewongillies", "openfpga-palettes",
-            GlobalHelper.SettingsService.GetConfig().github_token);
+            ServiceHelper.SettingsService.GetConfig().github_token);
         Asset asset = release.assets.FirstOrDefault(a => a.name.EndsWith(".zip"));
 
         if (asset != null)
         {
-            string localFile = Path.Combine(GlobalHelper.UpdateDirectory, asset.name);
-            string extractPath = Path.Combine(GlobalHelper.UpdateDirectory, "temp");
+            string localFile = Path.Combine(ServiceHelper.UpdateDirectory, asset.name);
+            string extractPath = Path.Combine(ServiceHelper.UpdateDirectory, "temp");
 
             try
             {
@@ -31,7 +31,7 @@ internal partial class Program
 
                 ZipFile.ExtractToDirectory(localFile, extractPath);
                 File.Delete(localFile);
-                Util.CopyDirectory(extractPath, GlobalHelper.UpdateDirectory, true, true);
+                Util.CopyDirectory(extractPath, ServiceHelper.UpdateDirectory, true, true);
 
                 Directory.Delete(extractPath, true);
                 Console.WriteLine("Complete.");

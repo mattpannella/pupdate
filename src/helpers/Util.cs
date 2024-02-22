@@ -70,7 +70,7 @@ public class Util
 
         if (preservePlatformsFolder)
         {
-            string existing = Path.Combine(GlobalHelper.UpdateDirectory, PLATFORMS_DIRECTORY, platform + ".json");
+            string existing = Path.Combine(ServiceHelper.UpdateDirectory, PLATFORMS_DIRECTORY, platform + ".json");
 
             if (File.Exists(existing))
             {

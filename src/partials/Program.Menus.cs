@@ -70,8 +70,8 @@ internal partial class Program
             })
             .Add("Enable All Display Modes", () =>
             {
-                var cores = GlobalHelper.CoresService.Cores.Where(core =>
-                    !GlobalHelper.SettingsService.GetCoreSettings(core.identifier).skip).ToList();
+                var cores = ServiceHelper.CoresService.Cores.Where(core =>
+                    !ServiceHelper.SettingsService.GetCoreSettings(core.identifier).skip).ToList();
 
                 foreach (var core in cores)
                 {
@@ -198,7 +198,7 @@ internal partial class Program
             .Add("Variant Cores         >", variantCoresMenu.Show)
             .Add("Go Back", ConsoleMenu.Close);
 
-        foreach (var pocketExtra in GlobalHelper.PocketExtrasService.List)
+        foreach (var pocketExtra in ServiceHelper.PocketExtrasService.List)
         {
             var name = string.IsNullOrWhiteSpace(pocketExtra.name)
                 ? $"Download extras for {pocketExtra.core_identifiers[0]}"
@@ -216,7 +216,7 @@ internal partial class Program
             {
                 bool result = true;
 
-                if (GlobalHelper.SettingsService.GetConfig().show_menu_descriptions &&
+                if (ServiceHelper.SettingsService.GetConfig().show_menu_descriptions &&
                     !string.IsNullOrEmpty(pocketExtra.description))
                 {
                     Console.WriteLine(Util.WordWrap(pocketExtra.description, 80));
@@ -234,7 +234,7 @@ internal partial class Program
 
                 if (result)
                 {
-                    GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, GlobalHelper.UpdateDirectory, true);
+                    ServiceHelper.PocketExtrasService.GetPocketExtra(pocketExtra, ServiceHelper.UpdateDirectory, true);
                     Pause();
                 }
             });
@@ -255,31 +255,31 @@ internal partial class Program
             })
             .Add("Update Firmware", _ =>
             {
-                GlobalHelper.FirmwareService.UpdateFirmware(GlobalHelper.UpdateDirectory);
+                ServiceHelper.FirmwareService.UpdateFirmware(ServiceHelper.UpdateDirectory);
                 Pause();
             })
             .Add("Select Cores            >", () => // \u00BB
             {
                 AskAboutNewCores(true);
-                RunCoreSelector(GlobalHelper.CoresService.Cores);
+                RunCoreSelector(ServiceHelper.CoresService.Cores);
                 // Is reloading the settings file necessary?
-                GlobalHelper.ReloadSettings();
+                ServiceHelper.ReloadSettings();
             })
             .Add("Download Assets", _ =>
             {
                 Console.WriteLine("Checking for required files...");
-                var cores = GlobalHelper.CoresService.Cores.Where(core =>
-                    !GlobalHelper.SettingsService.GetCoreSettings(core.identifier).skip).ToList();
+                var cores = ServiceHelper.CoresService.Cores.Where(core =>
+                    !ServiceHelper.SettingsService.GetCoreSettings(core.identifier).skip).ToList();
 
-                GlobalHelper.CoresService.DownloadCoreAssets(cores);
+                ServiceHelper.CoresService.DownloadCoreAssets(cores);
                 Pause();
             })
             .Add("Backup Saves & Memories", () =>
             {
-                AssetsService.BackupSaves(GlobalHelper.UpdateDirectory,
-                    GlobalHelper.SettingsService.GetConfig().backup_saves_location);
-                AssetsService.BackupMemories(GlobalHelper.UpdateDirectory,
-                    GlobalHelper.SettingsService.GetConfig().backup_saves_location);
+                AssetsService.BackupSaves(ServiceHelper.UpdateDirectory,
+                    ServiceHelper.SettingsService.GetConfig().backup_saves_location);
+                AssetsService.BackupMemories(ServiceHelper.UpdateDirectory,
+                    ServiceHelper.SettingsService.GetConfig().backup_saves_location);
                 Pause();
             })
             .Add("Pocket Setup            >", pocketSetupMenu.Show)
@@ -289,7 +289,7 @@ internal partial class Program
             {
                 SettingsMenu();
                 // Is reloading the settings file necessary?
-                GlobalHelper.ReloadSettings();
+                ServiceHelper.ReloadSettings();
             })
             .Add("Exit", ConsoleMenu.Close);
 
@@ -298,7 +298,7 @@ internal partial class Program
 
     private static void AskAboutNewCores(bool force = false)
     {
-        while (GlobalHelper.SettingsService.GetConfig().download_new_cores == null || force)
+        while (ServiceHelper.SettingsService.GetConfig().download_new_cores == null || force)
         {
             force = false;
 
@@ -306,7 +306,7 @@ internal partial class Program
 
             ConsoleKey response = Console.ReadKey(true).Key;
 
-            GlobalHelper.SettingsService.GetConfig().download_new_cores = response switch
+            ServiceHelper.SettingsService.GetConfig().download_new_cores = response switch
             {
                 ConsoleKey.Y => "yes",
                 ConsoleKey.N => "no",
@@ -371,7 +371,7 @@ internal partial class Program
 
                 if ((current <= (offset + pageSize)) && (current >= offset))
                 {
-                    var coreSettings = GlobalHelper.SettingsService.GetCoreSettings(core.identifier);
+                    var coreSettings = ServiceHelper.SettingsService.GetCoreSettings(core.identifier);
                     var selected = isCoreSelection && !coreSettings.skip;
                     var name = core.identifier;
                     var title = MenuItemName(name, selected, isCoreSelection, core.requires_license);
@@ -418,11 +418,11 @@ internal partial class Program
 
     private static void RunCoreSelector(List<Core> cores, string message = "Select your cores.")
     {
-        if (GlobalHelper.SettingsService.GetConfig().download_new_cores?.ToLowerInvariant() == "yes")
+        if (ServiceHelper.SettingsService.GetConfig().download_new_cores?.ToLowerInvariant() == "yes")
         {
             foreach (Core core in cores)
             {
-                GlobalHelper.SettingsService.EnableCore(core.identifier);
+                ServiceHelper.SettingsService.EnableCore(core.identifier);
             }
         }
         else
@@ -432,21 +432,21 @@ internal partial class Program
             foreach (var item in results)
             {
                 if (item.Value)
-                    GlobalHelper.SettingsService.EnableCore(item.Key);
+                    ServiceHelper.SettingsService.EnableCore(item.Key);
                 else
-                    GlobalHelper.SettingsService.DisableCore(item.Key);
+                    ServiceHelper.SettingsService.DisableCore(item.Key);
             }
         }
 
-        GlobalHelper.SettingsService.GetConfig().core_selector = false;
-        GlobalHelper.SettingsService.Save();
+        ServiceHelper.SettingsService.GetConfig().core_selector = false;
+        ServiceHelper.SettingsService.Save();
     }
 
     private static void PlatformImagePackSelector()
     {
         Console.Clear();
 
-        if (GlobalHelper.PlatformImagePacksService.List.Count > 0)
+        if (ServiceHelper.PlatformImagePacksService.List.Count > 0)
         {
             int choice = 0;
             var menu = new ConsoleMenu()
@@ -459,7 +459,7 @@ internal partial class Program
                     config.SelectedItemForegroundColor = Console.BackgroundColor;
                 });
 
-            foreach (var pack in GlobalHelper.PlatformImagePacksService.List)
+            foreach (var pack in ServiceHelper.PlatformImagePacksService.List)
             {
                 menu.Add($"{pack.owner}: {pack.repository} {pack.variant ?? string.Empty}", thisMenu =>
                 {
@@ -470,20 +470,20 @@ internal partial class Program
 
             menu.Add("Go Back", thisMenu =>
             {
-                choice = GlobalHelper.PlatformImagePacksService.List.Count;
+                choice = ServiceHelper.PlatformImagePacksService.List.Count;
                 thisMenu.CloseMenu();
             });
 
             menu.Show();
 
-            if (choice < GlobalHelper.PlatformImagePacksService.List.Count && choice >= 0)
+            if (choice < ServiceHelper.PlatformImagePacksService.List.Count && choice >= 0)
             {
-                GlobalHelper.PlatformImagePacksService.Install(
-                    GlobalHelper.PlatformImagePacksService.List[choice].owner,
-                    GlobalHelper.PlatformImagePacksService.List[choice].repository,
-                    GlobalHelper.PlatformImagePacksService.List[choice].variant);
+                ServiceHelper.PlatformImagePacksService.Install(
+                    ServiceHelper.PlatformImagePacksService.List[choice].owner,
+                    ServiceHelper.PlatformImagePacksService.List[choice].repository,
+                    ServiceHelper.PlatformImagePacksService.List[choice].variant);
             }
-            else if (choice == GlobalHelper.PlatformImagePacksService.List.Count)
+            else if (choice == ServiceHelper.PlatformImagePacksService.List.Count)
             {
                 // What causes this?
             }
@@ -533,13 +533,13 @@ internal partial class Program
         foreach (var (name, text) in menuItems)
         {
             var property = type.GetProperty(name);
-            var value = (bool)property!.GetValue(GlobalHelper.SettingsService.GetConfig())!;
+            var value = (bool)property!.GetValue(ServiceHelper.SettingsService.GetConfig())!;
             var title = MenuItemName(text, value);
 
             menu.Add(title, thisMenu =>
             {
                 value = !value;
-                property.SetValue(GlobalHelper.SettingsService.GetConfig(), value);
+                property.SetValue(ServiceHelper.SettingsService.GetConfig(), value);
                 thisMenu.CurrentItem.Name = MenuItemName(text, value);
             });
         }
@@ -548,7 +548,7 @@ internal partial class Program
 
         menu.Show();
 
-        GlobalHelper.SettingsService.Save();
+        ServiceHelper.SettingsService.Save();
     }
 
     private static string MenuItemName(string title, bool value, bool isCoreSelection = false, bool requiresLicense = false)

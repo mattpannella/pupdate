@@ -36,9 +36,9 @@ public class Core : Base
     public int beta_slot_platform_id_index;
     public bool requires_license { get; set; } = false;
 
-    public bool download_assets { get; set; } = GlobalHelper.SettingsService.GetConfig().download_assets;
+    public bool download_assets { get; set; } = ServiceHelper.SettingsService.GetConfig().download_assets;
 
-    public bool build_instances { get; set; } = GlobalHelper.SettingsService.GetConfig().build_instance_jsons;
+    public bool build_instances { get; set; } = ServiceHelper.SettingsService.GetConfig().build_instance_jsons;
 
     private const string ZIP_FILE_NAME = "core.zip";
 
@@ -79,16 +79,16 @@ public class Core : Base
 
     private void PocketExtraCheck()
     {
-        var coreSettings = GlobalHelper.SettingsService.GetCoreSettings(this.identifier);
+        var coreSettings = ServiceHelper.SettingsService.GetCoreSettings(this.identifier);
 
         if (coreSettings.pocket_extras)
         {
-            PocketExtra pocketExtra = GlobalHelper.PocketExtrasService.GetPocketExtra(this.identifier);
+            PocketExtra pocketExtra = ServiceHelper.PocketExtrasService.GetPocketExtra(this.identifier);
 
             if (pocketExtra != null)
             {
                 WriteMessage("Reapplying Pocket Extras...");
-                GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, GlobalHelper.UpdateDirectory, false);
+                ServiceHelper.PocketExtrasService.GetPocketExtra(pocketExtra, ServiceHelper.UpdateDirectory, false);
             }
         }
     }
@@ -104,8 +104,8 @@ public class Core : Base
 
         WriteMessage($"Downloading file {this.download_url}...");
 
-        string zipPath = Path.Combine(GlobalHelper.UpdateDirectory, ZIP_FILE_NAME);
-        string extractPath = GlobalHelper.UpdateDirectory;
+        string zipPath = Path.Combine(ServiceHelper.UpdateDirectory, ZIP_FILE_NAME);
+        string extractPath = ServiceHelper.UpdateDirectory;
 
         HttpHelper.Instance.DownloadFile(this.download_url, zipPath);
 
@@ -137,7 +137,7 @@ public class Core : Base
 
     private static void CheckUpdateDirectory()
     {
-        if (!Directory.Exists(GlobalHelper.UpdateDirectory))
+        if (!Directory.Exists(ServiceHelper.UpdateDirectory))
         {
             throw new Exception("Unable to access update directory");
         }
@@ -149,7 +149,7 @@ public class Core : Base
 
         foreach (string folder in folders)
         {
-            string path = Path.Combine(GlobalHelper.UpdateDirectory, folder, this.identifier);
+            string path = Path.Combine(ServiceHelper.UpdateDirectory, folder, this.identifier);
 
             if (Directory.Exists(path))
             {
@@ -160,7 +160,7 @@ public class Core : Base
 
         if (nuke)
         {
-            string path = Path.Combine(GlobalHelper.UpdateDirectory, "Assets", this.platform_id, this.identifier);
+            string path = Path.Combine(ServiceHelper.UpdateDirectory, "Assets", this.platform_id, this.identifier);
 
             if (Directory.Exists(path))
             {
@@ -176,8 +176,8 @@ public class Core : Base
 
         Delete(nuke);
 
-        GlobalHelper.SettingsService.DisableCore(this.identifier);
-        GlobalHelper.SettingsService.Save();
+        ServiceHelper.SettingsService.DisableCore(this.identifier);
+        ServiceHelper.SettingsService.Save();
 
         WriteMessage("Finished");
         Divide();
@@ -192,7 +192,7 @@ public class Core : Base
             return this.platform;
         }
 
-        string updateDirectory = GlobalHelper.UpdateDirectory;
+        string updateDirectory = ServiceHelper.UpdateDirectory;
         // cores with multiple platforms won't work...not sure any exist right now?
         string platformsFolder = Path.Combine(updateDirectory, "Platforms");
         string dataFile = Path.Combine(platformsFolder, info.metadata.platform_ids[0] + ".json");
@@ -207,8 +207,8 @@ public class Core : Base
         List<string> skipped = new List<string>();
         bool missingBetaKey = false;
 
-        if (!GlobalHelper.SettingsService.GetConfig().download_assets ||
-            !GlobalHelper.SettingsService.GetCoreSettings(this.identifier).download_assets)
+        if (!ServiceHelper.SettingsService.GetConfig().download_assets ||
+            !ServiceHelper.SettingsService.GetCoreSettings(this.identifier).download_assets)
         {
             return new Dictionary<string, object>
             {
@@ -221,7 +221,7 @@ public class Core : Base
         CheckUpdateDirectory();
         WriteMessage("Looking for Assets...");
         AnalogueCore info = this.GetConfig();
-        string updateDirectory = GlobalHelper.UpdateDirectory;
+        string updateDirectory = ServiceHelper.UpdateDirectory;
         // cores with multiple platforms won't work...not sure any exist right now?
         string instancesDirectory = Path.Combine(updateDirectory, "Assets", info.metadata.platform_ids[0], this.identifier);
         string platformPath = Path.Combine(updateDirectory, "Assets", info.metadata.platform_ids[0]);
@@ -235,7 +235,7 @@ public class Core : Base
             foreach (DataSlot slot in dataJson.data.data_slots)
             {
                 if (slot.filename != null && !slot.filename.EndsWith(".sav") &&
-                    !GlobalHelper.AssetsService.Blacklist.Contains(slot.filename))
+                    !ServiceHelper.AssetsService.Blacklist.Contains(slot.filename))
                 {
                     if (slot.IsCoreSpecific())
                     {
@@ -253,14 +253,14 @@ public class Core : Base
 
                     if (slot.alternate_filenames != null)
                     {
-                        files.AddRange(slot.alternate_filenames.Where(f => !GlobalHelper.AssetsService.Blacklist.Contains(f)));
+                        files.AddRange(slot.alternate_filenames.Where(f => !ServiceHelper.AssetsService.Blacklist.Contains(f)));
                     }
 
                     foreach (string f in files)
                     {
                         string filepath = Path.Combine(path, f);
 
-                        if (File.Exists(filepath) && CheckCRC(filepath, GlobalHelper.ArchiveService.ArchiveFiles))
+                        if (File.Exists(filepath) && CheckCRC(filepath, ServiceHelper.ArchiveService.ArchiveFiles))
                         {
                             WriteMessage($"Already installed: {f}");
                         }
@@ -269,9 +269,9 @@ public class Core : Base
                             bool result = DownloadAsset(
                                 f,
                                 filepath,
-                                GlobalHelper.ArchiveService.ArchiveFiles,
-                                GlobalHelper.SettingsService.GetConfig().archive_name,
-                                GlobalHelper.SettingsService.GetConfig().use_custom_archive);
+                                ServiceHelper.ArchiveService.ArchiveFiles,
+                                ServiceHelper.SettingsService.GetConfig().archive_name,
+                                ServiceHelper.SettingsService.GetConfig().use_custom_archive);
 
                             if (result)
                             {
@@ -297,14 +297,14 @@ public class Core : Base
             };
         }
 
-        if (this.identifier is "agg23.GameAndWatch" && GlobalHelper.SettingsService.GetConfig().download_gnw_roms)
+        if (this.identifier is "agg23.GameAndWatch" && ServiceHelper.SettingsService.GetConfig().download_gnw_roms)
         {
             string commonPath = Path.Combine(platformPath, "common");
 
             if (!Directory.Exists(commonPath))
                 Directory.CreateDirectory(commonPath);
 
-            foreach (var f in GlobalHelper.ArchiveService.GameAndWatchArchiveFiles.files)
+            foreach (var f in ServiceHelper.ArchiveService.GameAndWatchArchiveFiles.files)
             {
                 string filePath = Path.Combine(commonPath, f.name);
                 string subDirectory = Path.GetDirectoryName(f.name);
@@ -314,7 +314,7 @@ public class Core : Base
                     Directory.CreateDirectory(Path.Combine(commonPath, subDirectory));
                 }
 
-                if (File.Exists(filePath) && CheckCRC(filePath, GlobalHelper.ArchiveService.GameAndWatchArchiveFiles))
+                if (File.Exists(filePath) && CheckCRC(filePath, ServiceHelper.ArchiveService.GameAndWatchArchiveFiles))
                 {
                     WriteMessage($"Already installed: {f.name}");
                 }
@@ -323,8 +323,8 @@ public class Core : Base
                     bool result = DownloadAsset(
                         f.name,
                         filePath,
-                        GlobalHelper.ArchiveService.GameAndWatchArchiveFiles,
-                        GlobalHelper.SettingsService.GetConfig().gnw_archive_name);
+                        ServiceHelper.ArchiveService.GameAndWatchArchiveFiles,
+                        ServiceHelper.SettingsService.GetConfig().gnw_archive_name);
 
                     if (result)
                     {
@@ -371,7 +371,7 @@ public class Core : Base
                         continue;
                     }
 
-                    if (GlobalHelper.SettingsService.GetConfig().skip_alternative_assets &&
+                    if (ServiceHelper.SettingsService.GetConfig().skip_alternative_assets &&
                         file.Contains(Path.Combine(instancesDirectory, "_alternatives")))
                     {
                         continue;
@@ -393,7 +393,7 @@ public class Core : Base
                                 missingBetaKey = true;
                             }
 
-                            if (!GlobalHelper.AssetsService.Blacklist.Contains(slot.filename) &&
+                            if (!ServiceHelper.AssetsService.Blacklist.Contains(slot.filename) &&
                                 !slot.filename.EndsWith(".sav"))
                             {
                                 string commonPath = Path.Combine(platformPath, "common");
@@ -403,7 +403,7 @@ public class Core : Base
 
                                 string slotPath = Path.Combine(commonPath, dataPath, slot.filename);
 
-                                if (File.Exists(slotPath) && CheckCRC(slotPath, GlobalHelper.ArchiveService.ArchiveFiles))
+                                if (File.Exists(slotPath) && CheckCRC(slotPath, ServiceHelper.ArchiveService.ArchiveFiles))
                                 {
                                     WriteMessage($"Already installed: {slot.filename}");
                                 }
@@ -412,9 +412,9 @@ public class Core : Base
                                     bool result = DownloadAsset(
                                         slot.filename,
                                         slotPath,
-                                        GlobalHelper.ArchiveService.ArchiveFiles,
-                                        GlobalHelper.SettingsService.GetConfig().archive_name,
-                                        GlobalHelper.SettingsService.GetConfig().use_custom_archive);
+                                        ServiceHelper.ArchiveService.ArchiveFiles,
+                                        ServiceHelper.SettingsService.GetConfig().archive_name,
+                                        ServiceHelper.SettingsService.GetConfig().use_custom_archive);
 
                                     if (result)
                                     {
@@ -455,7 +455,7 @@ public class Core : Base
     {
         CheckUpdateDirectory();
 
-        string file = Path.Combine(GlobalHelper.UpdateDirectory, "Cores", this.identifier, "core.json");
+        string file = Path.Combine(ServiceHelper.UpdateDirectory, "Cores", this.identifier, "core.json");
 
         if (!File.Exists(file))
         {
@@ -473,7 +473,7 @@ public class Core : Base
     {
         CheckUpdateDirectory();
 
-        string file = Path.Combine(GlobalHelper.UpdateDirectory, "Cores", this.identifier, "updaters.json");
+        string file = Path.Combine(ServiceHelper.UpdateDirectory, "Cores", this.identifier, "updaters.json");
 
         if (!File.Exists(file))
         {
@@ -490,7 +490,7 @@ public class Core : Base
     {
         CheckUpdateDirectory();
 
-        string localCoreFile = Path.Combine(GlobalHelper.UpdateDirectory, "Cores", this.identifier, "core.json");
+        string localCoreFile = Path.Combine(ServiceHelper.UpdateDirectory, "Cores", this.identifier, "core.json");
 
         return File.Exists(localCoreFile);
     }
@@ -515,7 +515,7 @@ public class Core : Base
 
             if (useCustomArchive)
             {
-                var custom = GlobalHelper.SettingsService.GetConfig().custom_archive;
+                var custom = ServiceHelper.SettingsService.GetConfig().custom_archive;
                 Uri baseUri = new Uri(custom.url);
                 Uri uri = new Uri(baseUri, fileName);
 
@@ -535,7 +535,7 @@ public class Core : Base
                 WriteMessage($"Finished downloading '{fileName}'");
                 count++;
             }
-            while (count < 3 && !CheckCRC(destination, GlobalHelper.ArchiveService.ArchiveFiles));
+            while (count < 3 && !CheckCRC(destination, ServiceHelper.ArchiveService.ArchiveFiles));
         }
         catch (HttpRequestException e)
         {
@@ -570,7 +570,7 @@ public class Core : Base
 
     private bool CheckCRC(string filepath, Models.Archive.Archive archive)
     {
-        if (archive == null || !GlobalHelper.SettingsService.GetConfig().crc_check)
+        if (archive == null || !ServiceHelper.SettingsService.GetConfig().crc_check)
         {
             return true;
         }
@@ -597,7 +597,7 @@ public class Core : Base
     {
         if (slot.md5 != null && (this.beta_slot_id != null && slot.id == this.beta_slot_id))
         {
-            string updateDirectory = GlobalHelper.UpdateDirectory;
+            string updateDirectory = ServiceHelper.UpdateDirectory;
             string path = Path.Combine(updateDirectory, "Assets", platform);
             string filepath = Path.Combine(path, "common", slot.filename);
 
@@ -614,7 +614,7 @@ public class Core : Base
             return;
         }
 
-        string instancePackagerFile = Path.Combine(GlobalHelper.UpdateDirectory, "Cores", this.identifier, "instance-packager.json");
+        string instancePackagerFile = Path.Combine(ServiceHelper.UpdateDirectory, "Cores", this.identifier, "instance-packager.json");
 
         if (!File.Exists(instancePackagerFile))
         {
@@ -623,7 +623,7 @@ public class Core : Base
 
         WriteMessage("Building instance json files.");
         InstanceJsonPackager jsonPackager = JsonSerializer.Deserialize<InstanceJsonPackager>(File.ReadAllText(instancePackagerFile));
-        string commonPath = Path.Combine(GlobalHelper.UpdateDirectory, "Assets", jsonPackager.platform_id, "common");
+        string commonPath = Path.Combine(ServiceHelper.UpdateDirectory, "Assets", jsonPackager.platform_id, "common");
         bool warning = false;
 
         foreach (string dir in Directory.GetDirectories(commonPath, "*", SearchOption.AllDirectories))
@@ -706,7 +706,7 @@ public class Core : Base
                     subDirectory = parts[0].Trim(Path.DirectorySeparatorChar);
                 }
 
-                string outputFile = Path.Combine(GlobalHelper.UpdateDirectory, jsonPackager.output, subDirectory, jsonFileName);
+                string outputFile = Path.Combine(ServiceHelper.UpdateDirectory, jsonPackager.output, subDirectory, jsonFileName);
 
                 if (!overwrite && File.Exists(outputFile))
                 {
@@ -747,14 +747,14 @@ public class Core : Base
 
     public bool CheckInstancePackager()
     {
-        string instancePackagerFile = Path.Combine(GlobalHelper.UpdateDirectory, "Cores", this.identifier, "instance-packager.json");
+        string instancePackagerFile = Path.Combine(ServiceHelper.UpdateDirectory, "Cores", this.identifier, "instance-packager.json");
 
         return File.Exists(instancePackagerFile);
     }
 
     private DataJSON ReadDataJSON()
     {
-        string updateDirectory = GlobalHelper.UpdateDirectory;
+        string updateDirectory = ServiceHelper.UpdateDirectory;
         string coreDirectory = Path.Combine(updateDirectory, "Cores", this.identifier);
         string dataFile = Path.Combine(coreDirectory, "data.json");
         var options = new JsonSerializerOptions { Converters = { new StringConverter() } };
@@ -803,7 +803,7 @@ public class Core : Base
 
     private void Replace(Core core)
     {
-        string root = GlobalHelper.UpdateDirectory;
+        string root = ServiceHelper.UpdateDirectory;
         string path = Path.Combine(root, "Assets", core.platform_id, core.identifier);
 
         if (Directory.Exists(path))
@@ -828,7 +828,7 @@ public class Core : Base
     {
         CheckUpdateDirectory();
 
-        string file = Path.Combine(GlobalHelper.UpdateDirectory, "Cores", this.identifier, "video.json");
+        string file = Path.Combine(ServiceHelper.UpdateDirectory, "Cores", this.identifier, "video.json");
 
         if (!File.Exists(file))
         {
@@ -859,7 +859,7 @@ public class Core : Base
         var options = new JsonSerializerOptions { WriteIndented = true };
         string json = JsonSerializer.Serialize(output, options);
 
-        File.WriteAllText(Path.Combine(GlobalHelper.UpdateDirectory, "Cores", this.identifier, "video.json"), json);
+        File.WriteAllText(Path.Combine(ServiceHelper.UpdateDirectory, "Cores", this.identifier, "video.json"), json);
     }
 
     public void AddDisplayModes()
@@ -887,6 +887,6 @@ public class Core : Base
         var options = new JsonSerializerOptions { WriteIndented = true };
         string json = JsonSerializer.Serialize(output, options);
 
-        File.WriteAllText(Path.Combine(GlobalHelper.UpdateDirectory, "Cores", this.identifier, "video.json"), json);
+        File.WriteAllText(Path.Combine(ServiceHelper.UpdateDirectory, "Cores", this.identifier, "video.json"), json);
     }
 }

@@ -7,56 +7,56 @@ internal partial class Program
 {
     private static void CheckForMissingCores(bool enableMissingCores)
     {
-        if (GlobalHelper.SettingsService.GetMissingCores().Any())
+        if (ServiceHelper.SettingsService.GetMissingCores().Any())
         {
             Console.WriteLine("\nNew cores found since the last run.");
             AskAboutNewCores();
 
-            string downloadNewCores = GlobalHelper.SettingsService.GetConfig().download_new_cores?.ToLowerInvariant();
+            string downloadNewCores = ServiceHelper.SettingsService.GetConfig().download_new_cores?.ToLowerInvariant();
 
             switch (downloadNewCores)
             {
                 case "yes":
                     Console.WriteLine("The following cores have been enabled:");
 
-                    foreach (Core core in GlobalHelper.SettingsService.GetMissingCores())
+                    foreach (Core core in ServiceHelper.SettingsService.GetMissingCores())
                     {
                         Console.WriteLine($"- {core.identifier}");
                     }
 
-                    GlobalHelper.SettingsService.EnableMissingCores();
-                    GlobalHelper.SettingsService.Save();
+                    ServiceHelper.SettingsService.EnableMissingCores();
+                    ServiceHelper.SettingsService.Save();
                     break;
 
                 case "no":
                     Console.WriteLine("The following cores have been disabled:");
 
-                    foreach (Core core in GlobalHelper.SettingsService.GetMissingCores())
+                    foreach (Core core in ServiceHelper.SettingsService.GetMissingCores())
                     {
                         Console.WriteLine($"- {core.identifier}");
                     }
 
-                    GlobalHelper.SettingsService.DisableMissingCores();
-                    GlobalHelper.SettingsService.Save();
+                    ServiceHelper.SettingsService.DisableMissingCores();
+                    ServiceHelper.SettingsService.Save();
                     break;
 
                 default:
-                    GlobalHelper.SettingsService.EnableMissingCores();
+                    ServiceHelper.SettingsService.EnableMissingCores();
 
                     if (enableMissingCores)
                     {
-                        GlobalHelper.SettingsService.Save();
+                        ServiceHelper.SettingsService.Save();
                     }
                     else
                     {
-                        RunCoreSelector(GlobalHelper.SettingsService.GetMissingCores(), "New cores are available!");
+                        RunCoreSelector(ServiceHelper.SettingsService.GetMissingCores(), "New cores are available!");
                     }
 
                     break;
             }
 
             // Is reloading the settings file necessary?
-            GlobalHelper.ReloadSettings();
+            ServiceHelper.ReloadSettings();
         }
     }
 }
