@@ -17,26 +17,28 @@ public class PocketExtrasService : BaseProcess
 {
     private const string END_POINT = "https://raw.githubusercontent.com/mattpannella/pupdate/main/pocket_extras.json";
 
+    public SettingsService SettingsService { get; set; }
     public string GithubToken { get; set; }
 
-    private static List<PocketExtra> list;
+    private List<PocketExtra> list;
 
-    public static List<PocketExtra> List
+    public List<PocketExtra> List
     {
         get { return list ??= GetPocketExtrasList(); }
     }
 
-    public PocketExtrasService(string githubToken = null)
+    public PocketExtrasService(SettingsService settingsService)
     {
-        this.GithubToken = githubToken;
+        this.SettingsService = settingsService;
+        this.GithubToken = settingsService.GetConfig().github_token;
     }
 
-    private static List<PocketExtra> GetPocketExtrasList()
+    private List<PocketExtra> GetPocketExtrasList()
     {
 #if DEBUG
         string json = File.ReadAllText("pocket_extras.json");
 #else
-        string json = GlobalHelper.SettingsManager.GetConfig().use_local_pocket_extras
+        string json = this.SettingsService.GetConfig().use_local_pocket_extras
             ? File.ReadAllText("pocket_extras.json")
             : HttpHelper.Instance.GetHTML(END_POINT);
 #endif
@@ -45,8 +47,38 @@ public class PocketExtrasService : BaseProcess
         return files.pocket_extras;
     }
 
+    public PocketExtra GetPocketExtra(string idOrCoreName)
+    {
+        return this.List.Find(e => e.id == idOrCoreName || e.core_identifiers.Any(i => i == idOrCoreName));
+    }
+
+    public void GetPocketExtra(PocketExtra pocketExtra, string path, bool downloadAssets)
+    {
+        switch (pocketExtra.type)
+        {
+            case PocketExtraType.additional_assets:
+                DownloadPocketExtras(pocketExtra.github_user, pocketExtra.github_repository,
+                    pocketExtra.core_identifiers[0], pocketExtra.github_asset_prefix,
+                    path, downloadAssets);
+                break;
+
+            case PocketExtraType.combination_platform:
+            case PocketExtraType.variant_core:
+                DownloadPocketExtrasPlatform(pocketExtra.github_user, pocketExtra.github_repository,
+                    pocketExtra.platform_name, pocketExtra.github_asset_prefix, path, downloadAssets,
+                    !pocketExtra.has_placeholders);
+                break;
+        }
+
+        WriteMessage(string.Concat(
+            Environment.NewLine,
+            $"Please go to https://www.github.com/{pocketExtra.github_user}/{pocketExtra.github_repository} ",
+            "for more information and to support the author of the Extra."
+        ));
+    }
+
     private void DownloadPocketExtrasPlatform(string user, string repository, string platformName,
-        string assetName, string path, bool downloadAssets, bool skipPlaceholderFiles, bool refreshLocalCores)
+        string assetName, string path, bool downloadAssets, bool skipPlaceholderFiles)
     {
         Release release = GithubApiService.GetLatestRelease(user, repository, this.GithubToken);
         Asset asset = release.assets.FirstOrDefault(x => x.name.StartsWith(assetName));
@@ -118,8 +150,7 @@ public class PocketExtrasService : BaseProcess
 
         WriteMessage("Downloading assets...");
 
-        if (refreshLocalCores)
-            GlobalHelper.RefreshLocalCores(); // This doesn't add new cores to the list
+        GlobalHelper.RefreshLocalCores();
 
         foreach (var coreDirectory in Directory.GetDirectories(Path.Combine(extractPath, "Cores")))
         {
@@ -131,7 +162,7 @@ public class PocketExtrasService : BaseProcess
                 core.StatusUpdated += this.core_StatusUpdated;
             }
 
-            GlobalHelper.SettingsManager.EnableCore(core.identifier, true, release.tag_name);
+            this.SettingsService.EnableCore(core.identifier, true, release.tag_name);
 
             if (downloadAssets)
             {
@@ -154,10 +185,8 @@ public class PocketExtrasService : BaseProcess
             }
         }
 
-        GlobalHelper.SettingsManager.SaveSettings();
+        this.SettingsService.Save();
         Directory.Delete(extractPath, true);
-
-        //WriteMessage("Complete.");
     }
 
     private void DownloadPocketExtras(string user, string repository, string coreIdentifier, string assetName,
@@ -185,7 +214,7 @@ public class PocketExtrasService : BaseProcess
             if (!result.Value)
                 return;
 
-            core.Install(GlobalHelper.SettingsManager.GetConfig().preserve_platforms_folder);
+            core.Install(this.SettingsService.GetConfig().preserve_platforms_folder);
 
             if (!core.IsInstalled())
             {
@@ -279,38 +308,8 @@ public class PocketExtrasService : BaseProcess
             OnUpdateProcessComplete(args);
         }
 
-        GlobalHelper.SettingsManager.EnableCore(core.identifier, true, release.tag_name);
-        GlobalHelper.SettingsManager.SaveSettings();
-    }
-
-    public static PocketExtra GetPocketExtra(string idOrCoreName)
-    {
-        return List.Find(e => e.id == idOrCoreName || e.core_identifiers.Any(i => i == idOrCoreName));
-    }
-
-    public void GetPocketExtra(PocketExtra pocketExtra, string path, bool downloadAssets, bool refreshLocalCores)
-    {
-        switch (pocketExtra.type)
-        {
-            case PocketExtraType.additional_assets:
-                DownloadPocketExtras(pocketExtra.github_user, pocketExtra.github_repository,
-                    pocketExtra.core_identifiers[0], pocketExtra.github_asset_prefix,
-                    path, downloadAssets);
-                break;
-
-            case PocketExtraType.combination_platform:
-            case PocketExtraType.variant_core:
-                DownloadPocketExtrasPlatform(pocketExtra.github_user, pocketExtra.github_repository,
-                    pocketExtra.platform_name, pocketExtra.github_asset_prefix, path, downloadAssets,
-                    !pocketExtra.has_placeholders, refreshLocalCores);
-                break;
-        }
-
-        WriteMessage(string.Concat(
-            Environment.NewLine,
-            $"Please go to https://www.github.com/{pocketExtra.github_user}/{pocketExtra.github_repository} ",
-            "for more information and to support the author of the Extra."
-        ));
+        this.SettingsService.EnableCore(core.identifier, true, release.tag_name);
+        this.SettingsService.Save();
     }
 
     public string GetMostRecentRelease(PocketExtra pocketExtra)

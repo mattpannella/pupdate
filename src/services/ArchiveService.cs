@@ -20,19 +20,22 @@ public class ArchiveService
     private readonly string archiveName;
     private readonly string gnwArchiveName;
     private readonly CustomArchive customArchive;
+    private readonly bool crcCheck;
 
-    public ArchiveService(string archiveName, string gnwArchiveName)
+    public ArchiveService(string archiveName, string gnwArchiveName, bool crcCheck)
     {
         this.archiveName = archiveName;
         this.gnwArchiveName = gnwArchiveName;
         this.customArchive = null;
+        this.crcCheck = crcCheck;
     }
 
-    public ArchiveService(CustomArchive customArchive, string gnwArchiveName)
+    public ArchiveService(CustomArchive customArchive, string gnwArchiveName, bool crcCheck)
     {
         this.customArchive = customArchive;
         this.archiveName = string.Empty;
         this.gnwArchiveName = gnwArchiveName;
+        this.crcCheck = crcCheck;
     }
 
     private Archive archiveFiles;
@@ -123,7 +126,7 @@ public class ArchiveService
         }
     }
 
-    public static void DownloadArchiveFile(string archiveName, File archiveFile, string destination)
+    public void DownloadArchiveFile(string archiveName, File archiveFile, string destination)
     {
         try
         {
@@ -151,9 +154,9 @@ public class ArchiveService
         }
     }
 
-    private static bool ValidateChecksum(string filePath, File archiveFile)
+    private bool ValidateChecksum(string filePath, File archiveFile)
     {
-        if (!GlobalHelper.SettingsManager.GetConfig().crc_check)
+        if (!this.crcCheck)
             return true;
 
         if (archiveFile == null)

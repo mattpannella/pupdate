@@ -1,21 +1,43 @@
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
 using System.Text.Json;
+using Pannella.Helpers;
 
 namespace Pannella.Services;
 
 [UnconditionalSuppressMessage("Trimming",
     "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
     Justification = "<Pending>")]
-public static class AssetsService
+public class AssetsService
 {
     private const string BLACKLIST = "https://raw.githubusercontent.com/mattpannella/pupdate/main/blacklist.json";
 
-    private static List<string> blacklist;
+    private readonly bool useLocalBlacklist;
+    private List<string> blacklist;
 
-    public static List<string> Blacklist
+    public List<string> Blacklist
     {
-        get { return blacklist ??= GetBlacklist(); }
+        get
+        {
+            if (this.blacklist == null)
+            {
+#if DEBUG
+                string json = File.ReadAllText("blacklist.json");
+#else
+                string json = useLocalBlacklist
+                    ? File.ReadAllText("blacklist.json")
+                    : HttpHelper.Instance.GetHTML(BLACKLIST);
+#endif
+                this.blacklist = JsonSerializer.Deserialize<List<string>>(json);
+            }
+
+            return this.blacklist;
+        }
+    }
+
+    public AssetsService(bool useLocalBlacklist)
+    {
+        this.useLocalBlacklist = useLocalBlacklist;
     }
 
     public static void BackupSaves(string directory, string backupLocation)
@@ -27,6 +49,7 @@ public static class AssetsService
     {
         BackupDirectory(directory, "Memories", backupLocation);
     }
+
     private static void BackupDirectory(string rootDirectory, string folderName, string backupLocation)
     {
         if (string.IsNullOrEmpty(rootDirectory))
@@ -58,19 +81,5 @@ public static class AssetsService
         {
             Console.WriteLine($"No {folderName} directory found, skipping backup...");
         }
-    }
-
-    public static List<string> GetBlacklist()
-    {
-#if DEBUG
-        string json = File.ReadAllText("blacklist.json");
-#else
-        string json = GlobalHelper.SettingsManager.GetConfig().use_local_blacklist
-            ? File.ReadAllText("blacklist.json")
-            : HttpHelper.Instance.GetHTML(BLACKLIST);
-#endif
-        var files = JsonSerializer.Deserialize<List<string>>(json);
-
-        return files ?? new List<string>();
     }
 }

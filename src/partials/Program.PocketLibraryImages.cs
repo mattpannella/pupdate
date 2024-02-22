@@ -7,20 +7,20 @@ namespace Pannella;
 
 internal partial class Program
 {
-    private static void DownloadPockLibraryImages(string directory)
+    private static void DownloadPockLibraryImages()
     {
         const string fileName = "Library_Image_Set_v1.0.zip";
         ArchiveFile archiveFile = GlobalHelper.ArchiveService.ArchiveFiles.GetFile(fileName);
 
         if (archiveFile != null)
         {
-            string localFile = Path.Combine(directory, fileName);
-            string extractPath = Path.Combine(directory, "temp");
+            string localFile = Path.Combine(GlobalHelper.UpdateDirectory, fileName);
+            string extractPath = Path.Combine(GlobalHelper.UpdateDirectory, "temp");
 
             try
             {
-                ArchiveService.DownloadArchiveFile(GlobalHelper.SettingsManager.GetConfig().archive_name,
-                    archiveFile, directory);
+                GlobalHelper.ArchiveService.DownloadArchiveFile(GlobalHelper.SettingsService.GetConfig().archive_name,
+                    archiveFile, GlobalHelper.UpdateDirectory);
                 Console.WriteLine("Installing...");
 
                 if (Directory.Exists(extractPath))
@@ -28,7 +28,7 @@ internal partial class Program
 
                 ZipFile.ExtractToDirectory(localFile, extractPath);
                 File.Delete(localFile);
-                Util.CopyDirectory(extractPath, directory, true, true);
+                Util.CopyDirectory(extractPath, GlobalHelper.UpdateDirectory, true, true);
 
                 Directory.Delete(extractPath, true);
                 Console.WriteLine("Complete.");

@@ -45,17 +45,17 @@ internal partial class Program
             .Configure(menuConfig)
             .Add("Download Platform Image Packs", _ =>
             {
-                PlatformImagePackSelector(GlobalHelper.UpdateDirectory);
+                PlatformImagePackSelector();
                 Pause();
             })
             .Add("Download Pocket Library Images", _ =>
             {
-                DownloadPockLibraryImages(GlobalHelper.UpdateDirectory);
+                DownloadPockLibraryImages();
                 Pause();
             })
             .Add("Download GameBoy Palettes", _ =>
             {
-                DownloadGameBoyPalettes(GlobalHelper.UpdateDirectory);
+                DownloadGameBoyPalettes();
                 Pause();
             })
             .Add("Generate Instance JSON Files (PC Engine CD)", () =>
@@ -65,13 +65,13 @@ internal partial class Program
             })
             .Add("Generate Game & Watch ROMs", _ =>
             {
-                BuildGameAndWatchRoms(GlobalHelper.UpdateDirectory);
+                BuildGameAndWatchRoms();
                 Pause();
             })
             .Add("Enable All Display Modes", () =>
             {
                 var cores = GlobalHelper.Cores.Where(core =>
-                    !GlobalHelper.SettingsManager.GetCoreSettings(core.identifier).skip).ToList();
+                    !GlobalHelper.SettingsService.GetCoreSettings(core.identifier).skip).ToList();
 
                 foreach (var core in cores)
                 {
@@ -198,7 +198,7 @@ internal partial class Program
             .Add("Variant Cores         >", variantCoresMenu.Show)
             .Add("Go Back", ConsoleMenu.Close);
 
-        foreach (var pocketExtra in PocketExtrasService.List)
+        foreach (var pocketExtra in GlobalHelper.PocketExtrasService.List)
         {
             var name = string.IsNullOrWhiteSpace(pocketExtra.name)
                 ? $"Download extras for {pocketExtra.core_identifiers[0]}"
@@ -216,7 +216,7 @@ internal partial class Program
             {
                 bool result = true;
 
-                if (GlobalHelper.SettingsManager.GetConfig().show_menu_descriptions &&
+                if (GlobalHelper.SettingsService.GetConfig().show_menu_descriptions &&
                     !string.IsNullOrEmpty(pocketExtra.description))
                 {
                     Console.WriteLine(Util.WordWrap(pocketExtra.description, 80));
@@ -234,8 +234,7 @@ internal partial class Program
 
                 if (result)
                 {
-                    GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, GlobalHelper.UpdateDirectory,
-                        true, true);
+                    GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, GlobalHelper.UpdateDirectory, true);
                     Pause();
                 }
             });
@@ -270,7 +269,7 @@ internal partial class Program
             {
                 Console.WriteLine("Checking for required files...");
                 var cores = GlobalHelper.Cores.Where(core =>
-                    !GlobalHelper.SettingsManager.GetCoreSettings(core.identifier).skip).ToList();
+                    !GlobalHelper.SettingsService.GetCoreSettings(core.identifier).skip).ToList();
 
                 GlobalHelper.CoresService.DownloadCoreAssets(cores);
                 Pause();
@@ -278,9 +277,9 @@ internal partial class Program
             .Add("Backup Saves & Memories", () =>
             {
                 AssetsService.BackupSaves(GlobalHelper.UpdateDirectory,
-                    GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
+                    GlobalHelper.SettingsService.GetConfig().backup_saves_location);
                 AssetsService.BackupMemories(GlobalHelper.UpdateDirectory,
-                    GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
+                    GlobalHelper.SettingsService.GetConfig().backup_saves_location);
                 Pause();
             })
             .Add("Pocket Setup            >", pocketSetupMenu.Show)
@@ -299,7 +298,7 @@ internal partial class Program
 
     private static void AskAboutNewCores(bool force = false)
     {
-        while (GlobalHelper.SettingsManager.GetConfig().download_new_cores == null || force)
+        while (GlobalHelper.SettingsService.GetConfig().download_new_cores == null || force)
         {
             force = false;
 
@@ -307,7 +306,7 @@ internal partial class Program
 
             ConsoleKey response = Console.ReadKey(true).Key;
 
-            GlobalHelper.SettingsManager.GetConfig().download_new_cores = response switch
+            GlobalHelper.SettingsService.GetConfig().download_new_cores = response switch
             {
                 ConsoleKey.Y => "yes",
                 ConsoleKey.N => "no",
@@ -372,7 +371,7 @@ internal partial class Program
 
                 if ((current <= (offset + pageSize)) && (current >= offset))
                 {
-                    var coreSettings = GlobalHelper.SettingsManager.GetCoreSettings(core.identifier);
+                    var coreSettings = GlobalHelper.SettingsService.GetCoreSettings(core.identifier);
                     var selected = isCoreSelection && !coreSettings.skip;
                     var name = core.identifier;
                     var title = MenuItemName(name, selected, isCoreSelection, core.requires_license);
@@ -419,11 +418,11 @@ internal partial class Program
 
     private static void RunCoreSelector(List<Core> cores, string message = "Select your cores.")
     {
-        if (GlobalHelper.SettingsManager.GetConfig().download_new_cores?.ToLowerInvariant() == "yes")
+        if (GlobalHelper.SettingsService.GetConfig().download_new_cores?.ToLowerInvariant() == "yes")
         {
             foreach (Core core in cores)
             {
-                GlobalHelper.SettingsManager.EnableCore(core.identifier);
+                GlobalHelper.SettingsService.EnableCore(core.identifier);
             }
         }
         else
@@ -433,21 +432,21 @@ internal partial class Program
             foreach (var item in results)
             {
                 if (item.Value)
-                    GlobalHelper.SettingsManager.EnableCore(item.Key);
+                    GlobalHelper.SettingsService.EnableCore(item.Key);
                 else
-                    GlobalHelper.SettingsManager.DisableCore(item.Key);
+                    GlobalHelper.SettingsService.DisableCore(item.Key);
             }
         }
 
-        GlobalHelper.SettingsManager.GetConfig().core_selector = false;
-        GlobalHelper.SettingsManager.SaveSettings();
+        GlobalHelper.SettingsService.GetConfig().core_selector = false;
+        GlobalHelper.SettingsService.Save();
     }
 
-    private static void PlatformImagePackSelector(string path)
+    private static void PlatformImagePackSelector()
     {
         Console.Clear();
 
-        if (PlatformImagePacksService.List.Count > 0)
+        if (GlobalHelper.PlatformImagePacksService.List.Count > 0)
         {
             int choice = 0;
             var menu = new ConsoleMenu()
@@ -460,7 +459,7 @@ internal partial class Program
                     config.SelectedItemForegroundColor = Console.BackgroundColor;
                 });
 
-            foreach (var pack in PlatformImagePacksService.List)
+            foreach (var pack in GlobalHelper.PlatformImagePacksService.List)
             {
                 menu.Add($"{pack.owner}: {pack.repository} {pack.variant ?? string.Empty}", thisMenu =>
                 {
@@ -471,19 +470,20 @@ internal partial class Program
 
             menu.Add("Go Back", thisMenu =>
             {
-                choice = PlatformImagePacksService.List.Count;
+                choice = GlobalHelper.PlatformImagePacksService.List.Count;
                 thisMenu.CloseMenu();
             });
 
             menu.Show();
 
-            if (choice < PlatformImagePacksService.List.Count && choice >= 0)
+            if (choice < GlobalHelper.PlatformImagePacksService.List.Count && choice >= 0)
             {
-                GlobalHelper.PlatformImagePacksService.Install(path, PlatformImagePacksService.List[choice].owner,
-                    PlatformImagePacksService.List[choice].repository, PlatformImagePacksService.List[choice].variant,
-                    GlobalHelper.SettingsManager.GetConfig().github_token);
+                GlobalHelper.PlatformImagePacksService.Install(
+                    GlobalHelper.PlatformImagePacksService.List[choice].owner,
+                    GlobalHelper.PlatformImagePacksService.List[choice].repository,
+                    GlobalHelper.PlatformImagePacksService.List[choice].variant);
             }
-            else if (choice == PlatformImagePacksService.List.Count)
+            else if (choice == GlobalHelper.PlatformImagePacksService.List.Count)
             {
                 // What causes this?
             }
@@ -533,13 +533,13 @@ internal partial class Program
         foreach (var (name, text) in menuItems)
         {
             var property = type.GetProperty(name);
-            var value = (bool)property!.GetValue(GlobalHelper.SettingsManager.GetConfig())!;
+            var value = (bool)property!.GetValue(GlobalHelper.SettingsService.GetConfig())!;
             var title = MenuItemName(text, value);
 
             menu.Add(title, thisMenu =>
             {
                 value = !value;
-                property.SetValue(GlobalHelper.SettingsManager.GetConfig(), value);
+                property.SetValue(GlobalHelper.SettingsService.GetConfig(), value);
                 thisMenu.CurrentItem.Name = MenuItemName(text, value);
             });
         }
@@ -548,7 +548,7 @@ internal partial class Program
 
         menu.Show();
 
-        GlobalHelper.SettingsManager.SaveSettings();
+        GlobalHelper.SettingsService.Save();
     }
 
     private static string MenuItemName(string title, bool value, bool isCoreSelection = false, bool requiresLicense = false)

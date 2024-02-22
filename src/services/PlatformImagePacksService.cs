@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Pannella.Helpers;
 using Pannella.Models;
@@ -15,37 +16,44 @@ public class PlatformImagePacksService : Base
 {
     private const string END_POINT = "https://raw.githubusercontent.com/mattpannella/pupdate/main/image_packs.json";
 
-    private static List<PlatformImagePack> list;
+    private readonly bool useLocalImagePacks;
 
-    public static List<PlatformImagePack> List
-    {
-        get { return list ??= PlatformImagePacksService.GetPlatformImagePacks(); }
-    }
+    public string InstallPath { get; set; }
+    public string GithubToken { get; set; }
 
-    private static List<PlatformImagePack> GetPlatformImagePacks()
+    private List<PlatformImagePack> list;
+
+    public List<PlatformImagePack> List
     {
+        get
+        {
+            if (this.list == null)
+            {
 #if DEBUG
-        string json = File.ReadAllText("image_packs.json");
+                string json = File.ReadAllText("image_packs.json");
 #else
-        string json = GlobalHelper.SettingsManager.GetConfig().use_local_image_packs
-            ? File.ReadAllText("image_packs.json")
-            : HttpHelper.Instance.GetHTML(END_POINT);
+                string json = this.useLocalImagePacks
+                    ? File.ReadAllText("image_packs.json")
+                    : HttpHelper.Instance.GetHTML(END_POINT);
 #endif
-        var packs = JsonSerializer.Deserialize<List<PlatformImagePack>>(json);
+                this.list = JsonSerializer.Deserialize<List<PlatformImagePack>>(json);
+            }
 
-        return packs ?? new List<PlatformImagePack>();
+            return list;
+        }
     }
 
-    public void Install(string path, string owner, string repository, string variant, string githubToken)
+    public PlatformImagePacksService(string path, string githubToken = null, bool useLocalImagePacks = false)
     {
-        string filepath = FetchImagePack(path, owner, repository, variant, githubToken);
-
-        InstallImagePack(path, filepath);
+        this.InstallPath = path;
+        this.GithubToken = githubToken;
+        this.useLocalImagePacks = useLocalImagePacks;
     }
 
-    private string FetchImagePack(string path, string owner, string repository, string variant, string githubToken)
+    public void Install(string owner, string repository, string variant)
     {
-        Release release = GithubApiService.GetLatestRelease(owner, repository, githubToken);
+        string localFile = Path.Combine(this.InstallPath, "image_pack.zip");
+        Release release = GithubApiService.GetLatestRelease(owner, repository, this.GithubToken);
 
         if (release.assets == null)
         {
@@ -60,37 +68,28 @@ public class PlatformImagePacksService : Base
         {
             WriteMessage("Downloading image pack...");
 
-            string localFile = Path.Combine(path, "image_pack.zip");
-
             HttpHelper.Instance.DownloadFile(downloadUrl, localFile);
 
             WriteMessage("Download complete.");
-
-            return localFile;
         }
 
-        return string.Empty;
-    }
-
-    private void InstallImagePack(string path, string filepath)
-    {
         WriteMessage("Installing...");
 
-        string extractPath = Path.Combine(path, "temp");
+        string extractPath = Path.Combine(this.InstallPath, "temp");
 
-        ZipFile.ExtractToDirectory(filepath, extractPath, true);
+        ZipFile.ExtractToDirectory(localFile, extractPath, true);
 
-        string imagePack = FindImagePack(extractPath);
-        string target = Path.Combine(path, "Platforms", "_images");
+        string imagePack = FindPlatformImagePack(extractPath);
+        string target = Path.Combine(this.InstallPath, "Platforms", "_images");
 
         Util.CopyDirectory(imagePack, target, false, true);
         Directory.Delete(extractPath, true);
-        File.Delete(filepath);
+        File.Delete(localFile);
 
         WriteMessage("All Done");
     }
 
-    private static string FindImagePack(string temp)
+    private static string FindPlatformImagePack(string temp)
     {
         string path = Path.Combine(temp, "Platforms", "_images");
 

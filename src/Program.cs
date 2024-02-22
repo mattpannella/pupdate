@@ -96,7 +96,7 @@ internal partial class Program
                 GlobalHelper.FirmwareService,
                 GlobalHelper.JotegoService,
                 GlobalHelper.PocketExtrasService,
-                GlobalHelper.SettingsManager);
+                GlobalHelper.SettingsService);
 
             coreUpdaterService.StatusUpdated += coreUpdater_StatusUpdated;
             coreUpdaterService.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
@@ -114,15 +114,14 @@ internal partial class Program
                     break;
 
                 case ImagesOptions options:
-                    GlobalHelper.PlatformImagePacksService.Install(GlobalHelper.UpdateDirectory,
-                        options.ImagePackOwner, options.ImagePackRepo, options.ImagePackVariant,
-                        GlobalHelper.SettingsManager.GetConfig().github_token);
+                    GlobalHelper.PlatformImagePacksService.Install(options.ImagePackOwner, options.ImagePackRepo,
+                        options.ImagePackVariant);
                     break;
 
                 case AssetsOptions options:
                     var cores = GlobalHelper.Cores
                         .Where(core => !string.IsNullOrEmpty(options.CoreName) || core.identifier == options.CoreName)
-                        .Where(core => !GlobalHelper.SettingsManager.GetCoreSettings(core.identifier).skip)
+                        .Where(core => !GlobalHelper.SettingsService.GetCoreSettings(core.identifier).skip)
                         .ToList();
 
                     GlobalHelper.CoresService.DownloadCoreAssets(cores);
@@ -142,22 +141,22 @@ internal partial class Program
 
                     if (options.Save)
                     {
-                        var config = GlobalHelper.SettingsManager.GetConfig();
+                        var config = GlobalHelper.SettingsService.GetConfig();
 
                         config.backup_saves = true;
                         config.backup_saves_location = options.BackupPath;
 
-                        GlobalHelper.SettingsManager.SaveSettings();
+                        GlobalHelper.SettingsService.Save();
                     }
 
                     break;
 
                 case GameBoyPalettesOptions:
-                    DownloadGameBoyPalettes(GlobalHelper.UpdateDirectory);
+                    DownloadGameBoyPalettes();
                     break;
 
                 case PocketLibraryImagesOptions:
-                    DownloadPockLibraryImages(GlobalHelper.UpdateDirectory);
+                    DownloadPockLibraryImages();
                     break;
 
                 case PocketExtrasOptions options:
@@ -165,14 +164,14 @@ internal partial class Program
                     {
                         Console.WriteLine();
 
-                        foreach (var extra in PocketExtrasService.List)
+                        foreach (var extra in GlobalHelper.PocketExtrasService.List)
                         {
                             PrintPocketExtraInfo(extra);
                         }
                     }
                     else if (!string.IsNullOrEmpty(options.Name))
                     {
-                        var extra = PocketExtrasService.GetPocketExtra(options.Name);
+                        var extra = GlobalHelper.PocketExtrasService.GetPocketExtra(options.Name);
 
                         if (extra != null)
                         {
@@ -183,8 +182,7 @@ internal partial class Program
                             }
                             else
                             {
-                                GlobalHelper.PocketExtrasService.GetPocketExtra(extra, GlobalHelper.UpdateDirectory,
-                                    true, true);
+                                GlobalHelper.PocketExtrasService.GetPocketExtra(extra, GlobalHelper.UpdateDirectory, true);
                             }
                         }
                         else

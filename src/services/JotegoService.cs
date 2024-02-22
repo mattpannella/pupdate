@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using System.Runtime.CompilerServices;
 using Pannella.Helpers;
 using Pannella.Models;
 using Pannella.Models.OpenFPGA_Cores_Inventory;
@@ -19,10 +20,12 @@ public class JotegoService : Base
         get { return renamedPlatformFiles ??= this.LoadRenamedPlatformFiles(); }
     }
 
+    public string InstallPath { get; set; }
     public string GithubToken { get; set; }
 
-    public JotegoService(string githubToken = null)
+    public JotegoService(string path, string githubToken = null)
     {
+        this.InstallPath = path;
         this.GithubToken = githubToken;
     }
 
@@ -65,7 +68,7 @@ public class JotegoService : Base
     {
         AnalogueCore info = core.GetConfig();
         string path = Path.Combine(
-            GlobalHelper.UpdateDirectory,
+            this.InstallPath,
             "Assets",
             info.metadata.platform_ids[core.beta_slot_platform_id_index],
             "common");
@@ -75,7 +78,7 @@ public class JotegoService : Base
             Directory.CreateDirectory(path);
         }
 
-        string keyPath = Path.Combine(GlobalHelper.UpdateDirectory, EXTRACT_LOCATION);
+        string keyPath = Path.Combine(this.InstallPath, EXTRACT_LOCATION);
 
         if (Directory.Exists(keyPath) && Directory.Exists(path))
         {
@@ -86,8 +89,8 @@ public class JotegoService : Base
 
     public bool ExtractBetaKey()
     {
-        string keyPath = Path.Combine(GlobalHelper.UpdateDirectory, EXTRACT_LOCATION);
-        string file = Path.Combine(GlobalHelper.UpdateDirectory, BETA_KEY_FILENAME);
+        string keyPath = Path.Combine(this.InstallPath, EXTRACT_LOCATION);
+        string file = Path.Combine(this.InstallPath, BETA_KEY_FILENAME);
 
         if (File.Exists(file))
         {
@@ -100,9 +103,9 @@ public class JotegoService : Base
         return false;
     }
 
-    public static void DeleteBetaKey()
+    public void DeleteBetaKey()
     {
-        string keyPath = Path.Combine(GlobalHelper.UpdateDirectory, EXTRACT_LOCATION);
+        string keyPath = Path.Combine(this.InstallPath, EXTRACT_LOCATION);
 
         if (Directory.Exists(keyPath))
             Directory.Delete(keyPath, true);

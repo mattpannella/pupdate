@@ -19,7 +19,7 @@ public class CoreUpdaterService : BaseProcess
     public FirmwareService FirmwareService { get; set; }
     public JotegoService JotegoService { get; set; }
     public PocketExtrasService PocketExtrasService { get; set; }
-    public SettingsManager SettingsManager { get; set; }
+    public SettingsService SettingsService { get; set; }
 
     public CoreUpdaterService(
         string path,
@@ -27,14 +27,14 @@ public class CoreUpdaterService : BaseProcess
         FirmwareService firmwareService = null,
         JotegoService jotegoService = null,
         PocketExtrasService pocketExtrasService = null,
-        SettingsManager settingsManager = null)
+        SettingsService settingsService = null)
     {
         this.InstallPath = path;
         this.Cores = cores;
         this.FirmwareService = firmwareService;
         this.JotegoService = jotegoService;
         this.PocketExtrasService = pocketExtrasService;
-        this.SettingsManager = settingsManager;
+        this.SettingsService = settingsService;
 
         Directory.CreateDirectory(Path.Combine(path, "Cores"));
 
@@ -69,13 +69,13 @@ public class CoreUpdaterService : BaseProcess
         List<string> missingBetaKeys = new List<string>();
         string firmwareDownloaded = null;
 
-        if (this.SettingsManager.GetConfig().backup_saves)
+        if (this.SettingsService.GetConfig().backup_saves)
         {
-            AssetsService.BackupSaves(this.InstallPath, this.SettingsManager.GetConfig().backup_saves_location);
-            AssetsService.BackupMemories(this.InstallPath, this.SettingsManager.GetConfig().backup_saves_location);
+            AssetsService.BackupSaves(this.InstallPath, this.SettingsService.GetConfig().backup_saves_location);
+            AssetsService.BackupMemories(this.InstallPath, this.SettingsService.GetConfig().backup_saves_location);
         }
 
-        if (this.SettingsManager.GetConfig().download_firmware && id == null)
+        if (this.SettingsService.GetConfig().download_firmware && id == null)
         {
             if (this.FirmwareService != null)
             {
@@ -93,10 +93,10 @@ public class CoreUpdaterService : BaseProcess
 
         foreach (var core in this.Cores.Where(core => id == null || core.identifier == id))
         {
-            core.download_assets = this.SettingsManager.GetConfig().download_assets && id == null;
-            core.build_instances = this.SettingsManager.GetConfig().build_instance_jsons && id == null;
+            core.download_assets = this.SettingsService.GetConfig().download_assets && id == null;
+            core.build_instances = this.SettingsService.GetConfig().build_instance_jsons && id == null;
 
-            var coreSettings = this.SettingsManager.GetCoreSettings(core.identifier);
+            var coreSettings = this.SettingsService.GetCoreSettings(core.identifier);
 
             try
             {
@@ -203,7 +203,7 @@ public class CoreUpdaterService : BaseProcess
                         core.Delete();
                     }
 
-                    this.PocketExtrasService.GetPocketExtra(pocketExtra, this.InstallPath, false, false);
+                    this.PocketExtrasService.GetPocketExtra(pocketExtra, this.InstallPath, false);
 
                     Dictionary<string, string> summary = new Dictionary<string, string>
                     {
@@ -214,7 +214,7 @@ public class CoreUpdaterService : BaseProcess
 
                     installed.Add(summary);
                 }
-                else if (core.Install(this.SettingsManager.GetConfig().preserve_platforms_folder, clean))
+                else if (core.Install(this.SettingsService.GetConfig().preserve_platforms_folder, clean))
                 {
                     Dictionary<string, string> summary = new Dictionary<string, string>
                     {
@@ -255,7 +255,7 @@ public class CoreUpdaterService : BaseProcess
             }
         }
 
-        JotegoService.DeleteBetaKey();
+        this.JotegoService.DeleteBetaKey();
 
         UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs
         {
@@ -273,8 +273,8 @@ public class CoreUpdaterService : BaseProcess
 
     private void JotegoRename(Core core)
     {
-        if (this.SettingsManager.GetConfig().fix_jt_names &&
-            this.SettingsManager.GetCoreSettings(core.identifier).platform_rename &&
+        if (this.SettingsService.GetConfig().fix_jt_names &&
+            this.SettingsService.GetCoreSettings(core.identifier).platform_rename &&
             core.identifier.Contains("jotego"))
         {
             core.platform_id = core.identifier.Split('.')[1];
@@ -296,7 +296,7 @@ public class CoreUpdaterService : BaseProcess
 
     public void DeleteCore(Core core, bool force = false, bool nuke = false)
     {
-        if (this.SettingsManager.GetConfig().delete_skipped_cores || force)
+        if (this.SettingsService.GetConfig().delete_skipped_cores || force)
         {
             core.Uninstall(nuke);
         }

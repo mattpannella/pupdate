@@ -36,9 +36,9 @@ public class Core : Base
     public int beta_slot_platform_id_index;
     public bool requires_license { get; set; } = false;
 
-    public bool download_assets { get; set; } = GlobalHelper.SettingsManager.GetConfig().download_assets;
+    public bool download_assets { get; set; } = GlobalHelper.SettingsService.GetConfig().download_assets;
 
-    public bool build_instances { get; set; } = GlobalHelper.SettingsManager.GetConfig().build_instance_jsons;
+    public bool build_instances { get; set; } = GlobalHelper.SettingsService.GetConfig().build_instance_jsons;
 
     private const string ZIP_FILE_NAME = "core.zip";
 
@@ -79,17 +79,16 @@ public class Core : Base
 
     private void PocketExtraCheck()
     {
-        var coreSettings = GlobalHelper.SettingsManager.GetCoreSettings(this.identifier);
+        var coreSettings = GlobalHelper.SettingsService.GetCoreSettings(this.identifier);
 
         if (coreSettings.pocket_extras)
         {
-            PocketExtra pocketExtra = PocketExtrasService.GetPocketExtra(this.identifier);
+            PocketExtra pocketExtra = GlobalHelper.PocketExtrasService.GetPocketExtra(this.identifier);
 
             if (pocketExtra != null)
             {
                 WriteMessage("Reapplying Pocket Extras...");
-                GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, GlobalHelper.UpdateDirectory,
-                    false, false);
+                GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, GlobalHelper.UpdateDirectory, false);
             }
         }
     }
@@ -177,8 +176,8 @@ public class Core : Base
 
         Delete(nuke);
 
-        GlobalHelper.SettingsManager.DisableCore(this.identifier);
-        GlobalHelper.SettingsManager.SaveSettings();
+        GlobalHelper.SettingsService.DisableCore(this.identifier);
+        GlobalHelper.SettingsService.Save();
 
         WriteMessage("Finished");
         Divide();
@@ -208,8 +207,8 @@ public class Core : Base
         List<string> skipped = new List<string>();
         bool missingBetaKey = false;
 
-        if (!GlobalHelper.SettingsManager.GetConfig().download_assets ||
-            !GlobalHelper.SettingsManager.GetCoreSettings(this.identifier).download_assets)
+        if (!GlobalHelper.SettingsService.GetConfig().download_assets ||
+            !GlobalHelper.SettingsService.GetCoreSettings(this.identifier).download_assets)
         {
             return new Dictionary<string, object>
             {
@@ -236,7 +235,7 @@ public class Core : Base
             foreach (DataSlot slot in dataJson.data.data_slots)
             {
                 if (slot.filename != null && !slot.filename.EndsWith(".sav") &&
-                    !AssetsService.Blacklist.Contains(slot.filename))
+                    !GlobalHelper.AssetsService.Blacklist.Contains(slot.filename))
                 {
                     if (slot.IsCoreSpecific())
                     {
@@ -254,7 +253,7 @@ public class Core : Base
 
                     if (slot.alternate_filenames != null)
                     {
-                        files.AddRange(slot.alternate_filenames.Where(f => !AssetsService.Blacklist.Contains(f)));
+                        files.AddRange(slot.alternate_filenames.Where(f => !GlobalHelper.AssetsService.Blacklist.Contains(f)));
                     }
 
                     foreach (string f in files)
@@ -271,8 +270,8 @@ public class Core : Base
                                 f,
                                 filepath,
                                 GlobalHelper.ArchiveService.ArchiveFiles,
-                                GlobalHelper.SettingsManager.GetConfig().archive_name,
-                                GlobalHelper.SettingsManager.GetConfig().use_custom_archive);
+                                GlobalHelper.SettingsService.GetConfig().archive_name,
+                                GlobalHelper.SettingsService.GetConfig().use_custom_archive);
 
                             if (result)
                             {
@@ -298,7 +297,7 @@ public class Core : Base
             };
         }
 
-        if (this.identifier is "agg23.GameAndWatch" && GlobalHelper.SettingsManager.GetConfig().download_gnw_roms)
+        if (this.identifier is "agg23.GameAndWatch" && GlobalHelper.SettingsService.GetConfig().download_gnw_roms)
         {
             string commonPath = Path.Combine(platformPath, "common");
 
@@ -325,7 +324,7 @@ public class Core : Base
                         f.name,
                         filePath,
                         GlobalHelper.ArchiveService.GameAndWatchArchiveFiles,
-                        GlobalHelper.SettingsManager.GetConfig().gnw_archive_name);
+                        GlobalHelper.SettingsService.GetConfig().gnw_archive_name);
 
                     if (result)
                     {
@@ -372,7 +371,7 @@ public class Core : Base
                         continue;
                     }
 
-                    if (GlobalHelper.SettingsManager.GetConfig().skip_alternative_assets &&
+                    if (GlobalHelper.SettingsService.GetConfig().skip_alternative_assets &&
                         file.Contains(Path.Combine(instancesDirectory, "_alternatives")))
                     {
                         continue;
@@ -394,7 +393,8 @@ public class Core : Base
                                 missingBetaKey = true;
                             }
 
-                            if (!AssetsService.Blacklist.Contains(slot.filename) && !slot.filename.EndsWith(".sav"))
+                            if (!GlobalHelper.AssetsService.Blacklist.Contains(slot.filename) &&
+                                !slot.filename.EndsWith(".sav"))
                             {
                                 string commonPath = Path.Combine(platformPath, "common");
 
@@ -413,8 +413,8 @@ public class Core : Base
                                         slot.filename,
                                         slotPath,
                                         GlobalHelper.ArchiveService.ArchiveFiles,
-                                        GlobalHelper.SettingsManager.GetConfig().archive_name,
-                                        GlobalHelper.SettingsManager.GetConfig().use_custom_archive);
+                                        GlobalHelper.SettingsService.GetConfig().archive_name,
+                                        GlobalHelper.SettingsService.GetConfig().use_custom_archive);
 
                                     if (result)
                                     {
@@ -515,7 +515,7 @@ public class Core : Base
 
             if (useCustomArchive)
             {
-                var custom = GlobalHelper.SettingsManager.GetConfig().custom_archive;
+                var custom = GlobalHelper.SettingsService.GetConfig().custom_archive;
                 Uri baseUri = new Uri(custom.url);
                 Uri uri = new Uri(baseUri, fileName);
 
@@ -570,7 +570,7 @@ public class Core : Base
 
     private bool CheckCRC(string filepath, Models.Archive.Archive archive)
     {
-        if (archive == null || !GlobalHelper.SettingsManager.GetConfig().crc_check)
+        if (archive == null || !GlobalHelper.SettingsService.GetConfig().crc_check)
         {
             return true;
         }

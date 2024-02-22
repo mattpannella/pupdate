@@ -10,16 +10,16 @@ namespace Pannella;
 
 internal partial class Program
 {
-    private static void BuildGameAndWatchRoms(string directory)
+    private static void BuildGameAndWatchRoms()
     {
         Release release = GithubApiService.GetLatestRelease("agg23", "fpga-gameandwatch",
-            GlobalHelper.SettingsManager.GetConfig().github_token);
+            GlobalHelper.SettingsService.GetConfig().github_token);
 
         foreach (GithubAsset asset in release.assets)
         {
             if (asset.name.EndsWith("Tools.zip"))
             {
-                string downloadPath = Path.Combine(directory, "tools", "gameandwatch");
+                string downloadPath = Path.Combine(GlobalHelper.UpdateDirectory, "tools", "gameandwatch");
                 string filename = Path.Combine(downloadPath, asset.name);
 
                 if (!File.Exists(filename))
@@ -34,8 +34,8 @@ internal partial class Program
         }
 
         string execName = "fpga-gnw-romgenerator";
-        string execLocation = Path.Combine(directory, "tools", "gameandwatch");
-        string manifestPath = Path.Combine(directory, "tools", "gameandwatch");
+        string execLocation = Path.Combine(GlobalHelper.UpdateDirectory, "tools", "gameandwatch");
+        string manifestPath = Path.Combine(GlobalHelper.UpdateDirectory, "tools", "gameandwatch");
 
         switch (SYSTEM_OS_PLATFORM)
         {
@@ -58,8 +58,8 @@ internal partial class Program
                 break;
         }
 
-        string romLocation = Path.Combine(directory, "Assets", "gameandwatch", "agg23.GameAndWatch");
-        string outputLocation = Path.Combine(directory, "Assets", "gameandwatch", "common");
+        string romLocation = Path.Combine(GlobalHelper.UpdateDirectory, "Assets", "gameandwatch", "agg23.GameAndWatch");
+        string outputLocation = Path.Combine(GlobalHelper.UpdateDirectory, "Assets", "gameandwatch", "common");
 
         try
         {
@@ -74,7 +74,7 @@ internal partial class Program
 
             Process p = Process.Start(pInfo);
 
-            p.WaitForExit();
+            p!.WaitForExit();
         }
         catch (Exception e)
         {

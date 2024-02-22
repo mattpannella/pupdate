@@ -8,16 +8,16 @@ namespace Pannella;
 
 internal partial class Program
 {
-    private static void DownloadGameBoyPalettes(string directory)
+    private static void DownloadGameBoyPalettes()
     {
         Release release = GithubApiService.GetLatestRelease("davewongillies", "openfpga-palettes",
-            GlobalHelper.SettingsManager.GetConfig().github_token);
+            GlobalHelper.SettingsService.GetConfig().github_token);
         Asset asset = release.assets.FirstOrDefault(a => a.name.EndsWith(".zip"));
 
         if (asset != null)
         {
-            string localFile = Path.Combine(directory, asset.name);
-            string extractPath = Path.Combine(directory, "temp");
+            string localFile = Path.Combine(GlobalHelper.UpdateDirectory, asset.name);
+            string extractPath = Path.Combine(GlobalHelper.UpdateDirectory, "temp");
 
             try
             {
@@ -31,7 +31,7 @@ internal partial class Program
 
                 ZipFile.ExtractToDirectory(localFile, extractPath);
                 File.Delete(localFile);
-                Util.CopyDirectory(extractPath, directory, true, true);
+                Util.CopyDirectory(extractPath, GlobalHelper.UpdateDirectory, true, true);
 
                 Directory.Delete(extractPath, true);
                 Console.WriteLine("Complete.");

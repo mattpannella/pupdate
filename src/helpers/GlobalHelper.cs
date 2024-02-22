@@ -1,5 +1,4 @@
 using Pannella.Models;
-using Pannella.Models.Archive;
 using Pannella.Models.OpenFPGA_Cores_Inventory;
 using Pannella.Services;
 
@@ -7,7 +6,7 @@ namespace Pannella.Helpers;
 
 public static class GlobalHelper
 {
-    public static SettingsManager SettingsManager { get; private set ;}
+    public static SettingsService SettingsService { get; private set ;}
     public static string UpdateDirectory { get; private set; }
     public static List<Core> Cores { get; private set; }
     public static List<Core> InstalledCores { get; private set; }
@@ -18,6 +17,7 @@ public static class GlobalHelper
     public static CoresService CoresService { get; private set; }
     public static JotegoService JotegoService { get; private set; }
     public static ArchiveService ArchiveService { get; private set; }
+    public static AssetsService AssetsService { get; private set; }
 
     private static bool isInitialized;
 
@@ -28,24 +28,26 @@ public static class GlobalHelper
         {
             isInitialized = true;
             UpdateDirectory = path;
-            SettingsManager = new SettingsManager(path);
+            SettingsService = new SettingsService(path);
             Cores = CoresService.GetOpenFpgaCoresInventory(); // should move this up before settings manager and pass into constructor
             RefreshLocalCores();
-            PocketExtrasService = new PocketExtrasService(SettingsManager.GetConfig().github_token);
-            PlatformImagePacksService = new PlatformImagePacksService();
+            PocketExtrasService = new PocketExtrasService(SettingsService);
+            PlatformImagePacksService = new PlatformImagePacksService(path, SettingsService.GetConfig().github_token,
+                SettingsService.GetConfig().use_local_image_packs);
             FirmwareService = new FirmwareService();
             CoresService = new CoresService();
-            JotegoService = new JotegoService(SettingsManager.GetConfig().github_token);
+            JotegoService = new JotegoService(path, SettingsService.GetConfig().github_token);
+            AssetsService = new AssetsService(SettingsService.GetConfig().use_local_blacklist);
 
-            if (SettingsManager.GetConfig().use_custom_archive)
+            if (SettingsService.GetConfig().use_custom_archive)
             {
-                ArchiveService = new ArchiveService(SettingsManager.GetConfig().custom_archive,
-                    SettingsManager.GetConfig().gnw_archive_name);
+                ArchiveService = new ArchiveService(SettingsService.GetConfig().custom_archive,
+                    SettingsService.GetConfig().gnw_archive_name, SettingsService.GetConfig().crc_check);
             }
             else
             {
-                ArchiveService = new ArchiveService(SettingsManager.GetConfig().archive_name,
-                    SettingsManager.GetConfig().gnw_archive_name);
+                ArchiveService = new ArchiveService(SettingsService.GetConfig().archive_name,
+                    SettingsService.GetConfig().gnw_archive_name, SettingsService.GetConfig().crc_check);
             }
 
             if (statusUpdated != null)
@@ -93,13 +95,13 @@ public static class GlobalHelper
 
     public static void ReloadSettings()
     {
-        SettingsManager = new SettingsManager(UpdateDirectory, Cores);
+        SettingsService = new SettingsService(UpdateDirectory, Cores);
     }
 
     public static void RefreshLocalCores()
     {
         Cores.AddRange(GetLocalCores());
-        SettingsManager.InitializeCoreSettings(Cores); // this doesn't add new cores to the list
+        SettingsService.InitializeCoreSettings(Cores); // this doesn't add new cores to the list
         RefreshInstalledCores();
     }
 
