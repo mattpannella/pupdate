@@ -76,12 +76,12 @@ internal partial class Program
 
     private static void FunFacts()
     {
-        if (GlobalHelper.InstalledCores.Count == 0)
+        if (CoresService.InstalledCores.Count == 0)
         {
             return;
         }
 
-        string[] sleepSupported = GlobalHelper.InstalledCores
+        string[] sleepSupported = CoresService.InstalledCores
             .Where(c => c.GetConfig().framework.sleep_supported)
             .Select(c => c.identifier)
             .ToArray();

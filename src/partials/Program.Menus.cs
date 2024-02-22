@@ -70,7 +70,7 @@ internal partial class Program
             })
             .Add("Enable All Display Modes", () =>
             {
-                var cores = GlobalHelper.Cores.Where(core =>
+                var cores = GlobalHelper.CoresService.Cores.Where(core =>
                     !GlobalHelper.SettingsService.GetCoreSettings(core.identifier).skip).ToList();
 
                 foreach (var core in cores)
@@ -112,13 +112,13 @@ internal partial class Program
             .Add("Apply 8:7 Aspect Ratio to Super GameBoy cores", () =>
             {
                 var results = ShowCoresMenu(
-                    GlobalHelper.InstalledCores.Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
+                    CoresService.InstalledCores.Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
                     "Which Super GameBoy cores would you like to change to the 8:7 aspect ratio?\n",
                     false);
 
                 foreach (var item in results.Where(x => x.Value))
                 {
-                    var core = GlobalHelper.InstalledCores.First(c => c.identifier == item.Key);
+                    var core = CoresService.InstalledCores.First(c => c.identifier == item.Key);
 
                     Console.WriteLine($"Updating '{core.identifier}'...");
                     core.ChangeAspectRatio(4, 3, 8, 7);
@@ -131,13 +131,13 @@ internal partial class Program
             .Add("Restore 4:3 Aspect Ratio to Super GameBoy cores", () =>
             {
                 var results = ShowCoresMenu(
-                    GlobalHelper.InstalledCores.Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
+                    CoresService.InstalledCores.Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
                     "Which Super GameBoy cores would you like to change to the 8:7 aspect ratio?\n",
                     false);
 
                 foreach (var item in results.Where(x => x.Value))
                 {
-                    var core = GlobalHelper.InstalledCores.First(c => c.identifier == item.Key);
+                    var core = CoresService.InstalledCores.First(c => c.identifier == item.Key);
 
                     Console.WriteLine($"Updating '{core.identifier}'...");
                     core.ChangeAspectRatio(8, 7, 4, 3);
@@ -159,7 +159,7 @@ internal partial class Program
             .Add("Reinstall Select Cores", _ =>
             {
                 var results = ShowCoresMenu(
-                    GlobalHelper.InstalledCores,
+                    CoresService.InstalledCores,
                     "Which cores would you like to reinstall?",
                     false);
 
@@ -173,7 +173,7 @@ internal partial class Program
             .Add("Uninstall Select Cores", () =>
             {
                 var results = ShowCoresMenu(
-                    GlobalHelper.InstalledCores,
+                    CoresService.InstalledCores,
                     "Which cores would you like to uninstall?",
                     false);
 
@@ -181,7 +181,7 @@ internal partial class Program
 
                 foreach (var item in results.Where(x => x.Value))
                 {
-                    coreUpdaterService.DeleteCore(GlobalHelper.GetCore(item.Key), true, nuke);
+                    coreUpdaterService.DeleteCore(CoresService.GetCore(item.Key), true, nuke);
                 }
 
                 Pause();
@@ -250,7 +250,7 @@ internal partial class Program
             {
                 Console.WriteLine("Starting update process...");
                 coreUpdaterService.RunUpdates();
-                GlobalHelper.RefreshInstalledCores();
+                CoresService.RefreshInstalledCores();
                 Pause();
             })
             .Add("Update Firmware", _ =>
@@ -261,14 +261,14 @@ internal partial class Program
             .Add("Select Cores            >", () => // \u00BB
             {
                 AskAboutNewCores(true);
-                RunCoreSelector(GlobalHelper.Cores);
+                RunCoreSelector(GlobalHelper.CoresService.Cores);
                 // Is reloading the settings file necessary?
                 GlobalHelper.ReloadSettings();
             })
             .Add("Download Assets", _ =>
             {
                 Console.WriteLine("Checking for required files...");
-                var cores = GlobalHelper.Cores.Where(core =>
+                var cores = GlobalHelper.CoresService.Cores.Where(core =>
                     !GlobalHelper.SettingsService.GetCoreSettings(core.identifier).skip).ToList();
 
                 GlobalHelper.CoresService.DownloadCoreAssets(cores);

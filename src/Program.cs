@@ -92,7 +92,7 @@ internal partial class Program
 
             CoreUpdaterService coreUpdaterService = new CoreUpdaterService(
                 GlobalHelper.UpdateDirectory,
-                GlobalHelper.Cores,
+                GlobalHelper.CoresService.Cores,
                 GlobalHelper.FirmwareService,
                 GlobalHelper.JotegoService,
                 GlobalHelper.PocketExtrasService,
@@ -119,7 +119,7 @@ internal partial class Program
                     break;
 
                 case AssetsOptions options:
-                    var cores = GlobalHelper.Cores
+                    var cores = GlobalHelper.CoresService.Cores
                         .Where(core => !string.IsNullOrEmpty(options.CoreName) || core.identifier == options.CoreName)
                         .Where(core => !GlobalHelper.SettingsService.GetCoreSettings(core.identifier).skip)
                         .ToList();
@@ -127,12 +127,12 @@ internal partial class Program
                     GlobalHelper.CoresService.DownloadCoreAssets(cores);
                     break;
 
-                case UninstallOptions options when GlobalHelper.GetCore(options.CoreName) == null:
+                case UninstallOptions options when CoresService.GetCore(options.CoreName) == null:
                     Console.WriteLine($"Unknown core '{options.CoreName}'");
                     break;
 
                 case UninstallOptions options:
-                    coreUpdaterService.DeleteCore(GlobalHelper.GetCore(options.CoreName), true, options.DeleteAssets);
+                    coreUpdaterService.DeleteCore(CoresService.GetCore(options.CoreName), true, options.DeleteAssets);
                     break;
 
                 case BackupSavesOptions options:

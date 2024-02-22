@@ -1,6 +1,6 @@
 using System.Text;
-using Pannella.Helpers;
 using Pannella.Models.OpenFPGA_Cores_Inventory;
+using Pannella.Services;
 
 namespace Pannella;
 
@@ -10,11 +10,11 @@ internal partial class Program
     {
         var output = new StringBuilder();
 
-        if (GlobalHelper.InstalledCoresWithSponsors.Count > 0)
+        if (CoresService.InstalledCoresWithSponsors.Count > 0)
         {
             var random = new Random();
-            var index = random.Next(GlobalHelper.InstalledCoresWithSponsors.Count);
-            var randomItem = GlobalHelper.InstalledCoresWithSponsors[index];
+            var index = random.Next(CoresService.InstalledCoresWithSponsors.Count);
+            var randomItem = CoresService.InstalledCoresWithSponsors[index];
 
             if (randomItem.sponsor != null)
             {
@@ -30,7 +30,7 @@ internal partial class Program
 
     private static void Funding(string identifier)
     {
-        if (GlobalHelper.InstalledCores.Count == 0)
+        if (CoresService.InstalledCores.Count == 0)
         {
             Console.WriteLine("You must install cores to see their funding information.");
             return;
@@ -40,13 +40,13 @@ internal partial class Program
 
         if (string.IsNullOrEmpty(identifier))
         {
-            cores = GlobalHelper.InstalledCores;
+            cores = CoresService.InstalledCores;
         }
         else
         {
             cores = new List<Core>();
 
-            var core = GlobalHelper.GetInstalledCore(identifier);
+            var core = CoresService.GetInstalledCore(identifier);
 
             if (core != null)
             {

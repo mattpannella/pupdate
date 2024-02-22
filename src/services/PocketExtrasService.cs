@@ -17,8 +17,8 @@ public class PocketExtrasService : BaseProcess
 {
     private const string END_POINT = "https://raw.githubusercontent.com/mattpannella/pupdate/main/pocket_extras.json";
 
-    public SettingsService SettingsService { get; set; }
-    public string GithubToken { get; set; }
+    private readonly CoresService coresService;
+    private readonly SettingsService settingsService;
 
     private List<PocketExtra> list;
 
@@ -27,10 +27,10 @@ public class PocketExtrasService : BaseProcess
         get { return list ??= GetPocketExtrasList(); }
     }
 
-    public PocketExtrasService(SettingsService settingsService)
+    public PocketExtrasService(CoresService coresService, SettingsService settingsService)
     {
-        this.SettingsService = settingsService;
-        this.GithubToken = settingsService.GetConfig().github_token;
+        this.coresService = coresService;
+        this.settingsService = settingsService;
     }
 
     private List<PocketExtra> GetPocketExtrasList()
@@ -38,7 +38,7 @@ public class PocketExtrasService : BaseProcess
 #if DEBUG
         string json = File.ReadAllText("pocket_extras.json");
 #else
-        string json = this.SettingsService.GetConfig().use_local_pocket_extras
+        string json = this.settingsService.GetConfig().use_local_pocket_extras
             ? File.ReadAllText("pocket_extras.json")
             : HttpHelper.Instance.GetHTML(END_POINT);
 #endif
@@ -80,7 +80,7 @@ public class PocketExtrasService : BaseProcess
     private void DownloadPocketExtrasPlatform(string user, string repository, string platformName,
         string assetName, string path, bool downloadAssets, bool skipPlaceholderFiles)
     {
-        Release release = GithubApiService.GetLatestRelease(user, repository, this.GithubToken);
+        Release release = GithubApiService.GetLatestRelease(user, repository, this.settingsService.GetConfig().github_token);
         Asset asset = release.assets.FirstOrDefault(x => x.name.StartsWith(assetName));
 
         if (asset == null)
@@ -150,19 +150,19 @@ public class PocketExtrasService : BaseProcess
 
         WriteMessage("Downloading assets...");
 
-        GlobalHelper.RefreshLocalCores();
+        //GlobalHelper.RefreshLocalCores();
 
         foreach (var coreDirectory in Directory.GetDirectories(Path.Combine(extractPath, "Cores")))
         {
             string coreIdentifier = Path.GetFileName(coreDirectory);
-            Core core = GlobalHelper.GetCore(coreIdentifier);
+            Core core = CoresService.GetCore(coreIdentifier);
 
             if (!core.IsStatusUpdatedRegistered())
             {
                 core.StatusUpdated += this.core_StatusUpdated;
             }
 
-            this.SettingsService.EnableCore(core.identifier, true, release.tag_name);
+            this.settingsService.EnableCore(core.identifier, true, release.tag_name);
 
             if (downloadAssets)
             {
@@ -185,14 +185,14 @@ public class PocketExtrasService : BaseProcess
             }
         }
 
-        this.SettingsService.Save();
+        this.settingsService.Save();
         Directory.Delete(extractPath, true);
     }
 
     private void DownloadPocketExtras(string user, string repository, string coreIdentifier, string assetName,
         string path, bool downloadAssets)
     {
-        var core = GlobalHelper.GetCore(coreIdentifier);
+        var core = CoresService.GetCore(coreIdentifier);
 
         if (!core.IsInstalled())
         {
@@ -214,7 +214,7 @@ public class PocketExtrasService : BaseProcess
             if (!result.Value)
                 return;
 
-            core.Install(this.SettingsService.GetConfig().preserve_platforms_folder);
+            core.Install(this.settingsService.GetConfig().preserve_platforms_folder);
 
             if (!core.IsInstalled())
             {
@@ -223,7 +223,7 @@ public class PocketExtrasService : BaseProcess
             }
         }
 
-        Release release = GithubApiService.GetLatestRelease(user, repository, this.GithubToken);
+        Release release = GithubApiService.GetLatestRelease(user, repository, this.settingsService.GetConfig().github_token);
         Asset asset = release.assets.FirstOrDefault(x => x.name.StartsWith(assetName));
 
         if (asset == null)
@@ -308,14 +308,14 @@ public class PocketExtrasService : BaseProcess
             OnUpdateProcessComplete(args);
         }
 
-        this.SettingsService.EnableCore(core.identifier, true, release.tag_name);
-        this.SettingsService.Save();
+        this.settingsService.EnableCore(core.identifier, true, release.tag_name);
+        this.settingsService.Save();
     }
 
     public string GetMostRecentRelease(PocketExtra pocketExtra)
     {
         Release release = GithubApiService.GetLatestRelease(pocketExtra.github_user, pocketExtra.github_repository,
-            this.GithubToken);
+            this.settingsService.GetConfig().github_token);
 
         return release.tag_name;
     }
