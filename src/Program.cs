@@ -90,7 +90,7 @@ internal partial class Program
             // If not, auto enable them.
             CheckForMissingCores(enableMissingCores);
 
-            PocketCoreUpdater coreUpdater = new PocketCoreUpdater(
+            CoreUpdaterService coreUpdaterService = new CoreUpdaterService(
                 GlobalHelper.UpdateDirectory,
                 GlobalHelper.Cores,
                 GlobalHelper.FirmwareService,
@@ -98,19 +98,19 @@ internal partial class Program
                 GlobalHelper.PocketExtrasService,
                 GlobalHelper.SettingsManager);
 
-            coreUpdater.StatusUpdated += coreUpdater_StatusUpdated;
-            coreUpdater.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
+            coreUpdaterService.StatusUpdated += coreUpdater_StatusUpdated;
+            coreUpdaterService.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
 
             switch (parserResult.Value)
             {
                 case UpdateOptions options:
                     Console.WriteLine("Starting update process...");
-                    coreUpdater.RunUpdates(options.CoreName, options.CleanInstall);
+                    coreUpdaterService.RunUpdates(options.CoreName, options.CleanInstall);
                     Pause();
                     break;
 
                 case InstanceGeneratorOptions:
-                    RunInstanceGenerator(coreUpdater, true);
+                    RunInstanceGenerator(coreUpdaterService, true);
                     break;
 
                 case ImagesOptions options:
@@ -133,7 +133,7 @@ internal partial class Program
                     break;
 
                 case UninstallOptions options:
-                    coreUpdater.DeleteCore(GlobalHelper.GetCore(options.CoreName), true, options.DeleteAssets);
+                    coreUpdaterService.DeleteCore(GlobalHelper.GetCore(options.CoreName), true, options.DeleteAssets);
                     break;
 
                 case BackupSavesOptions options:
@@ -200,7 +200,7 @@ internal partial class Program
                     break;
 
                 default:
-                    DisplayMenuNew(GlobalHelper.UpdateDirectory, coreUpdater);
+                    DisplayMenuNew(coreUpdaterService);
                     break;
             }
         }

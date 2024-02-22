@@ -9,7 +9,7 @@ namespace Pannella;
 
 internal partial class Program
 {
-    private static void DisplayMenuNew(string path, PocketCoreUpdater coreUpdater)
+    private static void DisplayMenuNew(CoreUpdaterService coreUpdaterService)
     {
         Console.Clear();
 
@@ -45,27 +45,27 @@ internal partial class Program
             .Configure(menuConfig)
             .Add("Download Platform Image Packs", _ =>
             {
-                PlatformImagePackSelector(path);
+                PlatformImagePackSelector(GlobalHelper.UpdateDirectory);
                 Pause();
             })
             .Add("Download Pocket Library Images", _ =>
             {
-                DownloadPockLibraryImages(path);
+                DownloadPockLibraryImages(GlobalHelper.UpdateDirectory);
                 Pause();
             })
             .Add("Download GameBoy Palettes", _ =>
             {
-                DownloadGameBoyPalettes(path);
+                DownloadGameBoyPalettes(GlobalHelper.UpdateDirectory);
                 Pause();
             })
             .Add("Generate Instance JSON Files (PC Engine CD)", () =>
             {
-                RunInstanceGenerator(coreUpdater);
+                RunInstanceGenerator(coreUpdaterService);
                 Pause();
             })
             .Add("Generate Game & Watch ROMs", _ =>
             {
-                BuildGameAndWatchRoms(path);
+                BuildGameAndWatchRoms(GlobalHelper.UpdateDirectory);
                 Pause();
             })
             .Add("Enable All Display Modes", () =>
@@ -153,7 +153,7 @@ internal partial class Program
             .Configure(menuConfig)
             .Add("Reinstall All Cores", _ =>
             {
-                coreUpdater.RunUpdates(null, true);
+                coreUpdaterService.RunUpdates(null, true);
                 Pause();
             })
             .Add("Reinstall Select Cores", _ =>
@@ -165,7 +165,7 @@ internal partial class Program
 
                 foreach (var item in results.Where(x => x.Value))
                 {
-                    coreUpdater.RunUpdates(item.Key, true);
+                    coreUpdaterService.RunUpdates(item.Key, true);
                 }
 
                 Pause();
@@ -181,7 +181,7 @@ internal partial class Program
 
                 foreach (var item in results.Where(x => x.Value))
                 {
-                    coreUpdater.DeleteCore(GlobalHelper.GetCore(item.Key), true, nuke);
+                    coreUpdaterService.DeleteCore(GlobalHelper.GetCore(item.Key), true, nuke);
                 }
 
                 Pause();
@@ -234,7 +234,8 @@ internal partial class Program
 
                 if (result)
                 {
-                    GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, path, true, true);
+                    GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, GlobalHelper.UpdateDirectory,
+                        true, true);
                     Pause();
                 }
             });
@@ -249,7 +250,7 @@ internal partial class Program
             .Add("Update All", _ =>
             {
                 Console.WriteLine("Starting update process...");
-                coreUpdater.RunUpdates();
+                coreUpdaterService.RunUpdates();
                 GlobalHelper.RefreshInstalledCores();
                 Pause();
             })
@@ -276,8 +277,10 @@ internal partial class Program
             })
             .Add("Backup Saves & Memories", () =>
             {
-                AssetsService.BackupSaves(path, GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
-                AssetsService.BackupMemories(path, GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
+                AssetsService.BackupSaves(GlobalHelper.UpdateDirectory,
+                    GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
+                AssetsService.BackupMemories(GlobalHelper.UpdateDirectory,
+                    GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
                 Pause();
             })
             .Add("Pocket Setup            >", pocketSetupMenu.Show)

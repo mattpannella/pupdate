@@ -4,16 +4,15 @@ using Pannella.Helpers;
 using Pannella.Models;
 using Pannella.Models.Extras;
 using Pannella.Models.OpenFPGA_Cores_Inventory;
-using Pannella.Services;
 using File = System.IO.File;
 using AnalogueCore = Pannella.Models.Analogue.Core.Core;
 
-namespace Pannella;
+namespace Pannella.Services;
 
 [UnconditionalSuppressMessage("Trimming",
     "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
     Justification = "<Pending>")]
-public class PocketCoreUpdater : BaseProcess
+public class CoreUpdaterService : BaseProcess
 {
     public string InstallPath { get; set; }
     public List<Core> Cores { get; set; }
@@ -22,7 +21,7 @@ public class PocketCoreUpdater : BaseProcess
     public PocketExtrasService PocketExtrasService { get; set; }
     public SettingsManager SettingsManager { get; set; }
 
-    public PocketCoreUpdater(
+    public CoreUpdaterService(
         string path,
         List<Core> cores,
         FirmwareService firmwareService = null,

@@ -1,8 +1,10 @@
+using Pannella.Services;
+
 namespace Pannella;
 
 internal partial class Program
 {
-    private static void RunInstanceGenerator(PocketCoreUpdater pocketCoreUpdater, bool force = false)
+    private static void RunInstanceGenerator(CoreUpdaterService coreUpdaterService, bool force = false)
     {
         if (!force)
         {
@@ -17,6 +19,6 @@ internal partial class Program
             }
         }
 
-        pocketCoreUpdater.BuildInstanceJson(force);
+        coreUpdaterService.BuildInstanceJson(force);
     }
 }
