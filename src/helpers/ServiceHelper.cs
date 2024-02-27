@@ -5,7 +5,7 @@ namespace Pannella.Helpers;
 
 public static class ServiceHelper
 {
-    public static string UpdateDirectory { get; private set; }
+    public static string UpdateDirectory { get; private set; } // move off this
     public static CoresService CoresService { get; private set; }
     public static SettingsService SettingsService { get; private set ;}
     public static PocketExtrasService PocketExtrasService { get; private set; }

@@ -1,6 +1,5 @@
 using System.IO.Compression;
 using Pannella.Helpers;
-using Pannella.Services;
 using ArchiveFile = Pannella.Models.Archive.File;
 
 namespace Pannella;
@@ -10,7 +9,7 @@ internal partial class Program
     private static void DownloadPockLibraryImages()
     {
         const string fileName = "Library_Image_Set_v1.0.zip";
-        ArchiveFile archiveFile = ServiceHelper.ArchiveService.ArchiveFiles.GetFile(fileName);
+        ArchiveFile archiveFile = ServiceHelper.ArchiveService.GetArchiveFile(fileName);
 
         if (archiveFile != null)
         {

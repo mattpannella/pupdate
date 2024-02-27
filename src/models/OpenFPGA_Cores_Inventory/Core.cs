@@ -500,7 +500,7 @@ public class Core : Base
     {
         if (archive != null)
         {
-            ArchiveFile file = archive.GetFile(fileName);
+            ArchiveFile file = ServiceHelper.ArchiveService.GetArchiveFile(fileName);
 
             if (file == null)
             {
@@ -576,7 +576,7 @@ public class Core : Base
         }
 
         string filename = Path.GetFileName(filepath);
-        ArchiveFile file = archive.GetFile(filename);
+        ArchiveFile file = ServiceHelper.ArchiveService.GetArchiveFile(filename);
 
         if (file == null)
         {

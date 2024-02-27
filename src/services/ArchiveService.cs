@@ -126,6 +126,13 @@ public class ArchiveService
         }
     }
 
+    public File GetArchiveFile(string fileName)
+    {
+        File file = this.ArchiveFiles.files.FirstOrDefault(file => file.name == fileName);
+
+        return file;
+    }
+
     public void DownloadArchiveFile(string archiveName, File archiveFile, string destination)
     {
         try
