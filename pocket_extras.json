@@ -99,7 +99,7 @@
       "type": "combination_platform",
       "platform_name": "jts16_c",
       "core_identifiers": [
-        "jts16_c"
+        "jotego.jts16_c"
       ],
       "github_user": "espiox",
       "github_repository": "jts16_complete",
@@ -112,7 +112,7 @@
       "type": "variant_core",
       "platform_name": "sgb",
       "core_identifiers": [
-        "sgb2"
+        "Spiritiualized.SuperGB2"
       ],
       "github_user": "hallem",
       "github_repository": "openFPGA-Super-GB",
@@ -125,7 +125,7 @@
       "type": "variant_core",
       "platform_name": "sgb",
       "core_identifiers": [
-        "sgb2vw"
+        "Spiritiualized.SuperGB.VW"
       ],
       "github_user": "hallem",
       "github_repository": "openFPGA-Super-GB",

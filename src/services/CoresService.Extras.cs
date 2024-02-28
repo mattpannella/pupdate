@@ -128,6 +128,7 @@ public partial class CoresService
 
             WriteMessage("Installing...");
             Util.CopyDirectory(extractPath, path, true, true);
+            this.RefreshLocalCores();
             WriteMessage("Complete.");
         }
         catch (Exception e)

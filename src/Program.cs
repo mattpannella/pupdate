@@ -12,8 +12,6 @@ internal partial class Program
     {
         try
         {
-            #region Command Line Arguments
-
             Parser parser = new Parser(config => config.HelpWriter = null);
 
             var parserResult = parser.ParseArguments<MenuOptions, FundOptions, UpdateOptions,
@@ -55,8 +53,6 @@ internal partial class Program
             {
                 path = ((BaseOptions)parserResult.Value).InstallPath;
             }
-
-            #endregion
 
             ServiceHelper.Initialize(path, coreUpdater_StatusUpdated, coreUpdater_UpdateProcessComplete);
 

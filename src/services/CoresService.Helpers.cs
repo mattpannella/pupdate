@@ -37,6 +37,11 @@ public partial class CoresService
         return all;
     }
 
+    private void RefreshLocalCores()
+    {
+        cores.AddRange(this.GetLocalCores());
+    }
+
     private bool InstallGithubAsset(string identifier, string platformId, string downloadUrl)
     {
         if (downloadUrl == null)
