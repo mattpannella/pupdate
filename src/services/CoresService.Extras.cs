@@ -63,8 +63,10 @@ public partial class CoresService
 
         WriteMessage(string.Concat(
             Environment.NewLine,
-            $"Please go to https://www.github.com/{pocketExtra.github_user}/{pocketExtra.github_repository} ",
-            "for more information and to support the author of the Extra."
+            $"Please go to https://www.github.com/{pocketExtra.github_user}/{pocketExtra.github_repository}",
+            Environment.NewLine,
+            "  for more information and to support the author of the Extra.",
+            Environment.NewLine
         ));
     }
 

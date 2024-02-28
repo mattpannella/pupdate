@@ -134,7 +134,7 @@ public class CoreUpdaterService : BaseProcess
 
                 if (mostRecentRelease == null)
                 {
-                    WriteMessage("No releases found. Skipping");
+                    WriteMessage("No releases found. Skipping.");
 
                     results = this.coresService.DownloadAssets(core);
                     installedAssets.AddRange(results["installed"] as List<string>);
@@ -170,6 +170,25 @@ public class CoreUpdaterService : BaseProcess
                     }
                     else
                     {
+                        if (coreSettings.pocket_extras &&
+                            pocketExtra != null &&
+                            pocketExtra.type != PocketExtraType.combination_platform)
+                        {
+                            WriteMessage("Pocket Extras found: " + coreSettings.pocket_extras_version);
+                            var version = this.coresService.GetMostRecentRelease(pocketExtra);
+                            WriteMessage(version + " is the most recent release...");
+
+                            if (coreSettings.pocket_extras_version != version)
+                            {
+                                WriteMessage("Updating Pocket Extras...");
+                                this.coresService.GetPocketExtra(pocketExtra, this.installPath, false);
+                            }
+                            else
+                            {
+                                WriteMessage("Up to date. Skipping Pocket Extras.");
+                            }
+                        }
+
                         results = this.coresService.DownloadAssets(core);
                         JotegoRename(core);
 
@@ -181,7 +200,7 @@ public class CoreUpdaterService : BaseProcess
                             missingBetaKeys.Add(core.identifier);
                         }
 
-                        WriteMessage("Up to date. Skipping core");
+                        WriteMessage("Up to date. Skipping core.");
                         Divide();
                         continue;
                     }
@@ -220,6 +239,24 @@ public class CoreUpdaterService : BaseProcess
 
                     installed.Add(summary);
                 }
+                else if (coreSettings.pocket_extras &&
+                         pocketExtra != null &&
+                         pocketExtra.type != PocketExtraType.combination_platform)
+                {
+                    WriteMessage("Pocket Extras found: " + coreSettings.pocket_extras_version);
+                    var version = this.coresService.GetMostRecentRelease(pocketExtra);
+                    WriteMessage(version + " is the most recent release...");
+
+                    if (coreSettings.pocket_extras_version != version)
+                    {
+                        WriteMessage("Updating Pocket Extras...");
+                        this.coresService.GetPocketExtra(pocketExtra, this.installPath, false);
+                    }
+                    else
+                    {
+                        WriteMessage("Up to date. Skipping Pocket Extras.");
+                    }
+                }
 
                 JotegoRename(core);
 
@@ -234,7 +271,6 @@ public class CoreUpdaterService : BaseProcess
 
                 WriteMessage("Installation complete.");
                 Divide();
-
             }
             catch (Exception e)
             {

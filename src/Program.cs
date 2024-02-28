@@ -200,7 +200,7 @@ internal partial class Program
                     }
                     else
                     {
-                        Console.WriteLine($"Missing required parameter: -n or --name");
+                        Console.WriteLine("Missing required parameter: -n or --name");
                     }
 
                     break;
