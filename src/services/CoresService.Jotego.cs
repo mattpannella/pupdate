@@ -1,33 +1,21 @@
 using System.IO.Compression;
 using Pannella.Helpers;
-using Pannella.Models;
 using Pannella.Models.OpenFPGA_Cores_Inventory;
 using AnalogueCore = Pannella.Models.Analogue.Core.Core;
 using GithubFile = Pannella.Models.Github.File;
 
 namespace Pannella.Services;
 
-public class JotegoService : Base
+public partial class CoresService
 {
     private const string BETA_KEY_FILENAME = "jtbeta.zip";
     private const string EXTRACT_LOCATION = "betakeys";
-
-    private readonly string installPath;
-    private readonly string githubToken;
-    private readonly CoresService coresService;
 
     private Dictionary<string, string> renamedPlatformFiles;
 
     public Dictionary<string, string> RenamedPlatformFiles
     {
         get { return renamedPlatformFiles ??= this.LoadRenamedPlatformFiles(); }
-    }
-
-    public JotegoService(string path, CoresService coresService, string githubToken = null)
-    {
-        this.installPath = path;
-        this.coresService = coresService;
-        this.githubToken = githubToken;
     }
 
     private Dictionary<string, string> LoadRenamedPlatformFiles()
@@ -37,7 +25,7 @@ public class JotegoService : Base
         try
         {
             List<GithubFile> files = GithubApiService.GetFiles("dyreschlock", "pocket-platform-images",
-                "arcade/Platforms", this.githubToken);
+                "arcade/Platforms", this.settingsService.GetConfig().github_token);
 
             foreach (var file in files)
             {
@@ -67,7 +55,7 @@ public class JotegoService : Base
 
     public (bool, string, int) IsBetaCore(string identifier)
     {
-        var data = this.coresService.ReadDataJson(identifier);
+        var data = this.ReadDataJson(identifier);
         var slot = data.data.data_slots.FirstOrDefault(x => x.name == "JTBETA");
 
         return slot != null
@@ -77,7 +65,7 @@ public class JotegoService : Base
 
     public void CopyBetaKey(Core core)
     {
-        AnalogueCore info = this.coresService.ReadCoreJson(core.identifier);
+        AnalogueCore info = this.ReadCoreJson(core.identifier);
         string path = Path.Combine(
             this.installPath,
             "Assets",

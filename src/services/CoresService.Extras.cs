@@ -182,7 +182,16 @@ public partial class CoresService
 
         if (!this.IsInstalled(core.identifier))
         {
+            bool jtBetaKeyExists = this.ExtractBetaKey();
+
             WriteMessage($"The '{coreIdentifier}' core is not currently installed.");
+
+            if (core.requires_license && !jtBetaKeyExists)
+            {
+                WriteMessage("Missing beta key. Skipping.");
+                return;
+            }
+
             WriteMessage("Would you like to install it? [Y]es, [N]o");
 
             bool? result = null;
@@ -201,6 +210,11 @@ public partial class CoresService
                 return;
 
             this.Install(core);
+
+            if (core.requires_license && jtBetaKeyExists)
+            {
+                this.CopyBetaKey(core);
+            }
 
             if (!this.IsInstalled(core.identifier))
             {

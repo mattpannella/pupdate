@@ -131,14 +131,15 @@ public partial class CoresService : BaseProcess
 
     public void Uninstall(string identifier, string platformId, bool nuke = false)
     {
-        WriteMessage("Uninstalling " + identifier);
+        WriteMessage($"Uninstalling {identifier}...");
 
         Delete(identifier, platformId, nuke);
 
         this.settingsService.DisableCore(identifier);
+        this.settingsService.DisablePocketExtras(identifier);
         this.settingsService.Save();
 
-        WriteMessage("Finished");
+        WriteMessage("Finished.");
         Divide();
     }
 
@@ -152,7 +153,7 @@ public partial class CoresService : BaseProcess
 
             if (Directory.Exists(path))
             {
-                WriteMessage("Deleting " + path);
+                WriteMessage($"Deleting {path}...");
                 Directory.Delete(path, true);
             }
         }
@@ -163,7 +164,7 @@ public partial class CoresService : BaseProcess
 
             if (Directory.Exists(path))
             {
-                WriteMessage("Deleting " + path);
+                WriteMessage($"Deleting {path}...");
                 Directory.Delete(path, true);
             }
         }

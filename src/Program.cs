@@ -94,7 +94,6 @@ internal partial class Program
                 ServiceHelper.UpdateDirectory,
                 ServiceHelper.CoresService.Cores,
                 ServiceHelper.FirmwareService,
-                ServiceHelper.JotegoService,
                 ServiceHelper.SettingsService,
                 ServiceHelper.CoresService);
 

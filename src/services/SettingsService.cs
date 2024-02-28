@@ -116,6 +116,15 @@ public class SettingsService
         }
     }
 
+    public void DisablePocketExtras(string name)
+    {
+        if (settings.coreSettings.TryGetValue(name, out CoreSettings value))
+        {
+            value.pocket_extras = false;
+            value.pocket_extras_version = null;
+        }
+    }
+
     public List<Core> GetMissingCores() => this.missingCores;
 
     public void EnableMissingCores()

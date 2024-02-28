@@ -10,7 +10,6 @@ public static class ServiceHelper
     public static SettingsService SettingsService { get; private set ;}
     public static PlatformImagePacksService PlatformImagePacksService { get; private set; }
     public static FirmwareService FirmwareService { get; private set; }
-    public static JotegoService JotegoService { get; private set; }
     public static ArchiveService ArchiveService { get; private set; }
     public static AssetsService AssetsService { get; private set; }
 
@@ -42,14 +41,12 @@ public static class ServiceHelper
             PlatformImagePacksService = new PlatformImagePacksService(path, SettingsService.GetConfig().github_token,
                 SettingsService.GetConfig().use_local_image_packs);
             FirmwareService = new FirmwareService();
-            JotegoService = new JotegoService(path, CoresService, SettingsService.GetConfig().github_token);
 
             if (statusUpdated != null)
             {
                 PlatformImagePacksService.StatusUpdated += statusUpdated;
                 FirmwareService.StatusUpdated += statusUpdated;
                 CoresService.StatusUpdated += statusUpdated;
-                JotegoService.StatusUpdated += statusUpdated;
             }
 
             if (updateProcessComplete != null)

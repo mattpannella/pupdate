@@ -17,7 +17,6 @@ public class CoreUpdaterService : BaseProcess
     private readonly string installPath;
     private readonly List<Core> cores;
     private readonly FirmwareService firmwareService;
-    private readonly JotegoService jotegoService;
     private readonly SettingsService settingsService;
     private readonly CoresService coresService;
 
@@ -25,14 +24,12 @@ public class CoreUpdaterService : BaseProcess
         string path,
         List<Core> cores,
         FirmwareService firmwareService,
-        JotegoService jotegoService,
         SettingsService settingsService,
         CoresService coresService)
     {
         this.installPath = path;
         this.cores = cores;
         this.firmwareService = firmwareService;
-        this.jotegoService = jotegoService;
         this.settingsService = settingsService;
         this.coresService = coresService;
 
@@ -83,7 +80,7 @@ public class CoreUpdaterService : BaseProcess
             Divide();
         }
 
-        bool jtBetaKeyExists = this.jotegoService.ExtractBetaKey();
+        bool jtBetaKeyExists = this.coresService.ExtractBetaKey();
 
         foreach (var core in this.cores.Where(core => ids == null || ids.Any(id => id == core.identifier)))
         {
@@ -113,13 +110,13 @@ public class CoreUpdaterService : BaseProcess
 
                 WriteMessage("Checking Core: " + name);
 
-                var isBetaCore = this.jotegoService.IsBetaCore(core.identifier);
+                var isBetaCore = this.coresService.IsBetaCore(core.identifier);
 
                 if (isBetaCore.Item1)
                 {
                     core.beta_slot_id = isBetaCore.Item2;
                     core.beta_slot_platform_id_index = isBetaCore.Item3;
-                    this.jotegoService.CopyBetaKey(core);
+                    this.coresService.CopyBetaKey(core);
                 }
 
                 PocketExtra pocketExtra = this.coresService.GetPocketExtra(name);
@@ -283,7 +280,7 @@ public class CoreUpdaterService : BaseProcess
             }
         }
 
-        this.jotegoService.DeleteBetaKey();
+        this.coresService.DeleteBetaKey();
 
         UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs
         {
@@ -312,7 +309,7 @@ public class CoreUpdaterService : BaseProcess
             Dictionary<string, Platform> data = JsonSerializer.Deserialize<Dictionary<string, Platform>>(json);
             Platform platform = data["platform"];
 
-            if (this.jotegoService.RenamedPlatformFiles.TryGetValue(core.platform_id, out string value) &&
+            if (this.coresService.RenamedPlatformFiles.TryGetValue(core.platform_id, out string value) &&
                 platform.name == core.platform_id)
             {
                 WriteMessage("Updating JT Platform Name...");
