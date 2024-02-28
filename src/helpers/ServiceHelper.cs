@@ -8,7 +8,6 @@ public static class ServiceHelper
     public static string UpdateDirectory { get; private set; } // move off this
     public static CoresService CoresService { get; private set; }
     public static SettingsService SettingsService { get; private set ;}
-    public static PocketExtrasService PocketExtrasService { get; private set; }
     public static PlatformImagePacksService PlatformImagePacksService { get; private set; }
     public static FirmwareService FirmwareService { get; private set; }
     public static JotegoService JotegoService { get; private set; }
@@ -25,14 +24,6 @@ public static class ServiceHelper
             isInitialized = true;
             UpdateDirectory = path;
             SettingsService = new SettingsService(path);
-            CoresService = new CoresService(path);
-            SettingsService.InitializeCoreSettings(CoresService.Cores);
-            PocketExtrasService = new PocketExtrasService(CoresService, SettingsService);
-            PlatformImagePacksService = new PlatformImagePacksService(path, SettingsService.GetConfig().github_token,
-                SettingsService.GetConfig().use_local_image_packs);
-            FirmwareService = new FirmwareService();
-            JotegoService = new JotegoService(path, SettingsService.GetConfig().github_token);
-            AssetsService = new AssetsService(SettingsService.GetConfig().use_local_blacklist);
 
             if (SettingsService.GetConfig().use_custom_archive)
             {
@@ -45,9 +36,16 @@ public static class ServiceHelper
                     SettingsService.GetConfig().gnw_archive_name, SettingsService.GetConfig().crc_check);
             }
 
+            AssetsService = new AssetsService(SettingsService.GetConfig().use_local_blacklist);
+            CoresService = new CoresService(path, SettingsService, ArchiveService, AssetsService);
+            SettingsService.InitializeCoreSettings(CoresService.Cores);
+            PlatformImagePacksService = new PlatformImagePacksService(path, SettingsService.GetConfig().github_token,
+                SettingsService.GetConfig().use_local_image_packs);
+            FirmwareService = new FirmwareService();
+            JotegoService = new JotegoService(path, CoresService, SettingsService.GetConfig().github_token);
+
             if (statusUpdated != null)
             {
-                PocketExtrasService.StatusUpdated += statusUpdated;
                 PlatformImagePacksService.StatusUpdated += statusUpdated;
                 FirmwareService.StatusUpdated += statusUpdated;
                 CoresService.StatusUpdated += statusUpdated;
@@ -56,7 +54,7 @@ public static class ServiceHelper
 
             if (updateProcessComplete != null)
             {
-                PocketExtrasService.UpdateProcessComplete += updateProcessComplete;
+                CoresService.UpdateProcessComplete += updateProcessComplete;
             }
         }
     }

@@ -1,6 +1,6 @@
 using System.Text;
+using Pannella.Helpers;
 using Pannella.Models.OpenFPGA_Cores_Inventory;
-using Pannella.Services;
 
 namespace Pannella;
 
@@ -10,15 +10,16 @@ internal partial class Program
     {
         var output = new StringBuilder();
 
-        if (CoresService.InstalledCoresWithSponsors.Count > 0)
+        if (ServiceHelper.CoresService.InstalledCoresWithSponsors.Count > 0)
         {
             var random = new Random();
-            var index = random.Next(CoresService.InstalledCoresWithSponsors.Count);
-            var randomItem = CoresService.InstalledCoresWithSponsors[index];
+            var index = random.Next(ServiceHelper.CoresService.InstalledCoresWithSponsors.Count);
+            var randomItem = ServiceHelper.CoresService.InstalledCoresWithSponsors[index];
 
             if (randomItem.sponsor != null)
             {
-                var author = randomItem.GetConfig().metadata.author;
+                var info = ServiceHelper.CoresService.ReadCoreJson(randomItem.identifier);
+                var author = info.metadata.author;
 
                 output.AppendLine($"Please consider supporting {author} for their work on the {randomItem} core:");
                 output.Append(randomItem.sponsor);
@@ -30,7 +31,7 @@ internal partial class Program
 
     private static void Funding(string identifier)
     {
-        if (CoresService.InstalledCores.Count == 0)
+        if (ServiceHelper.CoresService.InstalledCores.Count == 0)
         {
             Console.WriteLine("You must install cores to see their funding information.");
             return;
@@ -40,13 +41,13 @@ internal partial class Program
 
         if (string.IsNullOrEmpty(identifier))
         {
-            cores = CoresService.InstalledCores;
+            cores = ServiceHelper.CoresService.InstalledCores;
         }
         else
         {
             cores = new List<Core>();
 
-            var core = CoresService.GetInstalledCore(identifier);
+            var core = ServiceHelper.CoresService.GetInstalledCore(identifier);
 
             if (core != null)
             {

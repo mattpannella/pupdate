@@ -1,5 +1,4 @@
 using System.IO.Compression;
-using System.Runtime.CompilerServices;
 using Pannella.Helpers;
 using Pannella.Models;
 using Pannella.Models.OpenFPGA_Cores_Inventory;
@@ -13,6 +12,10 @@ public class JotegoService : Base
     private const string BETA_KEY_FILENAME = "jtbeta.zip";
     private const string EXTRACT_LOCATION = "betakeys";
 
+    private readonly string installPath;
+    private readonly string githubToken;
+    private readonly CoresService coresService;
+
     private Dictionary<string, string> renamedPlatformFiles;
 
     public Dictionary<string, string> RenamedPlatformFiles
@@ -20,13 +23,11 @@ public class JotegoService : Base
         get { return renamedPlatformFiles ??= this.LoadRenamedPlatformFiles(); }
     }
 
-    public string InstallPath { get; set; }
-    public string GithubToken { get; set; }
-
-    public JotegoService(string path, string githubToken = null)
+    public JotegoService(string path, CoresService coresService, string githubToken = null)
     {
-        this.InstallPath = path;
-        this.GithubToken = githubToken;
+        this.installPath = path;
+        this.coresService = coresService;
+        this.githubToken = githubToken;
     }
 
     private Dictionary<string, string> LoadRenamedPlatformFiles()
@@ -36,7 +37,7 @@ public class JotegoService : Base
         try
         {
             List<GithubFile> files = GithubApiService.GetFiles("dyreschlock", "pocket-platform-images",
-                "arcade/Platforms", this.GithubToken);
+                "arcade/Platforms", this.githubToken);
 
             foreach (var file in files)
             {
@@ -64,11 +65,33 @@ public class JotegoService : Base
         return platformFiles;
     }
 
+    public (bool, string, int) IsBetaCore(string identifier)
+    {
+        var data = this.coresService.ReadDataJson(identifier);
+        var slot = data.data.data_slots.FirstOrDefault(x => x.name == "JTBETA");
+
+        return slot != null
+            ? (true, slot.id, slot.GetPlatformIdIndex())
+            : (false, null, 0);
+
+        // bool check = data.data.data_slots.Any(x => x.name == "JTBETA");
+        //
+        // if (check)
+        // {
+        //     var slot = data.data.data_slots.First(x => x.name == "JTBETA");
+        //
+        //     this.beta_slot_id = slot.id;
+        //     this.beta_slot_platform_id_index = slot.GetPlatformIdIndex();
+        // }
+        //
+        // return check;
+    }
+
     public void CopyBetaKey(Core core)
     {
-        AnalogueCore info = core.GetConfig();
+        AnalogueCore info = this.coresService.ReadCoreJson(core.identifier);
         string path = Path.Combine(
-            this.InstallPath,
+            this.installPath,
             "Assets",
             info.metadata.platform_ids[core.beta_slot_platform_id_index],
             "common");
@@ -78,7 +101,7 @@ public class JotegoService : Base
             Directory.CreateDirectory(path);
         }
 
-        string keyPath = Path.Combine(this.InstallPath, EXTRACT_LOCATION);
+        string keyPath = Path.Combine(this.installPath, EXTRACT_LOCATION);
 
         if (Directory.Exists(keyPath) && Directory.Exists(path))
         {
@@ -89,8 +112,8 @@ public class JotegoService : Base
 
     public bool ExtractBetaKey()
     {
-        string keyPath = Path.Combine(this.InstallPath, EXTRACT_LOCATION);
-        string file = Path.Combine(this.InstallPath, BETA_KEY_FILENAME);
+        string keyPath = Path.Combine(this.installPath, EXTRACT_LOCATION);
+        string file = Path.Combine(this.installPath, BETA_KEY_FILENAME);
 
         if (File.Exists(file))
         {
@@ -105,7 +128,7 @@ public class JotegoService : Base
 
     public void DeleteBetaKey()
     {
-        string keyPath = Path.Combine(this.InstallPath, EXTRACT_LOCATION);
+        string keyPath = Path.Combine(this.installPath, EXTRACT_LOCATION);
 
         if (Directory.Exists(keyPath))
             Directory.Delete(keyPath, true);

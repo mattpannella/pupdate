@@ -95,8 +95,8 @@ internal partial class Program
                 ServiceHelper.CoresService.Cores,
                 ServiceHelper.FirmwareService,
                 ServiceHelper.JotegoService,
-                ServiceHelper.PocketExtrasService,
-                ServiceHelper.SettingsService);
+                ServiceHelper.SettingsService,
+                ServiceHelper.CoresService);
 
             coreUpdaterService.StatusUpdated += coreUpdater_StatusUpdated;
             coreUpdaterService.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
@@ -105,7 +105,14 @@ internal partial class Program
             {
                 case UpdateOptions options:
                     Console.WriteLine("Starting update process...");
-                    coreUpdaterService.RunUpdates(options.CoreName, options.CleanInstall);
+                    string[] identifiers = null;
+
+                    if (!string.IsNullOrEmpty(options.CoreName))
+                    {
+                        identifiers = new[] { options.CoreName };
+                    }
+
+                    coreUpdaterService.RunUpdates(identifiers, options.CleanInstall);
                     Pause();
                     break;
 
@@ -127,12 +134,13 @@ internal partial class Program
                     ServiceHelper.CoresService.DownloadCoreAssets(cores);
                     break;
 
-                case UninstallOptions options when CoresService.GetCore(options.CoreName) == null:
+                case UninstallOptions options when ServiceHelper.CoresService.GetCore(options.CoreName) == null:
                     Console.WriteLine($"Unknown core '{options.CoreName}'");
                     break;
 
                 case UninstallOptions options:
-                    coreUpdaterService.DeleteCore(CoresService.GetCore(options.CoreName), true, options.DeleteAssets);
+                    coreUpdaterService.DeleteCore(ServiceHelper.CoresService.GetCore(options.CoreName), true,
+                        options.DeleteAssets);
                     break;
 
                 case BackupSavesOptions options:
@@ -164,14 +172,14 @@ internal partial class Program
                     {
                         Console.WriteLine();
 
-                        foreach (var extra in ServiceHelper.PocketExtrasService.List)
+                        foreach (var extra in ServiceHelper.CoresService.PocketExtrasList)
                         {
                             PrintPocketExtraInfo(extra);
                         }
                     }
                     else if (!string.IsNullOrEmpty(options.Name))
                     {
-                        var extra = ServiceHelper.PocketExtrasService.GetPocketExtra(options.Name);
+                        var extra = ServiceHelper.CoresService.GetPocketExtra(options.Name);
 
                         if (extra != null)
                         {
@@ -182,7 +190,7 @@ internal partial class Program
                             }
                             else
                             {
-                                ServiceHelper.PocketExtrasService.GetPocketExtra(extra, ServiceHelper.UpdateDirectory, true);
+                                ServiceHelper.CoresService.GetPocketExtra(extra, ServiceHelper.UpdateDirectory, true);
                             }
                         }
                         else

@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Pannella.Helpers;
 using Pannella.Models;
@@ -10,11 +9,15 @@ namespace Pannella.Services;
 [UnconditionalSuppressMessage("Trimming",
     "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
     Justification = "<Pending>")]
-public class CoresService : BaseProcess
+public partial class CoresService : BaseProcess
 {
-    private const string END_POINT = "https://openfpga-cores-inventory.github.io/analogue-pocket/api/v2/cores.json";
+    private const string CORES_END_POINT = "https://openfpga-cores-inventory.github.io/analogue-pocket/api/v2/cores.json";
+    private const string ZIP_FILE_NAME = "core.zip";
 
-    private string installPath;
+    private readonly string installPath;
+    private readonly SettingsService settingsService;
+    private readonly ArchiveService archiveService;
+    private readonly AssetsService assetsService;
     private static List<Core> cores;
 
     public List<Core> Cores
@@ -23,7 +26,7 @@ public class CoresService : BaseProcess
         {
             if (cores == null)
             {
-                string json = HttpHelper.Instance.GetHTML(END_POINT);
+                string json = HttpHelper.Instance.GetHTML(CORES_END_POINT);
                 Dictionary<string, List<Core>> parsed = JsonSerializer.Deserialize<Dictionary<string, List<Core>>>(json);
 
                 if (parsed.TryGetValue("data", out var coresList))
@@ -39,7 +42,7 @@ public class CoresService : BaseProcess
 
     private static List<Core> installedCores;
 
-    public static List<Core> InstalledCores
+    public List<Core> InstalledCores
     {
         get
         {
@@ -54,7 +57,7 @@ public class CoresService : BaseProcess
 
     private static List<Core> installedCoresWithSponsors;
 
-    public static List<Core> InstalledCoresWithSponsors
+    public List<Core> InstalledCoresWithSponsors
     {
         get
         {
@@ -67,114 +70,102 @@ public class CoresService : BaseProcess
         }
     }
 
-    public CoresService(string path)
+    public CoresService(string path, SettingsService settingsService, ArchiveService archiveService,
+        AssetsService assetsService)
     {
         this.installPath = path;
+        this.settingsService = settingsService;
+        this.archiveService = archiveService;
+        this.assetsService = assetsService;
     }
 
-    public static Core GetCore(string identifier)
+    public Core GetCore(string identifier)
     {
-        return cores.Find(i => i.identifier == identifier);
+        return this.Cores.Find(i => i.identifier == identifier);
     }
 
-    public static Core GetInstalledCore(string identifier)
+    public bool IsInstalled(string identifier)
     {
-        return InstalledCores.Find(i => i.identifier == identifier);
+        // Should this just check the Installed Cores collection instead?
+        string localCoreFile = Path.Combine(this.installPath, "Cores", identifier, "core.json");
+
+        return File.Exists(localCoreFile);
     }
 
-    public static void RefreshInstalledCores()
+    public Core GetInstalledCore(string identifier)
     {
-        installedCores = cores.Where(c => c.IsInstalled()).ToList();
+        return this.InstalledCores.Find(i => i.identifier == identifier);
+    }
+
+    public void RefreshInstalledCores()
+    {
+        installedCores = cores.Where(c => this.IsInstalled(c.identifier)).ToList();
         installedCoresWithSponsors = installedCores.Where(c => c.sponsor != null).ToList();
     }
 
-    private IEnumerable<Core> GetLocalCores()
+    public bool Install(Core core, bool clean = false)
     {
-        string coresDirectory = Path.Combine(this.installPath, "Cores");
-
-        // Create if it doesn't exist. -- Should we do this?
-        // Stops error from being thrown if we do.
-        Directory.CreateDirectory(coresDirectory);
-
-        string[] directories = Directory.GetDirectories(coresDirectory, "*", SearchOption.TopDirectoryOnly);
-        List<Core> all = new List<Core>();
-
-        foreach (string name in directories)
+        if (core.repository == null)
         {
-            string n = Path.GetFileName(name);
-            var matches = Cores.Where(i => i.identifier == n);
+            WriteMessage("Core installed manually. Skipping.");
 
-            if (!matches.Any())
-            {
-                Core c = new Core { identifier = n };
-                c.platform = c.ReadPlatformFile();
-                all.Add(c);
-            }
+            return false;
         }
 
-        return all;
+        if (clean && this.IsInstalled(core.identifier))
+        {
+            this.Delete(core.identifier, core.platform_id);
+        }
+
+        // iterate through assets to find the zip release
+        if (this.InstallGithubAsset(core.identifier, core.platform_id, core.download_url))
+        {
+            this.ReplaceCheck(core.identifier);
+            this.CheckForPocketExtras(core.identifier);
+
+            return true;
+        }
+
+        return false;
     }
 
-    public void DownloadCoreAssets(List<Core> cores)
+    public void Uninstall(string identifier, string platformId, bool nuke = false)
     {
-        List<string> installedAssets = new List<string>();
-        List<string> skippedAssets = new List<string>();
-        List<string> missingBetaKeys = new List<string>();
+        WriteMessage("Uninstalling " + identifier);
 
-        if (cores == null)
+        Delete(identifier, platformId, nuke);
+
+        this.settingsService.DisableCore(identifier);
+        this.settingsService.Save();
+
+        WriteMessage("Finished");
+        Divide();
+    }
+
+    public void Delete(string identifier, string platformId, bool nuke = false)
+    {
+        List<string> folders = new List<string> { "Cores", "Presets", "Settings" };
+
+        foreach (string folder in folders)
         {
-            WriteMessage("List of cores is required.");
-            return;
-        }
+            string path = Path.Combine(this.installPath, folder, identifier);
 
-        foreach (var core in cores)
-        {
-            core.download_assets = true;
-
-            try
+            if (Directory.Exists(path))
             {
-                string name = core.identifier;
-
-                if (name == null)
-                {
-                    WriteMessage("Core Name is required. Skipping.");
-                    continue;
-                }
-
-                WriteMessage(core.identifier);
-
-                var results = core.DownloadAssets();
-
-                installedAssets.AddRange((List<string>)results["installed"]);
-                skippedAssets.AddRange((List<string>)results["skipped"]);
-
-                if ((bool)results["missingBetaKey"])
-                {
-                    missingBetaKeys.Add(core.identifier);
-                }
-
-                Divide();
-            }
-            catch (Exception e)
-            {
-                WriteMessage("Uh oh something went wrong.");
-#if DEBUG
-                WriteMessage(e.ToString());
-#else
-                WriteMessage(e.Message);
-#endif
+                WriteMessage("Deleting " + path);
+                Directory.Delete(path, true);
             }
         }
 
-        UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs
+        if (nuke)
         {
-            Message = "All Done",
-            InstalledAssets = installedAssets,
-            SkippedAssets = skippedAssets,
-            MissingBetaKeys = missingBetaKeys,
-            SkipOutro = false,
-        };
+            string path = Path.Combine(this.installPath, "Assets", platformId, identifier);
 
-        OnUpdateProcessComplete(args);
+            if (Directory.Exists(path))
+            {
+                WriteMessage("Deleting " + path);
+                Directory.Delete(path, true);
+            }
+        }
     }
 }

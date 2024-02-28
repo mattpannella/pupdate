@@ -81,7 +81,7 @@ internal partial class Program
                         return;
                     }
 
-                    core.download_assets = true;
+                    // core.download_assets = true;
 
                     try
                     {
@@ -93,7 +93,7 @@ internal partial class Program
                         }
 
                         Console.WriteLine("Updating " + core.identifier);
-                        core.AddDisplayModes();
+                        ServiceHelper.CoresService.AddDisplayModes(core.identifier);
                     }
                     catch (Exception e)
                     {
@@ -112,16 +112,16 @@ internal partial class Program
             .Add("Apply 8:7 Aspect Ratio to Super GameBoy cores", () =>
             {
                 var results = ShowCoresMenu(
-                    CoresService.InstalledCores.Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
+                    ServiceHelper.CoresService.InstalledCores.Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
                     "Which Super GameBoy cores would you like to change to the 8:7 aspect ratio?\n",
                     false);
 
                 foreach (var item in results.Where(x => x.Value))
                 {
-                    var core = CoresService.InstalledCores.First(c => c.identifier == item.Key);
+                    var core = ServiceHelper.CoresService.InstalledCores.First(c => c.identifier == item.Key);
 
                     Console.WriteLine($"Updating '{core.identifier}'...");
-                    core.ChangeAspectRatio(4, 3, 8, 7);
+                    ServiceHelper.CoresService.ChangeAspectRatio(core.identifier, 4, 3, 8, 7);
                     Console.WriteLine("Complete.");
                     Console.WriteLine();
                 }
@@ -131,16 +131,16 @@ internal partial class Program
             .Add("Restore 4:3 Aspect Ratio to Super GameBoy cores", () =>
             {
                 var results = ShowCoresMenu(
-                    CoresService.InstalledCores.Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
+                    ServiceHelper.CoresService.InstalledCores.Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
                     "Which Super GameBoy cores would you like to change to the 8:7 aspect ratio?\n",
                     false);
 
                 foreach (var item in results.Where(x => x.Value))
                 {
-                    var core = CoresService.InstalledCores.First(c => c.identifier == item.Key);
+                    var core = ServiceHelper.CoresService.InstalledCores.First(c => c.identifier == item.Key);
 
                     Console.WriteLine($"Updating '{core.identifier}'...");
-                    core.ChangeAspectRatio(8, 7, 4, 3);
+                    ServiceHelper.CoresService.ChangeAspectRatio(core.identifier, 8, 7, 4, 3);
                     Console.WriteLine("Complete.");
                     Console.WriteLine();
                 }
@@ -159,21 +159,21 @@ internal partial class Program
             .Add("Reinstall Select Cores", _ =>
             {
                 var results = ShowCoresMenu(
-                    CoresService.InstalledCores,
+                    ServiceHelper.CoresService.InstalledCores,
                     "Which cores would you like to reinstall?",
                     false);
+                var identifiers = results.Where(x => x.Value)
+                                               .Select(x => x.Key)
+                                               .ToArray();
 
-                foreach (var item in results.Where(x => x.Value))
-                {
-                    coreUpdaterService.RunUpdates(item.Key, true);
-                }
+                coreUpdaterService.RunUpdates(identifiers, true);
 
                 Pause();
             })
             .Add("Uninstall Select Cores", () =>
             {
                 var results = ShowCoresMenu(
-                    CoresService.InstalledCores,
+                    ServiceHelper.CoresService.InstalledCores,
                     "Which cores would you like to uninstall?",
                     false);
 
@@ -181,7 +181,7 @@ internal partial class Program
 
                 foreach (var item in results.Where(x => x.Value))
                 {
-                    coreUpdaterService.DeleteCore(CoresService.GetCore(item.Key), true, nuke);
+                    coreUpdaterService.DeleteCore(ServiceHelper.CoresService.GetCore(item.Key), true, nuke);
                 }
 
                 Pause();
@@ -198,7 +198,7 @@ internal partial class Program
             .Add("Variant Cores         >", variantCoresMenu.Show)
             .Add("Go Back", ConsoleMenu.Close);
 
-        foreach (var pocketExtra in ServiceHelper.PocketExtrasService.List)
+        foreach (var pocketExtra in ServiceHelper.CoresService.PocketExtrasList)
         {
             var name = string.IsNullOrWhiteSpace(pocketExtra.name)
                 ? $"Download extras for {pocketExtra.core_identifiers[0]}"
@@ -234,7 +234,7 @@ internal partial class Program
 
                 if (result)
                 {
-                    ServiceHelper.PocketExtrasService.GetPocketExtra(pocketExtra, ServiceHelper.UpdateDirectory, true);
+                    ServiceHelper.CoresService.GetPocketExtra(pocketExtra, ServiceHelper.UpdateDirectory, true);
                     Pause();
                 }
             });
@@ -250,7 +250,7 @@ internal partial class Program
             {
                 Console.WriteLine("Starting update process...");
                 coreUpdaterService.RunUpdates();
-                CoresService.RefreshInstalledCores();
+                ServiceHelper.CoresService.RefreshInstalledCores();
                 Pause();
             })
             .Add("Update Firmware", _ =>
@@ -374,7 +374,7 @@ internal partial class Program
                     var coreSettings = ServiceHelper.SettingsService.GetCoreSettings(core.identifier);
                     var selected = isCoreSelection && !coreSettings.skip;
                     var name = core.identifier;
-                    var title = MenuItemName(name, selected, isCoreSelection, core.requires_license);
+                    var title = MenuItemName(name, selected, core.requires_license);
 
                     menu.Add(title, thisMenu =>
                     {
@@ -389,8 +389,7 @@ internal partial class Program
                             results.Add(core.identifier, selected);
                         }
 
-                        thisMenu.CurrentItem.Name = MenuItemName(core.identifier, selected, isCoreSelection,
-                            core.requires_license);
+                        thisMenu.CurrentItem.Name = MenuItemName(core.identifier, selected, core.requires_license);
                     });
                 }
             }
@@ -551,11 +550,11 @@ internal partial class Program
         ServiceHelper.SettingsService.Save();
     }
 
-    private static string MenuItemName(string title, bool value, bool isCoreSelection = false, bool requiresLicense = false)
+    private static string MenuItemName(string title, bool value, bool requiresLicense = false)
     {
         string name = $"[{(value ? "x" : " ")}] {title}";
 
-        if (isCoreSelection && requiresLicense)
+        if (requiresLicense)
         {
             name += " (Requires beta access)";
         }

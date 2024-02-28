@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Pannella.Helpers;
 using Pannella.Models;
@@ -17,9 +16,8 @@ public class PlatformImagePacksService : Base
     private const string END_POINT = "https://raw.githubusercontent.com/mattpannella/pupdate/main/image_packs.json";
 
     private readonly bool useLocalImagePacks;
-
-    public string InstallPath { get; set; }
-    public string GithubToken { get; set; }
+    private readonly string installPath;
+    private readonly string githubToken;
 
     private List<PlatformImagePack> list;
 
@@ -45,15 +43,15 @@ public class PlatformImagePacksService : Base
 
     public PlatformImagePacksService(string path, string githubToken = null, bool useLocalImagePacks = false)
     {
-        this.InstallPath = path;
-        this.GithubToken = githubToken;
+        this.installPath = path;
+        this.githubToken = githubToken;
         this.useLocalImagePacks = useLocalImagePacks;
     }
 
     public void Install(string owner, string repository, string variant)
     {
-        string localFile = Path.Combine(this.InstallPath, "image_pack.zip");
-        Release release = GithubApiService.GetLatestRelease(owner, repository, this.GithubToken);
+        string localFile = Path.Combine(this.installPath, "image_pack.zip");
+        Release release = GithubApiService.GetLatestRelease(owner, repository, this.githubToken);
 
         if (release.assets == null)
         {
@@ -75,12 +73,12 @@ public class PlatformImagePacksService : Base
 
         WriteMessage("Installing...");
 
-        string extractPath = Path.Combine(this.InstallPath, "temp");
+        string extractPath = Path.Combine(this.installPath, "temp");
 
         ZipFile.ExtractToDirectory(localFile, extractPath, true);
 
         string imagePack = FindPlatformImagePack(extractPath);
-        string target = Path.Combine(this.InstallPath, "Platforms", "_images");
+        string target = Path.Combine(this.installPath, "Platforms", "_images");
 
         Util.CopyDirectory(imagePack, target, false, true);
         Directory.Delete(extractPath, true);

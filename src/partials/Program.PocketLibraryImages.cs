@@ -9,7 +9,7 @@ internal partial class Program
     private static void DownloadPockLibraryImages()
     {
         const string fileName = "Library_Image_Set_v1.0.zip";
-        ArchiveFile archiveFile = ServiceHelper.ArchiveService.GetArchiveFile(fileName);
+        ArchiveFile archiveFile = ServiceHelper.ArchiveService.ArchiveFiles.files.FirstOrDefault(f => f.name == fileName);
 
         if (archiveFile != null)
         {

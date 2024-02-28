@@ -13,24 +13,15 @@ namespace Pannella.Services;
 [UnconditionalSuppressMessage("Trimming",
     "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
     Justification = "<Pending>")]
-public class PocketExtrasService : BaseProcess
+public partial class CoresService
 {
-    private const string END_POINT = "https://raw.githubusercontent.com/mattpannella/pupdate/main/pocket_extras.json";
+    private const string EXTRAS_END_POINT = "https://raw.githubusercontent.com/mattpannella/pupdate/main/pocket_extras.json";
 
-    private readonly CoresService coresService;
-    private readonly SettingsService settingsService;
+    private List<PocketExtra> pocketExtrasList;
 
-    private List<PocketExtra> list;
-
-    public List<PocketExtra> List
+    public List<PocketExtra> PocketExtrasList
     {
-        get { return list ??= GetPocketExtrasList(); }
-    }
-
-    public PocketExtrasService(CoresService coresService, SettingsService settingsService)
-    {
-        this.coresService = coresService;
-        this.settingsService = settingsService;
+        get { return pocketExtrasList ??= GetPocketExtrasList(); }
     }
 
     private List<PocketExtra> GetPocketExtrasList()
@@ -40,7 +31,7 @@ public class PocketExtrasService : BaseProcess
 #else
         string json = this.settingsService.GetConfig().use_local_pocket_extras
             ? File.ReadAllText("pocket_extras.json")
-            : HttpHelper.Instance.GetHTML(END_POINT);
+            : HttpHelper.Instance.GetHTML(EXTRAS_END_POINT);
 #endif
         PocketExtras files = JsonSerializer.Deserialize<PocketExtras>(json);
 
@@ -49,7 +40,7 @@ public class PocketExtrasService : BaseProcess
 
     public PocketExtra GetPocketExtra(string idOrCoreName)
     {
-        return this.List.Find(e => e.id == idOrCoreName || e.core_identifiers.Any(i => i == idOrCoreName));
+        return this.PocketExtrasList.Find(e => e.id == idOrCoreName || e.core_identifiers.Any(i => i == idOrCoreName));
     }
 
     public void GetPocketExtra(PocketExtra pocketExtra, string path, bool downloadAssets)
@@ -150,17 +141,17 @@ public class PocketExtrasService : BaseProcess
 
         WriteMessage("Downloading assets...");
 
-        //GlobalHelper.RefreshLocalCores();
+        // GlobalHelper.RefreshLocalCores();
 
         foreach (var coreDirectory in Directory.GetDirectories(Path.Combine(extractPath, "Cores")))
         {
             string coreIdentifier = Path.GetFileName(coreDirectory);
-            Core core = CoresService.GetCore(coreIdentifier);
+            Core core = this.GetCore(coreIdentifier);
 
-            if (!core.IsStatusUpdatedRegistered())
-            {
-                core.StatusUpdated += this.core_StatusUpdated;
-            }
+            // if (!core.IsStatusUpdatedRegistered())
+            // {
+            //     core.StatusUpdated += this.core_StatusUpdated;
+            // }
 
             this.settingsService.EnableCore(core.identifier, true, release.tag_name);
 
@@ -168,7 +159,7 @@ public class PocketExtrasService : BaseProcess
             {
                 WriteMessage($"\n{coreIdentifier}");
 
-                var results = core.DownloadAssets();
+                var results = this.DownloadAssets(core);
 
                 UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs
                 {
@@ -192,9 +183,9 @@ public class PocketExtrasService : BaseProcess
     private void DownloadPocketExtras(string user, string repository, string coreIdentifier, string assetName,
         string path, bool downloadAssets)
     {
-        var core = CoresService.GetCore(coreIdentifier);
+        var core = this.GetCore(coreIdentifier);
 
-        if (!core.IsInstalled())
+        if (!this.IsInstalled(core.identifier))
         {
             WriteMessage($"The '{coreIdentifier}' core is not currently installed.");
             WriteMessage("Would you like to install it? [Y]es, [N]o");
@@ -214,9 +205,9 @@ public class PocketExtrasService : BaseProcess
             if (!result.Value)
                 return;
 
-            core.Install(this.settingsService.GetConfig().preserve_platforms_folder);
+            this.Install(core, this.settingsService.GetConfig().preserve_platforms_folder);
 
-            if (!core.IsInstalled())
+            if (!this.IsInstalled(core.identifier))
             {
                 // WriteMessage("The core still isn't installed.");
                 return;
@@ -292,7 +283,7 @@ public class PocketExtrasService : BaseProcess
         {
             WriteMessage("Downloading assets...");
 
-            var results = core.DownloadAssets();
+            var results = this.DownloadAssets(core);
 
             UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs
             {
@@ -320,8 +311,8 @@ public class PocketExtrasService : BaseProcess
         return release.tag_name;
     }
 
-    private void core_StatusUpdated(object sender, StatusUpdatedEventArgs e)
-    {
-        this.OnStatusUpdated(e);
-    }
+    // private void core_StatusUpdated(object sender, StatusUpdatedEventArgs e)
+    // {
+    //     this.OnStatusUpdated(e);
+    // }
 }
