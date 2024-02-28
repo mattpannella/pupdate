@@ -19,7 +19,7 @@ internal partial class Program
             var parserResult = parser.ParseArguments<MenuOptions, FundOptions, UpdateOptions,
                     AssetsOptions, FirmwareOptions, ImagesOptions, InstanceGeneratorOptions,
                     UpdateSelfOptions, UninstallOptions, BackupSavesOptions, GameBoyPalettesOptions,
-                    PocketLibraryImagesOptions, PocketExtrasOptions>(args)
+                    PocketLibraryImagesOptions, PocketExtrasOptions, DisplayModesOptions>(args)
                 .WithNotParsed(errors =>
                 {
                     foreach (var error in errors)
@@ -203,6 +203,10 @@ internal partial class Program
                         Console.WriteLine($"Missing required parameter: -n or --name");
                     }
 
+                    break;
+
+                case DisplayModesOptions:
+                    EnableDisplayModes();
                     break;
 
                 default:

@@ -57,6 +57,9 @@ Usage:
     -i, --info                Shows the details for the specified 'name'
     -l, --list                Lists out all of the values for 'name' and their details
 
+  display-modes            Enable all Display Modes
+    -p, --path                Absolute path to install location
+
   update-self              Check for updates to pupdate
 
   help                     Display more information on a specific command.
