@@ -80,8 +80,7 @@ public class ArchiveService
                     this.gameAndWatchArchiveFiles = ArchiveService.GetFiles(this.gnwArchiveName);
 
                     // remove the metadata files since we're processing the entire json list
-                    this.gameAndWatchArchiveFiles.files.RemoveAll(file =>
-                        Path.GetExtension(file.name) is ".sqlite" or ".torrent" or ".xml");
+                    this.gameAndWatchArchiveFiles.files.RemoveAll(file => Path.GetExtension(file.name) != ".gnw");
                 }
                 else
                 {

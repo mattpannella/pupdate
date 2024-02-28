@@ -260,7 +260,7 @@ public partial class CoresService
 
                     InstanceJSON instanceJson = JsonSerializer.Deserialize<InstanceJSON>(File.ReadAllText(file), options);
 
-                    if (instanceJson.instance.data_slots.Length > 0)
+                    if (instanceJson.instance.data_slots is { Length: > 0 })
                     {
                         string dataPath = instanceJson.instance.data_path;
 

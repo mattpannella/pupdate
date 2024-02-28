@@ -52,7 +52,7 @@ public class CoreUpdaterService : BaseProcess
     /// <summary>
     /// Run the full openFPGA core download and update process
     /// </summary>
-    public void RunUpdates(string[] ids = null, bool clean = false, bool skipOutro = false)
+    public void RunUpdates(string[] ids = null, bool clean = false)
     {
         List<Dictionary<string, string>> installed = new List<Dictionary<string, string>>();
         List<string> installedAssets = new List<string>();
@@ -110,15 +110,6 @@ public class CoreUpdaterService : BaseProcess
 
                 WriteMessage("Checking Core: " + name);
 
-                var isBetaCore = this.coresService.IsBetaCore(core.identifier);
-
-                if (isBetaCore.Item1)
-                {
-                    core.beta_slot_id = isBetaCore.Item2;
-                    core.beta_slot_platform_id_index = isBetaCore.Item3;
-                    this.coresService.CopyBetaKey(core);
-                }
-
                 PocketExtra pocketExtra = this.coresService.GetPocketExtra(name);
                 bool isPocketExtraCombinationPlatform = coreSettings.pocket_extras &&
                                                         pocketExtra != null &&
@@ -132,6 +123,15 @@ public class CoreUpdaterService : BaseProcess
                 if (mostRecentRelease == null)
                 {
                     WriteMessage("No releases found. Skipping.");
+
+                    var isBetaCore = this.coresService.IsBetaCore(core.identifier);
+
+                    if (isBetaCore.Item1)
+                    {
+                        core.beta_slot_id = isBetaCore.Item2;
+                        core.beta_slot_platform_id_index = isBetaCore.Item3;
+                        this.coresService.CopyBetaKey(core);
+                    }
 
                     results = this.coresService.DownloadAssets(core);
                     installedAssets.AddRange(results["installed"] as List<string>);
@@ -167,6 +167,15 @@ public class CoreUpdaterService : BaseProcess
                     }
                     else
                     {
+                        var isBetaCore = this.coresService.IsBetaCore(core.identifier);
+
+                        if (isBetaCore.Item1)
+                        {
+                            core.beta_slot_id = isBetaCore.Item2;
+                            core.beta_slot_platform_id_index = isBetaCore.Item3;
+                            this.coresService.CopyBetaKey(core);
+                        }
+
                         if (coreSettings.pocket_extras &&
                             pocketExtra != null &&
                             pocketExtra.type != PocketExtraType.combination_platform)
@@ -257,6 +266,15 @@ public class CoreUpdaterService : BaseProcess
 
                 JotegoRename(core);
 
+                var isJtBetaCore = this.coresService.IsBetaCore(core.identifier);
+
+                if (isJtBetaCore.Item1)
+                {
+                    core.beta_slot_id = isJtBetaCore.Item2;
+                    core.beta_slot_platform_id_index = isJtBetaCore.Item3;
+                    this.coresService.CopyBetaKey(core);
+                }
+
                 results = this.coresService.DownloadAssets(core);
                 installedAssets.AddRange(results["installed"] as List<string>);
                 skippedAssets.AddRange(results["skipped"] as List<string>);
@@ -290,7 +308,7 @@ public class CoreUpdaterService : BaseProcess
             SkippedAssets = skippedAssets,
             MissingBetaKeys = missingBetaKeys,
             FirmwareUpdated = firmwareDownloaded,
-            SkipOutro = skipOutro,
+            SkipOutro = false,
         };
 
         OnUpdateProcessComplete(args);
