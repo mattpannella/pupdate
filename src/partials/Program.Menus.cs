@@ -81,8 +81,6 @@ internal partial class Program
                         return;
                     }
 
-                    // core.download_assets = true;
-
                     try
                     {
                         // not sure if this check is still needed

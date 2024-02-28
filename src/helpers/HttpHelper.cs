@@ -3,7 +3,7 @@ namespace Pannella.Helpers;
 public class HttpHelper
 {
     private static HttpHelper instance;
-    private static readonly object syncLock = new();
+    private static readonly object SYNC_LOCK = new();
     private HttpClient client;
 
     public event EventHandler<DownloadProgressEventArgs> DownloadProgressUpdate;
@@ -17,7 +17,7 @@ public class HttpHelper
     {
         get
         {
-            lock (syncLock)
+            lock (SYNC_LOCK)
             {
                 return instance ??= new HttpHelper();
             }

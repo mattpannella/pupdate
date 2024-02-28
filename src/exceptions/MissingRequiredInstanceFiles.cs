@@ -1,4 +1,4 @@
-namespace Pannella;
+namespace Pannella.Exceptions;
 
 public class MissingRequiredInstanceFiles : Exception
 {

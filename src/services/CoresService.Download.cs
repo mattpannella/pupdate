@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Net;
 using System.Text.Json;
+using Pannella.Exceptions;
 using Pannella.Helpers;
 using Pannella.Models;
 using Pannella.Models.Analogue.Data;
@@ -32,8 +33,6 @@ public partial class CoresService
 
         foreach (var core in cores)
         {
-            // core.download_assets = true;
-
             try
             {
                 string name = core.identifier;

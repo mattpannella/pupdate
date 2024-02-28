@@ -4,7 +4,7 @@ namespace Pannella;
 
 internal partial class Program
 {
-    private static readonly string VERSION = Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
+    private static readonly string VERSION = Assembly.GetExecutingAssembly().GetName().Version!.ToString(3);
 
     private static readonly string SYSTEM_OS_PLATFORM = GetSystemPlatform();
 

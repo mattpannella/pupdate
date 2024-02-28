@@ -37,12 +37,6 @@ public class CoreUpdaterService : BaseProcess
         this.coresService = coresService;
 
         Directory.CreateDirectory(Path.Combine(path, "Cores"));
-
-        // foreach (Core core in this.cores)
-        // {
-        //     core.ClearStatusUpdated();
-        //     core.StatusUpdated += updater_StatusUpdated; // attach handler to bubble event up
-        // }
     }
 
     public void BuildInstanceJson(bool overwrite = false, string coreName = null)
@@ -93,9 +87,6 @@ public class CoreUpdaterService : BaseProcess
 
         foreach (var core in this.cores.Where(core => ids == null || ids.Any(id => id == core.identifier)))
         {
-            // core.download_assets = this.settingsService.GetConfig().download_assets && id == null;
-            // core.build_instances = this.settingsService.GetConfig().build_instance_jsons && id == null;
-
             var coreSettings = this.settingsService.GetCoreSettings(core.identifier);
 
             try

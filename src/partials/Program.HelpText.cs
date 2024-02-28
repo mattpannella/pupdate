@@ -3,7 +3,9 @@ namespace Pannella;
 internal partial class Program
 {
     private const string HELP_TEXT =
-@"Usage:
+"""
+Usage:
+
   menu                     Interactive Main Menu (Default Verb)
     -p, --path                Absolute path to install location
     -s, --skip-update         Go straight to the menu, without looking for an update
@@ -59,5 +61,6 @@ internal partial class Program
 
   help                     Display more information on a specific command.
 
-  version                  Display version information.";
+  version                  Display version information.
+""";
 }

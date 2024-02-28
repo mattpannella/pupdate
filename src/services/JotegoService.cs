@@ -73,18 +73,6 @@ public class JotegoService : Base
         return slot != null
             ? (true, slot.id, slot.GetPlatformIdIndex())
             : (false, null, 0);
-
-        // bool check = data.data.data_slots.Any(x => x.name == "JTBETA");
-        //
-        // if (check)
-        // {
-        //     var slot = data.data.data_slots.First(x => x.name == "JTBETA");
-        //
-        //     this.beta_slot_id = slot.id;
-        //     this.beta_slot_platform_id_index = slot.GetPlatformIdIndex();
-        // }
-        //
-        // return check;
     }
 
     public void CopyBetaKey(Core core)

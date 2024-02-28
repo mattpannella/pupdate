@@ -27,20 +27,4 @@ public class Base
 
         handler?.Invoke(this, e);
     }
-
-    public void ClearStatusUpdated()
-    {
-        if (StatusUpdated != null)
-        {
-            foreach (Delegate d in StatusUpdated.GetInvocationList())
-            {
-                this.StatusUpdated -= d as EventHandler<StatusUpdatedEventArgs>;
-            }
-        }
-    }
-
-    public bool IsStatusUpdatedRegistered()
-    {
-        return this.StatusUpdated != null;
-    }
 }

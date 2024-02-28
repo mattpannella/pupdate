@@ -141,17 +141,10 @@ public partial class CoresService
 
         WriteMessage("Downloading assets...");
 
-        // GlobalHelper.RefreshLocalCores();
-
         foreach (var coreDirectory in Directory.GetDirectories(Path.Combine(extractPath, "Cores")))
         {
             string coreIdentifier = Path.GetFileName(coreDirectory);
             Core core = this.GetCore(coreIdentifier);
-
-            // if (!core.IsStatusUpdatedRegistered())
-            // {
-            //     core.StatusUpdated += this.core_StatusUpdated;
-            // }
 
             this.settingsService.EnableCore(core.identifier, true, release.tag_name);
 
@@ -205,7 +198,7 @@ public partial class CoresService
             if (!result.Value)
                 return;
 
-            this.Install(core, this.settingsService.GetConfig().preserve_platforms_folder);
+            this.Install(core);
 
             if (!this.IsInstalled(core.identifier))
             {
@@ -310,9 +303,4 @@ public partial class CoresService
 
         return release.tag_name;
     }
-
-    // private void core_StatusUpdated(object sender, StatusUpdatedEventArgs e)
-    // {
-    //     this.OnStatusUpdated(e);
-    // }
 }
