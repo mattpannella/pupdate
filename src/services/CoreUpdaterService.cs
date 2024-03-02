@@ -96,17 +96,15 @@ public class CoreUpdaterService : BaseProcess
                     continue; // skip if you don't have the key
                 }
 
-                string name = core.identifier;
-
-                if (name == null)
+                if (core.identifier == null)
                 {
                     WriteMessage("Core Name is required. Skipping.");
                     continue;
                 }
 
-                WriteMessage("Checking Core: " + name);
+                WriteMessage("Checking Core: " + core.identifier);
 
-                PocketExtra pocketExtra = this.coresService.GetPocketExtra(name);
+                PocketExtra pocketExtra = this.coresService.GetPocketExtra(core.identifier);
                 bool isPocketExtraCombinationPlatform = coreSettings.pocket_extras &&
                                                         pocketExtra is { type: PocketExtraType.combination_platform };
                 string mostRecentRelease = isPocketExtraCombinationPlatform
@@ -334,6 +332,15 @@ public class CoreUpdaterService : BaseProcess
 
     public void DeleteCore(Core core, bool force = false, bool nuke = false)
     {
+        // If the core was a pocket extra or local the core inventory won't have it's platform id.
+        // Load it from the core.json file if it's missing.
+        if (string.IsNullOrEmpty(core.platform_id))
+        {
+            var analogueCore = this.coresService.ReadCoreJson(core.identifier);
+
+            core.platform_id = analogueCore.metadata.platform_ids[0];
+        }
+
         if (this.settingsService.GetConfig().delete_skipped_cores || force)
         {
             this.coresService.Uninstall(core.identifier, core.platform_id, nuke);

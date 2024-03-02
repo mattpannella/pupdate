@@ -25,7 +25,7 @@ internal partial class Program
 
                 if (check)
                 {
-                    Console.WriteLine("A new version is available. Downloading now...");
+                    Console.WriteLine($"A new version {v} is available. Downloading now...");
 
                     string url = string.Format(RELEASE_URL, tagName, SYSTEM_OS_PLATFORM);
                     string saveLocation = Path.Combine(path, "pupdate.zip");
@@ -60,8 +60,8 @@ internal partial class Program
     private static void PrintPocketExtraInfo(PocketExtra extra)
     {
         Console.WriteLine(extra.id);
-        Console.WriteLine(string.IsNullOrEmpty(extra.name)
-            ? $"  {extra.core_identifiers[0]}"
+        Console.WriteLine(string.IsNullOrEmpty(extra.name) // name is required for additional assets
+            ? $"  {extra.core_identifier}"
             : $"  {extra.name}");
         Console.WriteLine(Util.WordWrap(extra.description, 80, "    "));
         Console.WriteLine($"    More info: https://github.com/{extra.github_user}/{extra.github_repository}");

@@ -34,9 +34,11 @@ public partial class CoresService
         return files.pocket_extras;
     }
 
-    public PocketExtra GetPocketExtra(string idOrCoreName)
+    public PocketExtra GetPocketExtra(string pocketExtraIdOrCoreIdentifier)
     {
-        return this.PocketExtrasList.Find(e => e.id == idOrCoreName || e.core_identifiers.Any(i => i == idOrCoreName));
+        return this.PocketExtrasList.Find(e =>
+            e.id == pocketExtraIdOrCoreIdentifier ||
+            e.core_identifier == pocketExtraIdOrCoreIdentifier);
     }
 
     public void GetPocketExtra(PocketExtra pocketExtra, string path, bool downloadAssets)
@@ -44,16 +46,12 @@ public partial class CoresService
         switch (pocketExtra.type)
         {
             case PocketExtraType.additional_assets:
-                DownloadPocketExtras(pocketExtra.github_user, pocketExtra.github_repository,
-                    pocketExtra.core_identifiers[0], pocketExtra.github_asset_prefix,
-                    path, downloadAssets);
+                DownloadPocketExtras(pocketExtra, path, downloadAssets);
                 break;
 
             case PocketExtraType.combination_platform:
             case PocketExtraType.variant_core:
-                DownloadPocketExtrasPlatform(pocketExtra.github_user, pocketExtra.github_repository,
-                    pocketExtra.platform_name, pocketExtra.github_asset_prefix, path, downloadAssets,
-                    !pocketExtra.has_placeholders);
+                DownloadPocketExtrasPlatform(pocketExtra, path, downloadAssets);
                 break;
         }
 
@@ -66,15 +64,23 @@ public partial class CoresService
         ));
     }
 
-    private void DownloadPocketExtrasPlatform(string user, string repository, string platformName,
-        string assetName, string path, bool downloadAssets, bool skipPlaceholderFiles)
+    private void DownloadPocketExtrasPlatform(PocketExtra pocketExtra, string path, bool downloadAssets)
     {
-        Release release = GithubApiService.GetLatestRelease(user, repository, this.settingsService.GetConfig().github_token);
-        Asset asset = release.assets.FirstOrDefault(x => x.name.StartsWith(assetName));
+        if (!string.IsNullOrEmpty(pocketExtra.core_identifier))
+        {
+            var requiredCore = this.GetCore(pocketExtra.core_identifier);
+
+            if (!this.CheckPocketExtraRequiredCore(pocketExtra, requiredCore))
+                return;
+        }
+
+        Release release = GithubApiService.GetLatestRelease(pocketExtra.github_user, pocketExtra.github_repository,
+            this.settingsService.GetConfig().github_token);
+        Asset asset = release.assets.FirstOrDefault(x => x.name.StartsWith(pocketExtra.github_asset_prefix));
 
         if (asset == null)
         {
-            WriteMessage($"Pocket Extras asset for the '{platformName}' core was not found.");
+            WriteMessage($"GitHub asset for '{pocketExtra.name}' was not found.");
             return;
         }
 
@@ -93,7 +99,7 @@ public partial class CoresService
             ZipFile.ExtractToDirectory(localFile, extractPath);
             File.Delete(localFile);
 
-            if (!skipPlaceholderFiles)
+            if (pocketExtra.has_placeholders)
             {
                 var placeFiles = Directory.GetFiles(extractPath, "PLACE_*", SearchOption.AllDirectories);
 
@@ -117,7 +123,7 @@ public partial class CoresService
                 }
             }
 
-            string destinationAssetsMra = Path.Combine(extractPath, "Assets", platformName, "mra");
+            string destinationAssetsMra = Path.Combine(extractPath, "Assets", pocketExtra.id, "mra");
 
             if (Directory.Exists(destinationAssetsMra))
                 Directory.Delete(destinationAssetsMra, true);
@@ -172,60 +178,20 @@ public partial class CoresService
         Directory.Delete(extractPath, true);
     }
 
-    private void DownloadPocketExtras(string user, string repository, string coreIdentifier, string assetName,
-        string path, bool downloadAssets)
+    private void DownloadPocketExtras(PocketExtra pocketExtra, string path, bool downloadAssets)
     {
-        var core = this.GetCore(coreIdentifier);
+        var core = this.GetCore(pocketExtra.core_identifier);
 
-        if (!this.IsInstalled(core.identifier))
-        {
-            bool jtBetaKeyExists = this.ExtractBetaKey();
+        if (!this.CheckPocketExtraRequiredCore(pocketExtra, core))
+            return;
 
-            WriteMessage($"The '{coreIdentifier}' core is not currently installed.");
-
-            if (core.requires_license && !jtBetaKeyExists)
-            {
-                WriteMessage("Missing beta key. Skipping.");
-                return;
-            }
-
-            WriteMessage("Would you like to install it? [Y]es, [N]o");
-
-            bool? result = null;
-
-            while (result == null)
-            {
-                result = Console.ReadKey(true).Key switch
-                {
-                    ConsoleKey.Y => true,
-                    ConsoleKey.N => false,
-                    _ => null
-                };
-            }
-
-            if (!result.Value)
-                return;
-
-            this.Install(core);
-
-            if (core.requires_license && jtBetaKeyExists)
-            {
-                this.CopyBetaKey(core);
-            }
-
-            if (!this.IsInstalled(core.identifier))
-            {
-                // WriteMessage("The core still isn't installed.");
-                return;
-            }
-        }
-
-        Release release = GithubApiService.GetLatestRelease(user, repository, this.settingsService.GetConfig().github_token);
-        Asset asset = release.assets.FirstOrDefault(x => x.name.StartsWith(assetName));
+        Release release = GithubApiService.GetLatestRelease(pocketExtra.github_user, pocketExtra.github_repository,
+            this.settingsService.GetConfig().github_token);
+        Asset asset = release.assets.FirstOrDefault(x => x.name.StartsWith(pocketExtra.github_asset_prefix));
 
         if (asset == null)
         {
-            WriteMessage($"Pocket Extras asset for the '{coreIdentifier}' core was not found.");
+            WriteMessage($"GitHub asset for '{pocketExtra.core_identifier}' was not found.");
             return;
         }
 
@@ -307,6 +273,62 @@ public partial class CoresService
 
         this.settingsService.EnableCore(core.identifier, true, release.tag_name);
         this.settingsService.Save();
+    }
+
+    private bool CheckPocketExtraRequiredCore(PocketExtra pocketExtra, Core core)
+    {
+        if (core == null)
+        {
+            WriteMessage($"Required core '{pocketExtra.core_identifier}' not found in inventory.");
+            return false;
+        }
+
+        if (!this.IsInstalled(core.identifier))
+        {
+            bool jtBetaKeyExists = this.ExtractBetaKey();
+
+            WriteMessage($"The '{pocketExtra.core_identifier}' core is not currently installed.");
+
+            if (core.requires_license && !jtBetaKeyExists)
+            {
+                WriteMessage("Missing beta key. Skipping.");
+                return false;
+            }
+
+            WriteMessage("Would you like to install it? [Y]es, [N]o");
+
+            bool? result = null;
+
+            while (result == null)
+            {
+                result = Console.ReadKey(true).Key switch
+                {
+                    ConsoleKey.Y => true,
+                    ConsoleKey.N => false,
+                    _ => null
+                };
+            }
+
+            if (!result.Value)
+                return false;
+
+            this.Install(core);
+
+            if (core.requires_license && jtBetaKeyExists)
+            {
+                this.CopyBetaKey(core);
+            }
+
+            if (!this.IsInstalled(core.identifier))
+            {
+                // WriteMessage("The core still isn't installed.");
+                return false;
+            }
+
+            this.settingsService.EnableCore(core.identifier);
+        }
+
+        return true;
     }
 
     public string GetMostRecentRelease(PocketExtra pocketExtra)

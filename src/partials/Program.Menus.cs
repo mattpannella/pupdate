@@ -130,9 +130,12 @@ internal partial class Program
                                                .Select(x => x.Key)
                                                .ToArray();
 
-                coreUpdaterService.RunUpdates(identifiers, true);
+                if (identifiers.Length > 0)
+                {
+                    coreUpdaterService.RunUpdates(identifiers, true);
 
-                Pause();
+                    Pause();
+                }
             })
             .Add("Uninstall Select Cores", () =>
             {
@@ -140,15 +143,19 @@ internal partial class Program
                     ServiceHelper.CoresService.InstalledCores,
                     "Which cores would you like to uninstall?",
                     false);
+                var selectResults = results.Where(x => x.Value).ToList();
 
-                bool nuke = AskYesNoQuestion("Would you like to remove the core specific assets for the selected cores?");
-
-                foreach (var item in results.Where(x => x.Value))
+                if (selectResults.Count > 0)
                 {
-                    coreUpdaterService.DeleteCore(ServiceHelper.CoresService.GetCore(item.Key), true, nuke);
-                }
+                    bool nuke = AskYesNoQuestion("Would you like to remove the core specific assets for the selected cores?");
 
-                Pause();
+                    foreach (var item in selectResults)
+                    {
+                        coreUpdaterService.DeleteCore(ServiceHelper.CoresService.GetCore(item.Key), true, nuke);
+                    }
+
+                    Pause();
+                }
             })
             .Add("Go Back", ConsoleMenu.Close);
 
@@ -165,7 +172,7 @@ internal partial class Program
         foreach (var pocketExtra in ServiceHelper.CoresService.PocketExtrasList)
         {
             var name = string.IsNullOrWhiteSpace(pocketExtra.name)
-                ? $"Download extras for {pocketExtra.core_identifiers[0]}"
+                ? $"Download extras for {pocketExtra.core_identifier}"
                 : $"Download {pocketExtra.name}";
 
             var consoleMenu = pocketExtra.type switch
@@ -225,7 +232,7 @@ internal partial class Program
             .Add("Select Cores            >", () => // \u00BB
             {
                 AskAboutNewCores(true);
-                RunCoreSelector(ServiceHelper.CoresService.Cores);
+                RunCoreSelector(ServiceHelper.CoresService.Cores.OrderBy(x => x.identifier.ToLowerInvariant()).ToList());
                 // Is reloading the settings file necessary?
                 ServiceHelper.ReloadSettings();
             })

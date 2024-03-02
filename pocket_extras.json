@@ -4,9 +4,7 @@
       "id": "DonkeyKong",
       "description": "Modifies the Donkey Kong core by ericlewis to allow game selection and provides additional games and rom hacks. You will be prompted to install the necessary core if it's missing.",
       "type": "additional_assets",
-      "core_identifiers": [
-        "ericlewis.DonkeyKong"
-      ],
+      "core_identifier": "ericlewis.DonkeyKong",
       "github_user": "dyreschlock",
       "github_repository": "pocket-extras",
       "github_asset_prefix": "pocket-extras-dk"
@@ -15,9 +13,7 @@
       "id": "RadarScope",
       "description": "Modifies the Radar Scope core by ericlewis to allow game selection and provides additional games and rom hacks. You will be prompted to install the necessary core if it's missing.",
       "type": "additional_assets",
-      "core_identifiers": [
-        "ericlewis.RadarScope"
-      ],
+      "core_identifier": "ericlewis.RadarScope",
       "github_user": "dyreschlock",
       "github_repository": "pocket-extras",
       "github_asset_prefix": "pocket-extras-dk"
@@ -26,9 +22,7 @@
       "id": "jtbubl",
       "description": "Adds support for the Bubble Bobble Ultra rom to the jotego.jtbubl core. You will be prompted to install the necessary core if it's missing.",
       "type": "additional_assets",
-      "core_identifiers": [
-        "jotego.jtbubl"
-      ],
+      "core_identifier": "jotego.jtbubl",
       "github_user": "dyreschlock",
       "github_repository": "pocket-extras",
       "github_asset_prefix": "pocket-extras-jotego"
@@ -37,9 +31,7 @@
       "id": "jtcps1",
       "description": "Adds support for game conversions and arcade offset hacks for the jotego.jtcps1 core. You will be prompted to install the necessary core if it's missing.",
       "type": "additional_assets",
-      "core_identifiers": [
-        "jotego.jtcps1"
-      ],
+      "core_identifier": "jotego.jtcps1",
       "github_user": "dyreschlock",
       "github_repository": "pocket-extras",
       "github_asset_prefix": "pocket-extras-jotego"
@@ -48,9 +40,7 @@
       "id": "jtcps15",
       "description": "Adds support for game conversions and arcade offset hacks for the jotego.jtcps15 core. You will be prompted to install the necessary core if it's missing.",
       "type": "additional_assets",
-      "core_identifiers": [
-        "jotego.jtcps15"
-      ],
+      "core_identifier": "jotego.jtcps15",
       "github_user": "dyreschlock",
       "github_repository": "pocket-extras",
       "github_asset_prefix": "pocket-extras-jotego"
@@ -59,9 +49,7 @@
       "id": "jtcps2",
       "description": "Adds support for game conversions and arcade offset hacks for the jotego.jtcps2 core. You will be prompted to install the necessary core if it's missing.",
       "type": "additional_assets",
-      "core_identifiers": [
-        "jotego.jtcps2"
-      ],
+      "core_identifier": "jotego.jtcps2",
       "github_user": "dyreschlock",
       "github_repository": "pocket-extras",
       "github_asset_prefix": "pocket-extras-jotego"
@@ -70,9 +58,7 @@
       "id": "jtpang",
       "description": "Adds support for the Dokaben 2 rom to the jotego.jtpang core. You will be prompted to install the necessary core if it's missing.",
       "type": "additional_assets",
-      "core_identifiers": [
-        "jotego.jtpang"
-      ],
+      "core_identifier": "jotego.jtpang",
       "github_user": "dyreschlock",
       "github_repository": "pocket-extras",
       "github_asset_prefix": "pocket-extras-jotego"
@@ -82,25 +68,27 @@
       "name": "Toaplan Version 2 Hardware Combination Core",
       "description": "Combines pram0d's & atrac17's Battle Garegga, Battle Bakraid, Sorcer Strike, Kingdom Grand Prix, Armed Police Batrider, and Snow Bros 2 cores into a single platform with multiple cores. This allows you to play them all from a single entry in your Pocket menu. You do not need to have them installed prior to using this.",
       "type": "combination_platform",
-      "platform_name": "toaplan2_c",
-      "core_identifiers": [
-        "coinop.Toaplan_V2_Rotated",
-        "coinop.Toaplan_V2_Standard"
-      ],
       "has_placeholders": true,
       "github_user": "dyreschlock",
       "github_repository": "pocket-extras",
       "github_asset_prefix": "pocket-extras-toaplan2_c"
     },
     {
+      "id": "vectrex",
+      "name": "Vectrex Extras",
+      "description": "Installs an additional core for the Vectrex platform that was created by obsidian. This is a collection of JSON files based on a particular rom-pack that includes Homebrew games, Hacks, and much more. It's set up as a new core implementation of Vectrex so the new JSON files do not conflict with the JSON files in the Vectrex core. You do not need to have the them installed prior to using this.",
+      "type": "variant_core",
+      "core_identifier": "obsidian.Vectrex",
+      "has_placeholders": true,
+      "github_user": "dyreschlock",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "pocket-extras-vectrex"
+    },
+    {
       "id": "jts16_c",
       "name": "Sega System 16 Combination Core",
       "description": "Combines Jotego's SEGA System 16A & 16B cores into a single platform. This allows you to play them all from a single entry in your Pocket menu. You do not need to have them installed prior to using this.",
       "type": "combination_platform",
-      "platform_name": "jts16_c",
-      "core_identifiers": [
-        "jotego.jts16_c"
-      ],
       "github_user": "espiox",
       "github_repository": "jts16_complete",
       "github_asset_prefix": "jts16_complete"
@@ -110,10 +98,6 @@
       "name": "Super GameBoy 2",
       "description": "Installs a core based of off the Spiritiualized.SuperGB core for the Super GameBoy 2 rom. You do not need to have the Super GameBoy core installed prior to using this.",
       "type": "variant_core",
-      "platform_name": "sgb",
-      "core_identifiers": [
-        "Spiritiualized.SuperGB2"
-      ],
       "github_user": "hallem",
       "github_repository": "openFPGA-Super-GB",
       "github_asset_prefix": "super-gameboy-extras-sgb2.zip"
@@ -123,13 +107,33 @@
       "name": "Super GameBoy 2: Vaporwave Edition",
       "description": "Installs a core based of off the Spiritualized.SuperGB core for the Super GameBoy 2: Vaporwave Edition rom hack. You do not need to have the Super GameBoy or Super GameBoy 2 core installed prior to using this.",
       "type": "variant_core",
-      "platform_name": "sgb",
-      "core_identifiers": [
-        "Spiritiualized.SuperGB.VW"
-      ],
       "github_user": "hallem",
       "github_repository": "openFPGA-Super-GB",
       "github_asset_prefix": "super-gameboy-extras-sgb2vw.zip",
+      "additional_links": [
+        "https://www.romhacking.net/hacks/6449/"
+      ]
+    },
+    {
+      "id": "sgb_c1",
+      "name": "Super GameBoy Dual Aspect Ratio Single Platform",
+      "description": "Installs 6 cores into a single platform. They are based of off the Spiritualized.SuperGB core, and include setups for the Super GameBoy 2 & Super GameBoy 2: Vaporwave Edition rom hack. There will be 3 cores with the 4:3 aspect ratio and 3 cores with the 8:7 aspect ratio. You do not need to have the Super GameBoy core installed prior to using this.",
+      "type": "combination_platform",
+      "github_user": "hallem",
+      "github_repository": "openFPGA-Super-GB",
+      "github_asset_prefix": "release-1-Single-Platform.zip",
+      "additional_links": [
+        "https://www.romhacking.net/hacks/6449/"
+      ]
+    },
+    {
+      "id": "sgb_c3",
+      "name": "Super GameBoy Dual Aspect Ratio Triple Platform",
+      "description": "Installs 6 cores into three Platforms (Super GB, Super GB 2, Super GB 2 VW) with 2 cores (4:3 aspect ratio, 8:7 aspect ratio). They are based of off the Spiritualized.SuperGB core, and include setups for the Super GameBoy 2 & Super GameBoy 2: Vaporwave Edition rom hack. You do not need to have the Super GameBoy core installed prior to using this.",
+      "type": "combination_platform",
+      "github_user": "hallem",
+      "github_repository": "openFPGA-Super-GB",
+      "github_asset_prefix": "release-2-Three-Platform.zip",
       "additional_links": [
         "https://www.romhacking.net/hacks/6449/"
       ]

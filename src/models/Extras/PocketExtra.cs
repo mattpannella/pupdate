@@ -13,9 +13,7 @@ namespace Pannella.Models.Extras
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public PocketExtraType type { get; set; }
 
-        public string platform_name { get; set; }
-
-        public List<string> core_identifiers { get; set; }
+        public string core_identifier { get; set; }
 
         public bool has_placeholders { get; set; }
 

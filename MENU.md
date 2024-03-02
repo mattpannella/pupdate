@@ -11,7 +11,7 @@
    5. Generate Game & Watch ROMs
    6. Enable All Display Modes
    7. Apply 8:7 Aspect Ratio to Super GameBoy cores
-   8. Restore 4:3 Aspect Ration to Super GameBoy cores
+   8. Restore 4:3 Aspect Ratio to Super GameBoy cores
    9. Go Back
 7. Pocket Maintenance
    1. Reinstall All Cores
@@ -31,11 +31,14 @@
    2. Combination Platforms
       1. Download Toaplan Version 2 Hardware Combination Core
       2. Download Sega System 16 Combination Core
-      3. Go Back
+      3. Download Super GameBoy Dual Aspect Ratio Single Platform
+      4. Download Super GameBoy Dual Aspect Ratio Triple Platform
+      5. Go Back
    3. Variant Cores
-      1. Download Super GameBoy 2
-      2. Download Super GameBoy 2: Vaperwave Edition
-      3. Go Back
+      1. Download Vectrex Extras
+      2. Download Super GameBoy 2
+      3. Download Super GameBoy 2: Vaperwave Edition
+      4. Go Back
    4. Go Back
 9. Settings
 10. Exit
