@@ -401,7 +401,6 @@ internal partial class Program
             }
         }
 
-        ServiceHelper.SettingsService.GetConfig().core_selector = false;
         ServiceHelper.SettingsService.Save();
     }
 
