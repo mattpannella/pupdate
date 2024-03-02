@@ -119,6 +119,9 @@ public class ArchiveService : Base
 
     public bool DownloadArchiveFile(SettingsArchive archive, ArchiveFile archiveFile, string destination)
     {
+        if (archive == null || archiveFile == null)
+            return false;
+
         try
         {
             string url;

@@ -32,6 +32,9 @@ namespace Pannella.Models.Settings
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public List<string> file_extensions { get; set; }
 
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public bool has_instance_jsons { get; set; }
+
         /// <summary>
         /// This setting only applies to Core Specific Archives
         /// </summary>

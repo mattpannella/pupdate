@@ -161,7 +161,7 @@ public partial class CoresService
             }
         }
 
-        if (core.identifier is "Mazamars312.NeoGeo" or "Mazamars312.NeoGeo_Overdrive")
+        if (core.identifier is "Mazamars312.NeoGeo" or "Mazamars312.NeoGeo_Overdrive" or "obsidian.Vectrex")
         {
             return new Dictionary<string, object>
             {
@@ -171,7 +171,7 @@ public partial class CoresService
             };
         }
 
-        if (archive.type == ArchiveType.core_specific_archive && archive.enabled)
+        if (archive.type == ArchiveType.core_specific_archive && archive.enabled && !archive.has_instance_jsons)
         {
             var files = this.archiveService.GetArchiveFiles(archive);
 
@@ -206,7 +206,6 @@ public partial class CoresService
                         skipped.Add(filePath.Replace(this.installPath, string.Empty));
                     }
                 }
-
             }
         }
 
