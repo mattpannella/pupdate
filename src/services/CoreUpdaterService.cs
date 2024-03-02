@@ -107,13 +107,16 @@ public class CoreUpdaterService : BaseProcess
                 PocketExtra pocketExtra = this.coresService.GetPocketExtra(core.identifier);
                 bool isPocketExtraCombinationPlatform = coreSettings.pocket_extras &&
                                                         pocketExtra is { type: PocketExtraType.combination_platform };
-                string mostRecentRelease = isPocketExtraCombinationPlatform
-                    ? this.coresService.GetMostRecentRelease(pocketExtra)
-                    : core.version;
+                string mostRecentRelease;
+
+                if (core.version == null && coreSettings.pocket_extras)
+                    mostRecentRelease = this.coresService.GetMostRecentRelease(pocketExtra);
+                else
+                    mostRecentRelease = core.version;
 
                 Dictionary<string, object> results;
 
-                if (mostRecentRelease == null)
+                if (mostRecentRelease == null && pocketExtra == null && !coreSettings.pocket_extras)
                 {
                     WriteMessage("No releases found. Skipping.");
 
@@ -292,6 +295,7 @@ public class CoreUpdaterService : BaseProcess
         }
 
         this.coresService.DeleteBetaKey();
+        this.coresService.RefreshLocalCores();
 
         UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs
         {

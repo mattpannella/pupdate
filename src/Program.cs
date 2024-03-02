@@ -174,7 +174,7 @@ internal partial class Program
                     }
                     else if (!string.IsNullOrEmpty(options.Name))
                     {
-                        var extra = ServiceHelper.CoresService.GetPocketExtra(options.Name);
+                        var extra = ServiceHelper.CoresService.GetPocketExtra(options.Name); // pocket extras id
 
                         if (extra != null)
                         {

@@ -37,7 +37,7 @@ public partial class CoresService
         return all;
     }
 
-    private void RefreshLocalCores()
+    public void RefreshLocalCores()
     {
         cores.AddRange(this.GetLocalCores());
     }

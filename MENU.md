@@ -31,9 +31,7 @@
    2. Combination Platforms
       1. Download Toaplan Version 2 Hardware Combination Core
       2. Download Sega System 16 Combination Core
-      3. Download Super GameBoy Dual Aspect Ratio Single Platform
-      4. Download Super GameBoy Dual Aspect Ratio Triple Platform
-      5. Go Back
+      3. Go Back
    3. Variant Cores
       1. Download Vectrex Extras
       2. Download Super GameBoy 2

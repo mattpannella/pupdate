@@ -171,8 +171,8 @@ internal partial class Program
 
         foreach (var pocketExtra in ServiceHelper.CoresService.PocketExtrasList)
         {
-            var name = string.IsNullOrWhiteSpace(pocketExtra.name)
-                ? $"Download extras for {pocketExtra.core_identifier}"
+            var name = string.IsNullOrWhiteSpace(pocketExtra.name) // name is not required for additional assets
+                ? $"Download extras for {pocketExtra.core_identifiers[0]}"
                 : $"Download {pocketExtra.name}";
 
             var consoleMenu = pocketExtra.type switch
@@ -206,6 +206,7 @@ internal partial class Program
                 if (result)
                 {
                     ServiceHelper.CoresService.GetPocketExtra(pocketExtra, ServiceHelper.UpdateDirectory, true);
+                    ServiceHelper.CoresService.RefreshLocalCores();
                     Pause();
                 }
             });

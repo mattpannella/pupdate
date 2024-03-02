@@ -60,8 +60,8 @@ internal partial class Program
     private static void PrintPocketExtraInfo(PocketExtra extra)
     {
         Console.WriteLine(extra.id);
-        Console.WriteLine(string.IsNullOrEmpty(extra.name) // name is required for additional assets
-            ? $"  {extra.core_identifier}"
+        Console.WriteLine(string.IsNullOrEmpty(extra.name) // name is not required for additional assets
+            ? $"  {extra.core_identifiers[0]}"
             : $"  {extra.name}");
         Console.WriteLine(Util.WordWrap(extra.description, 80, "    "));
         Console.WriteLine($"    More info: https://github.com/{extra.github_user}/{extra.github_repository}");
