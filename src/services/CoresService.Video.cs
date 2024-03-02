@@ -1,4 +1,4 @@
-using System.Text.Json;
+using Newtonsoft.Json;
 using Pannella.Models.Analogue.Video;
 
 namespace Pannella.Services;
@@ -41,8 +41,7 @@ public partial class CoresService
         }
 
         Dictionary<string, Video> output = new Dictionary<string, Video> { { "video", video } };
-        var options = new JsonSerializerOptions { WriteIndented = true };
-        string json = JsonSerializer.Serialize(output, options);
+        string json = JsonConvert.SerializeObject(output, Formatting.Indented);
 
         File.WriteAllText(Path.Combine(this.installPath, "Cores", identifier, "video.json"), json);
     }
@@ -61,8 +60,7 @@ public partial class CoresService
         video.display_modes = all;
 
         Dictionary<string, Video> output = new Dictionary<string, Video> { { "video", video } };
-        var options = new JsonSerializerOptions { WriteIndented = true };
-        string json = JsonSerializer.Serialize(output, options);
+        string json = JsonConvert.SerializeObject(output, Formatting.Indented);
 
         File.WriteAllText(Path.Combine(this.installPath, "Cores", identifier, "video.json"), json);
     }

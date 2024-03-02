@@ -1,6 +1,5 @@
-using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
-using System.Text.Json;
+using Newtonsoft.Json;
 using Pannella.Helpers;
 using Pannella.Models;
 using Pannella.Models.Github;
@@ -8,9 +7,6 @@ using File = System.IO.File;
 
 namespace Pannella.Services;
 
-[UnconditionalSuppressMessage("Trimming",
-    "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-    Justification = "<Pending>")]
 public class PlatformImagePacksService : Base
 {
     private const string END_POINT = "https://raw.githubusercontent.com/mattpannella/pupdate/main/image_packs.json";
@@ -34,7 +30,7 @@ public class PlatformImagePacksService : Base
                     ? File.ReadAllText("image_packs.json")
                     : HttpHelper.Instance.GetHTML(END_POINT);
 #endif
-                this.list = JsonSerializer.Deserialize<List<PlatformImagePack>>(json);
+                this.list = JsonConvert.DeserializeObject<List<PlatformImagePack>>(json);
             }
 
             return list;

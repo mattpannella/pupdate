@@ -1,4 +1,4 @@
-using System.Text.Json;
+using Newtonsoft.Json;
 using Pannella.Models.OpenFPGA_Cores_Inventory;
 using Pannella.Models.Updater;
 
@@ -16,7 +16,7 @@ public partial class CoresService
         }
 
         string json = File.ReadAllText(file);
-        Updaters config = JsonSerializer.Deserialize<Updaters>(json);
+        Updaters config = JsonConvert.DeserializeObject<Updaters>(json);
 
         return config?.previous;
     }

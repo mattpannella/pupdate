@@ -1,14 +1,10 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
-using System.Text.Json;
+using Newtonsoft.Json;
 using Pannella.Models.Github;
 using GithubFile = Pannella.Models.Github.File;
 
 namespace Pannella.Services;
 
-[UnconditionalSuppressMessage("Trimming",
-    "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-    Justification = "<Pending>")]
 public static class GithubApiService
 {
     private const string RELEASES = "https://api.github.com/repos/{0}/{1}/releases";
@@ -20,7 +16,7 @@ public static class GithubApiService
     {
         string url = string.Format(RELEASES, user, repository);
         var responseBody = CallApi(url, githubToken);
-        List<Release> releases = JsonSerializer.Deserialize<List<Release>>(responseBody) ?? new List<Release>();
+        List<Release> releases = JsonConvert.DeserializeObject<List<Release>>(responseBody) ?? new List<Release>();
 
         return releases;
     }
@@ -29,7 +25,7 @@ public static class GithubApiService
     {
         string url = string.Format(RELEASES, user, repository) + "/tags/" + tagName;
         var responseBody = CallApi(url, githubToken);
-        Release release = JsonSerializer.Deserialize<Release>(responseBody);
+        Release release = JsonConvert.DeserializeObject<Release>(responseBody);
 
         return release;
     }
@@ -38,7 +34,7 @@ public static class GithubApiService
     {
         string url = string.Format(RELEASES, user, repository) + "/latest";
         var responseBody = CallApi(url, githubToken);
-        Release release = JsonSerializer.Deserialize<Release>(responseBody);
+        Release release = JsonConvert.DeserializeObject<Release>(responseBody);
 
         return release;
     }
@@ -47,7 +43,7 @@ public static class GithubApiService
     {
         string url = string.Format(CONTENTS, user, repository, path);
         var responseBody = CallApi(url, githubToken);
-        GithubFile file = JsonSerializer.Deserialize<GithubFile>(responseBody);
+        GithubFile file = JsonConvert.DeserializeObject<GithubFile>(responseBody);
 
         return file;
     }
@@ -56,7 +52,7 @@ public static class GithubApiService
     {
         string url = string.Format(CONTENTS, user, repository, path);
         var responseBody = CallApi(url, githubToken);
-        List<GithubFile> files = JsonSerializer.Deserialize<List<GithubFile>>(responseBody);
+        List<GithubFile> files = JsonConvert.DeserializeObject<List<GithubFile>>(responseBody);
 
         return files;
     }

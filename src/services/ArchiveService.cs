@@ -1,111 +1,103 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using System.Text.Json;
+using Newtonsoft.Json;
 using Pannella.Helpers;
-using Pannella.Models.Archive;
+using Pannella.Models;
 using Pannella.Models.Settings;
-using File = Pannella.Models.Archive.File;
+using SettingsArchive = Pannella.Models.Settings.Archive;
+using ArchiveFile = Pannella.Models.Archive.File;
+using Archive = Pannella.Models.Archive.Archive;
 
 namespace Pannella.Services;
 
-[UnconditionalSuppressMessage("Trimming",
-    "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-    Justification = "<Pending>")]
-public class ArchiveService
+public class ArchiveService : Base
 {
     private const string METADATA = "https://archive.org/metadata/{0}";
+    private const string DOWNLOAD = "https://archive.org/download/{0}/{1}";
 
-    public const string DOWNLOAD = "https://archive.org/download/{0}/{1}";
-
-    private readonly string archiveName;
-    private readonly string gnwArchiveName;
-    private readonly CustomArchive customArchive;
     private readonly bool crcCheck;
+    private readonly Dictionary<string, Archive> archiveFiles;
+    private readonly List<SettingsArchive> archives;
+    private readonly bool useCustomArchive;
 
-    public ArchiveService(string archiveName, string gnwArchiveName, bool crcCheck)
+    public ArchiveService(List<SettingsArchive> archives, bool crcCheck, bool useCustomArchive)
     {
-        this.archiveName = archiveName;
-        this.gnwArchiveName = gnwArchiveName;
-        this.customArchive = null;
         this.crcCheck = crcCheck;
+        this.useCustomArchive = useCustomArchive;
+        this.archives = archives;
+        this.archiveFiles = new Dictionary<string, Archive>();
     }
 
-    public ArchiveService(CustomArchive customArchive, string gnwArchiveName, bool crcCheck)
+    public SettingsArchive GetArchive(string coreIdentifier = null)
     {
-        this.customArchive = customArchive;
-        this.archiveName = string.Empty;
-        this.gnwArchiveName = gnwArchiveName;
-        this.crcCheck = crcCheck;
-    }
+        SettingsArchive result = null;
 
-    private Archive archiveFiles;
-
-    public Archive ArchiveFiles
-    {
-        get
+        if (!string.IsNullOrEmpty(coreIdentifier))
         {
-            if (this.archiveFiles == null)
+            result = this.archives.FirstOrDefault(x => x.name == coreIdentifier);
+        }
+
+        if (result == null)
+        {
+            coreIdentifier = this.useCustomArchive ? "custom" : "default";
+            result = this.archives.FirstOrDefault(x => x.name == coreIdentifier);
+        }
+
+        return result;
+    }
+
+    public ArchiveFile GetArchiveFile(string fileName, string coreIdentifier = null)
+    {
+        var files = this.GetArchiveFiles(coreIdentifier);
+
+        return files.FirstOrDefault(x => x.name == fileName);
+    }
+
+    public IEnumerable<ArchiveFile> GetArchiveFiles(string coreIdentifier)
+    {
+        SettingsArchive archive = this.GetArchive(coreIdentifier);
+
+        return this.GetArchiveFiles(archive);
+    }
+
+    public IEnumerable<ArchiveFile> GetArchiveFiles(SettingsArchive archive)
+    {
+        bool found = this.archiveFiles.TryGetValue(archive.archive_name, out Archive internetArchive);
+
+        if (!found)
+        {
+            WriteMessage($"Loading Assets Index for '{archive.archive_name}'...");
+
+            if (useCustomArchive)
             {
-                Console.WriteLine("Loading Assets Index...");
+                Uri baseUrl = new Uri(archive.url);
+                Uri url = new Uri(baseUrl, archive.index);
 
-                if (this.customArchive != null)
-                {
-                    Uri baseUrl = new Uri(this.customArchive.url);
-                    Uri url = new Uri(baseUrl, this.customArchive.index);
-
-                    this.archiveFiles = ArchiveService.GetFilesCustom(url.ToString());
-                }
-                else
-                {
-                    this.archiveFiles = ArchiveService.GetFiles(this.archiveName);
-                }
+                internetArchive = ArchiveService.GetFilesCustom(url.ToString());
+            }
+            else
+            {
+                internetArchive = ArchiveService.GetFiles(archive.archive_name);
             }
 
-            return this.archiveFiles;
+            this.archiveFiles.Add(archive.archive_name, internetArchive);
         }
-    }
 
-    private Archive gameAndWatchArchiveFiles;
-
-    public Archive GameAndWatchArchiveFiles
-    {
-        get
+        if (archive.file_extensions is { Count: > 0 })
         {
-            if (this.gameAndWatchArchiveFiles == null)
-            {
-                Console.WriteLine("Loading Game and Watch Assets Index...");
+            var filtered = internetArchive.files.Where(
+                x => archive.file_extensions.Any(y => y == Path.GetExtension(x.name))).ToList();
 
-                if (this.gnwArchiveName != this.archiveName)
-                {
-                    this.gameAndWatchArchiveFiles = ArchiveService.GetFiles(this.gnwArchiveName);
-
-                    // remove the metadata files since we're processing the entire json list
-                    this.gameAndWatchArchiveFiles.files.RemoveAll(file => Path.GetExtension(file.name) != ".gnw");
-                }
-                else
-                {
-                    // there are GNW files in the openFPGA-files archive as well as the archive maintained by Espiox
-                    // if the GNW archive is set to the openFPGA-files archive, create a second archive
-                    // with just the GNW files from it so things behave correctly
-                    this.gameAndWatchArchiveFiles = new Archive
-                    {
-                        item_last_updated = this.ArchiveFiles.item_last_updated,
-                        files = this.ArchiveFiles.files.Where(file => file.name.EndsWith(".gnw")).ToList()
-                    };
-
-                    this.gameAndWatchArchiveFiles.files_count = this.gameAndWatchArchiveFiles.files.Count;
-                }
-            }
-
-            return this.gameAndWatchArchiveFiles;
+            return filtered;
         }
+
+        return internetArchive.files;
     }
 
     private static Archive GetFiles(string archive)
     {
         string url = string.Format(METADATA, archive);
         string json = HttpHelper.Instance.GetHTML(url);
-        Archive result = JsonSerializer.Deserialize<Archive>(json);
+        Archive result = JsonConvert.DeserializeObject<Archive>(json);
 
         return result;
     }
@@ -115,7 +107,7 @@ public class ArchiveService
         try
         {
             string json = HttpHelper.Instance.GetHTML(url);
-            Archive result = JsonSerializer.Deserialize<Archive>(json);
+            Archive result = JsonConvert.DeserializeObject<Archive>(json);
 
             return result;
         }
@@ -125,35 +117,63 @@ public class ArchiveService
         }
     }
 
-    public void DownloadArchiveFile(string archiveName, File archiveFile, string destination)
+    public bool DownloadArchiveFile(SettingsArchive archive, ArchiveFile archiveFile, string destination)
     {
         try
         {
-            string url = string.Format(DOWNLOAD, archiveName, archiveFile.name);
+            string url;
+
+            if (archive.type == ArchiveType.custom_archive)
+            {
+                Uri baseUrl = new Uri(archive.url);
+                Uri uri = new Uri(baseUrl, archive.index);
+
+                url = uri.ToString();
+            }
+            else
+            {
+                url = string.Format(DOWNLOAD, archive.archive_name, archiveFile.name);
+            }
+
             string destinationFileName = Path.Combine(destination, archiveFile.name);
             int count = 0;
 
             do
             {
-                Console.WriteLine($"Downloading '{archiveFile.name}'");
+                WriteMessage($"Downloading '{archiveFile.name}'");
                 HttpHelper.Instance.DownloadFile(url, destinationFileName, 600);
-                Console.WriteLine($"Finished downloading '{archiveFile.name}'");
+                WriteMessage($"Finished downloading '{archiveFile.name}'");
                 count++;
             }
             while (count < 3 && !ValidateChecksum(destinationFileName, archiveFile));
         }
         catch (HttpRequestException e)
         {
-            Console.WriteLine(e.StatusCode switch
+            WriteMessage(e.StatusCode switch
             {
-                HttpStatusCode.NotFound => $"Unable to find '{archiveFile.name}' in archive '{archiveName}'",
+                HttpStatusCode.NotFound => $"Unable to find '{archiveFile.name}' in archive '{archiveFile.name}'",
                 _ => $"There was a problem downloading '{archiveFile.name}'"
             });
-            throw;
+
+            // throw;
+
+            return false;
         }
+        catch (Exception e)
+        {
+            WriteMessage($"Something went wrong with '{archiveFile.name}'");
+#if DEBUG
+            WriteMessage(e.ToString());
+#else
+            WriteMessage(e.Message);
+#endif
+            return false;
+        }
+
+        return true;
     }
 
-    private bool ValidateChecksum(string filePath, File archiveFile)
+    private bool ValidateChecksum(string filePath, ArchiveFile archiveFile)
     {
         if (!this.crcCheck)
             return true;
@@ -164,7 +184,7 @@ public class ArchiveService
         if (Util.CompareChecksum(filePath, archiveFile.crc32))
             return true;
 
-        Console.WriteLine($"Bad checksum for {Path.GetFileName(filePath)}");
+        WriteMessage($"Bad checksum for {Path.GetFileName(filePath)}");
         return false;
     }
 }

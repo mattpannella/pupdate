@@ -1,6 +1,5 @@
-using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
-using System.Text.Json;
+using Newtonsoft.Json;
 using Pannella.Helpers;
 using Pannella.Models;
 using Pannella.Models.Extras;
@@ -10,9 +9,6 @@ using File = System.IO.File;
 
 namespace Pannella.Services;
 
-[UnconditionalSuppressMessage("Trimming",
-    "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-    Justification = "<Pending>")]
 public partial class CoresService
 {
     private const string EXTRAS_END_POINT = "https://raw.githubusercontent.com/mattpannella/pupdate/main/pocket_extras.json";
@@ -33,7 +29,7 @@ public partial class CoresService
             ? File.ReadAllText("pocket_extras.json")
             : HttpHelper.Instance.GetHTML(EXTRAS_END_POINT);
 #endif
-        PocketExtras files = JsonSerializer.Deserialize<PocketExtras>(json);
+        PocketExtras files = JsonConvert.DeserializeObject<PocketExtras>(json);
 
         return files.pocket_extras;
     }

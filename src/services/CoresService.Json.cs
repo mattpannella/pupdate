@@ -1,5 +1,4 @@
-using System.Text.Json;
-using Pannella.Helpers;
+using Newtonsoft.Json;
 using Pannella.Models.Analogue.Data;
 using Pannella.Models.Analogue.Video;
 using Pannella.Models.OpenFPGA_Cores_Inventory;
@@ -21,7 +20,7 @@ public partial class CoresService
         // cores with multiple platforms won't work...not sure any exist right now?
         string platformsFolder = Path.Combine(this.installPath, "Platforms");
         string dataFile = Path.Combine(platformsFolder, info.metadata.platform_ids[0] + ".json");
-        var platforms = JsonSerializer.Deserialize<Dictionary<string, Platform>>(File.ReadAllText(dataFile));
+        var platforms = JsonConvert.DeserializeObject<Dictionary<string, Platform>>(File.ReadAllText(dataFile));
 
         return platforms["platform"];
     }
@@ -36,8 +35,7 @@ public partial class CoresService
         }
 
         string json = File.ReadAllText(file);
-        var options = new JsonSerializerOptions { AllowTrailingCommas = true };
-        AnalogueCore config = JsonSerializer.Deserialize<Dictionary<string, AnalogueCore>>(json, options)["core"];
+        AnalogueCore config = JsonConvert.DeserializeObject<Dictionary<string, AnalogueCore>>(json)["core"];
 
         return config;
     }
@@ -52,8 +50,7 @@ public partial class CoresService
         }
 
         string json = File.ReadAllText(file);
-        var options = new JsonSerializerOptions { Converters = { new StringConverter() } };
-        DataJSON data = JsonSerializer.Deserialize<DataJSON>(json, options);
+        DataJSON data = JsonConvert.DeserializeObject<DataJSON>(json);
 
         return data;
     }
@@ -68,8 +65,7 @@ public partial class CoresService
         }
 
         string json = File.ReadAllText(file);
-        var options = new JsonSerializerOptions { AllowTrailingCommas = true };
-        Video config = JsonSerializer.Deserialize<Dictionary<string, Video>>(json, options)["video"];
+        Video config = JsonConvert.DeserializeObject<Dictionary<string, Video>>(json)["video"];
 
         return config;
     }

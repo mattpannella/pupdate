@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using Pannella.Helpers;
+using Pannella.Models.Settings;
 using ArchiveFile = Pannella.Models.Archive.File;
 
 namespace Pannella;
@@ -9,7 +10,8 @@ internal partial class Program
     private static void DownloadPockLibraryImages()
     {
         const string fileName = "Library_Image_Set_v1.0.zip";
-        ArchiveFile archiveFile = ServiceHelper.ArchiveService.ArchiveFiles.files.FirstOrDefault(f => f.name == fileName);
+        Archive archive = ServiceHelper.ArchiveService.GetArchive();
+        ArchiveFile archiveFile = ServiceHelper.ArchiveService.GetArchiveFile(fileName);
 
         if (archiveFile != null)
         {
@@ -18,8 +20,7 @@ internal partial class Program
 
             try
             {
-                ServiceHelper.ArchiveService.DownloadArchiveFile(ServiceHelper.SettingsService.GetConfig().archive_name,
-                    archiveFile, ServiceHelper.UpdateDirectory);
+                ServiceHelper.ArchiveService.DownloadArchiveFile(archive, archiveFile, ServiceHelper.UpdateDirectory);
                 Console.WriteLine("Installing...");
 
                 if (Directory.Exists(extractPath))
@@ -41,6 +42,10 @@ internal partial class Program
                 Console.WriteLine(e.Message);
 #endif
             }
+        }
+        else
+        {
+            Console.WriteLine("Pocket Library Images not found in the archive.");
         }
     }
 }

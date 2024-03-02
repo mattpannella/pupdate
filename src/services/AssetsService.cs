@@ -1,13 +1,9 @@
-using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
-using System.Text.Json;
+using Newtonsoft.Json;
 using Pannella.Helpers;
 
 namespace Pannella.Services;
 
-[UnconditionalSuppressMessage("Trimming",
-    "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-    Justification = "<Pending>")]
 public class AssetsService
 {
     private const string BLACKLIST = "https://raw.githubusercontent.com/mattpannella/pupdate/main/blacklist.json";
@@ -28,7 +24,7 @@ public class AssetsService
                     ? File.ReadAllText("blacklist.json")
                     : HttpHelper.Instance.GetHTML(BLACKLIST);
 #endif
-                this.blacklist = JsonSerializer.Deserialize<List<string>>(json);
+                this.blacklist = JsonConvert.DeserializeObject<List<string>>(json);
             }
 
             return this.blacklist;

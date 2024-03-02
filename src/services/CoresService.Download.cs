@@ -1,6 +1,5 @@
 using System.Collections;
-using System.Net;
-using System.Text.Json;
+using Newtonsoft.Json;
 using Pannella.Exceptions;
 using Pannella.Helpers;
 using Pannella.Models;
@@ -9,6 +8,7 @@ using Pannella.Models.Analogue.Instance;
 using Pannella.Models.Analogue.Instance.Simple;
 using Pannella.Models.InstancePackager;
 using Pannella.Models.OpenFPGA_Cores_Inventory;
+using Pannella.Models.Settings;
 using AnalogueCore = Pannella.Models.Analogue.Core.Core;
 using ArchiveFile = Pannella.Models.Archive.File;
 using DataSlot = Pannella.Models.Analogue.Shared.DataSlot;
@@ -98,11 +98,10 @@ public partial class CoresService
         }
 
         WriteMessage("Looking for Assets...");
+        Archive archive = this.archiveService.GetArchive(core.identifier);
         AnalogueCore info = this.ReadCoreJson(core.identifier);
         // cores with multiple platforms won't work...not sure any exist right now?
-        string instancesDirectory = Path.Combine(this.installPath, "Assets", info.metadata.platform_ids[0], core.identifier);
         string platformPath = Path.Combine(this.installPath, "Assets", info.metadata.platform_ids[0]);
-        var options = new JsonSerializerOptions { Converters = { new StringConverter() } };
 
         DataJSON dataJson = this.ReadDataJson(core.identifier);
 
@@ -128,7 +127,7 @@ public partial class CoresService
                             Directory.CreateDirectory(path);
                     }
 
-                    List<string> files = new List<string> { slot.filename };
+                    List<string> files = new() { slot.filename };
 
                     if (slot.alternate_filenames != null)
                     {
@@ -138,8 +137,7 @@ public partial class CoresService
                     foreach (string file in files)
                     {
                         string filePath = Path.Combine(path, file);
-                        string fileName = Path.GetFileName(filePath);
-                        ArchiveFile archiveFile = this.archiveService.ArchiveFiles.files.FirstOrDefault(f => f.name == fileName);
+                        ArchiveFile archiveFile = this.archiveService.GetArchiveFile(file, core.identifier);
 
                         if (File.Exists(filePath) && CheckCrc(filePath, archiveFile))
                         {
@@ -147,12 +145,7 @@ public partial class CoresService
                         }
                         else
                         {
-                            bool result = DownloadAsset(
-                                file,
-                                filePath,
-                                archiveFile,
-                                this.settingsService.GetConfig().archive_name,
-                                this.settingsService.GetConfig().use_custom_archive);
+                            bool result = this.archiveService.DownloadArchiveFile(archive, archiveFile, path);
 
                             if (result)
                             {
@@ -178,34 +171,31 @@ public partial class CoresService
             };
         }
 
-        if (core.identifier is "agg23.GameAndWatch" && this.settingsService.GetConfig().download_gnw_roms)
+        if (archive.type == ArchiveType.core_specific_archive && archive.enabled)
         {
+            var files = this.archiveService.GetArchiveFiles(archive);
+
             string commonPath = Path.Combine(platformPath, "common");
 
-            if (!Directory.Exists(commonPath))
-                Directory.CreateDirectory(commonPath);
+            Directory.CreateDirectory(commonPath);
 
-            foreach (var archiveFile in this.archiveService.GameAndWatchArchiveFiles.files)
+            foreach (var file in files)
             {
-                string filePath = Path.Combine(commonPath, archiveFile.name);
-                string subDirectory = Path.GetDirectoryName(archiveFile.name);
+                string filePath = Path.Combine(commonPath, file.name);
+                string subDirectory = Path.GetDirectoryName(file.name);
 
                 if (!string.IsNullOrEmpty(subDirectory))
                 {
                     Directory.CreateDirectory(Path.Combine(commonPath, subDirectory));
                 }
 
-                if (File.Exists(filePath) && CheckCrc(filePath, archiveFile))
+                if (File.Exists(filePath) && CheckCrc(filePath, file))
                 {
-                    WriteMessage($"Already installed: {archiveFile.name}");
+                    WriteMessage($"Already installed: {file.name}");
                 }
                 else
                 {
-                    bool result = DownloadAsset(
-                        archiveFile.name,
-                        filePath,
-                        archiveFile,
-                        this.settingsService.GetConfig().gnw_archive_name);
+                    bool result = this.archiveService.DownloadArchiveFile(archive, file, commonPath);
 
                     if (result)
                     {
@@ -216,14 +206,8 @@ public partial class CoresService
                         skipped.Add(filePath.Replace(this.installPath, string.Empty));
                     }
                 }
-            }
 
-            return new Dictionary<string, object>
-            {
-                { "installed", installed },
-                { "skipped", skipped },
-                { "missingBetaKey", false }
-            };
+            }
         }
 
         if (CheckInstancePackager(core.identifier))
@@ -237,6 +221,8 @@ public partial class CoresService
                 { "missingBetaKey", false }
             };
         }
+
+        string instancesDirectory = Path.Combine(this.installPath, "Assets", info.metadata.platform_ids[0], core.identifier);
 
         if (Directory.Exists(instancesDirectory))
         {
@@ -258,7 +244,7 @@ public partial class CoresService
                         continue;
                     }
 
-                    InstanceJSON instanceJson = JsonSerializer.Deserialize<InstanceJSON>(File.ReadAllText(file), options);
+                    InstanceJSON instanceJson = JsonConvert.DeserializeObject<InstanceJSON>(File.ReadAllText(file));
 
                     if (instanceJson.instance.data_slots is { Length: > 0 })
                     {
@@ -282,9 +268,9 @@ public partial class CoresService
                                 if (!Directory.Exists(commonPath))
                                     Directory.CreateDirectory(commonPath);
 
-                                string slotPath = Path.Combine(commonPath, dataPath, slot.filename);
-                                ArchiveFile archiveFile = this.archiveService.ArchiveFiles.files.FirstOrDefault(
-                                    f => f.name == slot.filename);
+                                string slotDirectory = Path.Combine(commonPath, dataPath);
+                                string slotPath = Path.Combine(slotDirectory, slot.filename);
+                                ArchiveFile archiveFile = this.archiveService.GetArchiveFile(slot.filename, core.identifier);
 
                                 if (File.Exists(slotPath) && CheckCrc(slotPath, archiveFile))
                                 {
@@ -292,12 +278,7 @@ public partial class CoresService
                                 }
                                 else
                                 {
-                                    bool result = DownloadAsset(
-                                        slot.filename,
-                                        slotPath,
-                                        archiveFile,
-                                        this.settingsService.GetConfig().archive_name,
-                                        this.settingsService.GetConfig().use_custom_archive);
+                                    bool result = this.archiveService.DownloadArchiveFile(archive, archiveFile, slotDirectory);
 
                                     if (result)
                                     {
@@ -334,74 +315,6 @@ public partial class CoresService
         return results;
     }
 
-    private bool DownloadAsset(string fileName, string destination, ArchiveFile archiveFile, string archiveName,
-        bool useCustomArchive = false)
-    {
-        if (archiveFile == null)
-        {
-            WriteMessage($"Unable to find '{fileName}' in archive");
-            return false;
-        }
-
-        try
-        {
-            string url;
-
-            if (useCustomArchive)
-            {
-                var custom = this.settingsService.GetConfig().custom_archive;
-                Uri baseUri = new Uri(custom.url);
-                Uri uri = new Uri(baseUri, fileName);
-
-                url = uri.ToString();
-            }
-            else
-            {
-                url = string.Format(ArchiveService.DOWNLOAD, archiveName, fileName);
-            }
-
-            int count = 0;
-
-            do
-            {
-                WriteMessage($"Downloading '{fileName}'");
-                HttpHelper.Instance.DownloadFile(url, destination, 600);
-                WriteMessage($"Finished downloading '{fileName}'");
-                count++;
-            }
-            while (count < 3 && !CheckCrc(destination, archiveFile));
-        }
-        catch (HttpRequestException e)
-        {
-            if (e.StatusCode == HttpStatusCode.NotFound)
-            {
-                WriteMessage($"Unable to find '{fileName}' in archive");
-            }
-            else
-            {
-                WriteMessage($"There was a problem downloading '{fileName}'");
-            }
-#if DEBUG
-            WriteMessage(e.ToString());
-#else
-            WriteMessage(e.Message);
-#endif
-            return false;
-        }
-        catch (Exception e)
-        {
-            WriteMessage($"Something went wrong with '{fileName}'");
-#if DEBUG
-            WriteMessage(e.ToString());
-#else
-            WriteMessage(e.Message);
-#endif
-            return false;
-        }
-
-        return true;
-    }
-
     public void BuildInstanceJson(string identifier, bool overwrite = true)
     {
         if (!this.settingsService.GetConfig().build_instance_jsons)
@@ -417,7 +330,7 @@ public partial class CoresService
         }
 
         WriteMessage("Building instance json files.");
-        InstanceJsonPackager jsonPackager = JsonSerializer.Deserialize<InstanceJsonPackager>(File.ReadAllText(instancePackagerFile));
+        InstanceJsonPackager jsonPackager = JsonConvert.DeserializeObject<InstanceJsonPackager>(File.ReadAllText(instancePackagerFile));
         string commonPath = Path.Combine(this.installPath, "Assets", jsonPackager.platform_id, "common");
         bool warning = false;
 
@@ -479,9 +392,9 @@ public partial class CoresService
                     }
                 }
 
-                var limit = (JsonElement)jsonPackager.slot_limit["count"];
+                var limit = (long)jsonPackager.slot_limit["count"];
 
-                if (slots.Count == 0 || (jsonPackager.slot_limit != null && slots.Count > limit.GetInt32()))
+                if (slots.Count == 0 || (jsonPackager.slot_limit != null && slots.Count > limit))
                 {
                     WriteMessage($"Unable to build {jsonFileName}");
                     warning = true;
@@ -491,7 +404,6 @@ public partial class CoresService
                 instance.data_slots = slots.ToArray();
                 simpleInstanceJson.instance = instance;
 
-                var options = new JsonSerializerOptions { WriteIndented = true };
                 string[] parts = dir.Split(commonPath);
                 parts = parts[1].Split(jsonFileName.Remove(jsonFileName.Length - 5));
                 string subDirectory = string.Empty;
@@ -509,9 +421,9 @@ public partial class CoresService
                 }
                 else
                 {
-                    string json = JsonSerializer.Serialize(simpleInstanceJson, options);
+                    string json = JsonConvert.SerializeObject(simpleInstanceJson, Formatting.Indented);
 
-                    WriteMessage($"Saving {jsonFileName}");
+                    WriteMessage($"Saving '{jsonFileName}'...");
 
                     FileInfo file = new FileInfo(outputFile);
 
@@ -532,9 +444,9 @@ public partial class CoresService
 
         if (warning)
         {
-            var message = (JsonElement)jsonPackager.slot_limit["message"];
+            var message = (string)jsonPackager.slot_limit["message"];
 
-            WriteMessage(message.GetString());
+            WriteMessage(message);
         }
 
         WriteMessage("Finished");

@@ -1,5 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
+using Newtonsoft.Json;
 using Pannella.Helpers;
 using Pannella.Models;
 using Pannella.Models.Extras;
@@ -9,9 +8,6 @@ using AnalogueCore = Pannella.Models.Analogue.Core.Core;
 
 namespace Pannella.Services;
 
-[UnconditionalSuppressMessage("Trimming",
-    "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-    Justification = "<Pending>")]
 public class CoreUpdaterService : BaseProcess
 {
     private readonly string installPath;
@@ -112,8 +108,7 @@ public class CoreUpdaterService : BaseProcess
 
                 PocketExtra pocketExtra = this.coresService.GetPocketExtra(name);
                 bool isPocketExtraCombinationPlatform = coreSettings.pocket_extras &&
-                                                        pocketExtra != null &&
-                                                        pocketExtra.type == PocketExtraType.combination_platform;
+                                                        pocketExtra is { type: PocketExtraType.combination_platform };
                 string mostRecentRelease = isPocketExtraCombinationPlatform
                     ? this.coresService.GetMostRecentRelease(pocketExtra)
                     : core.version;
@@ -324,7 +319,7 @@ public class CoreUpdaterService : BaseProcess
 
             string path = Path.Combine(this.installPath, "Platforms", core.platform_id + ".json");
             string json = File.ReadAllText(path);
-            Dictionary<string, Platform> data = JsonSerializer.Deserialize<Dictionary<string, Platform>>(json);
+            Dictionary<string, Platform> data = JsonConvert.DeserializeObject<Dictionary<string, Platform>>(json);
             Platform platform = data["platform"];
 
             if (this.coresService.RenamedPlatformFiles.TryGetValue(core.platform_id, out string value) &&

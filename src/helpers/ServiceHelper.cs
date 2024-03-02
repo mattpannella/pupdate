@@ -23,18 +23,8 @@ public static class ServiceHelper
             isInitialized = true;
             UpdateDirectory = path;
             SettingsService = new SettingsService(path);
-
-            if (SettingsService.GetConfig().use_custom_archive)
-            {
-                ArchiveService = new ArchiveService(SettingsService.GetConfig().custom_archive,
-                    SettingsService.GetConfig().gnw_archive_name, SettingsService.GetConfig().crc_check);
-            }
-            else
-            {
-                ArchiveService = new ArchiveService(SettingsService.GetConfig().archive_name,
-                    SettingsService.GetConfig().gnw_archive_name, SettingsService.GetConfig().crc_check);
-            }
-
+            ArchiveService = new ArchiveService(SettingsService.GetConfig().archives,
+                SettingsService.GetConfig().crc_check, SettingsService.GetConfig().use_custom_archive);
             AssetsService = new AssetsService(SettingsService.GetConfig().use_local_blacklist);
             CoresService = new CoresService(path, SettingsService, ArchiveService, AssetsService);
             SettingsService.InitializeCoreSettings(CoresService.Cores);
@@ -47,6 +37,7 @@ public static class ServiceHelper
                 PlatformImagePacksService.StatusUpdated += statusUpdated;
                 FirmwareService.StatusUpdated += statusUpdated;
                 CoresService.StatusUpdated += statusUpdated;
+                ArchiveService.StatusUpdated += statusUpdated;
             }
 
             if (updateProcessComplete != null)

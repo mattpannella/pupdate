@@ -1,18 +1,12 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
+using Newtonsoft.Json;
+using Pannella.Helpers;
 using Pannella.Models.OpenFPGA_Cores_Inventory;
 using Pannella.Models.Settings;
 
 namespace Pannella.Services;
 
-[UnconditionalSuppressMessage("Trimming",
-    "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-    Justification = "<Pending>")]
 public class SettingsService
 {
-    private const string OLD_DEFAULT = "pocket-roms";
-    private const string NEW_DEFAULT = "openFPGA-Files";
-
     private const string OLD_SETTINGS_FILENAME = "pocket_updater_settings.json";
     private const string SETTINGS_FILENAME = "pupdate_settings.json";
 
@@ -41,13 +35,8 @@ public class SettingsService
 
         if (!string.IsNullOrEmpty(json))
         {
-            settings = JsonSerializer.Deserialize<Settings>(json);
-
-            // hack to force people over to new default :)
-            if (settings.config.archive_name == OLD_DEFAULT)
-            {
-                settings.config.archive_name = NEW_DEFAULT;
-            }
+            settings = JsonConvert.DeserializeObject<Settings>(json);
+            settings.config.Migrate();
         }
 
         // bandaid to fix old settings files
@@ -59,13 +48,15 @@ public class SettingsService
             this.InitializeCoreSettings(cores);
         }
 
-        Save();
+        this.Save();
     }
 
     public void Save()
     {
-        var options = new JsonSerializerOptions { WriteIndented = true };
-        File.WriteAllText(this.settingsFile, JsonSerializer.Serialize(settings, options));
+        var options = new JsonSerializerSettings { ContractResolver = ArchiveContractResolver.Instance };
+        var json = JsonConvert.SerializeObject(settings, Formatting.Indented, options);
+
+        File.WriteAllText(this.settingsFile, json);
     }
 
     /// <summary>
@@ -73,11 +64,11 @@ public class SettingsService
     /// </summary>
     public void InitializeCoreSettings(List<Core> cores)
     {
-        settings.coreSettings ??= new Dictionary<string, CoreSettings>();
+        settings.core_settings ??= new Dictionary<string, CoreSettings>();
 
         foreach (Core core in cores)
         {
-            if (!settings.coreSettings.ContainsKey(core.identifier))
+            if (!settings.core_settings.ContainsKey(core.identifier))
             {
                 this.missingCores.Add(core);
             }
@@ -86,11 +77,11 @@ public class SettingsService
 
     public void EnableCore(string name, bool? pocketExtras = null, string pocketExtrasVersion = null)
     {
-        if (!settings.coreSettings.TryGetValue(name, out CoreSettings coreSettings))
+        if (!settings.core_settings.TryGetValue(name, out CoreSettings coreSettings))
         {
             coreSettings = new CoreSettings();
 
-            settings.coreSettings.Add(name, coreSettings);
+            settings.core_settings.Add(name, coreSettings);
         }
 
         coreSettings.skip = false;
@@ -104,7 +95,7 @@ public class SettingsService
 
     public void DisableCore(string name)
     {
-        if (settings.coreSettings.TryGetValue(name, out CoreSettings value))
+        if (settings.core_settings.TryGetValue(name, out CoreSettings value))
         {
             value.skip = true;
         }
@@ -112,13 +103,13 @@ public class SettingsService
         {
             CoreSettings core = new CoreSettings { skip = true };
 
-            settings.coreSettings.Add(name, core);
+            settings.core_settings.Add(name, core);
         }
     }
 
     public void DisablePocketExtras(string name)
     {
-        if (settings.coreSettings.TryGetValue(name, out CoreSettings value))
+        if (settings.core_settings.TryGetValue(name, out CoreSettings value))
         {
             value.pocket_extras = false;
             value.pocket_extras_version = null;
@@ -157,7 +148,7 @@ public class SettingsService
 
     public CoreSettings GetCoreSettings(string name)
     {
-        return settings.coreSettings.TryGetValue(name, out CoreSettings value)
+        return settings.core_settings.TryGetValue(name, out CoreSettings value)
             ? value
             : new CoreSettings();
     }
