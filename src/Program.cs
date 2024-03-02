@@ -231,7 +231,7 @@ internal partial class Program
         Console.WriteLine(Base.DIVIDER);
         Console.WriteLine(e.Message);
 
-        if (e.InstalledCores != null && e.InstalledCores.Count > 0)
+        if (e.InstalledCores is { Count: > 0 })
         {
             Console.WriteLine("Cores Updated:");
 

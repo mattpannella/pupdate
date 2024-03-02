@@ -84,8 +84,8 @@ public class ArchiveService : Base
 
         if (archive.file_extensions is { Count: > 0 })
         {
-            var filtered = internetArchive.files.Where(
-                x => archive.file_extensions.Any(y => y == Path.GetExtension(x.name))).ToList();
+            var filtered = internetArchive.files.Where(x => archive.file_extensions.Any(y =>
+                string.Equals(y, Path.GetExtension(x.name), StringComparison.InvariantCultureIgnoreCase))).ToList();
 
             return filtered;
         }
