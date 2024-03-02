@@ -141,7 +141,8 @@ public partial class CoresService
 
                         if (File.Exists(filePath) && CheckCrc(filePath, archiveFile))
                         {
-                            WriteMessage($"Already installed: {file}");
+                            if (!this.settingsService.GetConfig().suppress_already_installed)
+                                WriteMessage($"Already installed: {file}");
                         }
                         else
                         {
@@ -159,16 +160,6 @@ public partial class CoresService
                     }
                 }
             }
-        }
-
-        if (core.identifier is "Mazamars312.NeoGeo" or "Mazamars312.NeoGeo_Overdrive" or "obsidian.Vectrex")
-        {
-            return new Dictionary<string, object>
-            {
-                { "installed", installed },
-                { "skipped", skipped },
-                { "missingBetaKey", false }
-            };
         }
 
         if (archive.type == ArchiveType.core_specific_archive && archive.enabled && !archive.has_instance_jsons)
@@ -191,7 +182,8 @@ public partial class CoresService
 
                 if (File.Exists(filePath) && CheckCrc(filePath, file))
                 {
-                    WriteMessage($"Already installed: {file.name}");
+                    if (!this.settingsService.GetConfig().suppress_already_installed)
+                        WriteMessage($"Already installed: {file.name}");
                 }
                 else
                 {
@@ -207,6 +199,19 @@ public partial class CoresService
                     }
                 }
             }
+        }
+
+        // These cores have instance json files and the roms are not in the default archive.
+        // Check to see if they have a core specific archive defined, skip otherwise.
+        if (core.identifier is "Mazamars312.NeoGeo" or "Mazamars312.NeoGeo_Overdrive" or "obsidian.Vectrex"
+            && archive.type != ArchiveType.core_specific_archive)
+        {
+            return new Dictionary<string, object>
+            {
+                { "installed", installed },
+                { "skipped", skipped },
+                { "missingBetaKey", false }
+            };
         }
 
         if (CheckInstancePackager(core.identifier))
@@ -273,7 +278,8 @@ public partial class CoresService
 
                                 if (File.Exists(slotPath) && CheckCrc(slotPath, archiveFile))
                                 {
-                                    WriteMessage($"Already installed: {slot.filename}");
+                                    if (!this.settingsService.GetConfig().suppress_already_installed)
+                                        WriteMessage($"Already installed: {slot.filename}");
                                 }
                                 else
                                 {

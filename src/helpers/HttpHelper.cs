@@ -1,3 +1,5 @@
+using System.Net;
+
 namespace Pannella.Helpers;
 
 public class HttpHelper
@@ -48,6 +50,12 @@ public class HttpHelper
         }
 
         using HttpResponseMessage responseMessage = this.client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cts.Token).Result;
+
+        // Just in case the HttpClient doesn't throw the error on 404 like it should.
+        if (responseMessage.StatusCode == HttpStatusCode.NotFound)
+        {
+            throw new HttpRequestException("Not Found.", null, HttpStatusCode.NotFound);
+        }
 
         var totalSize = responseMessage.Content.Headers.ContentLength ?? -1L;
         var readSoFar = 0L;

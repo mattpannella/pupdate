@@ -154,7 +154,7 @@ public class ArchiveService : Base
         {
             WriteMessage(e.StatusCode switch
             {
-                HttpStatusCode.NotFound => $"Unable to find '{archiveFile.name}' in archive '{archiveFile.name}'",
+                HttpStatusCode.NotFound => $"Unable to find '{archiveFile.name}' in archive '{archive.name}'",
                 _ => $"There was a problem downloading '{archiveFile.name}'"
             });
 
