@@ -301,6 +301,7 @@ You can submit new cores here [https://github.com/openfpga-cores-inventory/analo
 Thanks to [neil-morrison44](https://github.com/neil-morrison44). This is a port built on top of the work originally done by him [here](https://gist.github.com/neil-morrison44/34fbb18de90cd9a32ca5bdafb2a812b8).
 
 ### With special thanks to: ### 
+[Michael Hallett](https://github.com/hallem) for contributing a ton to the project.
 
 [RetroDriven](https://github.com/RetroDriven/) for maintaining the arcade rom archive.
 
