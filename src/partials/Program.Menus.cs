@@ -477,7 +477,6 @@ internal partial class Program
         {
             { "download_firmware", "Download Firmware Updates during 'Update All'" },
             { "download_assets", "Download Missing Assets (ROMs and BIOS Files) during 'Update All'" },
-            { "download_gnw_roms", "Download Game & Watch ROMs during 'Update All'" },
             { "build_instance_jsons", "Build game JSON files for supported cores during 'Update All'" },
             { "delete_skipped_cores", "Delete untracked cores during 'Update All'" },
             { "fix_jt_names", "Automatically rename Jotego cores during 'Update All'" },
