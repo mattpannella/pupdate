@@ -138,8 +138,16 @@ public class ArchiveService : Base
                 url = string.Format(DOWNLOAD, archive.archive_name, archiveFile.name);
             }
 
-            string destinationFileName = Path.Combine(destination, archiveFile.name);
             int count = 0;
+            string destinationFileName = Path.Combine(destination, archiveFile.name);
+            string subDirectory = Path.GetDirectoryName(archiveFile.name);
+
+            if (!string.IsNullOrEmpty(subDirectory))
+            {
+                string destinationDirectory = Path.Combine(destination, subDirectory);
+
+                Directory.CreateDirectory(Path.Combine(destinationDirectory));
+            }
 
             do
             {

@@ -134,6 +134,7 @@ public partial class CoresService : BaseProcess
         this.settingsService.DisableCore(identifier);
         this.settingsService.DisablePocketExtras(identifier);
         this.settingsService.Save();
+        this.RefreshInstalledCores();
 
         WriteMessage("Finished.");
         Divide();

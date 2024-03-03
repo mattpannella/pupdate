@@ -205,8 +205,9 @@ internal partial class Program
 
                 if (result)
                 {
-                    ServiceHelper.CoresService.GetPocketExtra(pocketExtra, ServiceHelper.UpdateDirectory, true);
+                    ServiceHelper.CoresService.GetPocketExtra(pocketExtra, ServiceHelper.UpdateDirectory, true, true);
                     ServiceHelper.CoresService.RefreshLocalCores();
+                    ServiceHelper.CoresService.RefreshInstalledCores();
                     Pause();
                 }
             });

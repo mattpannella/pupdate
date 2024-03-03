@@ -173,12 +173,6 @@ public partial class CoresService
             foreach (var file in files)
             {
                 string filePath = Path.Combine(commonPath, file.name);
-                string subDirectory = Path.GetDirectoryName(file.name);
-
-                if (!string.IsNullOrEmpty(subDirectory))
-                {
-                    Directory.CreateDirectory(Path.Combine(commonPath, subDirectory));
-                }
 
                 if (File.Exists(filePath) && CheckCrc(filePath, file))
                 {

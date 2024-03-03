@@ -41,7 +41,7 @@ public partial class CoresService
             e.core_identifiers.Any(x => x == pocketExtraIdOrCoreIdentifier));
     }
 
-    public void GetPocketExtra(PocketExtra pocketExtra, string path, bool downloadAssets)
+    public void GetPocketExtra(PocketExtra pocketExtra, string path, bool downloadAssets, bool refreshLocalCores)
     {
         switch (pocketExtra.type)
         {
@@ -51,7 +51,7 @@ public partial class CoresService
 
             case PocketExtraType.combination_platform:
             case PocketExtraType.variant_core:
-                DownloadPocketExtrasPlatform(pocketExtra, path, downloadAssets);
+                DownloadPocketExtrasPlatform(pocketExtra, path, downloadAssets, refreshLocalCores);
                 break;
         }
 
@@ -64,7 +64,7 @@ public partial class CoresService
         ));
     }
 
-    private void DownloadPocketExtrasPlatform(PocketExtra pocketExtra, string path, bool downloadAssets)
+    private void DownloadPocketExtrasPlatform(PocketExtra pocketExtra, string path, bool downloadAssets, bool refreshLocalCores)
     {
         Release release = GithubApiService.GetLatestRelease(pocketExtra.github_user, pocketExtra.github_repository,
             this.settingsService.GetConfig().github_token);
@@ -122,7 +122,10 @@ public partial class CoresService
 
             WriteMessage("Installing...");
             Util.CopyDirectory(extractPath, path, true, true);
-            // this.RefreshLocalCores();
+
+            if (refreshLocalCores)
+                this.RefreshLocalCores();
+
             WriteMessage("Complete.");
         }
         catch (Exception e)
