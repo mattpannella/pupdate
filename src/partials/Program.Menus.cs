@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using ConsoleTools;
 using Pannella.Helpers;
 using Pannella.Models.Extras;
@@ -473,22 +474,12 @@ internal partial class Program
     {
         Console.Clear();
 
-        var menuItems = new Dictionary<string, string>
-        {
-            { "download_firmware", "Download Firmware Updates during 'Update All'" },
-            { "download_assets", "Download Missing Assets (ROMs and BIOS Files) during 'Update All'" },
-            { "build_instance_jsons", "Build game JSON files for supported cores during 'Update All'" },
-            { "delete_skipped_cores", "Delete untracked cores during 'Update All'" },
-            { "fix_jt_names", "Automatically rename Jotego cores during 'Update All'" },
-            { "crc_check", "Use CRC check when checking ROMs and BIOS files" },
-            { "preserve_platforms_folder", "Preserve 'Platforms' folder during 'Update All'" },
-            { "skip_alternative_assets", "Skip alternative roms when downloading assets" },
-            { "backup_saves", "Compress and backup Saves and Memories directories during 'Update All'" },
-            { "show_menu_descriptions", "Show descriptions for advanced menu items" },
-            { "use_custom_archive", "Use custom asset archive" },
-        };
-
         var type = typeof(Config);
+        var menuItems =
+            from property in type.GetProperties()
+            let attribute = property.GetCustomAttributes(typeof(DescriptionAttribute), true)
+            where attribute.Length == 1
+            select (property.Name, ((DescriptionAttribute)attribute[0]).Description);
         var menu = new ConsoleMenu()
             .Configure(config =>
             {

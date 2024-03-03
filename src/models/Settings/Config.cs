@@ -1,22 +1,47 @@
+using System.ComponentModel;
 using Newtonsoft.Json;
 
 namespace Pannella.Models.Settings;
 
 public class Config
 {
+    [Description("Download Missing Assets (ROMs and BIOS Files) during 'Update All'")]
     public bool download_assets { get; set; } = true;
+
     public string github_token { get; set; } = string.Empty;
+
+    [Description("Download Firmware Updates during 'Update All'")]
     public bool download_firmware { get; set; } = true;
+
+    [Description("Preserve 'Platforms' folder during 'Update All'")]
     public bool preserve_platforms_folder { get; set; } = false;
+
+    [Description("Delete untracked cores during 'Update All'")]
     public bool delete_skipped_cores { get; set; } = true;
+
     public string download_new_cores { get; set; }
+
+    [Description("Build game JSON files for supported cores during 'Update All'")]
     public bool build_instance_jsons { get; set; } = true;
+
+    [Description("Use CRC check when checking ROMs and BIOS files")]
     public bool crc_check { get; set; } = true;
+
+    [Description("Automatically rename Jotego cores during 'Update All'")]
     public bool fix_jt_names { get; set; } = true;
+
+    [Description("Skip alternative roms when downloading assets")]
     public bool skip_alternative_assets { get; set; } = true;
+
+    [Description("Compress and backup Saves and Memories directories during 'Update All'")]
     public bool backup_saves { get; set; }
+
     public string backup_saves_location { get; set; } = "Backups";
+
+    [Description("Show descriptions for advanced menu items")]
     public bool show_menu_descriptions { get; set; } = true;
+
+    [Description("Use custom asset archive")]
     public bool use_custom_archive { get; set; } = false;
 
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
