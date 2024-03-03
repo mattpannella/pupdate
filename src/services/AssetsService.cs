@@ -1,14 +1,40 @@
-using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
-using System.Text.Json;
+using Newtonsoft.Json;
 using Pannella.Helpers;
 
 namespace Pannella.Services;
 
-[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-public static class AssetsService
+public class AssetsService
 {
     private const string BLACKLIST = "https://raw.githubusercontent.com/mattpannella/pupdate/main/blacklist.json";
+
+    private readonly bool useLocalBlacklist;
+    private List<string> blacklist;
+
+    public List<string> Blacklist
+    {
+        get
+        {
+            if (this.blacklist == null)
+            {
+#if DEBUG
+                string json = File.ReadAllText("blacklist.json");
+#else
+                string json = useLocalBlacklist
+                    ? File.ReadAllText("blacklist.json")
+                    : HttpHelper.Instance.GetHTML(BLACKLIST);
+#endif
+                this.blacklist = JsonConvert.DeserializeObject<List<string>>(json);
+            }
+
+            return this.blacklist;
+        }
+    }
+
+    public AssetsService(bool useLocalBlacklist)
+    {
+        this.useLocalBlacklist = useLocalBlacklist;
+    }
 
     public static void BackupSaves(string directory, string backupLocation)
     {
@@ -19,6 +45,7 @@ public static class AssetsService
     {
         BackupDirectory(directory, "Memories", backupLocation);
     }
+
     private static void BackupDirectory(string rootDirectory, string folderName, string backupLocation)
     {
         if (string.IsNullOrEmpty(rootDirectory))
@@ -50,17 +77,5 @@ public static class AssetsService
         {
             Console.WriteLine($"No {folderName} directory found, skipping backup...");
         }
-    }
-
-    public static async Task<string[]> GetBlacklist()
-    {
-#if DEBUG
-        string json = await File.ReadAllTextAsync("blacklist.json");
-#else
-        string json = await HttpHelper.Instance.GetHTML(BLACKLIST);
-#endif
-        string[] files = JsonSerializer.Deserialize<string[]>(json);
-
-        return files ?? Array.Empty<string>();
     }
 }

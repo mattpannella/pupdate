@@ -3,18 +3,20 @@ namespace Pannella;
 internal partial class Program
 {
     private const string HELP_TEXT =
-@"Usage:
+"""
+Usage:
+
   menu                     Interactive Main Menu (Default Verb)
     -p, --path                Absolute path to install location
     -s, --skip-update         Go straight to the menu, without looking for an update
 
   fund                     List sponsor links. Lists all if no core is provided
+    -p, --path                Absolute path to install location
     -c, --core                The core to check funding links for
     
   update                   Run update all. (Can be configured via the settings menu)
     -p, --path                Absolute path to install location
     -c, --core                The core you want to update. Runs for all otherwise
-    -f, --platformsfolder     Preserve the Platforms folder, so customizations aren't overwritten by updates.
     -r, --clean               Clean install. Remove all existing core files, and force a fresh re-install
   
   uninstall                Delete a core
@@ -55,9 +57,13 @@ internal partial class Program
     -i, --info                Shows the details for the specified 'name'
     -l, --list                Lists out all of the values for 'name' and their details
 
+  display-modes            Enable all Display Modes
+    -p, --path                Absolute path to install location
+
   update-self              Check for updates to pupdate
 
   help                     Display more information on a specific command.
 
-  version                  Display version information.";
+  version                  Display version information.
+""";
 }

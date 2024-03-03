@@ -1,6 +1,6 @@
 using System.Text;
 using Pannella.Helpers;
-using Pannella.Models;
+using Pannella.Models.OpenFPGA_Cores_Inventory;
 
 namespace Pannella;
 
@@ -10,15 +10,16 @@ internal partial class Program
     {
         var output = new StringBuilder();
 
-        if (GlobalHelper.InstalledCoresWithSponsors.Count > 0)
+        if (ServiceHelper.CoresService.InstalledCoresWithSponsors.Count > 0)
         {
             var random = new Random();
-            var index = random.Next(GlobalHelper.InstalledCoresWithSponsors.Count);
-            var randomItem = GlobalHelper.InstalledCoresWithSponsors[index];
+            var index = random.Next(ServiceHelper.CoresService.InstalledCoresWithSponsors.Count);
+            var randomItem = ServiceHelper.CoresService.InstalledCoresWithSponsors[index];
 
             if (randomItem.sponsor != null)
             {
-                var author = randomItem.GetConfig().metadata.author;
+                var info = ServiceHelper.CoresService.ReadCoreJson(randomItem.identifier);
+                var author = info.metadata.author;
 
                 output.AppendLine($"Please consider supporting {author} for their work on the {randomItem} core:");
                 output.Append(randomItem.sponsor);
@@ -30,35 +31,36 @@ internal partial class Program
 
     private static void Funding(string identifier)
     {
-        if (GlobalHelper.InstalledCores.Count == 0)
+        if (ServiceHelper.CoresService.InstalledCores.Count == 0)
         {
+            Console.WriteLine("You must install cores to see their funding information.");
             return;
         }
 
-        List<Core> cores = new List<Core>();
+        List<Core> cores;
 
-        if (identifier == null)
+        if (string.IsNullOrEmpty(identifier))
         {
-            cores = GlobalHelper.InstalledCores;
+            cores = ServiceHelper.CoresService.InstalledCores;
         }
         else
         {
-            var c = GlobalHelper.GetCore(identifier);
+            cores = new List<Core>();
 
-            if (c != null && c.IsInstalled())
+            var core = ServiceHelper.CoresService.GetInstalledCore(identifier);
+
+            if (core != null)
             {
-                cores.Add(c);
+                cores.Add(core);
             }
         }
 
-        foreach (Core core in cores)
+        Console.WriteLine();
+
+        foreach (var core in cores.Where(core => core.sponsor != null))
         {
-            if (core.sponsor != null)
-            {
-                Console.WriteLine();
-                Console.WriteLine($"{core.identifier}:");
-                Console.WriteLine(core.sponsor);
-            }
+            Console.WriteLine($"{core.identifier}:");
+            Console.WriteLine(core.sponsor.ToString("    "));
         }
     }
 }

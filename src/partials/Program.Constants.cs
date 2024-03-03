@@ -4,7 +4,7 @@ namespace Pannella;
 
 internal partial class Program
 {
-    private static readonly string VERSION = Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
+    private static readonly string VERSION = Assembly.GetExecutingAssembly().GetName().Version!.ToString(3);
 
     private static readonly string SYSTEM_OS_PLATFORM = GetSystemPlatform();
 
@@ -21,7 +21,8 @@ internal partial class Program
 | __  | |___ _____ ___    _ _ ___ _ _ ___ ___ ___| |  _|   ___ ___   |   __|___ _| |
 | __ -| | .'|     | -_|  | | | . | | |  _|_ -| -_| |  _|  | . |  _|  |  |  | . | . |
 |_____|_|__,|_|_|_|___|  |_  |___|___|_| |___|___|_|_|    |___|_|    |_____|___|___|
-                         |___|  ",
+                         |___|
+                                                                                    ",
         @"                                                                                       
  _ _ _     _                      _          _____ _                 _                 
 | | | |___| |___ ___ _____ ___   | |_ ___   |   __| |___ _ _ ___ ___| |_ ___ _ _ _ ___ 
@@ -51,13 +52,15 @@ internal partial class Program
 |     | |_ ___| |_ _ _     |_   _|___ ___| |_ _ _   
 |-   -|  _|  _|   | | |_     | | | .'|_ -|  _| | |_ 
 |_____|_| |___|_|_|_  |_|    |_| |__,|___|_| |_  |_|
-                  |___|                      |___|  ",
+                  |___|                      |___|
+                                                    ",
         @"                   _                                       _____ 
  _ _ _ _       _  | |                      _           _  |___  |
 | | | | |_ ___| |_|_|___ ___    _ _ ___   | |_ _ _ _ _|_|___|  _|
 | | | |   | .'|  _| |  _| -_|  | | | .'|  | . | | | | | |   |_|  
 |_____|_|_|__,|_|   |_| |___|  |_  |__,|  |___|___|_  |_|_|_|_|  
-                               |___|              |___|          ",
+                               |___|              |___|
+                                                                 ",
         @"                                                  _____ 
  _ _ _ _       _      _                          |___  |
 | | | | |_ ___| |_   |_|___    ___    _____ ___ ___|  _|
@@ -81,7 +84,8 @@ internal partial class Program
 |  |   ___| |_|_|___    _____ ___ ___ ___ _ _ 
 |  |__| -_|  _| |_ -|  |     | . |_ -| -_| | |
 |_____|___|_|   |___|  |_|_|_|___|___|___|_  |
-                                         |___|",
+                                         |___|
+                                              ",
         @"       _=,_
     o_/6 /#\
     \__ |##/
@@ -89,6 +93,7 @@ internal partial class Program
        /   #'-.
        \#|_   _'-. /
         |/ \_( # |'' 
-       C/ ,--___/"
+       C/ ,--___/
+                    "
     };
 }

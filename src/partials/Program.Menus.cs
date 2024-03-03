@@ -1,8 +1,8 @@
-using System.Text;
+using System.ComponentModel;
 using ConsoleTools;
 using Pannella.Helpers;
-using Pannella.Models;
 using Pannella.Models.Extras;
+using Pannella.Models.OpenFPGA_Cores_Inventory;
 using Pannella.Models.Settings;
 using Pannella.Services;
 
@@ -10,20 +10,21 @@ namespace Pannella;
 
 internal partial class Program
 {
-    private static void DisplayMenuNew(string path, PocketCoreUpdater coreUpdater)
+    private static void DisplayMenuNew(CoreUpdaterService coreUpdaterService)
     {
         Console.Clear();
 
         Random random = new Random();
         int i = random.Next(0, WELCOME_MESSAGES.Length);
         string welcome = WELCOME_MESSAGES[i];
-        int remaining = GithubApiService.GetRateLimitRemaining();
+        int remaining = GithubApiService.RemainingCalls;
         string rateLimitMessage = $"Remaining GitHub API calls: {remaining}";
+
         if (remaining <= 5)
         {
-            rateLimitMessage = string.Concat(rateLimitMessage, Environment.NewLine, "Consider adding a Github Token to your settings file, to avoid hitting the rate limit.");
+            rateLimitMessage = string.Concat(rateLimitMessage, Environment.NewLine,
+                "Consider adding a Github Token to your settings file, to avoid hitting the rate limit.");
         }
-
 
         var menuConfig = new MenuConfig
         {
@@ -33,8 +34,7 @@ internal partial class Program
                         Environment.NewLine,
                         GetRandomSponsorLinks(),
                         Environment.NewLine,
-                        Environment.NewLine,
-                        rateLimitMessage, 
+                        rateLimitMessage,
                         Environment.NewLine),
             EnableWriteTitle = true,
             WriteHeaderAction = () => Console.WriteLine("Choose your destiny:"),
@@ -44,48 +44,49 @@ internal partial class Program
 
         var pocketSetupMenu = new ConsoleMenu()
             .Configure(menuConfig)
-            .Add("Download Platform Image Packs", async _ =>
+            .Add("Download Platform Image Packs", _ =>
             {
-                await ImagePackSelector(path);
-            })
-            .Add("Download Pocket Library Images", async _ =>
-            {
-                await DownloadPockLibraryImages(path);
+                PlatformImagePackSelector();
                 Pause();
             })
-            .Add("Download GameBoy Palettes", async _ =>
+            .Add("Download Pocket Library Images", _ =>
             {
-                await DownloadGameBoyPalettes(path);
+                DownloadPockLibraryImages();
+                Pause();
+            })
+            .Add("Download GameBoy Palettes", _ =>
+            {
+                DownloadGameBoyPalettes();
                 Pause();
             })
             .Add("Generate Instance JSON Files (PC Engine CD)", () =>
             {
-                RunInstanceGenerator(coreUpdater);
+                RunInstanceGenerator(coreUpdaterService);
                 Pause();
             })
-            .Add("Generate Game & Watch ROMs", async _ =>
+            .Add("Generate Game & Watch ROMs", _ =>
             {
-                await BuildGameAndWatchRoms(path);
+                BuildGameAndWatchRoms();
                 Pause();
             })
             .Add("Enable All Display Modes", () =>
             {
-                coreUpdater.ForceDisplayModes();
+                EnableDisplayModes();
                 Pause();
             })
             .Add("Apply 8:7 Aspect Ratio to Super GameBoy cores", () =>
             {
                 var results = ShowCoresMenu(
-                    GlobalHelper.InstalledCores.Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
+                    ServiceHelper.CoresService.InstalledCores.Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
                     "Which Super GameBoy cores would you like to change to the 8:7 aspect ratio?\n",
                     false);
 
                 foreach (var item in results.Where(x => x.Value))
                 {
-                    var core = GlobalHelper.InstalledCores.First(c => c.identifier == item.Key);
+                    var core = ServiceHelper.CoresService.InstalledCores.First(c => c.identifier == item.Key);
 
                     Console.WriteLine($"Updating '{core.identifier}'...");
-                    core.ChangeAspectRatio(4, 3, 8, 7);
+                    ServiceHelper.CoresService.ChangeAspectRatio(core.identifier, 4, 3, 8, 7);
                     Console.WriteLine("Complete.");
                     Console.WriteLine();
                 }
@@ -95,16 +96,16 @@ internal partial class Program
             .Add("Restore 4:3 Aspect Ratio to Super GameBoy cores", () =>
             {
                 var results = ShowCoresMenu(
-                    GlobalHelper.InstalledCores.Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
+                    ServiceHelper.CoresService.InstalledCores.Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
                     "Which Super GameBoy cores would you like to change to the 8:7 aspect ratio?\n",
                     false);
 
                 foreach (var item in results.Where(x => x.Value))
                 {
-                    var core = GlobalHelper.InstalledCores.First(c => c.identifier == item.Key);
+                    var core = ServiceHelper.CoresService.InstalledCores.First(c => c.identifier == item.Key);
 
                     Console.WriteLine($"Updating '{core.identifier}'...");
-                    core.ChangeAspectRatio(8, 7, 4, 3);
+                    ServiceHelper.CoresService.ChangeAspectRatio(core.identifier, 8, 7, 4, 3);
                     Console.WriteLine("Complete.");
                     Console.WriteLine();
                 }
@@ -115,40 +116,47 @@ internal partial class Program
 
         var pocketMaintenanceMenu = new ConsoleMenu()
             .Configure(menuConfig)
-            .Add("Reinstall All Cores", async _ =>
+            .Add("Reinstall All Cores", _ =>
             {
-                await coreUpdater.RunUpdates(null, true);
+                coreUpdaterService.RunUpdates(null, true);
                 Pause();
             })
-            .Add("Reinstall Select Cores", async _ =>
+            .Add("Reinstall Select Cores", _ =>
             {
                 var results = ShowCoresMenu(
-                    GlobalHelper.InstalledCores,
+                    ServiceHelper.CoresService.InstalledCores,
                     "Which cores would you like to reinstall?",
                     false);
+                var identifiers = results.Where(x => x.Value)
+                                               .Select(x => x.Key)
+                                               .ToArray();
 
-                foreach (var item in results.Where(x => x.Value))
+                if (identifiers.Length > 0)
                 {
-                    await coreUpdater.RunUpdates(item.Key, true);
-                }
+                    coreUpdaterService.RunUpdates(identifiers, true);
 
-                Pause();
+                    Pause();
+                }
             })
             .Add("Uninstall Select Cores", () =>
             {
                 var results = ShowCoresMenu(
-                    GlobalHelper.InstalledCores,
+                    ServiceHelper.CoresService.InstalledCores,
                     "Which cores would you like to uninstall?",
                     false);
+                var selectResults = results.Where(x => x.Value).ToList();
 
-                bool nuke = AskYesNoQuestion("Would you like to remove the core specific assets for the selected cores?");
-
-                foreach (var item in results.Where(x => x.Value))
+                if (selectResults.Count > 0)
                 {
-                    coreUpdater.DeleteCore(GlobalHelper.GetCore(item.Key), true, nuke);
-                }
+                    bool nuke = AskYesNoQuestion("Would you like to remove the core specific assets for the selected cores?");
 
-                Pause();
+                    foreach (var item in selectResults)
+                    {
+                        coreUpdaterService.DeleteCore(ServiceHelper.CoresService.GetCore(item.Key), true, nuke);
+                    }
+
+                    Pause();
+                }
             })
             .Add("Go Back", ConsoleMenu.Close);
 
@@ -162,9 +170,9 @@ internal partial class Program
             .Add("Variant Cores         >", variantCoresMenu.Show)
             .Add("Go Back", ConsoleMenu.Close);
 
-        foreach (var pocketExtra in GlobalHelper.PocketExtras)
+        foreach (var pocketExtra in ServiceHelper.CoresService.PocketExtrasList)
         {
-            var name = string.IsNullOrWhiteSpace(pocketExtra.name)
+            var name = string.IsNullOrWhiteSpace(pocketExtra.name) // name is not required for additional assets
                 ? $"Download extras for {pocketExtra.core_identifiers[0]}"
                 : $"Download {pocketExtra.name}";
 
@@ -176,11 +184,11 @@ internal partial class Program
                 _ => pocketExtrasMenu
             };
 
-            consoleMenu.Add(name, async _ =>
+            consoleMenu.Add(name, _ =>
             {
                 bool result = true;
 
-                if (GlobalHelper.SettingsManager.GetConfig().show_menu_descriptions &&
+                if (ServiceHelper.SettingsService.GetConfig().show_menu_descriptions &&
                     !string.IsNullOrEmpty(pocketExtra.description))
                 {
                     Console.WriteLine(Util.WordWrap(pocketExtra.description, 80));
@@ -198,7 +206,9 @@ internal partial class Program
 
                 if (result)
                 {
-                    await GlobalHelper.PocketExtrasService.GetPocketExtra(pocketExtra, path, true, true);
+                    ServiceHelper.CoresService.GetPocketExtra(pocketExtra, ServiceHelper.UpdateDirectory, true, true);
+                    ServiceHelper.CoresService.RefreshLocalCores();
+                    ServiceHelper.CoresService.RefreshInstalledCores();
                     Pause();
                 }
             });
@@ -210,34 +220,40 @@ internal partial class Program
 
         var menu = new ConsoleMenu()
             .Configure(menuConfig)
-            .Add("Update All", async _ =>
+            .Add("Update All", _ =>
             {
                 Console.WriteLine("Starting update process...");
-                await coreUpdater.RunUpdates();
+                coreUpdaterService.RunUpdates();
+                ServiceHelper.CoresService.RefreshInstalledCores();
                 Pause();
             })
-            .Add("Update Firmware", async _ =>
+            .Add("Update Firmware", _ =>
             {
-                await coreUpdater.UpdateFirmware();
+                ServiceHelper.FirmwareService.UpdateFirmware(ServiceHelper.UpdateDirectory);
                 Pause();
             })
             .Add("Select Cores            >", () => // \u00BB
             {
                 AskAboutNewCores(true);
-                RunCoreSelector(GlobalHelper.Cores);
+                RunCoreSelector(ServiceHelper.CoresService.Cores.OrderBy(x => x.identifier.ToLowerInvariant()).ToList());
                 // Is reloading the settings file necessary?
-                GlobalHelper.ReloadSettings();
+                ServiceHelper.ReloadSettings();
             })
-            .Add("Download Assets", async _ =>
+            .Add("Download Assets", _ =>
             {
                 Console.WriteLine("Checking for required files...");
-                await coreUpdater.RunAssetDownloader();
+                var cores = ServiceHelper.CoresService.Cores.Where(core =>
+                    !ServiceHelper.SettingsService.GetCoreSettings(core.identifier).skip).ToList();
+
+                ServiceHelper.CoresService.DownloadCoreAssets(cores);
                 Pause();
             })
             .Add("Backup Saves & Memories", () =>
             {
-                AssetsService.BackupSaves(path, GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
-                AssetsService.BackupMemories(path, GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
+                AssetsService.BackupSaves(ServiceHelper.UpdateDirectory,
+                    ServiceHelper.SettingsService.GetConfig().backup_saves_location);
+                AssetsService.BackupMemories(ServiceHelper.UpdateDirectory,
+                    ServiceHelper.SettingsService.GetConfig().backup_saves_location);
                 Pause();
             })
             .Add("Pocket Setup            >", pocketSetupMenu.Show)
@@ -246,15 +262,8 @@ internal partial class Program
             .Add("Settings                >", () =>
             {
                 SettingsMenu();
-
-                coreUpdater.DeleteSkippedCores(GlobalHelper.SettingsManager.GetConfig().delete_skipped_cores);
-                coreUpdater.DownloadFirmware(GlobalHelper.SettingsManager.GetConfig().download_firmware);
-                coreUpdater.DownloadAssets(GlobalHelper.SettingsManager.GetConfig().download_assets);
-                coreUpdater.RenameJotegoCores(GlobalHelper.SettingsManager.GetConfig().fix_jt_names);
-                coreUpdater.BackupSaves(GlobalHelper.SettingsManager.GetConfig().backup_saves,
-                    GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
                 // Is reloading the settings file necessary?
-                GlobalHelper.ReloadSettings();
+                ServiceHelper.ReloadSettings();
             })
             .Add("Exit", ConsoleMenu.Close);
 
@@ -263,7 +272,7 @@ internal partial class Program
 
     private static void AskAboutNewCores(bool force = false)
     {
-        while (GlobalHelper.SettingsManager.GetConfig().download_new_cores == null || force)
+        while (ServiceHelper.SettingsService.GetConfig().download_new_cores == null || force)
         {
             force = false;
 
@@ -271,7 +280,7 @@ internal partial class Program
 
             ConsoleKey response = Console.ReadKey(true).Key;
 
-            GlobalHelper.SettingsManager.GetConfig().download_new_cores = response switch
+            ServiceHelper.SettingsService.GetConfig().download_new_cores = response switch
             {
                 ConsoleKey.Y => "yes",
                 ConsoleKey.N => "no",
@@ -336,10 +345,10 @@ internal partial class Program
 
                 if ((current <= (offset + pageSize)) && (current >= offset))
                 {
-                    var coreSettings = GlobalHelper.SettingsManager.GetCoreSettings(core.identifier);
+                    var coreSettings = ServiceHelper.SettingsService.GetCoreSettings(core.identifier);
                     var selected = isCoreSelection && !coreSettings.skip;
                     var name = core.identifier;
-                    var title = MenuItemName(name, selected, isCoreSelection, core.requires_license);
+                    var title = MenuItemName(name, selected, core.requires_license);
 
                     menu.Add(title, thisMenu =>
                     {
@@ -354,8 +363,7 @@ internal partial class Program
                             results.Add(core.identifier, selected);
                         }
 
-                        thisMenu.CurrentItem.Name = MenuItemName(core.identifier, selected, isCoreSelection,
-                            core.requires_license);
+                        thisMenu.CurrentItem.Name = MenuItemName(core.identifier, selected, core.requires_license);
                     });
                 }
             }
@@ -383,11 +391,11 @@ internal partial class Program
 
     private static void RunCoreSelector(List<Core> cores, string message = "Select your cores.")
     {
-        if (GlobalHelper.SettingsManager.GetConfig().download_new_cores?.ToLowerInvariant() == "yes")
+        if (ServiceHelper.SettingsService.GetConfig().download_new_cores?.ToLowerInvariant() == "yes")
         {
             foreach (Core core in cores)
             {
-                GlobalHelper.SettingsManager.EnableCore(core.identifier);
+                ServiceHelper.SettingsService.EnableCore(core.identifier);
             }
         }
         else
@@ -397,37 +405,81 @@ internal partial class Program
             foreach (var item in results)
             {
                 if (item.Value)
-                    GlobalHelper.SettingsManager.EnableCore(item.Key);
+                    ServiceHelper.SettingsService.EnableCore(item.Key);
                 else
-                    GlobalHelper.SettingsManager.DisableCore(item.Key);
+                    ServiceHelper.SettingsService.DisableCore(item.Key);
             }
         }
 
-        GlobalHelper.SettingsManager.GetConfig().core_selector = false;
-        GlobalHelper.SettingsManager.SaveSettings();
+        ServiceHelper.SettingsService.Save();
+    }
+
+    private static void PlatformImagePackSelector()
+    {
+        Console.Clear();
+
+        if (ServiceHelper.PlatformImagePacksService.List.Count > 0)
+        {
+            int choice = 0;
+            var menu = new ConsoleMenu()
+                .Configure(config =>
+                {
+                    config.Selector = "=>";
+                    config.EnableWriteTitle = false;
+                    config.WriteHeaderAction = () => Console.WriteLine("So, what'll it be?:");
+                    config.SelectedItemBackgroundColor = Console.ForegroundColor;
+                    config.SelectedItemForegroundColor = Console.BackgroundColor;
+                });
+
+            foreach (var pack in ServiceHelper.PlatformImagePacksService.List)
+            {
+                menu.Add($"{pack.owner}: {pack.repository} {pack.variant ?? string.Empty}", thisMenu =>
+                {
+                    choice = thisMenu.CurrentItem.Index;
+                    thisMenu.CloseMenu();
+                });
+            }
+
+            menu.Add("Go Back", thisMenu =>
+            {
+                choice = ServiceHelper.PlatformImagePacksService.List.Count;
+                thisMenu.CloseMenu();
+            });
+
+            menu.Show();
+
+            if (choice < ServiceHelper.PlatformImagePacksService.List.Count && choice >= 0)
+            {
+                ServiceHelper.PlatformImagePacksService.Install(
+                    ServiceHelper.PlatformImagePacksService.List[choice].owner,
+                    ServiceHelper.PlatformImagePacksService.List[choice].repository,
+                    ServiceHelper.PlatformImagePacksService.List[choice].variant);
+            }
+            else if (choice == ServiceHelper.PlatformImagePacksService.List.Count)
+            {
+                // What causes this?
+            }
+            else
+            {
+                Console.WriteLine("You fucked up.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("None found. Have a nice day.");
+        }
     }
 
     private static void SettingsMenu()
     {
         Console.Clear();
 
-        var menuItems = new Dictionary<string, string>
-        {
-            { "download_firmware", "Download Firmware Updates during 'Update All'" },
-            { "download_assets", "Download Missing Assets (ROMs and BIOS Files) during 'Update All'" },
-            { "download_gnw_roms", "Download Game & Watch ROMs during 'Update All'" },
-            { "build_instance_jsons", "Build game JSON files for supported cores during 'Update All'" },
-            { "delete_skipped_cores", "Delete untracked cores during 'Update All'" },
-            { "fix_jt_names", "Automatically rename Jotego cores during 'Update All'" },
-            { "crc_check", "Use CRC check when checking ROMs and BIOS files" },
-            { "preserve_platforms_folder", "Preserve 'Platforms' folder during 'Update All'" },
-            { "skip_alternative_assets", "Skip alternative roms when downloading assets" },
-            { "backup_saves", "Compress and backup Saves and Memories directories during 'Update All'" },
-            { "show_menu_descriptions", "Show descriptions for advanced menu items" },
-            { "use_custom_archive", "Use custom asset archive" },
-        };
-
         var type = typeof(Config);
+        var menuItems =
+            from property in type.GetProperties()
+            let attribute = property.GetCustomAttributes(typeof(DescriptionAttribute), true)
+            where attribute.Length == 1
+            select (property.Name, ((DescriptionAttribute)attribute[0]).Description);
         var menu = new ConsoleMenu()
             .Configure(config =>
             {
@@ -442,13 +494,13 @@ internal partial class Program
         foreach (var (name, text) in menuItems)
         {
             var property = type.GetProperty(name);
-            var value = (bool)property!.GetValue(GlobalHelper.SettingsManager.GetConfig())!;
+            var value = (bool)property!.GetValue(ServiceHelper.SettingsService.GetConfig())!;
             var title = MenuItemName(text, value);
 
             menu.Add(title, thisMenu =>
             {
                 value = !value;
-                property.SetValue(GlobalHelper.SettingsManager.GetConfig(), value);
+                property.SetValue(ServiceHelper.SettingsService.GetConfig(), value);
                 thisMenu.CurrentItem.Name = MenuItemName(text, value);
             });
         }
@@ -457,14 +509,14 @@ internal partial class Program
 
         menu.Show();
 
-        GlobalHelper.SettingsManager.SaveSettings();
+        ServiceHelper.SettingsService.Save();
     }
 
-    private static string MenuItemName(string title, bool value, bool isCoreSelection = false, bool requiresLicense = false)
+    private static string MenuItemName(string title, bool value, bool requiresLicense = false)
     {
         string name = $"[{(value ? "x" : " ")}] {title}";
 
-        if (isCoreSelection && requiresLicense)
+        if (requiresLicense)
         {
             name += " (Requires beta access)";
         }

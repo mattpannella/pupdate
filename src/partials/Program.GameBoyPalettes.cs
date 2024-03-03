@@ -8,20 +8,21 @@ namespace Pannella;
 
 internal partial class Program
 {
-    private static async Task DownloadGameBoyPalettes(string directory)
+    private static void DownloadGameBoyPalettes()
     {
-        Release release = await GithubApiService.GetLatestRelease("davewongillies", "openfpga-palettes");
+        Release release = GithubApiService.GetLatestRelease("davewongillies", "openfpga-palettes",
+            ServiceHelper.SettingsService.GetConfig().github_token);
         Asset asset = release.assets.FirstOrDefault(a => a.name.EndsWith(".zip"));
 
         if (asset != null)
         {
-            string localFile = Path.Combine(directory, asset.name);
-            string extractPath = Path.Combine(directory, "temp");
+            string localFile = Path.Combine(ServiceHelper.UpdateDirectory, asset.name);
+            string extractPath = Path.Combine(ServiceHelper.UpdateDirectory, "temp");
 
             try
             {
                 Console.WriteLine($"Downloading asset '{asset.name}'...");
-                await HttpHelper.Instance.DownloadFileAsync(asset.browser_download_url, localFile);
+                HttpHelper.Instance.DownloadFile(asset.browser_download_url, localFile);
                 Console.WriteLine("Download complete.");
                 Console.WriteLine("Installing...");
 
@@ -30,15 +31,19 @@ internal partial class Program
 
                 ZipFile.ExtractToDirectory(localFile, extractPath);
                 File.Delete(localFile);
-                Util.CopyDirectory(extractPath, directory, true, true);
+                Util.CopyDirectory(extractPath, ServiceHelper.UpdateDirectory, true, true);
 
                 Directory.Delete(extractPath, true);
                 Console.WriteLine("Complete.");
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 Console.WriteLine("Something happened while trying to install the asset files...");
-                Console.WriteLine(ex);
+#if DEBUG
+                Console.WriteLine(e);
+#else
+                Console.WriteLine(e.Message);
+#endif
             }
         }
     }

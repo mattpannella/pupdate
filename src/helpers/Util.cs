@@ -53,7 +53,7 @@ public class Util
         }
     }
 
-    public static void CleanDir(string source, bool preservePlatformsFolder = false, string platform = "")
+    public static void CleanDir(string source, string path = "", bool preservePlatformsFolder = false, string platform = "")
     {
         // Clean up any bad directories (like Mac OS directories).
         foreach (var dir in BAD_DIRS)
@@ -70,7 +70,7 @@ public class Util
 
         if (preservePlatformsFolder)
         {
-            string existing = Path.Combine(GlobalHelper.UpdateDirectory, PLATFORMS_DIRECTORY, platform + ".json");
+            string existing = Path.Combine(path, PLATFORMS_DIRECTORY, platform + ".json");
 
             if (File.Exists(existing))
             {

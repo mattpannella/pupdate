@@ -3,11 +3,8 @@ using CommandLine;
 namespace Pannella.Options;
 
 [Verb("images",  HelpText = "Download image packs")]
-public class ImagesOptions
+public class ImagesOptions : BaseOptions
 {
-    [Option('p', "path", HelpText = "Absolute path to install location", Required = false)]
-    public string InstallPath { get; set; }
-
     [Option('o', "owner", Required = true, HelpText = "Image pack repo username")]
     public string ImagePackOwner { get; set; }
 

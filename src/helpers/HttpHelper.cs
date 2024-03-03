@@ -1,9 +1,11 @@
+using System.Net;
+
 namespace Pannella.Helpers;
 
 public class HttpHelper
 {
     private static HttpHelper instance;
-    private static readonly object syncLock = new();
+    private static readonly object SYNC_LOCK = new();
     private HttpClient client;
 
     public event EventHandler<DownloadProgressEventArgs> DownloadProgressUpdate;
@@ -17,29 +19,29 @@ public class HttpHelper
     {
         get
         {
-            lock (syncLock)
+            lock (SYNC_LOCK)
             {
                 return instance ??= new HttpHelper();
             }
         }
     }
 
-    public async Task DownloadFileAsync(string uri, string outputPath, int timeout = 100)
+    public void DownloadFile(string uri, string outputPath, int timeout = 100)
     {
         bool console = false;
 
         try
         {
-            var test = Console.WindowWidth;
-
+            _ = Console.WindowWidth;
             console = true;
         }
-        catch (Exception)
+        catch
         {
-            // Do Nothing.
+            // Ignore
         }
 
         using var cts = new CancellationTokenSource();
+
         cts.CancelAfter(TimeSpan.FromSeconds(timeout));
 
         if (!Uri.TryCreate(uri, UriKind.Absolute, out _))
@@ -47,19 +49,25 @@ public class HttpHelper
             throw new InvalidOperationException("URI is invalid.");
         }
 
-        using HttpResponseMessage r = await this.client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cts.Token);
+        using HttpResponseMessage responseMessage = this.client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cts.Token).Result;
 
-        var totalSize = r.Content.Headers.ContentLength ?? -1L;
+        // Just in case the HttpClient doesn't throw the error on 404 like it should.
+        if (responseMessage.StatusCode == HttpStatusCode.NotFound)
+        {
+            throw new HttpRequestException("Not Found.", null, HttpStatusCode.NotFound);
+        }
+
+        var totalSize = responseMessage.Content.Headers.ContentLength ?? -1L;
         var readSoFar = 0L;
         var buffer = new byte[4096];
         var isMoreToRead = true;
 
-        using var stream = await r.Content.ReadAsStreamAsync();
+        using var stream = responseMessage.Content.ReadAsStream(cts.Token);
         using var fileStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write);
 
         while (isMoreToRead)
         {
-            var read = await stream.ReadAsync(buffer, 0, buffer.Length);
+            var read = stream.Read(buffer);
 
             if (read == 0)
             {
@@ -100,12 +108,12 @@ public class HttpHelper
 
                 OnDownloadProgressUpdate(args);
 
-                await fileStream.WriteAsync(buffer, 0, read);
+                fileStream.Write(buffer, 0, read);
             }
         }
     }
 
-    public async Task<string> GetHTML(string uri, bool allowRedirect = true)
+    public string GetHTML(string uri, bool allowRedirect = true)
     {
         if (!Uri.TryCreate(uri, UriKind.Absolute, out _))
         {
@@ -117,8 +125,8 @@ public class HttpHelper
             this.CreateClient(false);
         }
 
-        var response = await this.client.GetAsync(uri);
-        string html = await response.Content.ReadAsStringAsync();
+        var response = this.client.GetAsync(uri).Result;
+        string html = response.Content.ReadAsStringAsync().Result;
 
         if (!allowRedirect)
         {

@@ -1,7 +1,6 @@
 ﻿using CommandLine;
 using Pannella.Helpers;
 using Pannella.Models;
-using Pannella.Models.Extras;
 using Pannella.Options;
 using Pannella.Services;
 
@@ -9,480 +8,204 @@ namespace Pannella;
 
 internal partial class Program
 {
-    private static bool CLI_MODE;
-
-    private static async Task Main(string[] args)
+    private static void Main(string[] args)
     {
         try
         {
-            string location = Environment.ProcessPath;
-            string path = Path.GetDirectoryName(location);
-            bool preservePlatformsFolder = false;
-            bool forceUpdate = false;
-            bool forceInstanceGenerator = false;
-            string downloadAssets = null;
-            string coreName = null;
-            string imagePackOwner = null;
-            string imagePackRepo = null;
-            string imagePackVariant = null;
-            bool downloadFirmware = false;
-            bool selfUpdate = false;
-            bool nuke = false;
-            bool cleanInstall = false;
-            string backupSaves_Path = null;
-            bool backupSaves_SaveConfig = false;
-            string pocket_extras_name = null;
-            bool pocket_extras_list = false;
-            bool pocket_extras_info = false;
-
-            string verb = "menu";
-            Dictionary<string, object> data = new Dictionary<string, object>();
-
-            #region Command Line Arguments
-
             Parser parser = new Parser(config => config.HelpWriter = null);
 
             var parserResult = parser.ParseArguments<MenuOptions, FundOptions, UpdateOptions,
                     AssetsOptions, FirmwareOptions, ImagesOptions, InstanceGeneratorOptions,
                     UpdateSelfOptions, UninstallOptions, BackupSavesOptions, GameBoyPalettesOptions,
-                    PocketLibraryImagesOptions, PocketExtrasOptions>(args)
-                .WithParsed<UpdateSelfOptions>(_ => { selfUpdate = true; })
-                .WithParsed<FundOptions>(o =>
-                    {
-                        verb = "fund";
-                        data.Add("core", null);
-
-                        if (!string.IsNullOrEmpty(o.Core))
-                        {
-                            data["core"] = o.Core;
-                        }
-                    })
-                .WithParsed<UpdateOptions>(o =>
-                    {
-                        verb = "update";
-                        CLI_MODE = true;
-                        forceUpdate = true;
-
-                        if (!string.IsNullOrEmpty(o.InstallPath))
-                        {
-                            path = o.InstallPath;
-                        }
-
-                        if (o.PreservePlatformsFolder)
-                        {
-                            preservePlatformsFolder = true;
-                        }
-
-                        if (o.CleanInstall)
-                        {
-                            cleanInstall = true;
-                        }
-
-                        if (!string.IsNullOrEmpty(o.CoreName))
-                        {
-                            coreName = o.CoreName;
-                        }
-                    })
-                .WithParsed<UninstallOptions>(o =>
-                    {
-                        verb = "uninstall";
-                        CLI_MODE = true;
-                        coreName = o.CoreName;
-
-                        if (!string.IsNullOrEmpty(o.InstallPath))
-                        {
-                            path = o.InstallPath;
-                        }
-
-                        if (o.DeleteAssets)
-                        {
-                            nuke = true;
-                        }
-                    })
-                .WithParsed<AssetsOptions>(o =>
-                    {
-                        verb = "assets";
-                        CLI_MODE = true;
-                        downloadAssets = "all";
-
-                        if (!string.IsNullOrEmpty(o.InstallPath))
-                        {
-                            path = o.InstallPath;
-                        }
-
-                        if (o.CoreName != null)
-                        {
-                            downloadAssets = o.CoreName;
-                        }
-                    })
-                .WithParsed<FirmwareOptions>(o =>
-                    {
-                        verb = "firmware";
-                        CLI_MODE = true;
-                        downloadFirmware = true;
-
-                        if (!string.IsNullOrEmpty(o.InstallPath))
-                        {
-                            path = o.InstallPath;
-                        }
-                    })
-                .WithParsed<ImagesOptions>(o =>
-                    {
-                        verb = "images";
-                        CLI_MODE = true;
-
-                        if (!string.IsNullOrEmpty(o.InstallPath))
-                        {
-                            path = o.InstallPath;
-                        }
-
-                        if (o.ImagePackOwner != null)
-                        {
-                            imagePackOwner = o.ImagePackOwner;
-                            imagePackRepo = o.ImagePackRepo;
-                            imagePackVariant = o.ImagePackVariant;
-                        }
-                    })
-                .WithParsed<InstanceGeneratorOptions>(o =>
-                    {
-                        verb = "instancegenerator";
-                        CLI_MODE = true;
-                        forceInstanceGenerator = true;
-
-                        if (!string.IsNullOrEmpty(o.InstallPath))
-                        {
-                            path = o.InstallPath;
-                        }
-                    })
-                .WithParsed<MenuOptions>(o =>
-                    {
-                        if (!string.IsNullOrEmpty(o.InstallPath))
-                        {
-                            path = o.InstallPath;
-                        }
-
-                        if (o.SkipUpdate)
-                        {
-                            CLI_MODE = true;
-                        }
-                    })
-                .WithParsed<BackupSavesOptions>(o =>
-                    {
-                        verb = "backup-saves";
-                        CLI_MODE = true;
-                        backupSaves_Path = o.BackupPath;
-                        backupSaves_SaveConfig = o.Save;
-
-                        if (!string.IsNullOrEmpty(o.InstallPath))
-                        {
-                            path = o.InstallPath;
-                        }
-                    })
-                .WithParsed<GameBoyPalettesOptions>(o =>
-                    {
-                        verb = "gameboy-palettes";
-                        CLI_MODE = true;
-
-                        if (!string.IsNullOrEmpty(o.InstallPath))
-                        {
-                            path = o.InstallPath;
-                        }
-                    })
-                .WithParsed<PocketLibraryImagesOptions>(o =>
-                    {
-                        verb = "pocket-library-images";
-                        CLI_MODE = true;
-
-                        if (!string.IsNullOrEmpty(o.InstallPath))
-                        {
-                            path = o.InstallPath;
-                        }
-                    })
-                .WithParsed<PocketExtrasOptions>(o =>
-                    {
-                        verb = "pocket-extras";
-                        CLI_MODE = true;
-                        pocket_extras_name = o.Name;
-                        pocket_extras_list = o.List;
-                        pocket_extras_info = o.Info;
-
-                        if (!string.IsNullOrEmpty(o.InstallPath))
-                        {
-                            path = o.InstallPath;
-                        }
-                    })
+                    PocketLibraryImagesOptions, PocketExtrasOptions, DisplayModesOptions>(args)
                 .WithNotParsed(errors =>
-                    {
-                        foreach (var error in errors)
-                        {
-                            switch (error)
-                            {
-                                case MissingRequiredOptionError mro:
-                                    Console.WriteLine($"Missing required parameter: -{mro.NameInfo.ShortName} or --{mro.NameInfo.LongName}.");
-                                    break;
-
-                                case HelpRequestedError:
-                                case HelpVerbRequestedError:
-                                    Console.WriteLine(HELP_TEXT);
-                                    break;
-
-                                case VersionRequestedError:
-                                    Console.WriteLine("Pupdate v" + VERSION);
-                                    break;
-                            }
-                        }
-
-                        Environment.Exit(1);
-                    });
-
-            #endregion
-
-            await GlobalHelper.Initialize(path);
-            GlobalHelper.PocketExtrasService.StatusUpdated += coreUpdater_StatusUpdated;
-            GlobalHelper.PocketExtrasService.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
-
-            if (!CLI_MODE)
-            {
-                Console.WriteLine("Pupdate v" + VERSION);
-                Console.WriteLine("Checking for updates...");
-
-                if (await CheckVersion(path) && !selfUpdate)
                 {
-                    ConsoleKey[] acceptedInputs = { ConsoleKey.I, ConsoleKey.C, ConsoleKey.Q };
-                    ConsoleKey response;
-
-                    do
+                    foreach (var error in errors)
                     {
-                        if (SYSTEM_OS_PLATFORM is "win" or "linux" or "mac")
+                        switch (error)
                         {
-                            Console.Write("Would you like to [i]nstall the update, [c]ontinue with the current version, or [q]uit? [i/c/q]: ");
+                            case MissingRequiredOptionError mro:
+                                Console.WriteLine($"Missing required parameter: -{mro.NameInfo.ShortName} or --{mro.NameInfo.LongName}.");
+                                break;
+
+                            case HelpRequestedError:
+                            case HelpVerbRequestedError:
+                                Console.WriteLine(HELP_TEXT);
+                                break;
+
+                            case VersionRequestedError:
+                                Console.WriteLine("Pupdate v" + VERSION);
+                                break;
                         }
-                        else
-                        {
-                            Console.Write("Update downloaded. Would you like to [c]ontinue with the current version, or [q]uit? [c/q]: ");
-                        }
-
-                        response = Console.ReadKey(false).Key;
-                        Console.WriteLine();
                     }
-                    while (!acceptedInputs.Contains(response));
 
-                    switch (response)
-                    {
-                        case ConsoleKey.I:
-                            int result = UpdateSelfAndRun(path, args);
-                            Environment.Exit(result);
-                            break;
-
-                        case ConsoleKey.C:
-                            break;
-
-                        case ConsoleKey.Q:
-                            Console.WriteLine("Come again soon");
-                            PauseExit();
-                            break;
-                    }
-                }
-
-                if (selfUpdate)
-                {
-                    Environment.Exit(0);
-                }
-            }
-
-            PocketCoreUpdater coreUpdater = new PocketCoreUpdater();
-
-            switch (verb)
-            {
-                case "fund":
-                    Funding((string)data["core"]);
                     Environment.Exit(1);
-                    break;
-            }
+                });
 
-            // how should the logic work here? what takes priority, the command line parameter or the config setting?
-            // currently this well preserve the platforms folder if either is set to true
-            if (preservePlatformsFolder || GlobalHelper.SettingsManager.GetConfig().preserve_platforms_folder)
+            string path;
+
+            if (parserResult.Value is UpdateSelfOptions ||
+                string.IsNullOrEmpty(((BaseOptions)parserResult.Value).InstallPath))
             {
-                coreUpdater.PreservePlatformsFolder(true);
+                path = Path.GetDirectoryName(Environment.ProcessPath);
+            }
+            else
+            {
+                path = ((BaseOptions)parserResult.Value).InstallPath;
             }
 
-            coreUpdater.DeleteSkippedCores(GlobalHelper.SettingsManager.GetConfig().delete_skipped_cores);
-            coreUpdater.DownloadFirmware(GlobalHelper.SettingsManager.GetConfig().download_firmware);
-            coreUpdater.RenameJotegoCores(GlobalHelper.SettingsManager.GetConfig().fix_jt_names);
-            coreUpdater.StatusUpdated += coreUpdater_StatusUpdated;
-            coreUpdater.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
-            coreUpdater.DownloadAssets(GlobalHelper.SettingsManager.GetConfig().download_assets);
-            coreUpdater.BackupSaves(GlobalHelper.SettingsManager.GetConfig().backup_saves,
-                GlobalHelper.SettingsManager.GetConfig().backup_saves_location);
+            ServiceHelper.Initialize(path, coreUpdater_StatusUpdated, coreUpdater_UpdateProcessComplete);
+
+            bool enableMissingCores = false;
+
+            switch (parserResult.Value)
+            {
+                case MenuOptions options:
+                    if (!options.SkipUpdate)
+                        CheckForUpdates(ServiceHelper.UpdateDirectory, false, args);
+                    else
+                        enableMissingCores = true;
+                    break;
+
+                case UpdateSelfOptions:
+                    CheckForUpdates(ServiceHelper.UpdateDirectory, true, args);
+                    // CheckForUpdates will terminate execution when necessary.
+                    break;
+
+                case FirmwareOptions:
+                    ServiceHelper.FirmwareService.UpdateFirmware(ServiceHelper.UpdateDirectory);
+                    return;
+
+                case FundOptions options:
+                    Funding(options.Core);
+                    return;
+            }
 
             // If we have any missing cores, handle them.
-            if (GlobalHelper.SettingsManager.GetMissingCores().Any())
+            // If we're in Menu mode, show the core selector.
+            // If not, auto enable them.
+            CheckForMissingCores(enableMissingCores);
+
+            CoreUpdaterService coreUpdaterService = new CoreUpdaterService(
+                ServiceHelper.UpdateDirectory,
+                ServiceHelper.CoresService.Cores,
+                ServiceHelper.FirmwareService,
+                ServiceHelper.SettingsService,
+                ServiceHelper.CoresService);
+
+            coreUpdaterService.StatusUpdated += coreUpdater_StatusUpdated;
+            coreUpdaterService.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
+
+            switch (parserResult.Value)
             {
-                Console.WriteLine("\nNew cores found since the last run.");
-                AskAboutNewCores();
+                case UpdateOptions options:
+                    Console.WriteLine("Starting update process...");
+                    string[] identifiers = null;
 
-                string downloadNewCores = GlobalHelper.SettingsManager.GetConfig().download_new_cores?.ToLowerInvariant();
-
-                switch (downloadNewCores)
-                {
-                    case "yes":
-                        Console.WriteLine("The following cores have been enabled:");
-
-                        foreach (Core core in GlobalHelper.SettingsManager.GetMissingCores())
-                        {
-                            Console.WriteLine($"- {core.identifier}");
-                        }
-
-                        GlobalHelper.SettingsManager.EnableMissingCores(GlobalHelper.SettingsManager.GetMissingCores());
-                        GlobalHelper.SettingsManager.SaveSettings();
-                        break;
-
-                    case "no":
-                        Console.WriteLine("The following cores have been disabled:");
-
-                        foreach (Core core in GlobalHelper.SettingsManager.GetMissingCores())
-                        {
-                            Console.WriteLine($"- {core.identifier}");
-                        }
-
-                        GlobalHelper.SettingsManager.DisableMissingCores(GlobalHelper.SettingsManager.GetMissingCores());
-                        GlobalHelper.SettingsManager.SaveSettings();
-                        break;
-
-                    default:
-                        var newOnes = GlobalHelper.SettingsManager.GetMissingCores();
-
-                        GlobalHelper.SettingsManager.EnableMissingCores(newOnes);
-
-                        if (CLI_MODE)
-                        {
-                            GlobalHelper.SettingsManager.SaveSettings();
-                        }
-                        else
-                        {
-                            RunCoreSelector(newOnes, "New cores are available!");
-                        }
-
-                        break;
-                }
-
-                // Is reloading the settings file necessary?
-                GlobalHelper.ReloadSettings();
-            }
-
-            if (forceUpdate)
-            {
-                Console.WriteLine("Starting update process...");
-                await coreUpdater.RunUpdates(coreName, cleanInstall);
-                Pause();
-            }
-            else if (downloadFirmware)
-            {
-                await coreUpdater.UpdateFirmware();
-            }
-            else if (forceInstanceGenerator)
-            {
-                RunInstanceGenerator(coreUpdater, true);
-            }
-            else if (downloadAssets != null)
-            {
-                if (downloadAssets == "all")
-                {
-                    await coreUpdater.RunAssetDownloader();
-                }
-                else
-                {
-                    await coreUpdater.RunAssetDownloader(downloadAssets);
-                }
-            }
-            else if (imagePackOwner != null)
-            {
-                ImagePack pack = new ImagePack
-                {
-                    owner = imagePackOwner,
-                    repository = imagePackRepo,
-                    variant = imagePackVariant
-                };
-
-                await pack.Install(path);
-            }
-            else switch (verb)
-            {
-                case "uninstall" when GlobalHelper.GetCore(coreName) == null:
-                    Console.WriteLine($"Unknown core '{coreName}'");
-                    break;
-
-                case "uninstall":
-                    coreUpdater.DeleteCore(GlobalHelper.GetCore(coreName), true, nuke);
-                    break;
-
-                case "backup-saves":
-                {
-                    AssetsService.BackupSaves(path, backupSaves_Path);
-                    AssetsService.BackupMemories(path, backupSaves_Path);
-
-                    if (backupSaves_SaveConfig)
+                    if (!string.IsNullOrEmpty(options.CoreName))
                     {
-                        var config = GlobalHelper.SettingsManager.GetConfig();
+                        identifiers = new[] { options.CoreName };
+                    }
+
+                    coreUpdaterService.RunUpdates(identifiers, options.CleanInstall);
+                    Pause();
+                    break;
+
+                case InstanceGeneratorOptions:
+                    RunInstanceGenerator(coreUpdaterService, true);
+                    break;
+
+                case ImagesOptions options:
+                    ServiceHelper.PlatformImagePacksService.Install(options.ImagePackOwner, options.ImagePackRepo,
+                        options.ImagePackVariant);
+                    break;
+
+                case AssetsOptions options:
+                    var cores = ServiceHelper.CoresService.Cores
+                        .Where(core => !string.IsNullOrEmpty(options.CoreName) || core.identifier == options.CoreName)
+                        .Where(core => !ServiceHelper.SettingsService.GetCoreSettings(core.identifier).skip)
+                        .ToList();
+
+                    ServiceHelper.CoresService.DownloadCoreAssets(cores);
+                    break;
+
+                case UninstallOptions options when ServiceHelper.CoresService.GetCore(options.CoreName) == null:
+                    Console.WriteLine($"Unknown core '{options.CoreName}'");
+                    break;
+
+                case UninstallOptions options:
+                    coreUpdaterService.DeleteCore(ServiceHelper.CoresService.GetCore(options.CoreName), true,
+                        options.DeleteAssets);
+                    break;
+
+                case BackupSavesOptions options:
+                    AssetsService.BackupSaves(ServiceHelper.UpdateDirectory, options.BackupPath);
+                    AssetsService.BackupMemories(ServiceHelper.UpdateDirectory, options.BackupPath);
+
+                    if (options.Save)
+                    {
+                        var config = ServiceHelper.SettingsService.GetConfig();
 
                         config.backup_saves = true;
-                        config.backup_saves_location = backupSaves_Path;
+                        config.backup_saves_location = options.BackupPath;
 
-                        GlobalHelper.SettingsManager.SaveSettings();
+                        ServiceHelper.SettingsService.Save();
                     }
 
                     break;
-                }
 
-                case "gameboy-palettes":
-                    await DownloadGameBoyPalettes(path);
+                case GameBoyPalettesOptions:
+                    DownloadGameBoyPalettes();
                     break;
 
-                case "pocket-library-images":
-                    await DownloadPockLibraryImages(path);
+                case PocketLibraryImagesOptions:
+                    DownloadPockLibraryImages();
                     break;
 
-                case "pocket-extras":
-                    if (pocket_extras_list)
+                case PocketExtrasOptions options:
+                    if (options.List)
                     {
                         Console.WriteLine();
 
-                        foreach (var extra in GlobalHelper.PocketExtras)
+                        foreach (var extra in ServiceHelper.CoresService.PocketExtrasList)
                         {
                             PrintPocketExtraInfo(extra);
                         }
                     }
-                    else if (!string.IsNullOrEmpty(pocket_extras_name))
+                    else if (!string.IsNullOrEmpty(options.Name))
                     {
-                        var extra = GlobalHelper.GetPocketExtra(pocket_extras_name);
+                        var extra = ServiceHelper.CoresService.GetPocketExtra(options.Name); // pocket extras id
 
                         if (extra != null)
                         {
-                            if (pocket_extras_info)
+                            if (options.Info)
                             {
                                 Console.WriteLine();
                                 PrintPocketExtraInfo(extra);
                             }
                             else
                             {
-                                await GlobalHelper.PocketExtrasService.GetPocketExtra(extra, path, true, true);
+                                ServiceHelper.CoresService.GetPocketExtra(extra, ServiceHelper.UpdateDirectory, true, true);
                             }
                         }
                         else
                         {
-                            Console.WriteLine($"Pocket Extra '{pocket_extras_name}' not found.");
+                            Console.WriteLine($"Pocket Extra '{options.Name}' not found.");
                         }
                     }
                     else
                     {
-                        Console.WriteLine($"Missing required parameter: -n or --name");
+                        Console.WriteLine("Missing required parameter: -n or --name");
                     }
 
                     break;
 
+                case DisplayModesOptions:
+                    EnableDisplayModes();
+                    break;
+
                 default:
-                    DisplayMenuNew(path, coreUpdater);
+                    DisplayMenuNew(coreUpdaterService);
                     break;
             }
         }
@@ -498,23 +221,6 @@ internal partial class Program
         }
     }
 
-    private static void PrintPocketExtraInfo(PocketExtra extra)
-    {
-        Console.WriteLine(extra.id);
-        Console.WriteLine(string.IsNullOrEmpty(extra.name)
-            ? $"  {extra.core_identifiers[0]}"
-            : $"  {extra.name}");
-        Console.WriteLine(Util.WordWrap(extra.description, 80, "    "));
-        Console.WriteLine($"    More info: https://github.com/{extra.github_user}/{extra.github_repository}");
-
-        foreach (var additionalLink in extra.additional_links)
-        {
-            Console.WriteLine($"                {additionalLink}");
-        }
-
-        Console.WriteLine();
-    }
-
     private static void coreUpdater_StatusUpdated(object sender, StatusUpdatedEventArgs e)
     {
         Console.WriteLine(e.Message);
@@ -522,10 +228,10 @@ internal partial class Program
 
     private static void coreUpdater_UpdateProcessComplete(object sender, UpdateProcessCompleteEventArgs e)
     {
-        Console.WriteLine("-------------");
+        Console.WriteLine(Base.DIVIDER);
         Console.WriteLine(e.Message);
 
-        if (e.InstalledCores != null && e.InstalledCores.Count > 0)
+        if (e.InstalledCores is { Count: > 0 })
         {
             Console.WriteLine("Cores Updated:");
 
@@ -560,9 +266,9 @@ internal partial class Program
             Console.WriteLine();
         }
 
-        if (e.FirmwareUpdated != string.Empty)
+        if (!string.IsNullOrEmpty(e.FirmwareUpdated))
         {
-            Console.WriteLine("New Firmware was downloaded. Restart your Pocket to install");
+            Console.WriteLine("New Firmware was downloaded. Restart your Pocket to install.");
             Console.WriteLine(e.FirmwareUpdated);
             Console.WriteLine();
         }
@@ -583,7 +289,10 @@ internal partial class Program
             var links = GetRandomSponsorLinks();
 
             if (!string.IsNullOrEmpty(links))
+            {
+                Console.WriteLine();
                 Console.WriteLine(links);
+            }
 
             FunFacts();
         }

@@ -1,26 +1,26 @@
 using System.IO.Compression;
 using Pannella.Helpers;
-using Pannella.Services;
+using Pannella.Models.Settings;
 using ArchiveFile = Pannella.Models.Archive.File;
 
 namespace Pannella;
 
 internal partial class Program
 {
-    private static async Task DownloadPockLibraryImages(string directory)
+    private static void DownloadPockLibraryImages()
     {
         const string fileName = "Library_Image_Set_v1.0.zip";
-        ArchiveFile archiveFile = GlobalHelper.ArchiveFiles.GetFile(fileName);
+        Archive archive = ServiceHelper.ArchiveService.GetArchive();
+        ArchiveFile archiveFile = ServiceHelper.ArchiveService.GetArchiveFile(fileName);
 
         if (archiveFile != null)
         {
-            string localFile = Path.Combine(directory, fileName);
-            string extractPath = Path.Combine(directory, "temp");
+            string localFile = Path.Combine(ServiceHelper.UpdateDirectory, fileName);
+            string extractPath = Path.Combine(ServiceHelper.UpdateDirectory, "temp");
 
             try
             {
-                await ArchiveService.DownloadArchiveFile(GlobalHelper.SettingsManager.GetConfig().archive_name,
-                    archiveFile, directory);
+                ServiceHelper.ArchiveService.DownloadArchiveFile(archive, archiveFile, ServiceHelper.UpdateDirectory);
                 Console.WriteLine("Installing...");
 
                 if (Directory.Exists(extractPath))
@@ -28,16 +28,24 @@ internal partial class Program
 
                 ZipFile.ExtractToDirectory(localFile, extractPath);
                 File.Delete(localFile);
-                Util.CopyDirectory(extractPath, directory, true, true);
+                Util.CopyDirectory(extractPath, ServiceHelper.UpdateDirectory, true, true);
 
                 Directory.Delete(extractPath, true);
                 Console.WriteLine("Complete.");
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 Console.WriteLine("Something happened while trying to install the asset files...");
-                Console.WriteLine(ex);
+#if DEBUG
+                Console.WriteLine(e);
+#else
+                Console.WriteLine(e.Message);
+#endif
             }
+        }
+        else
+        {
+            Console.WriteLine("Pocket Library Images not found in the archive.");
         }
     }
 }

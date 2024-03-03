@@ -3,11 +3,8 @@ using CommandLine;
 namespace Pannella.Options;
 
 [Verb("pocket-extras", HelpText = "Download Pocket Extras")]
-public class PocketExtrasOptions
+public class PocketExtrasOptions : BaseOptions
 {
-    [Option('p', "path", HelpText = "Absolute path to install location")]
-    public string InstallPath { get; set; }
-
     [Option('n', "name", HelpText = "The name of the extra you want to install")]
     public string Name { get; set; }
 

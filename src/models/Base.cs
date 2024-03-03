@@ -2,30 +2,9 @@ namespace Pannella.Models;
 
 public class Base
 {
-    protected const string ARCHIVE_BASE_URL = "https://archive.org/download";
-
     public event EventHandler<StatusUpdatedEventArgs> StatusUpdated;
 
-    public void ClearStatusUpdated()
-    {
-        if (StatusUpdated != null)
-        {
-            foreach (Delegate d in StatusUpdated.GetInvocationList())
-            {
-                StatusUpdated -= d as EventHandler<StatusUpdatedEventArgs>;
-            }
-        }
-    }
-
-    public bool IsStatusUpdateRegistered()
-    {
-        return this.StatusUpdated != null;
-    }
-
-    protected void Divide()
-    {
-        WriteMessage("-------------");
-    }
+    public const string DIVIDER = "-------------";
 
     protected void WriteMessage(string message)
     {
@@ -37,18 +16,15 @@ public class Base
         OnStatusUpdated(args);
     }
 
+    protected void Divide()
+    {
+        WriteMessage(DIVIDER);
+    }
+
     protected void OnStatusUpdated(StatusUpdatedEventArgs e)
     {
-        EventHandler<StatusUpdatedEventArgs> handler = StatusUpdated;
+        EventHandler<StatusUpdatedEventArgs> handler = this.StatusUpdated;
 
         handler?.Invoke(this, e);
     }
-}
-
-public class StatusUpdatedEventArgs : EventArgs
-{
-    /// <summary>
-    /// Contains the message from the updater
-    /// </summary>
-    public string Message { get; set; }
 }

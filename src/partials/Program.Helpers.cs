@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using Pannella.Helpers;
+using Pannella.Models.Extras;
 using Pannella.Services;
 using GithubRelease = Pannella.Models.Github.Release;
 
@@ -8,14 +9,15 @@ namespace Pannella;
 internal partial class Program
 {
     // return true if newer version is available
-    private static async Task<bool> CheckVersion(string path)
+    private static bool CheckVersion(string path)
     {
         try
         {
-            List<GithubRelease> releases = await GithubApiService.GetReleases(USER, REPOSITORY);
+            List<GithubRelease> releases = GithubApiService.GetReleases(USER, REPOSITORY,
+                ServiceHelper.SettingsService.GetConfig().github_token);
 
-            string tag_name = releases[0].tag_name;
-            string v = SemverUtil.FindSemver(tag_name);
+            string tagName = releases[0].tag_name;
+            string v = SemverUtil.FindSemver(tagName);
 
             if (v != null)
             {
@@ -23,12 +25,12 @@ internal partial class Program
 
                 if (check)
                 {
-                    Console.WriteLine("A new version is available. Downloading now...");
+                    Console.WriteLine($"A new version {v} is available. Downloading now...");
 
-                    string url = string.Format(RELEASE_URL, tag_name, SYSTEM_OS_PLATFORM);
+                    string url = string.Format(RELEASE_URL, tagName, SYSTEM_OS_PLATFORM);
                     string saveLocation = Path.Combine(path, "pupdate.zip");
 
-                    await HttpHelper.Instance.DownloadFileAsync(url, saveLocation);
+                    HttpHelper.Instance.DownloadFile(url, saveLocation);
 
                     Console.WriteLine("Download complete.");
                     Console.WriteLine(saveLocation);
@@ -46,31 +48,53 @@ internal partial class Program
         }
         catch (HttpRequestException e)
         {
+#if DEBUG
             Console.WriteLine(e);
+#else
+            Console.WriteLine(e.Message);
+#endif
             return false;
         }
     }
 
+    private static void PrintPocketExtraInfo(PocketExtra extra)
+    {
+        Console.WriteLine(extra.id);
+        Console.WriteLine(string.IsNullOrEmpty(extra.name) // name is not required for additional assets
+            ? $"  {extra.core_identifiers[0]}"
+            : $"  {extra.name}");
+        Console.WriteLine(Util.WordWrap(extra.description, 80, "    "));
+        Console.WriteLine($"    More info: https://github.com/{extra.github_user}/{extra.github_repository}");
+
+        foreach (var additionalLink in extra.additional_links)
+        {
+            Console.WriteLine($"                {additionalLink}");
+        }
+
+        Console.WriteLine();
+    }
+
     private static void FunFacts()
     {
-        if (GlobalHelper.InstalledCores.Count == 0)
+        if (ServiceHelper.CoresService.InstalledCores.Count == 0)
         {
             return;
         }
 
-        string[] sleepSupported = GlobalHelper.InstalledCores
-            .Where(c => c.GetConfig().framework.sleep_supported)
+        string[] sleepSupported = ServiceHelper.CoresService.InstalledCores
+            .Where(c => ServiceHelper.CoresService.ReadCoreJson(c.identifier).framework.sleep_supported)
             .Select(c => c.identifier)
             .ToArray();
 
         if (sleepSupported.Any())
         {
             string list = string.Join(", ", sleepSupported);
+            string wrapped = Util.WordWrap(list, 75, "    ");
 
-            Console.WriteLine();
+            // Console.WriteLine();
             Console.WriteLine("Fun fact! The ONLY cores that support save states and sleep are the following:");
-            Console.WriteLine(list);
-            Console.WriteLine("Please don't bother the developers of the other cores about this feature. It's a lot of work and most likely will not be coming.");
+            Console.WriteLine(wrapped);
+            Console.WriteLine("Please don't bother the developers of the other cores about this feature. It's a lot\nof work and most likely will not be coming.");
         }
     }
 
@@ -103,17 +127,7 @@ internal partial class Program
 
     private static void Pause()
     {
-        if (!CLI_MODE)
-        {
-            Console.WriteLine("Press any key to continue.");
-            Console.ReadKey(true);
-        }
-    }
-
-    private static void PauseExit(int exitCode = 0)
-    {
-        Console.WriteLine("Press any key to exit.");
-        Console.ReadKey(true); // wait for input so the console doesn't auto close in windows
-        Environment.Exit(exitCode);
+        Console.WriteLine("Press any key to continue.");
+        Console.ReadKey(true);
     }
 }

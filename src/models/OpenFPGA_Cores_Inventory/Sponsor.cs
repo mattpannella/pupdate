@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Pannella.Models;
+namespace Pannella.Models.OpenFPGA_Cores_Inventory;
 
 public class Sponsor
 {
@@ -17,6 +17,11 @@ public class Sponsor
 
     public override string ToString()
     {
+        return this.ToString(string.Empty);
+    }
+
+    public string ToString(string padding)
+    {
         var links = new StringBuilder();
         var properties = typeof(Sponsor).GetProperties();
 
@@ -24,19 +29,24 @@ public class Sponsor
         {
             object value = prop.GetValue(this, null);
 
-            if (value == null) continue;
-
-            links.AppendLine();
+            if (value == null)
+                continue;
 
             if (value.GetType() == typeof(List<string>))
             {
                 var stringArray = (List<string>)value;
 
-                links.Append(string.Join(Environment.NewLine, stringArray));
+                foreach (var item in stringArray)
+                {
+                    links.Append(padding);
+                    links.AppendLine(item);
+                }
             }
             else if (value is string)
             {
+                links.Append(padding);
                 links.Append(value);
+                links.AppendLine();
             }
         }
 

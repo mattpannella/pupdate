@@ -1,8 +1,12 @@
+using Newtonsoft.Json;
+
 namespace Pannella.Models.Settings;
 
 public class Settings
 {
-    public Firmware firmware { get; set; } = new();
     public Config config { get; set; } = new();
-    public Dictionary<string, CoreSettings> coreSettings { get; set; } = new();
+    public Dictionary<string, CoreSettings> core_settings { get; set; } = new();
+
+    [JsonProperty]
+    private Dictionary<string, CoreSettings> coreSettings { set => this.core_settings = value; }
 }

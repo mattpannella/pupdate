@@ -82,7 +82,6 @@
       "name": "Toaplan Version 2 Hardware Combination Core",
       "description": "Combines pram0d's & atrac17's Battle Garegga, Battle Bakraid, Sorcer Strike, Kingdom Grand Prix, Armed Police Batrider, and Snow Bros 2 cores into a single platform with multiple cores. This allows you to play them all from a single entry in your Pocket menu. You do not need to have them installed prior to using this.",
       "type": "combination_platform",
-      "platform_name": "toaplan2_c",
       "core_identifiers": [
         "coinop.Toaplan_V2_Rotated",
         "coinop.Toaplan_V2_Standard"
@@ -93,13 +92,25 @@
       "github_asset_prefix": "pocket-extras-toaplan2_c"
     },
     {
+      "id": "vectrex",
+      "name": "Vectrex Extras",
+      "description": "Installs an additional core for the Vectrex platform that was created by obsidian. This is a collection of JSON files based on a particular rom-pack that includes Homebrew games, Hacks, and much more. It's set up as a new core implementation of Vectrex so the new JSON files do not conflict with the JSON files in the Vectrex core. You do not need to have the them installed prior to using this.",
+      "type": "variant_core",
+      "core_identifiers": [
+        "obsidian.Vectrex-Extras"
+      ],
+      "has_placeholders": true,
+      "github_user": "dyreschlock",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "pocket-extras-vectrex"
+    },
+    {
       "id": "jts16_c",
       "name": "Sega System 16 Combination Core",
       "description": "Combines Jotego's SEGA System 16A & 16B cores into a single platform. This allows you to play them all from a single entry in your Pocket menu. You do not need to have them installed prior to using this.",
       "type": "combination_platform",
-      "platform_name": "jts16_c",
       "core_identifiers": [
-        "jts16_c"
+        "jotego.jts16_c"
       ],
       "github_user": "espiox",
       "github_repository": "jts16_complete",
@@ -110,9 +121,8 @@
       "name": "Super GameBoy 2",
       "description": "Installs a core based of off the Spiritiualized.SuperGB core for the Super GameBoy 2 rom. You do not need to have the Super GameBoy core installed prior to using this.",
       "type": "variant_core",
-      "platform_name": "sgb",
       "core_identifiers": [
-        "sgb2"
+        "Spiritualized.SuperGB2"
       ],
       "github_user": "hallem",
       "github_repository": "openFPGA-Super-GB",
@@ -123,9 +133,8 @@
       "name": "Super GameBoy 2: Vaporwave Edition",
       "description": "Installs a core based of off the Spiritualized.SuperGB core for the Super GameBoy 2: Vaporwave Edition rom hack. You do not need to have the Super GameBoy or Super GameBoy 2 core installed prior to using this.",
       "type": "variant_core",
-      "platform_name": "sgb",
       "core_identifiers": [
-        "sgb2vw"
+        "Spiritualized.SuperGB2.VW"
       ],
       "github_user": "hallem",
       "github_repository": "openFPGA-Super-GB",
