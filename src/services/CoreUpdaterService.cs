@@ -110,9 +110,14 @@ public class CoreUpdaterService : BaseProcess
                 string mostRecentRelease;
 
                 if (core.version == null && coreSettings.pocket_extras)
+                {
                     mostRecentRelease = this.coresService.GetMostRecentRelease(pocketExtra);
+                }
                 else
+                {
                     mostRecentRelease = core.version;
+                    pocketExtra = null;
+                }
 
                 Dictionary<string, object> results;
 

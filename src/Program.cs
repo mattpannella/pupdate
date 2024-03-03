@@ -54,6 +54,11 @@ internal partial class Program
                 path = ((BaseOptions)parserResult.Value).InstallPath;
             }
 
+            if (path != null)
+            {
+                Directory.CreateDirectory(path);
+            }
+
             ServiceHelper.Initialize(path, coreUpdater_StatusUpdated, coreUpdater_UpdateProcessComplete);
 
             bool enableMissingCores = false;
