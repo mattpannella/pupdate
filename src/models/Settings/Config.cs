@@ -69,6 +69,7 @@ public class Config
         {
             name = "custom",
             type = ArchiveType.custom_archive,
+            archive_name = "custom",
             url = "https://updater.retrodriven.com",
             index = "updater.php",
         },
@@ -107,9 +108,11 @@ public class Config
 
     public void Migrate()
     {
+        Archive archive;
+
         if (!string.IsNullOrEmpty(_archive_name))
         {
-            var archive = this.archives.FirstOrDefault(x => x.name == "default");
+            archive = this.archives.FirstOrDefault(x => x.name == "default");
 
             if (archive != null)
             {
@@ -119,7 +122,7 @@ public class Config
 
         if (!string.IsNullOrEmpty(_gnw_archive_name))
         {
-            var archive = this.archives.FirstOrDefault(x => x.name == "agg23.GameAndWatch");
+            archive = this.archives.FirstOrDefault(x => x.name == "agg23.GameAndWatch");
 
             if (archive != null)
             {
@@ -129,7 +132,7 @@ public class Config
 
         if (_download_gnw_roms.HasValue)
         {
-            var archive = this.archives.FirstOrDefault(x => x.name == "agg23.GameAndWatch");
+            archive = this.archives.FirstOrDefault(x => x.name == "agg23.GameAndWatch");
 
             if (archive != null)
             {
@@ -137,15 +140,21 @@ public class Config
             }
         }
 
+        archive = this.archives.FirstOrDefault(x => x.name == "custom");
+
         if (_custom_archive != null)
         {
-            var archive = this.archives.FirstOrDefault(x => x.name == "custom");
-
             if (archive != null)
             {
                 archive.url = _custom_archive.url;
                 archive.index = _custom_archive.index;
             }
+        }
+
+        // bugfix: check to make sure the custom archives has archive_name populated
+        if (archive is { type: ArchiveType.custom_archive } && string.IsNullOrEmpty(archive.archive_name))
+        {
+            archive.archive_name = "custom";
         }
     }
 
