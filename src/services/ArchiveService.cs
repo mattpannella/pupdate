@@ -129,7 +129,7 @@ public class ArchiveService : Base
             if (archive.type == ArchiveType.custom_archive)
             {
                 Uri baseUrl = new Uri(archive.url);
-                Uri uri = new Uri(baseUrl, archive.index);
+                Uri uri = new Uri(baseUrl, archiveFile.name);
 
                 url = uri.ToString();
             }

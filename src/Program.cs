@@ -113,7 +113,6 @@ internal partial class Program
                     }
 
                     coreUpdaterService.RunUpdates(identifiers, options.CleanInstall);
-                    Pause();
                     break;
 
                 case InstanceGeneratorOptions:
