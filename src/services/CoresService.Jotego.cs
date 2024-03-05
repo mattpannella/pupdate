@@ -9,6 +9,7 @@ namespace Pannella.Services;
 public partial class CoresService
 {
     private const string BETA_KEY_FILENAME = "jtbeta.zip";
+    private const string BETA_KEY_ALT_FILENAME = "beta.bin";
     private const string EXTRACT_LOCATION = "betakeys";
 
     private Dictionary<string, string> renamedPlatformFiles;
@@ -93,8 +94,20 @@ public partial class CoresService
 
         if (File.Exists(file))
         {
-            WriteMessage("Extracting JT beta key...");
+            WriteMessage("JT beta key detected. Extracting...");
             ZipFile.ExtractToDirectory(file, keyPath, true);
+
+            return true;
+        }
+
+        file = Path.Combine(this.installPath, BETA_KEY_ALT_FILENAME);
+        if (File.Exists(file))
+        {
+            WriteMessage("JT beta key detected.");
+            if (!Directory.Exists(keyPath)) {
+                Directory.CreateDirectory(keyPath);
+            }
+            File.Copy(file, Path.Combine(keyPath, BETA_KEY_ALT_FILENAME), true);
 
             return true;
         }
