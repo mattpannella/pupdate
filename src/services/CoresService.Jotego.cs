@@ -8,8 +8,8 @@ namespace Pannella.Services;
 
 public partial class CoresService
 {
-    private const string BETA_KEY_FILENAME = "jtbeta.zip";
-    private const string BETA_KEY_ALT_FILENAME = "beta.bin";
+    public const string BETA_KEY_FILENAME = "jtbeta.zip";
+    public const string BETA_KEY_ALT_FILENAME = "beta.bin";
     private const string EXTRACT_LOCATION = "betakeys";
 
     private Dictionary<string, string> renamedPlatformFiles;
@@ -83,34 +83,42 @@ public partial class CoresService
         if (Directory.Exists(keyPath) && Directory.Exists(path))
         {
             Util.CopyDirectory(keyPath, path, false, true);
-            WriteMessage("Beta key copied to common directory.");
+            WriteMessage($"JT beta key copied to '{path}'.");
         }
     }
 
     public bool ExtractBetaKey()
     {
         string keyPath = Path.Combine(this.installPath, EXTRACT_LOCATION);
-        string file = Path.Combine(this.installPath, BETA_KEY_FILENAME);
+        string zipFile = Path.Combine(this.installPath, BETA_KEY_FILENAME);
 
-        if (File.Exists(file))
+        if (File.Exists(zipFile))
         {
             WriteMessage("JT beta key detected. Extracting...");
-            ZipFile.ExtractToDirectory(file, keyPath, true);
+            ZipFile.ExtractToDirectory(zipFile, keyPath, true);
 
             return true;
         }
 
-        file = Path.Combine(this.installPath, BETA_KEY_ALT_FILENAME);
-        if (File.Exists(file))
+        string binFile = Path.Combine(this.installPath, BETA_KEY_ALT_FILENAME);
+
+        if (File.Exists(binFile))
         {
             WriteMessage("JT beta key detected.");
-            if (!Directory.Exists(keyPath)) {
+
+            if (!Directory.Exists(keyPath))
+            {
                 Directory.CreateDirectory(keyPath);
             }
-            File.Copy(file, Path.Combine(keyPath, BETA_KEY_ALT_FILENAME), true);
+
+            File.Copy(binFile, Path.Combine(keyPath, BETA_KEY_ALT_FILENAME), true);
 
             return true;
         }
+
+        WriteMessage("JT beta key not found at either location:");
+        WriteMessage($"     {zipFile}");
+        WriteMessage($"     {binFile}");
 
         return false;
     }

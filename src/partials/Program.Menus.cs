@@ -10,7 +10,7 @@ namespace Pannella;
 
 internal partial class Program
 {
-    private static void DisplayMenuNew(CoreUpdaterService coreUpdaterService)
+    private static void DisplayMenu(CoreUpdaterService coreUpdaterService)
     {
         Console.Clear();
 
@@ -157,6 +157,28 @@ internal partial class Program
 
                     Pause();
                 }
+            })
+            .Add("Remove JT Beta Keys", () =>
+            {
+                Console.WriteLine($"WARNING: This will delete all instances of {CoresService.BETA_KEY_FILENAME} and {CoresService.BETA_KEY_ALT_FILENAME}");
+                var result = AskYesNoQuestion("Would you like to continue?");
+
+                if (!result)
+                    return;
+
+                var binFiles = Directory.EnumerateFiles(ServiceHelper.UpdateDirectory, CoresService.BETA_KEY_ALT_FILENAME,
+                    SearchOption.AllDirectories);
+                var zipFiles = Directory.EnumerateFiles(ServiceHelper.UpdateDirectory, CoresService.BETA_KEY_FILENAME,
+                    SearchOption.AllDirectories);
+                var allFiles = zipFiles.Union(binFiles);
+
+                foreach (var file in allFiles)
+                {
+                    Console.WriteLine($"Deleting '{file}'...");
+                    File.Delete(file);
+                }
+
+                Pause();
             })
             .Add("Go Back", ConsoleMenu.Close);
 
