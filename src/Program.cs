@@ -209,7 +209,7 @@ internal partial class Program
                     break;
 
                 default:
-                    DisplayMenuNew(coreUpdaterService);
+                    DisplayMenu(coreUpdaterService);
                     break;
             }
         }
@@ -279,7 +279,9 @@ internal partial class Program
 
         if (e.MissingBetaKeys.Count > 0)
         {
-            Console.WriteLine("Missing or incorrect Beta Key for the following cores:");
+            Console.WriteLine("Missing or incorrect JT Beta Key for the following cores:");
+            Console.WriteLine($"The {CoresService.BETA_KEY_FILENAME} or {CoresService.BETA_KEY_ALT_FILENAME} must be placed on the root of the SD card.");
+
             foreach (string core in e.MissingBetaKeys)
             {
                 Console.WriteLine(core);

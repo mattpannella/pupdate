@@ -120,15 +120,26 @@ public partial class CoresService
         return false;
     }
 
-    // return false if a beta key is required and missing or wrong
     private bool CheckBetaMd5(DataSlot slot, string betaSlotId, string platform)
     {
         if (slot.md5 != null && (betaSlotId != null && slot.id == betaSlotId))
         {
             string path = Path.Combine(this.installPath, "Assets", platform);
-            string filepath = Path.Combine(path, "common", slot.filename);
+            string filePath = Path.Combine(path, "common", slot.filename);
+            bool exists;
+            bool checksum = false;
 
-            return File.Exists(filepath) && Util.CompareChecksum(filepath, slot.md5, Util.HashTypes.MD5);
+            if (!(exists = File.Exists(filePath)))
+            {
+                WriteMessage($"JT beta key not found at '{filePath}'");
+            }
+            else if (!(checksum = Util.CompareChecksum(filePath, slot.md5, Util.HashTypes.MD5)))
+            {
+                WriteMessage("JT beta key checksum validation failed.");
+                WriteMessage($"Location: '{filePath}'");
+            }
+
+            return exists && checksum;
         }
 
         return true;

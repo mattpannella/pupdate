@@ -17,12 +17,13 @@
    1. Reinstall All Cores
    2. Reinstall Select Cores
    3. Uninstall Select Cores
-   4. Go Back
+   4. Remove JT Beta Keys
+   5. Go Back
 8. Pocket Extras
    1. Additional Assets
       1. Download for Eric Lewis's Donkey Kong
       2. Download extras for Eric Lewis's Radar Scope
-      3. Download for Jotego's Bubble Bobble (jtbubl) (beta)
+      3. Download for Jotego's Bubble Bobble (jtbubl)
       4. Download for Jotego's Capcom CPS 1 (jtcps1)
       5. Download for Jotego's Capcom CPS 1.5 (jtcps15)
       6. Download for Jotego's Capcom CPS 2 (jtcps2)

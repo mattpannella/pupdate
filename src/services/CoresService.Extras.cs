@@ -185,7 +185,7 @@ public partial class CoresService
 
             if (core.requires_license && !jtBetaKeyExists)
             {
-                WriteMessage("Missing beta key. Skipping.");
+                // Moved message to the ExtractBetaKey method
                 return;
             }
 

@@ -254,7 +254,7 @@ public partial class CoresService
 
                             if (!CheckBetaMd5(slot, core.beta_slot_id, platformId))
                             {
-                                WriteMessage("Invalid or missing beta key.");
+                                // Moved message to the CheckBetaMd5 method
                                 missingBetaKey = true;
                             }
 
