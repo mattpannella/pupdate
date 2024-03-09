@@ -86,19 +86,7 @@ public class HttpHelper
 
                 if (console)
                 {
-                    var progressWidth = Console.WindowWidth - 14;
-                    var progressBarWidth = (int)(progress * progressWidth);
-                    var progressBar = new string('=', progressBarWidth);
-                    var emptyProgressBar = new string(' ', progressWidth - progressBarWidth);
-
-                    Console.Write($"\r{progressBar}{emptyProgressBar}] {(progress * 100):0.00}%");
-
-                    if (readSoFar == totalSize)
-                    {
-                        Console.CursorLeft = 0;
-                        Console.Write(new string(' ', Console.WindowWidth));
-                        Console.CursorLeft = 0;
-                    }
+                    ConsoleHelper.ShowProgressBar(readSoFar, totalSize);
                 }
 
                 DownloadProgressEventArgs args = new()

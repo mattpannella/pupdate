@@ -26,7 +26,7 @@ internal partial class Program
                 if (Directory.Exists(extractPath))
                     Directory.Delete(extractPath, true);
 
-                ZipFile.ExtractToDirectory(localFile, extractPath);
+                ZipHelper.ExtractToDirectory(localFile, extractPath);
                 File.Delete(localFile);
                 Util.CopyDirectory(extractPath, ServiceHelper.UpdateDirectory, true, true);
 

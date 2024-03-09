@@ -61,7 +61,7 @@ public partial class CoresService
 
         string tempDir = Path.Combine(this.installPath, "temp", identifier);
 
-        ZipFile.ExtractToDirectory(zipPath, tempDir, true);
+        ZipHelper.ExtractToDirectory(zipPath, tempDir, true);
 
         // Clean problematic directories and files.
         Util.CleanDir(tempDir, this.installPath, this.settingsService.GetConfig().preserve_platforms_folder, platformId);

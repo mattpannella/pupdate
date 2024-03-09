@@ -70,8 +70,7 @@ public class PlatformImagePacksService : Base
         WriteMessage("Installing...");
 
         string extractPath = Path.Combine(this.installPath, "temp");
-
-        ZipFile.ExtractToDirectory(localFile, extractPath, true);
+        ZipHelper.ExtractToDirectory(localFile, extractPath, true);
 
         string imagePack = FindPlatformImagePack(extractPath);
         string target = Path.Combine(this.installPath, "Platforms", "_images");
@@ -80,7 +79,7 @@ public class PlatformImagePacksService : Base
         Directory.Delete(extractPath, true);
         File.Delete(localFile);
 
-        WriteMessage("All Done");
+        WriteMessage("Installation complete.");
     }
 
     private static string FindPlatformImagePack(string temp)

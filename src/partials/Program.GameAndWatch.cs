@@ -26,7 +26,7 @@ internal partial class Program
                 {
                     Directory.CreateDirectory(downloadPath);
                     HttpHelper.Instance.DownloadFile(asset.browser_download_url, filename);
-                    ZipFile.ExtractToDirectory(filename, downloadPath, true);
+                    ZipHelper.ExtractToDirectory(filename, downloadPath, true);
                 }
 
                 break;

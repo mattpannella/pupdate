@@ -1,7 +1,7 @@
 using System.Diagnostics;
-using System.IO.Compression;
 using System.Reflection;
 using System.Text;
+using Pannella.Helpers;
 
 namespace Pannella;
 
@@ -40,7 +40,7 @@ internal partial class Program
 
             // Extract update
             Console.WriteLine($"Extracting {updateLocation} to {directory}");
-            ZipFile.ExtractToDirectory(updateLocation, directory, true);
+            ZipHelper.ExtractToDirectory(updateLocation, directory, true);
 
             // Execute
             Console.WriteLine($"Executing {execLocation}");
