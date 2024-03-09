@@ -95,7 +95,7 @@ public partial class CoresService
         if (File.Exists(zipFile))
         {
             WriteMessage("JT beta key detected. Extracting...");
-            ZipFile.ExtractToDirectory(zipFile, keyPath, true);
+            ZipHelper.ExtractToDirectory(zipFile, keyPath, true);
 
             return true;
         }
