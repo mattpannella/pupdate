@@ -88,7 +88,7 @@ public partial class CoresService
             if (Directory.Exists(extractPath))
                 Directory.Delete(extractPath, true);
 
-            ZipFile.ExtractToDirectory(localFile, extractPath);
+            ZipHelper.ExtractToDirectory(localFile, extractPath);
             File.Delete(localFile);
 
             if (pocketExtra.has_placeholders)
@@ -247,7 +247,7 @@ public partial class CoresService
             if (Directory.Exists(extractPath))
                 Directory.Delete(extractPath, true);
 
-            ZipFile.ExtractToDirectory(localFile, extractPath);
+            ZipHelper.ExtractToDirectory(localFile, extractPath);
             File.Delete(localFile);
             Util.CopyDirectory(sourceAssetsCore, destinationAssetsCore, true, true);
 
