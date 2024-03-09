@@ -6,22 +6,7 @@ public class ZipHelper
 {
     private static void UpdateProgress(object sender, ZipProgress zipProgress)
     {
-        var progress = (double)zipProgress.Processed / (double)zipProgress.Total;
-
-        var progressWidth = Console.WindowWidth - 14;
-        var progressBarWidth = (int)(progress * progressWidth);
-        var progressBar = new string('=', progressBarWidth);
-        var emptyProgressBar = new string(' ', progressWidth - progressBarWidth);
-
-        Console.Write($"\r{progressBar}{emptyProgressBar}] {(progress * 100):0.00}%");
-
-        if (zipProgress.Processed == zipProgress.Total)
-        {
-            Console.CursorLeft = 0;
-            Console.Write(new string(' ', Console.WindowWidth));
-            Console.CursorLeft = 0;
-            Console.Write("\r");
-        }
+        ConsoleHelper.ShowProgressBar(zipProgress.Processed, zipProgress.Total);
     }
 
     public static void ExtractToDirectory(string zipFile, string destination, bool overwrite = false)

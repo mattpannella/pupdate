@@ -16,7 +16,11 @@ public class Util
         MD5
     }
 
-    public static void CopyDirectory(string sourceDir, string destinationDir, bool recursive, bool overwrite, int currentFileCount = 0, int totalFiles = 0)
+    public static void CopyDirectory(string sourceDir, string destinationDir, bool recursive, bool overwrite)
+    {
+        _copyDirectory(sourceDir, destinationDir, recursive, overwrite);
+    }
+    private static int _copyDirectory(string sourceDir, string destinationDir, bool recursive, bool overwrite, int currentFileCount = 0, int? totalFiles = null)
     {
         // Get information about the source directory
         var dir = new DirectoryInfo(sourceDir);
@@ -35,7 +39,7 @@ public class Util
 
         List<string> allfiles = Directory.GetFiles(sourceDir, "*",SearchOption.AllDirectories).ToList();
 
-        int total = (totalFiles == 0) ? allfiles.Count() : totalFiles;
+        int total = (totalFiles == null) ? allfiles.Count() : (int)totalFiles;
         int count = currentFileCount;
         // Get the files in the source directory and copy to the destination directory
         foreach (FileInfo file in dir.GetFiles())
@@ -45,7 +49,7 @@ public class Util
             file.CopyTo(targetFilePath, overwrite);
             
             count++;
-            UpdateProgress(count, total);
+            ConsoleHelper.ShowProgressBar(count, total);
         }
 
         // If recursive and copying subdirectories, recursively call this method
@@ -55,29 +59,11 @@ public class Util
             {
                 string newDestinationDir = Path.Combine(destinationDir, subDir.Name);
 
-                CopyDirectory(subDir.FullName, newDestinationDir, true, overwrite, count, total);
+                count = _copyDirectory(subDir.FullName, newDestinationDir, true, overwrite, count, total);
             }
         }
-    }
 
-    private static void UpdateProgress(int current, int total)
-    {
-        var progress = (double)current / (double)total;
-
-        var progressWidth = Console.WindowWidth - 14;
-        var progressBarWidth = (int)(progress * progressWidth);
-        var progressBar = new string('=', progressBarWidth);
-        var emptyProgressBar = new string(' ', progressWidth - progressBarWidth);
-
-        Console.Write($"\r{progressBar}{emptyProgressBar}] {(progress * 100):0.00}%");
-
-        if (current == total)
-        {
-            Console.CursorLeft = 0;
-            Console.Write(new string(' ', Console.WindowWidth));
-            Console.CursorLeft = 0;
-            Console.Write("\r");
-        }
+        return count;
     }
 
     public static void CleanDir(string source, string path = "", bool preservePlatformsFolder = false, string platform = "")
