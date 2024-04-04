@@ -28,6 +28,7 @@ internal partial class Program
         {
             // Load System.IO.Compression now
             Assembly.Load("System.IO.Compression");
+            Assembly.Load("System.IO.Compression.ZipFile");
 
             if (SYSTEM_OS_PLATFORM != "win")
             {
