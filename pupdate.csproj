@@ -6,7 +6,7 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
-    <Version>3.9.1</Version>
+    <Version>3.9.2</Version>
     <Description>Keep your Analogue Pocket up to date</Description>
     <Copyright>2024 Matt Pannella</Copyright>
     <Authors>Matt Pannella</Authors>
@@ -19,6 +19,7 @@
     <PackageReference Include="ConsoleMenu-simple" Version="2.6.1" />
     <PackageReference Include="Crc32.NET" Version="1.2.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup>
     <EditorConfigFiles Remove=".editorconfig" />
