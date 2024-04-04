@@ -44,6 +44,9 @@ public class Config
     [Description("Use custom asset archive")]
     public bool use_custom_archive { get; set; } = false;
 
+    [Description("Use custom temp directory when downloading files to be extracted")]
+    public string temp_directory { get; set; } = null;
+
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
     public bool use_local_blacklist { get; set; } = false;
 

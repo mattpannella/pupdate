@@ -16,8 +16,8 @@ internal partial class Program
 
         if (asset != null)
         {
-            string localFile = Path.Combine(ServiceHelper.UpdateDirectory, asset.name);
-            string extractPath = Path.Combine(ServiceHelper.UpdateDirectory, "temp");
+            string localFile = Path.Combine(ServiceHelper.TempDirectory, asset.name);
+            string extractPath = Path.Combine(ServiceHelper.TempDirectory, "temp");
 
             try
             {

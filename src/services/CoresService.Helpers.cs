@@ -53,13 +53,13 @@ public partial class CoresService
 
         WriteMessage($"Downloading file {downloadUrl}...");
 
-        string zipPath = Path.Combine(this.installPath, ZIP_FILE_NAME);
+        string zipPath = Path.Combine(ServiceHelper.TempDirectory, ZIP_FILE_NAME);
 
         HttpHelper.Instance.DownloadFile(downloadUrl, zipPath);
 
         WriteMessage("Extracting...");
 
-        string tempDir = Path.Combine(this.installPath, "temp", identifier);
+        string tempDir = Path.Combine(ServiceHelper.TempDirectory, "temp", identifier);
 
         ZipHelper.ExtractToDirectory(zipPath, tempDir, true);
 
@@ -73,9 +73,9 @@ public partial class CoresService
 
         // See if the temp directory itself can be removed.
         // Probably not needed if we aren't going to multi-thread this, but this is an async function so let's future proof.
-        if (!Directory.GetFiles(Path.Combine(this.installPath, "temp")).Any())
+        if (!Directory.GetFiles(Path.Combine(ServiceHelper.TempDirectory, "temp")).Any())
         {
-            Directory.Delete(Path.Combine(this.installPath, "temp"));
+            Directory.Delete(Path.Combine(ServiceHelper.TempDirectory, "temp"));
         }
 
         File.Delete(zipPath);

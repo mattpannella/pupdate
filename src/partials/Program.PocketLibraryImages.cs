@@ -15,12 +15,12 @@ internal partial class Program
 
         if (archiveFile != null)
         {
-            string localFile = Path.Combine(ServiceHelper.UpdateDirectory, fileName);
-            string extractPath = Path.Combine(ServiceHelper.UpdateDirectory, "temp");
+            string localFile = Path.Combine(ServiceHelper.TempDirectory, fileName);
+            string extractPath = Path.Combine(ServiceHelper.TempDirectory, "temp");
 
             try
             {
-                ServiceHelper.ArchiveService.DownloadArchiveFile(archive, archiveFile, ServiceHelper.UpdateDirectory);
+                ServiceHelper.ArchiveService.DownloadArchiveFile(archive, archiveFile, ServiceHelper.TempDirectory);
                 Console.WriteLine("Installing...");
 
                 if (Directory.Exists(extractPath))

@@ -46,7 +46,7 @@ public class PlatformImagePacksService : Base
 
     public void Install(string owner, string repository, string variant)
     {
-        string localFile = Path.Combine(this.installPath, "image_pack.zip");
+        string localFile = Path.Combine(ServiceHelper.TempDirectory, "image_pack.zip");
         Release release = GithubApiService.GetLatestRelease(owner, repository, this.githubToken);
 
         if (release.assets == null)
@@ -69,7 +69,7 @@ public class PlatformImagePacksService : Base
 
         WriteMessage("Installing...");
 
-        string extractPath = Path.Combine(this.installPath, "temp");
+        string extractPath = Path.Combine(ServiceHelper.TempDirectory, "temp");
         ZipHelper.ExtractToDirectory(localFile, extractPath, true);
 
         string imagePack = FindPlatformImagePack(extractPath);

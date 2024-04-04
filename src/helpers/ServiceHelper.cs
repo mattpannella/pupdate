@@ -6,6 +6,7 @@ namespace Pannella.Helpers;
 public static class ServiceHelper
 {
     public static string UpdateDirectory { get; private set; } // move off this
+    public static string TempDirectory { get; private set; }
     public static CoresService CoresService { get; private set; }
     public static SettingsService SettingsService { get; private set ;}
     public static PlatformImagePacksService PlatformImagePacksService { get; private set; }
@@ -25,6 +26,7 @@ public static class ServiceHelper
             SettingsService = new SettingsService(path);
             ArchiveService = new ArchiveService(SettingsService.GetConfig().archives,
                 SettingsService.GetConfig().crc_check, SettingsService.GetConfig().use_custom_archive);
+            TempDirectory = SettingsService.GetConfig().temp_directory ?? UpdateDirectory;
             AssetsService = new AssetsService(SettingsService.GetConfig().use_local_blacklist);
             CoresService = new CoresService(path, SettingsService, ArchiveService, AssetsService);
             SettingsService.InitializeCoreSettings(CoresService.Cores);

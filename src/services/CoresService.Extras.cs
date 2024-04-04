@@ -76,8 +76,8 @@ public partial class CoresService
             return;
         }
 
-        string localFile = Path.Combine(path, asset.name);
-        string extractPath = Path.Combine(path, "temp");
+        string localFile = Path.Combine(ServiceHelper.TempDirectory, asset.name);
+        string extractPath = Path.Combine(ServiceHelper.TempDirectory, "temp");
 
         try
         {
