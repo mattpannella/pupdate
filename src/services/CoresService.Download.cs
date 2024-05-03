@@ -109,7 +109,7 @@ public partial class CoresService
         {
             foreach (DataSlot slot in dataJson.data.data_slots)
             {
-                if (slot.filename != null &&
+                if (slot.filename != null && slot.filename != string.Empty &&
                     !slot.filename.EndsWith(".sav") &&
                     !this.assetsService.Blacklist.Contains(slot.filename))
                 {
