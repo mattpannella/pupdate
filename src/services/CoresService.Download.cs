@@ -405,7 +405,8 @@ public partial class CoresService
                 simpleInstanceJson.instance = instance;
 
                 string[] parts = dir.Split(commonPath);
-                parts = parts[1].Split(jsonFileName.Remove(jsonFileName.Length - 5));
+                //split on dir separator and remove last one?
+                parts = parts[1].Split(dirName);
                 string subDirectory = string.Empty;
 
                 if (parts[0].Length > 1)
