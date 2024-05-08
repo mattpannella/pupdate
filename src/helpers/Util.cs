@@ -22,6 +22,17 @@ public class Util
     }
     private static int _copyDirectory(string sourceDir, string destinationDir, bool recursive, bool overwrite, int currentFileCount = 0, int? totalFiles = null)
     {
+        bool console = false;
+
+        try
+        {
+            _ = Console.WindowWidth;
+            console = true;
+        }
+        catch
+        {
+            // Ignore
+        }
         // Get information about the source directory
         var dir = new DirectoryInfo(sourceDir);
 
@@ -49,7 +60,7 @@ public class Util
             file.CopyTo(targetFilePath, overwrite);
             
             count++;
-            ConsoleHelper.ShowProgressBar(count, total);
+            if(console) ConsoleHelper.ShowProgressBar(count, total);
         }
 
         // If recursive and copying subdirectories, recursively call this method

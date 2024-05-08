@@ -6,7 +6,15 @@ public class ZipHelper
 {
     private static void UpdateProgress(object sender, ZipProgress zipProgress)
     {
-        ConsoleHelper.ShowProgressBar(zipProgress.Processed, zipProgress.Total);
+        try
+        {
+            _ = Console.WindowWidth;
+            ConsoleHelper.ShowProgressBar(zipProgress.Processed, zipProgress.Total);
+        }
+        catch
+        {
+            // Ignore
+        }
     }
 
     public static void ExtractToDirectory(string zipFile, string destination, bool overwrite = false)
