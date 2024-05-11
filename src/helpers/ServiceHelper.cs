@@ -16,14 +16,14 @@ public static class ServiceHelper
 
     private static bool isInitialized;
 
-    public static void Initialize(string path, EventHandler<StatusUpdatedEventArgs> statusUpdated = null,
-        EventHandler<UpdateProcessCompleteEventArgs> updateProcessComplete = null)
+    public static void Initialize(string path, string config_path, EventHandler<StatusUpdatedEventArgs> statusUpdated = null,
+        EventHandler<UpdateProcessCompleteEventArgs> updateProcessComplete = null, bool forceReload = false)
     {
-        if (!isInitialized)
+        if (!isInitialized || forceReload)
         {
             isInitialized = true;
             UpdateDirectory = path;
-            SettingsService = new SettingsService(path);
+            SettingsService = new SettingsService(config_path);
             ArchiveService = new ArchiveService(SettingsService.GetConfig().archives,
                 SettingsService.GetConfig().crc_check, SettingsService.GetConfig().use_custom_archive);
             TempDirectory = SettingsService.GetConfig().temp_directory ?? UpdateDirectory;

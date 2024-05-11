@@ -59,7 +59,7 @@ internal partial class Program
                 Directory.CreateDirectory(path);
             }
 
-            ServiceHelper.Initialize(path, coreUpdater_StatusUpdated, coreUpdater_UpdateProcessComplete);
+            ServiceHelper.Initialize(path, path, coreUpdater_StatusUpdated, coreUpdater_UpdateProcessComplete);
 
             bool enableMissingCores = false;
 
