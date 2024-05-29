@@ -27,6 +27,9 @@ public partial class CoresService
         {
             List<GithubFile> files = GithubApiService.GetFiles("dyreschlock", "pocket-platform-images",
                 "arcade/Platforms", this.settingsService.GetConfig().github_token);
+            //grab the home platforms, too, to make sure neogeo pocket gets updated
+            files.AddRange(GithubApiService.GetFiles("dyreschlock", "pocket-platform-images",
+                "home/Platforms", this.settingsService.GetConfig().github_token));
 
             foreach (var file in files)
             {
