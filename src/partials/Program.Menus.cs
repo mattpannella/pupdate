@@ -286,6 +286,7 @@ internal partial class Program
                 SettingsMenu();
                 // Is reloading the settings file necessary?
                 ServiceHelper.ReloadSettings();
+                coreUpdaterService.ReloadSettings();
             })
             .Add("Exit", ConsoleMenu.Close);
 

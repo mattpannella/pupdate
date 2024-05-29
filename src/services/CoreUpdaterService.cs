@@ -13,8 +13,8 @@ public class CoreUpdaterService : BaseProcess
     private readonly string installPath;
     private readonly List<Core> cores;
     private readonly FirmwareService firmwareService;
-    private readonly SettingsService settingsService;
-    private readonly CoresService coresService;
+    private SettingsService settingsService;
+    private CoresService coresService;
 
     public CoreUpdaterService(
         string path,
@@ -355,5 +355,11 @@ public class CoreUpdaterService : BaseProcess
         {
             this.coresService.Uninstall(core.identifier, core.platform_id, nuke);
         }
+    }
+
+    public void ReloadSettings()
+    {
+        this.settingsService = ServiceHelper.SettingsService;;
+        this.coresService = ServiceHelper.CoresService;
     }
 }
