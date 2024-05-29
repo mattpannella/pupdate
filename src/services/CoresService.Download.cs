@@ -45,7 +45,7 @@ public partial class CoresService
 
                 WriteMessage(core.identifier);
 
-                var results = this.DownloadAssets(core);
+                var results = this.DownloadAssets(core, true);
 
                 installedAssets.AddRange((List<string>)results["installed"]);
                 skippedAssets.AddRange((List<string>)results["skipped"]);
@@ -80,14 +80,23 @@ public partial class CoresService
         OnUpdateProcessComplete(args);
     }
 
-    public Dictionary<string, object> DownloadAssets(Core core)
+    public Dictionary<string, object> DownloadAssets(Core core, bool ignoreGlobalSetting = false)
     {
         List<string> installed = new List<string>();
         List<string> skipped = new List<string>();
         bool missingBetaKey = false;
+        bool run = false;
 
-        if (!this.settingsService.GetConfig().download_assets ||
-            !this.settingsService.GetCoreSettings(core.identifier).download_assets)
+        //run if:
+        //globaloverride is on and core specific is on
+        //or
+        //globaloverride is off, global setting is on, and core specific is on
+        if ((ignoreGlobalSetting && this.settingsService.GetCoreSettings(core.identifier).download_assets)
+        || (!ignoreGlobalSetting && this.settingsService.GetConfig().download_assets && this.settingsService.GetCoreSettings(core.identifier).download_assets)) {
+            run = true;
+        }
+
+        if (!run)
         {
             return new Dictionary<string, object>
             {
@@ -96,7 +105,7 @@ public partial class CoresService
                 { "missingBetaKey", false }
             };
         }
-
+    
         WriteMessage("Looking for Assets...");
         Archive archive = this.archiveService.GetArchive(core.identifier);
         AnalogueCore info = this.ReadCoreJson(core.identifier);
