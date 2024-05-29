@@ -13,6 +13,8 @@ public static class ServiceHelper
     public static FirmwareService FirmwareService { get; private set; }
     public static ArchiveService ArchiveService { get; private set; }
     public static AssetsService AssetsService { get; private set; }
+    public static EventHandler<StatusUpdatedEventArgs> StatusUpdated { get; private set; }
+    public static EventHandler<UpdateProcessCompleteEventArgs> UpdateProcessComplete { get; private set; }
 
     private static bool isInitialized;
 
@@ -40,11 +42,13 @@ public static class ServiceHelper
                 FirmwareService.StatusUpdated += statusUpdated;
                 CoresService.StatusUpdated += statusUpdated;
                 ArchiveService.StatusUpdated += statusUpdated;
+                StatusUpdated = statusUpdated;
             }
 
             if (updateProcessComplete != null)
             {
                 CoresService.UpdateProcessComplete += updateProcessComplete;
+                UpdateProcessComplete = updateProcessComplete;
             }
         }
     }
@@ -56,5 +60,6 @@ public static class ServiceHelper
         ArchiveService = new ArchiveService(SettingsService.GetConfig().archives,
                 SettingsService.GetConfig().crc_check, SettingsService.GetConfig().use_custom_archive);
         CoresService = new CoresService(UpdateDirectory, SettingsService, ArchiveService, AssetsService);
+        CoresService.StatusUpdated += StatusUpdated;
     }
 }
