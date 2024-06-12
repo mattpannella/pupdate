@@ -92,6 +92,21 @@
       "github_asset_prefix": "pocket-extras-toaplan2_c"
     },
     {
+      "id": "jtcz80_c",
+      "name": "Capcom Z80 Hardware Combination Core",
+      "description": "Combines 9 of Jotego's cores into a single platform with multiple cores. It combines 1942, 1943, Black Tiger, Commando, Exed Exes, Gun.Smoke, Section Z, Trojan, and Hyper Dyne Side Arms. This allows you to play them all from a single entry in your Pocket menu. You do not need to have them installed prior to using this.",
+      "type": "combination_platform",
+      "core_identifiers": [
+        "jotego.Capcom_Z80",
+        "jotego.Capcom_Z80_256x240",
+        "jotego.Capcom_Z80_384x224"
+      ],
+      "has_placeholders": true,
+      "github_user": "dyreschlock",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "pocket-extras-jtcz80_c"
+    },
+    {
       "id": "vectrex",
       "name": "Vectrex Extras",
       "description": "Installs an additional core for the Vectrex platform that was created by obsidian. This is a collection of JSON files based on a particular rom-pack that includes Homebrew games, Hacks, and much more. It's set up as a new core implementation of Vectrex so the new JSON files do not conflict with the JSON files in the Vectrex core. You do not need to have the them installed prior to using this.",
