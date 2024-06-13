@@ -155,14 +155,17 @@ public partial class CoresService
                         }
                         else
                         {
+                            WriteMessage($"Downloading: {slot.filename}...");
                             bool result = this.archiveService.DownloadArchiveFile(archive, archiveFile, path);
 
                             if (result)
                             {
+                                WriteMessage($"Installed: {slot.filename}");
                                 installed.Add(filePath.Replace(this.installPath, string.Empty));
                             }
                             else
                             {
+                                WriteMessage($"Not found: {slot.filename}");
                                 skipped.Add(filePath.Replace(this.installPath, string.Empty));
                             }
                         }
@@ -190,14 +193,17 @@ public partial class CoresService
                 }
                 else
                 {
+                    WriteMessage($"Downloading: {file.name}...");
                     bool result = this.archiveService.DownloadArchiveFile(archive, file, commonPath);
 
                     if (result)
                     {
+                        WriteMessage($"Installed: {file.name}");
                         installed.Add(filePath.Replace(this.installPath, string.Empty));
                     }
                     else
                     {
+                        WriteMessage($"Not found: {file.name}");
                         skipped.Add(filePath.Replace(this.installPath, string.Empty));
                     }
                 }
@@ -287,14 +293,17 @@ public partial class CoresService
                                 }
                                 else
                                 {
+                                    WriteMessage($"Downloading: {slot.filename}...");
                                     bool result = this.archiveService.DownloadArchiveFile(archive, archiveFile, slotDirectory);
 
                                     if (result)
                                     {
+                                        WriteMessage($"Installed: {slot.filename}");
                                         installed.Add(slotPath.Replace(this.installPath, string.Empty));
                                     }
                                     else
                                     {
+                                        WriteMessage($"Not found: {slot.filename}");
                                         skipped.Add(slotPath.Replace(this.installPath, string.Empty));
                                     }
                                 }
