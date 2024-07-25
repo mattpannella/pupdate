@@ -5,63 +5,6 @@ using System.Linq;
 
 namespace Pannella
 {
-    public static class AnalogizerHelper
-    {
-        public static string FindSdCardPath(string sdCardName)
-        {
-            var sdPath = Directory.GetDirectories("/media/", $"*{sdCardName}", SearchOption.AllDirectories);
-            return sdPath.FirstOrDefault();
-        }
-
-        public static string CreateInPocket(bool create = false, string filename = "crtcfg-pupdate.bin", string find = "POCKET", string common = "/Assets/jtpatreon/common/")
-        {
-            if (create)
-            {
-                string pocketPath = FindSdCardPath(find);
-                if (string.IsNullOrEmpty(pocketPath))
-                {
-                    Console.WriteLine("No SD card detected. File will be created in current path");
-                    return filename;
-                }
-
-                string finalPath = Path.Combine(pocketPath, common);
-                if (!Directory.Exists(finalPath))
-                {
-                    Directory.CreateDirectory(finalPath);
-                }
-
-                return Path.Combine(finalPath, filename);
-            }
-
-            return filename;
-        }
-
-        public static string CreateInRelease(bool create = false, string filename = "crtcfg-pupdate.bin", string find = "jtcores/release", string common = "/pocket/raw/Assets/jtpatreon/common/")
-        {
-            if (create)
-            {
-                string searchPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), $"**/{find}");
-                string releasePath = Directory.GetDirectories(searchPath, "*", SearchOption.AllDirectories).FirstOrDefault();
-
-                if (string.IsNullOrEmpty(releasePath))
-                {
-                    Console.WriteLine("Release folder could not be found");
-                    return filename;
-                }
-
-                string finalPath = Path.Combine(releasePath, common);
-                if (!Directory.Exists(finalPath))
-                {
-                    Directory.CreateDirectory(finalPath);
-                }
-
-                return Path.Combine(finalPath, filename);
-            }
-
-            return filename;
-        }
-    }
-
     public class OptionType
     {
         public string Options { get; set; }
@@ -245,8 +188,8 @@ Your selection:    ";
                 { "d", "cb" }
             };
 
-            string filepath = AnalogizerHelper.CreateInPocket(sd);
-            string filepath2 = AnalogizerHelper.CreateInRelease(release);
+            string filepath = "crtcfg-pupdate.bin";
+            string filepath2 = "crtcfg-pupdate.bin";
             UserOptions.GenerateUserOptions(new OptionType[] { crt, snac }, filename: filepath, filename2: filepath2);
         }
     }
