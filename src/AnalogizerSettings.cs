@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection.Metadata;
+using Pannella.Helpers;
 
 namespace Pannella
 {
@@ -188,9 +190,14 @@ Your selection:    ";
                 { "d", "cb" }
             };
 
-            string filepath = "crtcfg-pupdate.bin";
-            string filepath2 = "crtcfg-pupdate.bin";
-            UserOptions.GenerateUserOptions(new OptionType[] { crt, snac }, filename: filepath, filename2: filepath2);
+            string filename = "crtcfg-pupdate.bin";
+            string filepath = Path.Combine(ServiceHelper.UpdateDirectory, filename);
+            UserOptions.GenerateUserOptions(new OptionType[] { crt, snac }, filename: filepath, filename2: filepath);
+            if (File.Exists(filepath))
+            {
+                string destPath = Path.Combine(ServiceHelper.UpdateDirectory, "Assets", "jtpatreon", "common", filename);
+                File.Copy(filepath, destPath, true);
+            }
         }
     }
 }
