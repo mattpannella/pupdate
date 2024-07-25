@@ -47,7 +47,7 @@ internal partial class Program
             .Add("Jotego Analogizer Config", _=>
             {
                 AnalogizerSettings settings = new AnalogizerSettings();
-                settings.RunAnalogizerSettings(false, false);
+                settings.RunAnalogizerSettings();
 
                 //copy the file into 
                 Console.WriteLine("Its done");

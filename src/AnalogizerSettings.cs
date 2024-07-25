@@ -103,7 +103,7 @@ namespace Pannella
 
     public class AnalogizerSettings
     {
-        public void RunAnalogizerSettings(bool sd, bool release)
+        public void RunAnalogizerSettings()
         {
             var crt = new OptionType();
             crt.Options = @"
