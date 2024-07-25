@@ -190,12 +190,17 @@ Your selection:    ";
                 { "d", "cb" }
             };
 
-            string filename = "crtcfg-pupdate.bin";
+            string filename = "crtcfg.bin";
             string filepath = Path.Combine(ServiceHelper.UpdateDirectory, filename);
             UserOptions.GenerateUserOptions(new OptionType[] { crt, snac }, filename: filepath, filename2: filepath);
             if (File.Exists(filepath))
             {
-                string destPath = Path.Combine(ServiceHelper.UpdateDirectory, "Assets", "jtpatreon", "common", filename);
+                string jtpatreon = Path.Combine(ServiceHelper.UpdateDirectory, "Assets", "jtpatreon", "common");
+                if (Directory.Exists(jtpatreon))
+                {
+                    Directory.CreateDirectory(jtpatreon);
+                }
+                string destPath = Path.Combine(jtpatreon, filename);
                 File.Copy(filepath, destPath, true);
             }
         }
