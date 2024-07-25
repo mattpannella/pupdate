@@ -44,6 +44,15 @@ internal partial class Program
 
         var pocketSetupMenu = new ConsoleMenu()
             .Configure(menuConfig)
+            .Add("Jotego Analogizer Config", _=>
+            {
+                AnalogizerSettings settings = new AnalogizerSettings();
+                settings.RunAnalogizerSettings(false, false);
+
+                //copy the file into 
+                Console.WriteLine("Its done");
+                Pause();
+            })
             .Add("Download Platform Image Packs", _ =>
             {
                 PlatformImagePackSelector();
