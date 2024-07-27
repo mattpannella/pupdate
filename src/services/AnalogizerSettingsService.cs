@@ -191,7 +191,7 @@ Your selection:    ";
         if (File.Exists(filepath))
         {
             string jtpatreon = Path.Combine(ServiceHelper.UpdateDirectory, "Assets", "jtpatreon", "common");
-            if (Directory.Exists(jtpatreon))
+            if (!Directory.Exists(jtpatreon))
             {
                 Directory.CreateDirectory(jtpatreon);
             }
