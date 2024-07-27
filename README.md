@@ -287,7 +287,7 @@ Now that Jotego is releasing his beta cores publicly (and requiring a beta key t
 
 ## Jotego Cores Analogizer Setup
 
-To set your global configuration for the Analogizer in Jotego's Cores just go to `Pocket Setup` > `Jotego Analogizer Config` and it will walk you through the available settings. For more help please refer to his github repo.
+To set your global configuration for the Analogizer in Jotego's Cores just go to `Pocket Setup` > `Jotego Analogizer Config` and it will walk you through the available settings. The settings will be saved to the correct location, so you don't need to do anything else. For more help please refer to his github repo.
 
 ## Troubleshooting
 
