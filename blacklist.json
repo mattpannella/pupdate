@@ -17,5 +17,6 @@
     "HDD-4.hdf",
     "beta.bin",
     "mpu.bin",
-    "bios_1_0_usa.pce"
+    "bios_1_0_usa.pce",
+    "crtcfg.bin"
  ]
