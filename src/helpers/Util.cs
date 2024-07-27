@@ -7,6 +7,7 @@ namespace Pannella.Helpers;
 public class Util
 {
     private const string PLATFORMS_DIRECTORY = "Platforms";
+    private const string SAVES_DIRECTORY = "Saves";
 
     private static readonly string[] BAD_DIRS = { "__MACOSX" };
 
@@ -77,7 +78,7 @@ public class Util
         return count;
     }
 
-    public static void CleanDir(string source, string path = "", bool preservePlatformsFolder = false, string platform = "")
+    public static void CleanDir(string source, string path = "", bool preservePlatformsFolder = false, bool preserveSaveFile = false, string platform = "")
     {
         // Clean up any bad directories (like Mac OS directories).
         foreach (var dir in BAD_DIRS)
@@ -110,6 +111,31 @@ public class Util
                 }
             }
         }
+
+        // if (preserveSaveFile)
+        // {
+        //     string existing = Path.Combine(path, SAVES_DIRECTORY, platform, "common");
+        //     if (Directory.Exists(existing))
+        //     {
+        //         var saves = Directory.GetFiles(existing, "*.sav", SearchOption.TopDirectoryOnly);
+        //         foreach (var file in saves)
+        //         {
+        //             var filename = Path.GetFileName(file);
+        //             var sourceFile = Path.Combine(source, SAVES_DIRECTORY, platform, "common", file);
+        //             if (File.Exists(sourceFile))
+        //             {
+        //                 try
+        //                 {
+        //                     File.Delete(file);
+        //                 }
+        //                 catch
+        //                 {
+        //                     // Ignore
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
 
         // Clean files.
         var files = Directory.EnumerateFiles(source).Where(file => IsBadFile(Path.GetFileName(file)));

@@ -46,11 +46,10 @@ internal partial class Program
             .Configure(menuConfig)
             .Add("Jotego Analogizer Config", _=>
             {
-                AnalogizerSettings settings = new AnalogizerSettings();
+                AnalogizerSettingsService settings = new AnalogizerSettingsService();
                 settings.RunAnalogizerSettings();
 
-                //copy the file into 
-                Console.WriteLine("Its done");
+                Console.WriteLine("Analogizer configuration updated.");
                 Pause();
             })
             .Add("Download Platform Image Packs", _ =>
