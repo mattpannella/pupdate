@@ -4,15 +4,16 @@
 4. Download Assets
 5. Backup Saves
 6. Pocket Setup
-   1. Download Platform Image Packs
-   2. Download Pocket Library Images
-   3. Download GameBoy Palettes
-   4. Generate Instance JSON Files (PC Engine CD)
-   5. Generate Game & Watch ROMs
-   6. Enable All Display Modes
-   7. Apply 8:7 Aspect Ratio to Super GameBoy cores
-   8. Restore 4:3 Aspect Ratio to Super GameBoy cores
-   9. Go Back
+   1. Jotego Analogizer Config
+   2. Download Platform Image Packs
+   3. Download Pocket Library Images
+   4. Download GameBoy Palettes
+   5. Generate Instance JSON Files (PC Engine CD)
+   6. Generate Game & Watch ROMs
+   7. Enable All Display Modes
+   8. Apply 8:7 Aspect Ratio to Super GameBoy cores
+   9. Restore 4:3 Aspect Ratio to Super GameBoy cores
+   10. Go Back
 7. Pocket Maintenance
    1. Reinstall All Cores
    2. Reinstall Select Cores

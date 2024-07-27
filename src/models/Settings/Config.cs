@@ -16,6 +16,9 @@ public class Config
     [Description("Preserve 'Platforms' folder during 'Update All'")]
     public bool preserve_platforms_folder { get; set; } = false;
 
+   // [Description("Preserve Save Files during 'Update All'. If a core developer packs a pre-configured save file with their update, this file will be installed on your SD card unless you turn this setting on")]
+    //public bool preserve_save_files { get; set; } = false;
+
     [Description("Delete untracked cores during 'Update All'")]
     public bool delete_skipped_cores { get; set; } = true;
 

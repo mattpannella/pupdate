@@ -37,6 +37,7 @@ For a full view of the interactive console menu, see [here](MENU.md).
 [Additional Settings](#additional-settings) |
 [CLI Commands and Parameters](#cli-commands-and-parameters) |
 [Jotego Beta Cores](#jotego-beta-cores) |
+[Jotego Cores Analogizer Setup](#jotego-cores-analogizer-setup) |
 
 ### Update All
 Install/Update all of your cores, plus a bunch of other stuff. It can basically be used as the "do everything I want" option. Everything marked with a * can be turned on/off via settings.
@@ -283,6 +284,10 @@ examples:
 ## Jotego Beta Cores
 
 Now that Jotego is releasing his beta cores publicly (and requiring a beta key to play them), you can just drop the `jtbeta.zip` file from patreon onto the root of your sd card and run Update All, and it will automatically copy the beta key to the correct folders for the cores that need it. It also will let you install the yhe cores directly from the updater, now. Make sure you don't rename the file, it's going to look for exactly `jtbeta.zip`
+
+## Jotego Cores Analogizer Setup
+
+To set your global configuration for the Analogizer in Jotego's Cores just go to `Pocket Setup` > `Jotego Analogizer Config` and it will walk you through the available settings. For more help please refer to his github repo.
 
 ## Troubleshooting
 
