@@ -182,7 +182,8 @@ Your selection:    ";
         {
             { "a", "" },
             { "f", "ec" },
-            { "d", "cb" }
+            { "d", "cb" },
+            {"e", "eb"}
         };
 
         string filename = "crtcfg.bin";
