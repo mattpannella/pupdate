@@ -197,7 +197,11 @@ public class CoreUpdaterService : BaseProcess
                         }
 
                         results = this.coresService.DownloadAssets(core);
-                        JotegoRename(core);
+
+                        if (!coreSettings.pocket_extras)
+                        {
+                            JotegoRename(core);
+                        }
 
                         installedAssets.AddRange(results["installed"] as List<string>);
                         skippedAssets.AddRange(results["skipped"] as List<string>);
