@@ -71,7 +71,9 @@ public class AssetsService
         if (Directory.Exists(savesPath))
         {
             string directoryHash = ComputeDirectoryHash(savesPath);
-            string fileName = $"{folderName}_Backup_{directoryHash}.zip";
+            string truncatedHash = directoryHash.Substring(0, 8);
+            string dateStamp = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+            string fileName = $"{folderName}_Backup_{dateStamp}-version{truncatedHash}.zip";
             string archiveName = Path.Combine(backupLocation, fileName);
 
             if (!Directory.Exists(backupLocation))
@@ -79,16 +81,18 @@ public class AssetsService
                 Directory.CreateDirectory(backupLocation);
             }
 
-            if (!File.Exists(archiveName))
+            bool isDuplicateBackup = Directory
+                .GetFiles(backupLocation, $"{folderName}_Backup_*-version{truncatedHash}.zip")
+                .Any();
+
+            if (!isDuplicateBackup)
             {
                 ZipFile.CreateFromDirectory(savesPath, archiveName);
                 Console.WriteLine("Complete.");
             }
             else
             {
-                Console.WriteLine(
-                    $"Backup with the same contents already exists, skipping backup..."
-                );
+                Console.WriteLine($"Backup with the same contents already exists, skipping...");
             }
         }
         else
