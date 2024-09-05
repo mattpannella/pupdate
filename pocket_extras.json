@@ -107,6 +107,19 @@
       "github_asset_prefix": "pocket-extras-jtcz80_c"
     },
     {
+      "id": "williams_c",
+      "name": "Williams 6809 Combination Core",
+      "description": "Combines 3 of Obsidian's cores into a single platform with multiple cores. It combines Robotron, Joust, and Defender. This allows you to play them all from a single entry in your Pocket menu. You do not need to have them installed prior to using this.",
+      "type": "combination_platform",
+      "core_identifiers": [
+        "obsidian.Williams6809"
+      ],
+      "has_placeholders": true,
+      "github_user": "dyreschlock",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "pocket-extras-williams_c"
+    },
+    {
       "id": "vectrex",
       "name": "Vectrex Extras",
       "description": "Installs an additional core for the Vectrex platform that was created by obsidian. This is a collection of JSON files based on a particular rom-pack that includes Homebrew games, Hacks, and much more. It's set up as a new core implementation of Vectrex so the new JSON files do not conflict with the JSON files in the Vectrex core. You do not need to have the them installed prior to using this.",
@@ -132,6 +145,30 @@
       "github_asset_prefix": "jts16_complete"
     },
     {
+      "id": "digdug2",
+      "name": "Dig Dug II",
+      "description": "Installs a core based of off the obsidian.Druaga core for just the Dig Dug II game. You do not need to have the Druaga core installed prior to using this.",
+      "type": "variant_core",
+      "core_identifiers": [
+        "obsidian.DigDug2"
+      ],
+      "github_user": "hallem",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "digdug2.zip"
+    },
+    {
+      "id": "Joust",
+      "name": "Joust",
+      "description": "Installs a core based of off the obsidian.Robotron core for the Joust game. You do not need to have the Robotron core installed prior to using this.",
+      "type": "variant_core",
+      "core_identifiers": [
+        "obsidian.Joust"
+      ],
+      "github_user": "hallem",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "joust.zip"
+    },
+    {
       "id": "sgb2",
       "name": "Super GameBoy 2",
       "description": "Installs a core based of off the Spiritiualized.SuperGB core for the Super GameBoy 2 rom. You do not need to have the Super GameBoy core installed prior to using this.",
@@ -140,8 +177,8 @@
         "Spiritualized.SuperGB2"
       ],
       "github_user": "hallem",
-      "github_repository": "openFPGA-Super-GB",
-      "github_asset_prefix": "super-gameboy-extras-sgb2.zip"
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "sgb2.zip"
     },
     {
       "id": "sgb2vw",
@@ -152,8 +189,50 @@
         "Spiritualized.SuperGB2.VW"
       ],
       "github_user": "hallem",
-      "github_repository": "openFPGA-Super-GB",
-      "github_asset_prefix": "super-gameboy-extras-sgb2vw.zip",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "sgb2vw.zip",
+      "additional_links": [
+        "https://www.romhacking.net/hacks/6449/"
+      ]
+    },
+    {
+      "id": "sgb-dual",
+      "name": "Super GameBoy - Dual Aspect Ratio",
+      "description": "Installs two cores based of off the Spiritiualized.SuperGB core, one for each aspect ratio (4:3, 8:7). You do not need to have the Super GameBoy core installed prior to using this.",
+      "type": "variant_core",
+      "core_identifiers": [
+        "Spiritualized.SuperGB",
+        "Spiritualized.SuperGB.8x7"
+      ],
+      "github_user": "hallem",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "sgb-dual.zip"
+    },
+    {
+      "id": "sgb2-dual",
+      "name": "Super GameBoy 2 - Dual Aspect Ratio",
+      "description": "Installs two cores based of off the Spiritiualized.SuperGB core for the Super GameBoy 2 rom, one for each aspect ratio (4:3, 8:7). You do not need to have the Super GameBoy core installed prior to using this.",
+      "type": "variant_core",
+      "core_identifiers": [
+        "Spiritualized.SuperGB2",
+        "Spiritualized.SuperGB2.8x7"
+      ],
+      "github_user": "hallem",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "sgb2-dual.zip"
+    },
+    {
+      "id": "sgb2vw-dual",
+      "name": "Super GameBoy 2: Vaporwave Edition - Dual Aspect Ratio",
+      "description": "Installs two cores based of off the Spiritualized.SuperGB core for the Super GameBoy 2: Vaporwave Edition rom hack, one for each aspect ratio (4:3, 8:7). You do not need to have the Super GameBoy or Super GameBoy 2 core installed prior to using this.",
+      "type": "variant_core",
+      "core_identifiers": [
+        "Spiritualized.SuperGB2.VW",
+        "Spiritualized.SuperGB2.VW.8x7"
+      ],
+      "github_user": "hallem",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "sgb2vw-dual.zip",
       "additional_links": [
         "https://www.romhacking.net/hacks/6449/"
       ]

@@ -94,24 +94,54 @@ public partial class CoresService
             if (pocketExtra.has_placeholders)
             {
                 var placeFiles = Directory.GetFiles(extractPath, "PLACE_*", SearchOption.AllDirectories);
+                var renameFiles = Directory.GetFiles(extractPath, "RENAME_*", SearchOption.AllDirectories);
 
-                if (!placeFiles.Any())
-                    throw new FileNotFoundException("Core RBF_R file locators not found.");
-
-                WriteMessage("Downloading core file placeholders...");
-
-                foreach (var placeFile in placeFiles)
+                if (placeFiles.Length > 0)
                 {
-                    string contents = File.ReadAllText(placeFile);
-                    Uri uri = new Uri(contents);
-                    string placeFileName = Path.GetFileName(uri.LocalPath);
-                    string localPlaceFileName = Path.Combine(Path.GetDirectoryName(placeFile)!, placeFileName);
+                    WriteMessage("Downloading core file placeholders...");
 
-                    WriteMessage($"Downloading '{placeFileName}'");
-                    HttpHelper.Instance.DownloadFile(uri.ToString(), localPlaceFileName);
-                    WriteMessage("Download complete.");
+                    foreach (var placeFile in placeFiles)
+                    {
+                        string contents = File.ReadAllText(placeFile);
+                        Uri uri = new Uri(contents);
+                        string placeFileName = Path.GetFileName(uri.LocalPath);
+                        string localPlaceFileName = Path.Combine(Path.GetDirectoryName(placeFile)!, placeFileName);
 
-                    File.Delete(placeFile);
+                        WriteMessage($"Downloading: '{placeFileName}'");
+                        HttpHelper.Instance.DownloadFile(uri.ToString(), localPlaceFileName);
+                        WriteMessage("Download complete.");
+
+                        File.Delete(placeFile);
+                    }
+                }
+                else if (renameFiles.Length > 0)
+                {
+                    WriteMessage("Downloading & renaming core file placeholders...");
+
+                    foreach (var renameFile in renameFiles)
+                    {
+                        string renameFileName = Path.GetFileNameWithoutExtension(renameFile);
+                        //           111111111122222222223333
+                        // 0123456789012345678901234567890123
+                        // RENAME_BITSTREAM_TO_DEFENDER_RBF_R
+                        int extensionIndex = renameFileName.LastIndexOf("_RBF_R", StringComparison.InvariantCulture);
+                        string renamedFileName = renameFileName.Substring(20, extensionIndex - 20).ToLowerInvariant() + ".rbf_r";
+
+                        string contents = File.ReadAllText(renameFile);
+                        Uri uri = new Uri(contents);
+                        string urlFileName = Path.GetFileName(uri.LocalPath);
+                        string localRenameFileName = Path.Combine(Path.GetDirectoryName(renameFile)!, renamedFileName);
+
+                        WriteMessage($"Downloading '{renamedFileName}'");
+                        HttpHelper.Instance.DownloadFile(uri.ToString(), localRenameFileName);
+                        WriteMessage("Download complete.");
+
+                        File.Delete(renameFile);
+                    }
+                }
+                else
+                {
+                    throw new FileNotFoundException("Core RBF_R file locators not found.");
                 }
             }
 
