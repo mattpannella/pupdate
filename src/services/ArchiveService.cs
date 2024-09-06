@@ -151,9 +151,7 @@ public class ArchiveService : Base
 
             do
             {
-                WriteMessage($"Downloading '{archiveFile.name}'");
                 HttpHelper.Instance.DownloadFile(url, destinationFileName, 600);
-                WriteMessage($"Finished downloading '{archiveFile.name}'");
                 count++;
             }
             while (count < 3 && !ValidateChecksum(destinationFileName, archiveFile));

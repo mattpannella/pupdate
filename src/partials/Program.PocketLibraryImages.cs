@@ -20,8 +20,9 @@ internal partial class Program
 
             try
             {
+                Console.WriteLine("Downloading library images...");
                 ServiceHelper.ArchiveService.DownloadArchiveFile(archive, archiveFile, ServiceHelper.TempDirectory);
-                Console.WriteLine("Installing...");
+                Console.WriteLine("Installing library images...");
 
                 if (Directory.Exists(extractPath))
                     Directory.Delete(extractPath, true);
