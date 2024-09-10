@@ -17,7 +17,15 @@ public partial class CoresService
         "0x42", // Original GBA SP 101
         "0x51", // Original GG
         "0x52", // Original GG+
+        "0x61", // Original NGP
+        "0x62", // Original NGPC
+        "0x63", // Original NGPC+
+        "0x71", // TurboExpress
+        "0x72", // PC Engine LT
+        "0x81", // Original Lynx
+        "0x82", // Original Lynx+
         "0xE0", // Pinball Neon Matrix
+        "0xE1", // Vacuum Fluorescent
     };
 
     private static readonly string[] GB_MODES =
