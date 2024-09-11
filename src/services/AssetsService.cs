@@ -192,7 +192,7 @@ public class AssetsService
                     if (mostRecentFiles.ContainsKey(applicationName) && mostRecentFiles[applicationName].fileName != fileName)
                     {
                         // If it's not the most recent file for this game, delete it
-                        //File.Delete(file);
+                        File.Delete(file);
                         Console.WriteLine($"Deleted file: {fileName}");
                     }
                 }
