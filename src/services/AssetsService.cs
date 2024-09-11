@@ -186,7 +186,7 @@ public class AssetsService
                 if (match.Success)
                 {
                     // Extract the game name (Group 2)
-                    string applicationName = match.Groups[2].Value.Replace("_", String.Empty);
+                    string applicationName = match.Groups[2].Value;
 
                     // Check if the file is the most recent for this game
                     if (mostRecentFiles.ContainsKey(applicationName) && mostRecentFiles[applicationName].fileName != fileName)
