@@ -191,6 +191,7 @@ This contains a list of alternate core setups. These take existing cores and mak
 | Compress and backup Saves and Memories | This will compress and backup the Saves and Memories directory to the specified location. By default, a Backups directory will be created off the root. The location can be changed manually by setting the "backup_saves_location" with the absolute path in the settings file. |
 | Show Menu Descriptions                 | This will show descriptions for some of the advanced menu items after they are selected, including a prompt asking if you want to proceed. This is enabled by default.                                                                                                           |
 | Use custom archive                     | Allows you to use a custom site for Asset file checking (there is a pre-configured site available). The actual URL of the custom site can be set manually by editing the settings file in an editor.                                                                             |
+| Automatically install updates to Pupdate  | Turn this on and the application will automatically update itself without asking for input, when you start it                                                                             |
 
 ### Additional Settings
 

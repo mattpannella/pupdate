@@ -67,13 +67,13 @@ internal partial class Program
             {
                 case MenuOptions options:
                     if (!options.SkipUpdate)
-                        CheckForUpdates(ServiceHelper.UpdateDirectory, false, args);
+                        CheckForUpdates(ServiceHelper.UpdateDirectory, false, args, ServiceHelper.SettingsService.GetConfig().auto_install_updates);
                     else
                         enableMissingCores = true;
                     break;
 
                 case UpdateSelfOptions:
-                    CheckForUpdates(ServiceHelper.UpdateDirectory, true, args);
+                    CheckForUpdates(ServiceHelper.UpdateDirectory, true, args, false);
                     // CheckForUpdates will terminate execution when necessary.
                     break;
 
