@@ -17,7 +17,7 @@ internal partial class Program
             var parserResult = parser.ParseArguments<MenuOptions, FundOptions, UpdateOptions,
                     AssetsOptions, FirmwareOptions, ImagesOptions, InstanceGeneratorOptions,
                     UpdateSelfOptions, UninstallOptions, BackupSavesOptions, GameBoyPalettesOptions,
-                    PocketLibraryImagesOptions, PocketExtrasOptions, DisplayModesOptions>(args)
+                    PocketLibraryImagesOptions, PocketExtrasOptions, DisplayModesOptions, PruneMemoriesOptions>(args)
                 .WithNotParsed(errors =>
                 {
                     foreach (var error in errors)
@@ -206,6 +206,10 @@ internal partial class Program
 
                 case DisplayModesOptions:
                     EnableDisplayModes();
+                    break;
+
+                case PruneMemoriesOptions options:
+                    AssetsService.PruneSaveStates(ServiceHelper.UpdateDirectory, options.CoreName);
                     break;
 
                 default:

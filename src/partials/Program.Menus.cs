@@ -188,6 +188,11 @@ internal partial class Program
 
                 Pause();
             })
+            .Add("Prune Save States", _ =>
+            {
+                AssetsService.PruneSaveStates(ServiceHelper.UpdateDirectory);
+                Pause();
+            })
             .Add("Go Back", ConsoleMenu.Close);
 
         var additionalAssetsMenu = new ConsoleMenu().Configure(menuConfig);
