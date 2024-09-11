@@ -135,8 +135,7 @@ public class AssetsService
         AssetsService.BackupMemories(ServiceHelper.UpdateDirectory, ServiceHelper.SettingsService.GetConfig().backup_saves_location);
         string savesPath = Path.Combine(rootDirectory, "Memories", "Save States");
 
-        string pattern = @"^\d+_(\d+)_[A-Za-z]+_[A-Za-z0-9]+_(.*)\.sta$";
-        // Create a regex object
+        string pattern = @"^(\d\d\d\d\d\d\d\d_\d\d\d\d\d\d)_[A-Za-z]+_[A-Za-z0-9]+_(.*)\.sta$";
         Regex regex = new Regex(pattern);
 
         foreach (var dir in Directory.EnumerateDirectories(savesPath) )
@@ -146,6 +145,7 @@ public class AssetsService
             {
                 continue;
             }
+
             // Dictionary to store the most recent file per game
             var mostRecentFiles = new Dictionary<string, (string fileName, long timestamp)>();
 
@@ -161,8 +161,8 @@ public class AssetsService
 
                 if (match.Success)
                 {
-                    // Extract the timestamp (Group 1) and game name (Group 2)
-                    long timestamp = long.Parse(match.Groups[1].Value);
+                    // Extract the timestamp (group 1) and game name (group 2)
+                    long timestamp = long.Parse(match.Groups[1].Value.Replace("_", String.Empty));
                     string applicationName = match.Groups[2].Value;
 
                     // Check if this game already has a file in the dictionary
@@ -185,13 +185,13 @@ public class AssetsService
                 if (match.Success)
                 {
                     // Extract the game name (Group 2)
-                    string applicationName = match.Groups[2].Value;
+                    string applicationName = match.Groups[2].Value.Replace("_", String.Empty);
 
                     // Check if the file is the most recent for this game
                     if (mostRecentFiles.ContainsKey(applicationName) && mostRecentFiles[applicationName].fileName != fileName)
                     {
                         // If it's not the most recent file for this game, delete it
-                        File.Delete(file);
+                        //File.Delete(file);
                         Console.WriteLine($"Deleted file: {fileName}");
                     }
                 }
