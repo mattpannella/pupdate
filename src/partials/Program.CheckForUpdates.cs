@@ -2,13 +2,19 @@ namespace Pannella;
 
 internal partial class Program
 {
-    private static void CheckForUpdates(string path, bool selfUpdate, string[] args)
+    private static void CheckForUpdates(string path, bool selfUpdate, string[] args, bool forceUpdate)
     {
         Console.WriteLine("Pupdate v" + VERSION);
         Console.WriteLine("Checking for updates...");
 
         if (CheckVersion(path) && !selfUpdate)
         {
+            if (forceUpdate)
+            {
+                int result = UpdateSelfAndRun(path, args);
+                Environment.Exit(result);
+                return;
+            }
             ConsoleKey[] acceptedInputs = { ConsoleKey.I, ConsoleKey.C, ConsoleKey.Q };
             ConsoleKey response;
 

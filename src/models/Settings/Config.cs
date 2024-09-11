@@ -47,6 +47,9 @@ public class Config
     [Description("Use custom asset archive")]
     public bool use_custom_archive { get; set; } = false;
 
+    [Description("Automatically install updates to Pupdate")]
+    public bool auto_install_updates { get; set; } = false;
+
     public string temp_directory { get; set; } = null;
 
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
