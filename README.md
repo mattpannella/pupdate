@@ -264,7 +264,7 @@ This contains a list of alternate core setups. These take existing cores and mak
   display-modes            Enable all Display Modes
     -p, --path                Absolute path to install location
 
-  prune-memories           Delete all but the latest save states for each game
+  prune-memories           Delete all but the latest save states for each game (defaults to all cores)
    -p, --path                 Absolute path to install location
    -c, --core                 The core you want to prune memories for
 
