@@ -19,7 +19,8 @@
    2. Reinstall Select Cores
    3. Uninstall Select Cores
    4. Remove JT Beta Keys
-   5. Go Back
+   5. Prune Save States
+   6. Go Back
 8. Pocket Extras
    1. Additional Assets
       1. Download for Eric Lewis's Donkey Kong

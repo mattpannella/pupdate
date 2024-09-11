@@ -2,6 +2,7 @@ using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 using Pannella.Helpers;
 
 namespace Pannella.Services;
@@ -127,5 +128,76 @@ public class AssetsService
             );
             return BitConverter.ToString(finalHashBytes).Replace("-", "").ToLowerInvariant();
         }
+    }
+
+    public static void PruneSaveStates(string rootDirectory, string coreName = null)
+    {
+        AssetsService.BackupMemories(ServiceHelper.UpdateDirectory, ServiceHelper.SettingsService.GetConfig().backup_saves_location);
+        string savesPath = Path.Combine(rootDirectory, "Memories", "Save States");
+
+        //YYYYMMDD_HHMMSS_SOMETHING_SOMETHING_GAMETITLE.STA
+        string pattern = @"^(\d\d\d\d\d\d\d\d_\d\d\d\d\d\d)_[A-Za-z]+_[A-Za-z0-9]+_(.*)\.sta$";
+        Regex regex = new Regex(pattern);
+
+        foreach (var dir in Directory.EnumerateDirectories(savesPath) )
+        {
+            //just skip it if it's not the requested core
+            if (coreName != null && dir != Path.Combine(savesPath, coreName))
+            {
+                continue;
+            }
+
+            // Dictionary to store the most recent file per game
+            var mostRecentFiles = new Dictionary<string, (string fileName, long timestamp)>();
+
+            // Get all .sta files in the directory
+            var files = Directory.GetFiles(dir, "*.sta");
+
+            foreach (var file in files)
+            {
+                string fileName = Path.GetFileName(file);
+
+                // Match the filename with the regex
+                Match match = regex.Match(fileName);
+
+                if (match.Success)
+                {
+                    // Extract the timestamp (group 1) and game name (group 2)
+                    long timestamp = long.Parse(match.Groups[1].Value.Replace("_", String.Empty));
+                    string applicationName = match.Groups[2].Value;
+
+                    // Check if this game already has a file in the dictionary
+                    if (!mostRecentFiles.ContainsKey(applicationName) || mostRecentFiles[applicationName].timestamp < timestamp)
+                    {
+                        // If the file is more recent, or the first one for this game, store it
+                        mostRecentFiles[applicationName] = (fileName, timestamp);
+                    }
+                }
+            }
+
+            // Now prune the folder by deleting older files
+            foreach (var file in files)
+            {
+                string fileName = Path.GetFileName(file);
+
+                // Match the filename with the regex
+                Match match = regex.Match(fileName);
+                
+                if (match.Success)
+                {
+                    // Extract the game name (Group 2)
+                    string applicationName = match.Groups[2].Value;
+
+                    // Check if the file is the most recent for this game
+                    if (mostRecentFiles.ContainsKey(applicationName) && mostRecentFiles[applicationName].fileName != fileName)
+                    {
+                        // If it's not the most recent file for this game, delete it
+                        File.Delete(file);
+                        Console.WriteLine($"Deleted file: {fileName}");
+                    }
+                }
+            }
+        }
+        Console.WriteLine("Pruning completed. Most recent save state for each game retained.");
     }
 }
