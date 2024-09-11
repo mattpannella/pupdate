@@ -135,6 +135,7 @@ public class AssetsService
         AssetsService.BackupMemories(ServiceHelper.UpdateDirectory, ServiceHelper.SettingsService.GetConfig().backup_saves_location);
         string savesPath = Path.Combine(rootDirectory, "Memories", "Save States");
 
+        //YYYYMMDD_HHMMSS_SOMETHING_SOMETHING_GAMETITLE.STA
         string pattern = @"^(\d\d\d\d\d\d\d\d_\d\d\d\d\d\d)_[A-Za-z]+_[A-Za-z0-9]+_(.*)\.sta$";
         Regex regex = new Regex(pattern);
 
