@@ -9,15 +9,11 @@ public static class CoinOpService
 {
     private const string BETA_ENDPOINT = "https://key.coinopcollection.org/?username={0}";
 
-    public static string FetchBetaKey(string url)
+    public static byte[] FetchBetaKey(string email)
     {
         var client = new HttpClient();
-        /*
-        https://key.coinopcollection.org/?username=develprx@gmail.com
-passing case:
-https://key.coinopcollection.org/?username=sctestuser@proton.me
-*/
-url = "https://key.coinopcollection.org/?username=sctestuser@proton.me";
+
+        string url = String.Format(BETA_ENDPOINT, email);
         var request = new HttpRequestMessage
         {
             Method = HttpMethod.Get,
@@ -27,13 +23,15 @@ url = "https://key.coinopcollection.org/?username=sctestuser@proton.me";
         var response = client.Send(request);
 
         if (response.StatusCode == HttpStatusCode.NotFound) {
-
+            var responseBody = response.Content.ReadAsStringAsync().Result;
+            throw new Exception(responseBody);
+        } else if (response.StatusCode != HttpStatusCode.OK) {
+            throw new Exception("Didn't work");
         }
 
-        var responseBody = response.Content.ReadAsStringAsync().Result;
         var bytes = response.Content.ReadAsByteArrayAsync().Result;
         File.WriteAllBytes(Path.Combine(ServiceHelper.UpdateDirectory, "coinop.key"), bytes);
 
-        return responseBody;
+        return bytes;
     }
 }
