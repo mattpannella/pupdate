@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using ConsoleTools;
 using Pannella.Helpers;
+using Pannella.Models.DisplayModes;
 using Pannella.Models.Extras;
 using Pannella.Models.OpenFPGA_Cores_Inventory;
 using Pannella.Models.Settings;
@@ -42,16 +43,27 @@ internal partial class Program
             SelectedItemForegroundColor = Console.BackgroundColor,
         };
 
-        var pocketSetupMenu = new ConsoleMenu()
+        var displayModesMenu = new ConsoleMenu()
             .Configure(menuConfig)
-            .Add("Jotego Analogizer Config", _=>
+            .Add("Enable All Display Modes", () =>
             {
-                AnalogizerSettingsService settings = new AnalogizerSettingsService();
-                settings.RunAnalogizerSettings();
-
-                Console.WriteLine("Analogizer configuration updated.");
+                EnableDisplayModes();
                 Pause();
             })
+            .Add("Enable Recommended Display Modes", () =>
+            {
+                EnableDisplayModes(isCurated: true);
+                Pause();
+            })
+            .Add("Enable Selected Display Modes", () =>
+            {
+                DisplayModeSelector();
+                Pause();
+            })
+            .Add("Go Back", ConsoleMenu.Close);
+        var pocketSetupMenu = new ConsoleMenu()
+            .Configure(menuConfig)
+            .Add("Display Modes >", displayModesMenu.Show)
             .Add("Download Platform Image Packs", _ =>
             {
                 PlatformImagePackSelector();
@@ -77,9 +89,12 @@ internal partial class Program
                 BuildGameAndWatchRoms();
                 Pause();
             })
-            .Add("Enable All Display Modes", () =>
+            .Add("Jotego Analogizer Config", _=>
             {
-                EnableDisplayModes();
+                AnalogizerSettingsService settings = new AnalogizerSettingsService();
+                settings.RunAnalogizerSettings();
+
+                Console.WriteLine("Analogizer configuration updated.");
                 Pause();
             })
             .Add("Apply 8:7 Aspect Ratio to Super GameBoy cores", () =>
@@ -504,6 +519,49 @@ internal partial class Program
         {
             Console.WriteLine("None found. Have a nice day.");
         }
+    }
+
+    private static void DisplayModeSelector()
+    {
+        Console.Clear();
+
+        var results = new List<string>();
+        var menu = new ConsoleMenu()
+            .Configure(config =>
+            {
+                config.Selector = "=>";
+                config.EnableWriteTitle = false;
+                config.WriteHeaderAction = () => Console.WriteLine("Which display modes would you like to enable?");
+                config.SelectedItemBackgroundColor = Console.ForegroundColor;
+                config.SelectedItemForegroundColor = Console.BackgroundColor;
+                config.WriteItemAction = item => Console.Write("{0}", item.Name);
+            });
+
+        foreach (DisplayMode displayMode in ServiceHelper.CoresService.GetAllDisplayModes())
+        {
+            var selected = false;
+            var title = MenuItemName(displayMode.description, false);
+
+            menu.Add(title, thisMenu =>
+            {
+                selected = !selected;
+
+                if (selected)
+                    results.Add(displayMode.value);
+                else
+                    results.Remove(displayMode.value);
+
+                thisMenu.CurrentItem.Name = MenuItemName(displayMode.description, selected);
+            });
+        }
+
+        menu.Add("Apply Choices", thisMenu =>
+        {
+            EnableDisplayModes(results.ToArray());
+            thisMenu.CloseMenu();
+        });
+
+        menu.Show();
     }
 
     private static void SettingsMenu()

@@ -352,10 +352,12 @@ public class CoreUpdaterService : BaseProcess
         {
             var analogueCore = this.coresService.ReadCoreJson(core.identifier);
 
-            core.platform_id = analogueCore.metadata.platform_ids[0];
+            core.platform_id = analogueCore?.metadata.platform_ids[0];
         }
 
-        if (this.settingsService.GetConfig().delete_skipped_cores || force)
+        // If the platform id is still missing, it's a pocket extra that was already deleted, so skip it.
+        if (string.IsNullOrEmpty(core.platform_id) &&
+            (this.settingsService.GetConfig().delete_skipped_cores || force))
         {
             this.coresService.Uninstall(core.identifier, core.platform_id, nuke);
         }

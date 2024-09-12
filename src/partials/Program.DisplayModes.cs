@@ -4,7 +4,7 @@ namespace Pannella;
 
 internal partial class Program
 {
-    private static void EnableDisplayModes()
+    private static void EnableDisplayModes(string[] displayModes = null, bool isCurated = false)
     {
         var cores = ServiceHelper.CoresService.Cores.Where(core =>
             !ServiceHelper.SettingsService.GetCoreSettings(core.identifier).skip).ToList();
@@ -27,7 +27,7 @@ internal partial class Program
                 }
 
                 Console.WriteLine("Updating " + core.identifier);
-                ServiceHelper.CoresService.AddDisplayModes(core.identifier);
+                ServiceHelper.CoresService.AddDisplayModes(core.identifier, displayModes, isCurated);
             }
             catch (Exception e)
             {

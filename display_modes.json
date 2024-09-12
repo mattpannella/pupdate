@@ -1,0 +1,44 @@
+{
+  "display_modes": {
+    "all": [
+      { "value": "0x10", "description": "CRT Trinitron" },
+      { "value": "0x20", "description": "Greyscale LCD" },
+      { "value": "0x30", "description": "Reflective Color LCD" },
+      { "value": "0x40", "description": "Backlit Color LCD" },
+      { "value": "0xE0", "description": "Pinball Neon Matrix" },
+      { "value": "0xE1", "description": "Vacuum Fluorescent" }
+    ],
+    "gb": [
+      { "value": "0x21", "description": "Original GB DMG" },
+      { "value": "0x22", "description": "Original GBP" },
+      { "value": "0x23", "description": "Original GBP Light" }
+    ],
+    "gbc": [
+      { "value": "0x31", "description": "Original GBC LCD" },
+      { "value": "0x32", "description": "Original GBC LCD+" }
+    ],
+    "gba": [
+      { "value": "0x41", "description": "Original GBA LCD" },
+      { "value": "0x42", "description": "Original GBA SP 101" }
+    ],
+    "gg": [
+      { "value": "0x51", "description": "Original GG" },
+      { "value": "0x52", "description": "Original GG+" }
+    ],
+    "ngp": [
+      { "value": "0x61", "description": "Original NGP" }
+    ],
+    "ngpc": [
+      { "value": "0x62", "description": "Original NGPC" },
+      { "value": "0x63", "description": "Original NGPC+" }
+    ],
+    "pce": [
+      { "value": "0x71", "description": "TurboExpress" },
+      { "value": "0x72", "description": "PC Engine LT" }
+    ],
+    "lynx": [
+      { "value": "0x81", "description": "Original Lynx" },
+      { "value": "0x82", "description": "Original Lynx+" }
+    ]
+  }
+}
