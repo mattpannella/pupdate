@@ -525,13 +525,18 @@ internal partial class Program
     {
         Console.Clear();
 
+        int count = 0;
         var results = new List<string>();
         var menu = new ConsoleMenu()
             .Configure(config =>
             {
                 config.Selector = "=>";
                 config.EnableWriteTitle = false;
-                config.WriteHeaderAction = () => Console.WriteLine("Which display modes would you like to enable?");
+                config.WriteHeaderAction = () =>
+                {
+                    Console.WriteLine("Which display modes would you like to enable?");
+                    Console.WriteLine($"Note: There is a maximum of 16. You have {16 - count} remaining.");
+                };
                 config.SelectedItemBackgroundColor = Console.ForegroundColor;
                 config.SelectedItemForegroundColor = Console.BackgroundColor;
                 config.WriteItemAction = item => Console.Write("{0}", item.Name);
@@ -544,12 +549,21 @@ internal partial class Program
 
             menu.Add(title, thisMenu =>
             {
+                if (count >= 16 && !selected)
+                    return;
+
                 selected = !selected;
 
                 if (selected)
+                {
                     results.Add(displayMode.value);
+                    count++;
+                }
                 else
+                {
                     results.Remove(displayMode.value);
+                    count--;
+                }
 
                 thisMenu.CurrentItem.Name = MenuItemName(displayMode.description, selected);
             });
@@ -560,6 +574,8 @@ internal partial class Program
             EnableDisplayModes(results.ToArray());
             thisMenu.CloseMenu();
         });
+
+        menu.Add("Go Back", ConsoleMenu.Close);
 
         menu.Show();
     }
