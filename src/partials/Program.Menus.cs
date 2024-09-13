@@ -61,9 +61,9 @@ internal partial class Program
                 Pause();
             })
             .Add("Go Back", ConsoleMenu.Close);
-        var pocketSetupMenu = new ConsoleMenu()
+
+        var downloadFilesMenu = new ConsoleMenu()
             .Configure(menuConfig)
-            .Add("Display Modes >", displayModesMenu.Show)
             .Add("Download Platform Image Packs", _ =>
             {
                 PlatformImagePackSelector();
@@ -79,6 +79,10 @@ internal partial class Program
                 DownloadGameBoyPalettes();
                 Pause();
             })
+            .Add("Go Back", ConsoleMenu.Close);
+
+        var generateFilesMenu = new ConsoleMenu()
+            .Configure(menuConfig)
             .Add("Generate Instance JSON Files (PC Engine CD)", () =>
             {
                 RunInstanceGenerator(coreUpdaterService);
@@ -89,18 +93,15 @@ internal partial class Program
                 BuildGameAndWatchRoms();
                 Pause();
             })
-            .Add("Jotego Analogizer Config", _=>
-            {
-                AnalogizerSettingsService settings = new AnalogizerSettingsService();
-                settings.RunAnalogizerSettings();
+            .Add("Go Back", ConsoleMenu.Close);
 
-                Console.WriteLine("Analogizer configuration updated.");
-                Pause();
-            })
+        var sgbAspectRatioMenu = new ConsoleMenu()
+            .Configure(menuConfig)
             .Add("Apply 8:7 Aspect Ratio to Super GameBoy cores", () =>
             {
                 var results = ShowCoresMenu(
-                    ServiceHelper.CoresService.InstalledCores.Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
+                    ServiceHelper.CoresService.InstalledCores
+                        .Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
                     "Which Super GameBoy cores would you like to change to the 8:7 aspect ratio?\n",
                     false);
 
@@ -119,7 +120,8 @@ internal partial class Program
             .Add("Restore 4:3 Aspect Ratio to Super GameBoy cores", () =>
             {
                 var results = ShowCoresMenu(
-                    ServiceHelper.CoresService.InstalledCores.Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
+                    ServiceHelper.CoresService.InstalledCores
+                        .Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
                     "Which Super GameBoy cores would you like to change to the 8:7 aspect ratio?\n",
                     false);
 
@@ -133,6 +135,22 @@ internal partial class Program
                     Console.WriteLine();
                 }
 
+                Pause();
+            })
+            .Add("Go Back", ConsoleMenu.Close);
+
+        var pocketSetupMenu = new ConsoleMenu()
+            .Configure(menuConfig)
+            .Add("Apply Display Modes          >", displayModesMenu.Show)
+            .Add("Download Images and Palettes >", downloadFilesMenu.Show)
+            .Add("Generate ROMs & JSON Files   >", generateFilesMenu.Show)
+            .Add("Super GameBoy Aspect Ratio   >", sgbAspectRatioMenu.Show)
+            .Add("Jotego Analogizer Config", _=>
+            {
+                AnalogizerSettingsService settings = new AnalogizerSettingsService();
+                settings.RunAnalogizerSettings();
+
+                Console.WriteLine("Analogizer configuration updated.");
                 Pause();
             })
             .Add("Go Back", ConsoleMenu.Close);
@@ -362,7 +380,7 @@ internal partial class Program
 
     private static Dictionary<string, bool> ShowCoresMenu(List<Core> cores, string message, bool isCoreSelection)
     {
-        const int pageSize = 15;
+        const int pageSize = 12;
         var offset = 0;
         bool more = true;
         var results = new Dictionary<string, bool>();
@@ -397,7 +415,9 @@ internal partial class Program
                 if ((current <= (offset + pageSize)) && (current >= offset))
                 {
                     var coreSettings = ServiceHelper.SettingsService.GetCoreSettings(core.identifier);
-                    var selected = isCoreSelection && !coreSettings.skip;
+                    var selected =
+                        (isCoreSelection && !coreSettings.skip) ||
+                        (results.TryGetValue(core.identifier, out var result) && result);
                     var name = core.identifier;
                     var title = MenuItemName(name, selected, core.requires_license);
 
@@ -428,9 +448,25 @@ internal partial class Program
                 });
             }
 
+            if (offset != 0)
+            {
+                menu.Add("Prev Page", thisMenu =>
+                {
+                    offset -= pageSize;
+                    thisMenu.CloseMenu();
+                });
+            }
+
             menu.Add("Save Choices", thisMenu =>
             {
                 thisMenu.CloseMenu();
+                more = false;
+            });
+
+            menu.Add("Quit without saving", thisMenu =>
+            {
+                thisMenu.CloseMenu();
+                results.Clear();
                 more = false;
             });
 
@@ -525,59 +561,105 @@ internal partial class Program
     {
         Console.Clear();
 
-        int count = 0;
+        const int pageSize = 12;
+        var offset = 0;
+        var more = true;
+        var count = 0;
         var results = new List<string>();
-        var menu = new ConsoleMenu()
-            .Configure(config =>
-            {
-                config.Selector = "=>";
-                config.EnableWriteTitle = false;
-                config.WriteHeaderAction = () =>
-                {
-                    Console.WriteLine("Which display modes would you like to enable?");
-                    Console.WriteLine($"Note: There is a maximum of 16. You have {16 - count} remaining.");
-                };
-                config.SelectedItemBackgroundColor = Console.ForegroundColor;
-                config.SelectedItemForegroundColor = Console.BackgroundColor;
-                config.WriteItemAction = item => Console.Write("{0}", item.Name);
-            });
+        var allDisplayModes = ServiceHelper.CoresService.GetAllDisplayModes();
 
-        foreach (DisplayMode displayMode in ServiceHelper.CoresService.GetAllDisplayModes())
+        while (more)
         {
-            var selected = false;
-            var title = MenuItemName(displayMode.description, false);
+            var menu = new ConsoleMenu()
+                .Configure(config =>
+                {
+                    config.Selector = "=>";
+                    config.EnableWriteTitle = false;
+                    config.WriteHeaderAction = () =>
+                    {
+                        Console.WriteLine("Which display modes would you like to enable?");
+                        Console.WriteLine($"Note: There is a maximum of 16. You have {16 - count} remaining.");
+                    };
+                    config.SelectedItemBackgroundColor = Console.ForegroundColor;
+                    config.SelectedItemForegroundColor = Console.BackgroundColor;
+                    config.WriteItemAction = item => Console.Write("{0}", item.Name);
+                });
+            var current = -1;
 
-            menu.Add(title, thisMenu =>
+            if ((offset + pageSize) <= allDisplayModes.Count)
             {
-                if (count >= 16 && !selected)
-                    return;
-
-                selected = !selected;
-
-                if (selected)
+                menu.Add("Next Page", thisMenu =>
                 {
-                    results.Add(displayMode.value);
-                    count++;
-                }
-                else
-                {
-                    results.Remove(displayMode.value);
-                    count--;
-                }
+                    offset += pageSize;
+                    thisMenu.CloseMenu();
+                });
+            }
 
-                thisMenu.CurrentItem.Name = MenuItemName(displayMode.description, selected);
+            foreach (DisplayMode displayMode in allDisplayModes)
+            {
+                current++;
+
+                if ((current <= (offset + pageSize)) && (current >= offset))
+                {
+                    var selected = results.Contains(displayMode.value);
+                    var title = MenuItemName(displayMode.description, selected);
+
+                    menu.Add(title, thisMenu =>
+                    {
+                        if (count >= 16 && !selected)
+                            return;
+
+                        selected = !selected;
+
+                        if (selected)
+                        {
+                            results.Add(displayMode.value);
+                            count++;
+                        }
+                        else
+                        {
+                            results.Remove(displayMode.value);
+                            count--;
+                        }
+
+                        thisMenu.CurrentItem.Name = MenuItemName(displayMode.description, selected);
+                    });
+                }
+            }
+
+            if ((offset + pageSize) <= allDisplayModes.Count)
+            {
+                menu.Add("Next Page", thisMenu =>
+                {
+                    offset += pageSize;
+                    thisMenu.CloseMenu();
+                });
+            }
+
+            if (offset != 0)
+            {
+                menu.Add("Prev Page", thisMenu =>
+                {
+                    offset -= pageSize;
+                    thisMenu.CloseMenu();
+                });
+            }
+
+            menu.Add("Apply Choices", thisMenu =>
+            {
+                EnableDisplayModes(results.ToArray());
+                thisMenu.CloseMenu();
+                more = false;
             });
+
+            menu.Add("Quit without applying", thisMenu =>
+            {
+                thisMenu.CloseMenu();
+                more = false;
+            });
+
+            menu.Show();
         }
-
-        menu.Add("Apply Choices", thisMenu =>
-        {
-            EnableDisplayModes(results.ToArray());
-            thisMenu.CloseMenu();
-        });
-
-        menu.Add("Go Back", ConsoleMenu.Close);
-
-        menu.Show();
     }
 
     private static void SettingsMenu()
