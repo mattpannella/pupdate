@@ -8,9 +8,8 @@ namespace Pannella.Services;
 
 public partial class CoresService
 {
-    public const string BETA_KEY_FILENAME = "jtbeta.zip";
-    public const string BETA_KEY_ALT_FILENAME = "beta.bin";
-    private const string EXTRACT_LOCATION = "betakeys";
+    public const string JTBETA_KEY_FILENAME = "jtbeta.zip";
+    public const string JTBETA_KEY_ALT_FILENAME = "beta.bin";
 
     private Dictionary<string, string> renamedPlatformFiles;
 
@@ -57,7 +56,7 @@ public partial class CoresService
         return platformFiles;
     }
 
-    public (bool, string, int) IsBetaCore(string identifier)
+    public (bool, string, int) IsJTBetaCore(string identifier)
     {
         var data = this.ReadDataJson(identifier);
         var slot = data.data.data_slots.FirstOrDefault(x => x.name == "JTBETA");
@@ -67,33 +66,10 @@ public partial class CoresService
             : (false, null, 0);
     }
 
-    public void CopyBetaKey(Core core)
-    {
-        AnalogueCore info = this.ReadCoreJson(core.identifier);
-        string path = Path.Combine(
-            this.installPath,
-            "Assets",
-            info.metadata.platform_ids[core.beta_slot_platform_id_index],
-            "common");
-
-        if (!Directory.Exists(path))
-        {
-            Directory.CreateDirectory(path);
-        }
-
-        string keyPath = Path.Combine(this.installPath, EXTRACT_LOCATION);
-
-        if (Directory.Exists(keyPath) && Directory.Exists(path))
-        {
-            Util.CopyDirectory(keyPath, path, false, true);
-            WriteMessage($"JT beta key copied to '{path}'.");
-        }
-    }
-
-    public bool ExtractBetaKey()
+    public bool ExtractJTBetaKey()
     {
         string keyPath = Path.Combine(this.installPath, EXTRACT_LOCATION);
-        string zipFile = Path.Combine(this.installPath, BETA_KEY_FILENAME);
+        string zipFile = Path.Combine(this.installPath, JTBETA_KEY_FILENAME);
 
         if (File.Exists(zipFile))
         {
@@ -103,7 +79,7 @@ public partial class CoresService
             return true;
         }
 
-        string binFile = Path.Combine(this.installPath, BETA_KEY_ALT_FILENAME);
+        string binFile = Path.Combine(this.installPath, JTBETA_KEY_ALT_FILENAME);
 
         if (File.Exists(binFile))
         {
@@ -114,7 +90,7 @@ public partial class CoresService
                 Directory.CreateDirectory(keyPath);
             }
 
-            File.Copy(binFile, Path.Combine(keyPath, BETA_KEY_ALT_FILENAME), true);
+            File.Copy(binFile, Path.Combine(keyPath, JTBETA_KEY_ALT_FILENAME), true);
 
             return true;
         }
@@ -124,13 +100,5 @@ public partial class CoresService
         WriteMessage($"     {binFile}");
 
         return false;
-    }
-
-    public void DeleteBetaKey()
-    {
-        string keyPath = Path.Combine(this.installPath, EXTRACT_LOCATION);
-
-        if (Directory.Exists(keyPath))
-            Directory.Delete(keyPath, true);
     }
 }

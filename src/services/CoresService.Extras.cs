@@ -209,7 +209,7 @@ public partial class CoresService
 
         if (!this.IsInstalled(core.identifier))
         {
-            bool jtBetaKeyExists = this.ExtractBetaKey();
+            bool jtBetaKeyExists = this.ExtractJTBetaKey();
 
             WriteMessage($"The '{pocketExtra.core_identifiers[0]}' core is not currently installed.");
 

@@ -76,7 +76,7 @@ public class CoreUpdaterService : BaseProcess
             Divide();
         }
 
-        bool jtBetaKeyExists = this.coresService.ExtractBetaKey();
+        bool jtBetaKeyExists = this.coresService.ExtractJTBetaKey();
 
         foreach (var core in this.cores.Where(core => ids == null || ids.Any(id => id == core.identifier)))
         {
@@ -125,7 +125,7 @@ public class CoreUpdaterService : BaseProcess
                 {
                     WriteMessage("No releases found. Skipping.");
 
-                    var isBetaCore = this.coresService.IsBetaCore(core.identifier);
+                    var isBetaCore = this.coresService.IsJTBetaCore(core.identifier);
 
                     if (isBetaCore.Item1)
                     {
@@ -168,7 +168,7 @@ public class CoreUpdaterService : BaseProcess
                     }
                     else
                     {
-                        var isBetaCore = this.coresService.IsBetaCore(core.identifier);
+                        var isBetaCore = this.coresService.IsJTBetaCore(core.identifier);
 
                         if (isBetaCore.Item1)
                         {
@@ -271,7 +271,7 @@ public class CoreUpdaterService : BaseProcess
 
                 JotegoRename(core);
 
-                var isJtBetaCore = this.coresService.IsBetaCore(core.identifier);
+                var isJtBetaCore = this.coresService.IsJTBetaCore(core.identifier);
 
                 if (isJtBetaCore.Item1)
                 {

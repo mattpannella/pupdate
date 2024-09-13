@@ -100,7 +100,7 @@ internal partial class Program
 
             coreUpdaterService.StatusUpdated += coreUpdater_StatusUpdated;
             coreUpdaterService.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
-CoinOpService.FetchBetaKey("sctestuser@proton.me5");
+CoinOpService.FetchBetaKey("sctestuser@proton.me");
             switch (parserResult.Value)
             {
                 case UpdateOptions options:
