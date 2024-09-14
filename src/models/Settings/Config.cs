@@ -53,18 +53,23 @@ public class Config
     public string temp_directory { get; set; } = null;
 
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    //[Description("Use a local blacklist.json file")]
     public bool use_local_blacklist { get; set; } = false;
 
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    //[Description("Use a local image_packs.json file")]
     public bool use_local_image_packs { get; set; } = false;
 
-    [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    //[JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    [Description("Use a local pocket_extras.json file")]
     public bool use_local_pocket_extras { get; set; } = false;
 
-    [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    //[JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    [Description("Use a local display_modes.json file")]
     public bool use_local_display_modes { get; set; } = false;
 
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    //[Description("Suppress the 'Already Installed' messages for core files and assets")]
     public bool suppress_already_installed { get; set; }
 
     [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
