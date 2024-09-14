@@ -56,16 +56,6 @@ public partial class CoresService
         return platformFiles;
     }
 
-    public (bool, string, int) IsJTBetaCore(string identifier)
-    {
-        var data = this.ReadDataJson(identifier);
-        var slot = data.data.data_slots.FirstOrDefault(x => x.name == "JTBETA");
-
-        return slot != null
-            ? (true, slot.id, slot.GetPlatformIdIndex())
-            : (false, null, 0);
-    }
-
     public bool ExtractJTBetaKey()
     {
         string keyPath = Path.Combine(this.installPath, LICENSE_EXTRACT_LOCATION);
@@ -94,10 +84,6 @@ public partial class CoresService
 
             return true;
         }
-
-        // WriteMessage("JT beta key not found at either location:");
-        // WriteMessage($"     {zipFile}");
-        // WriteMessage($"     {binFile}");
 
         return false;
     }
