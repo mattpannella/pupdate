@@ -1,6 +1,7 @@
 ﻿using CommandLine;
 using Pannella.Helpers;
 using Pannella.Models;
+using Pannella.Models.Events;
 using Pannella.Options;
 using Pannella.Services;
 

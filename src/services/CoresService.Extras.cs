@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using Pannella.Helpers;
 using Pannella.Models;
+using Pannella.Models.Events;
 using Pannella.Models.Extras;
 using Pannella.Models.Github;
 using Pannella.Models.OpenFPGA_Cores_Inventory;

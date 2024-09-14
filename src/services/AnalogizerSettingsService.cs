@@ -22,7 +22,7 @@ public class AnalogizerOptionType
     public string GetInput()
     {
         Console.WriteLine(Options);
-        string input = Console.ReadLine().ToLower();
+        string input = Console.ReadLine()!.ToLower();
         string notFound = "";
 
         if (Expect1 && input.Length > 1)
@@ -91,9 +91,9 @@ public static class UserOptions
         {
             if (file == null) continue;
             File.WriteAllBytes(file, Enumerable.Range(0, hexStr.Length)
-                                                .Where(x => x % 2 == 0)
-                                                .Select(x => Convert.ToByte(hexStr.Substring(x, 2), 16))
-                                                .ToArray());
+                .Where(x => x % 2 == 0)
+                .Select(x => Convert.ToByte(hexStr.Substring(x, 2), 16))
+                .ToArray());
         }
     }
 }
@@ -103,6 +103,7 @@ public class AnalogizerSettingsService
     public void RunAnalogizerSettings()
     {
         var crt = new AnalogizerOptionType();
+
         crt.Options = @"
 Please, select your preferred Video Option.
 For example: A for RGB video
@@ -153,6 +154,7 @@ Your selection:    ";
         };
 
         var snac = new AnalogizerOptionType();
+
         snac.Options = @"
 Please, select the option corresponding to your controller.
 
@@ -183,20 +185,25 @@ Your selection:    ";
             { "a", "" },
             { "f", "ec" },
             { "d", "cb" },
-            {"e", "eb"}
+            { "e", "eb" }
         };
 
-        string filename = "crtcfg.bin";
+        const string filename = "crtcfg.bin";
         string filepath = Path.Combine(ServiceHelper.UpdateDirectory, filename);
+
         UserOptions.GenerateUserOptions(new AnalogizerOptionType[] { crt, snac }, filename: filepath, filename2: filepath);
+
         if (File.Exists(filepath))
         {
             string jtpatreon = Path.Combine(ServiceHelper.UpdateDirectory, "Assets", "jtpatreon", "common");
+
             if (!Directory.Exists(jtpatreon))
             {
                 Directory.CreateDirectory(jtpatreon);
             }
+
             string destPath = Path.Combine(jtpatreon, filename);
+
             File.Move(filepath, destPath, true);
         }
     }

@@ -6,6 +6,7 @@ using Pannella.Models;
 using Pannella.Models.Analogue.Data;
 using Pannella.Models.Analogue.Instance;
 using Pannella.Models.Analogue.Instance.Simple;
+using Pannella.Models.Events;
 using Pannella.Models.InstancePackager;
 using Pannella.Models.OpenFPGA_Cores_Inventory;
 using Pannella.Models.Settings;
@@ -85,16 +86,14 @@ public partial class CoresService
         List<string> installed = new List<string>();
         List<string> skipped = new List<string>();
         bool missingBetaKey = false;
-        bool run = false;
 
-        //run if:
-        //globaloverride is on and core specific is on
-        //or
-        //globaloverride is off, global setting is on, and core specific is on
-        if ((ignoreGlobalSetting && this.settingsService.GetCoreSettings(core.identifier).download_assets)
-        || (!ignoreGlobalSetting && this.settingsService.GetConfig().download_assets && this.settingsService.GetCoreSettings(core.identifier).download_assets)) {
-            run = true;
-        }
+        // run if:
+        // global override is on and core specific is on
+        // or
+        // global override is off, global setting is on, and core specific is on
+        bool run = (ignoreGlobalSetting && this.settingsService.GetCoreSettings(core.identifier).download_assets) ||
+                   (!ignoreGlobalSetting && this.settingsService.GetConfig().download_assets &&
+                    this.settingsService.GetCoreSettings(core.identifier).download_assets);
 
         if (!run)
         {
@@ -105,7 +104,7 @@ public partial class CoresService
                 { "missingBetaKey", false }
             };
         }
-    
+
         WriteMessage("Looking for Assets...");
         Archive archive = this.archiveService.GetArchive(core.identifier);
         AnalogueCore info = this.ReadCoreJson(core.identifier);
@@ -118,7 +117,7 @@ public partial class CoresService
         {
             foreach (DataSlot slot in dataJson.data.data_slots)
             {
-                if (slot.filename != null && slot.filename != string.Empty &&
+                if (!string.IsNullOrEmpty(slot.filename) &&
                     !slot.filename.EndsWith(".sav") &&
                     !this.assetsService.Blacklist.Contains(slot.filename))
                 {
@@ -423,7 +422,7 @@ public partial class CoresService
                 simpleInstanceJson.instance = instance;
 
                 string[] parts = dir.Split(commonPath);
-                //split on dir separator and remove last one?
+                // split on dir separator and remove last one?
                 parts = parts[1].Split(dirName);
                 string subDirectory = string.Empty;
 

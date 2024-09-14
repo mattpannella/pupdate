@@ -1,4 +1,5 @@
 using Pannella.Models;
+using Pannella.Models.Events;
 using Pannella.Services;
 
 namespace Pannella.Helpers;
@@ -6,7 +7,7 @@ namespace Pannella.Helpers;
 public static class ServiceHelper
 {
     public static string UpdateDirectory { get; private set; } // move off this
-    public static string SettingsDirectory { get; private set; } //for retrodriven's app
+    public static string SettingsDirectory { get; private set; } // for retrodriven's app
     public static string TempDirectory { get; private set; }
     public static CoresService CoresService { get; private set; }
     public static SettingsService SettingsService { get; private set ;}
@@ -58,9 +59,9 @@ public static class ServiceHelper
     public static void ReloadSettings()
     {
         SettingsService = new SettingsService(SettingsDirectory, CoresService.Cores);
-        //reload the archive service, in case that setting has changed
+        // reload the archive service, in case that setting has changed
         ArchiveService = new ArchiveService(SettingsService.GetConfig().archives,
-                SettingsService.GetConfig().crc_check, SettingsService.GetConfig().use_custom_archive);
+            SettingsService.GetConfig().crc_check, SettingsService.GetConfig().use_custom_archive);
         CoresService = new CoresService(UpdateDirectory, SettingsService, ArchiveService, AssetsService);
         CoresService.StatusUpdated += StatusUpdated;
     }

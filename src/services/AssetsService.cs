@@ -104,35 +104,31 @@ public class AssetsService
 
     private static string ComputeDirectoryHash(string directoryPath)
     {
-        using (var sha256 = SHA256.Create())
+        using var sha256 = SHA256.Create();
+
+        var allFiles = Directory
+            .GetFiles(directoryPath, "*.*", SearchOption.AllDirectories)
+            .OrderBy(p => p)
+            .ToList();
+
+        var hashBuilder = new StringBuilder();
+
+        foreach (var filePath in allFiles)
         {
-            var allFiles = Directory
-                .GetFiles(directoryPath, "*.*", SearchOption.AllDirectories)
-                .OrderBy(p => p)
-                .ToList();
+            byte[] fileBytes = File.ReadAllBytes(filePath);
+            byte[] hashBytes = sha256.ComputeHash(fileBytes);
 
-            var hashBuilder = new StringBuilder();
-
-            foreach (var filePath in allFiles)
-            {
-                byte[] fileBytes = File.ReadAllBytes(filePath);
-                byte[] hashBytes = sha256.ComputeHash(fileBytes);
-
-                hashBuilder.Append(
-                    BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant()
-                );
-            }
-
-            byte[] finalHashBytes = sha256.ComputeHash(
-                Encoding.UTF8.GetBytes(hashBuilder.ToString())
-            );
-            return BitConverter.ToString(finalHashBytes).Replace("-", "").ToLowerInvariant();
+            hashBuilder.Append(BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant());
         }
+
+        byte[] finalHashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(hashBuilder.ToString()));
+
+        return BitConverter.ToString(finalHashBytes).Replace("-", "").ToLowerInvariant();
     }
 
     public static void PruneSaveStates(string rootDirectory, string coreName = null)
     {
-        AssetsService.BackupMemories(ServiceHelper.UpdateDirectory, ServiceHelper.SettingsService.GetConfig().backup_saves_location);
+        BackupMemories(ServiceHelper.UpdateDirectory, ServiceHelper.SettingsService.GetConfig().backup_saves_location);
         string savesPath = Path.Combine(rootDirectory, "Memories", "Save States");
 
         //YYYYMMDD_HHMMSS_SOMETHING_SOMETHING_GAMETITLE.STA
@@ -182,7 +178,7 @@ public class AssetsService
 
                 // Match the filename with the regex
                 Match match = regex.Match(fileName);
-                
+
                 if (match.Success)
                 {
                     // Extract the game name (Group 2)
@@ -198,6 +194,7 @@ public class AssetsService
                 }
             }
         }
+
         Console.WriteLine("Pruning completed. Most recent save state for each game retained.");
     }
 }

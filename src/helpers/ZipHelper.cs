@@ -19,11 +19,11 @@ public class ZipHelper
 
     public static void ExtractToDirectory(string zipFile, string destination, bool overwrite = false)
     {
-        Progress<ZipProgress> _progress = new Progress<ZipProgress>();
-        _progress.ProgressChanged += UpdateProgress;
+        Progress<ZipProgress> progress = new Progress<ZipProgress>();
+        progress.ProgressChanged += UpdateProgress;
         var stream = new FileStream(zipFile, FileMode.Open);
         var zip = new ZipArchive(stream);
-        zip.ExtractToDirectory(destination, _progress, overwrite);
+        zip.ExtractToDirectory(destination, progress, overwrite);
         stream.Close();
     }
 }
@@ -43,13 +43,8 @@ public class ZipProgress
 
 public static class ZipExtension
 {
-    public static void ExtractToDirectory(this ZipArchive zipFile, string target, IProgress<ZipProgress> progress)
+    public static void ExtractToDirectory(this ZipArchive zipFile, string target, IProgress<ZipProgress> progress, bool overwrite = false)
     {
-        ExtractToDirectory(zipFile, target, progress, overwrite: false);
-    }
-
-    public static void ExtractToDirectory(this ZipArchive zipFile, string target, IProgress<ZipProgress> progress, bool overwrite)
-    { 
         DirectoryInfo info = Directory.CreateDirectory(target);
         string targetPath = info.FullName;
 
@@ -63,7 +58,7 @@ public static class ZipExtension
             {
                 throw new IOException("File is extracting to outside of the folder specified.");
             }
-                
+
             var zipProgress = new ZipProgress(zipFile.Entries.Count, count, entry.FullName);
             progress.Report(zipProgress);
 
@@ -73,12 +68,12 @@ public static class ZipExtension
                 {
                     throw new IOException("Directory entry with data.");
                 }
-                    
+
                 Directory.CreateDirectory(fileDestinationPath);
             }
             else
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(fileDestinationPath));
+                Directory.CreateDirectory(Path.GetDirectoryName(fileDestinationPath)!);
                 entry.ExtractToFile(fileDestinationPath, overwrite: overwrite);
             }
         }

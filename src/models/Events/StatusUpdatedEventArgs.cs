@@ -1,4 +1,4 @@
-namespace Pannella.Models;
+namespace Pannella.Models.Events;
 
 public class StatusUpdatedEventArgs : EventArgs
 {
