@@ -189,7 +189,7 @@ public partial class CoresService
                     Message = "Complete.",
                     InstalledAssets = (List<string>)results["installed"],
                     SkippedAssets = (List<string>)results["skipped"],
-                    MissingBetaKeys = (bool)results["missingBetaKey"]
+                    MissingLicenses = (bool)results["missingLicense"]
                         ? new List<string> { core.identifier }
                         : new List<string>(),
                     SkipOutro = true,
@@ -240,7 +240,7 @@ public partial class CoresService
 
             if (core.requires_license && jtBetaKeyExists)
             {
-                this.CopyBetaKey(core);
+                this.CopyLicense(core);
             }
 
             if (!this.IsInstalled(core.identifier))
@@ -329,7 +329,7 @@ public partial class CoresService
                 Message = "Complete.",
                 InstalledAssets = (List<string>)results["installed"],
                 SkippedAssets = (List<string>)results["skipped"],
-                MissingBetaKeys = (bool)results["missingBetaKey"]
+                MissingLicenses = (bool)results["missingBetaKey"]
                     ? new List<string> { core.identifier }
                     : new List<string>(),
                 SkipOutro = true,

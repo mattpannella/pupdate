@@ -10,7 +10,7 @@ public partial class CoresService
 {
     private const string LICENSE_EXTRACT_LOCATION = "licenses";
 
-    public (bool, string, int, string) IsBetaCore(string identifier)
+    public (bool, string, int, string) RequiresLicense(string identifier)
     {
         var updater = this.ReadUpdatersJson(identifier);
         if (updater == null || updater.license == null) {
@@ -25,13 +25,13 @@ public partial class CoresService
             : (false, null, 0, null);
     }
 
-    public void CopyBetaKey(Core core)
+    public void CopyLicense(Core core)
     {
         AnalogueCore info = this.ReadCoreJson(core.identifier);
         string path = Path.Combine(
             this.installPath,
             "Assets",
-            info.metadata.platform_ids[core.beta_slot_platform_id_index],
+            info.metadata.platform_ids[core.license_slot_platform_id_index],
             "common");
 
         if (!Directory.Exists(path))
@@ -39,11 +39,11 @@ public partial class CoresService
             Directory.CreateDirectory(path);
         }
 
-        string keyFile = Path.Combine(this.installPath, LICENSE_EXTRACT_LOCATION, core.beta_slot_filename);
+        string keyFile = Path.Combine(this.installPath, LICENSE_EXTRACT_LOCATION, core.license_slot_filename);
 
         if (File.Exists(keyFile) && Directory.Exists(path))
         {
-            File.Copy(keyFile, Path.Combine(path, core.beta_slot_filename), true);
+            File.Copy(keyFile, Path.Combine(path, core.license_slot_filename), true);
             WriteMessage($"License copied to '{path}'.");
         }
     }
@@ -66,7 +66,7 @@ public partial class CoresService
         {
             try {
                 Console.WriteLine("Retrieving Coin-Op Collection license...");
-                var license = CoinOpService.FetchBetaKey(email);
+                var license = CoinOpService.FetchLicense(email);
                 File.WriteAllBytes(Path.Combine(keyPath, "coinop.key"), license);
                 Console.WriteLine("License successfully downloaded.");
             } catch (Exception e) {

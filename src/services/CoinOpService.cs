@@ -7,13 +7,13 @@ namespace Pannella.Services;
 
 public static class CoinOpService
 {
-    private const string BETA_ENDPOINT = "https://key.coinopcollection.org/?username={0}";
+    private const string LICENSE_ENDPOINT = "https://key.coinopcollection.org/?username={0}";
 
-    public static byte[] FetchBetaKey(string email)
+    public static byte[] FetchLicense(string email)
     {
         var client = new HttpClient();
 
-        string url = String.Format(BETA_ENDPOINT, email);
+        string url = String.Format(LICENSE_ENDPOINT, email);
         var request = new HttpRequestMessage
         {
             Method = HttpMethod.Get,

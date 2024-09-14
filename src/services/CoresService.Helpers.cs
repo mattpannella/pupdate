@@ -120,9 +120,9 @@ public partial class CoresService
         return false;
     }
 
-    private bool CheckBetaMd5(DataSlot slot, string betaSlotId, string platform)
+    private bool CheckLicenseMd5(DataSlot slot, string licenseSlotId, string platform)
     {
-        if (slot.md5 != null && (betaSlotId != null && slot.id == betaSlotId))
+        if (slot.md5 != null && (licenseSlotId != null && slot.id == licenseSlotId))
         {
             string path = Path.Combine(this.installPath, "Assets", platform);
             string filePath = Path.Combine(path, "common", slot.filename);

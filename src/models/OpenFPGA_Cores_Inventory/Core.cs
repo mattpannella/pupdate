@@ -10,9 +10,9 @@ public class Core
     public string download_url { get; set; }
     public string release_date { get; set; }
     public string version { get; set; }
-    public string beta_slot_id;
-    public int beta_slot_platform_id_index;
-    public string beta_slot_filename;
+    public string license_slot_id;
+    public int license_slot_platform_id_index;
+    public string license_slot_filename;
     public bool requires_license { get; set; } = false;
 
     public override string ToString()
