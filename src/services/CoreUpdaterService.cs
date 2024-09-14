@@ -76,7 +76,8 @@ public class CoreUpdaterService : BaseProcess
             Divide();
         }
 
-        bool jtBetaKeyExists = this.coresService.ExtractJTBetaKey();
+        //bool jtBetaKeyExists = this.coresService.ExtractJTBetaKey();
+        this.coresService.RetrieveKeys();
 
         foreach (var core in this.cores.Where(core => ids == null || ids.Any(id => id == core.identifier)))
         {
@@ -90,11 +91,11 @@ public class CoreUpdaterService : BaseProcess
                     continue;
                 }
 
-                if (core.requires_license && !jtBetaKeyExists)
-                {
-                    missingBetaKeys.Add(core.identifier);
-                    continue; // skip if you don't have the key
-                }
+                // if (core.requires_license && !jtBetaKeyExists)
+                // {
+                //     missingBetaKeys.Add(core.identifier);
+                //     continue; // skip if you don't have the key
+                // }
 
                 if (core.identifier == null)
                 {
@@ -125,12 +126,13 @@ public class CoreUpdaterService : BaseProcess
                 {
                     WriteMessage("No releases found. Skipping.");
 
-                    var isBetaCore = this.coresService.IsJTBetaCore(core.identifier);
+                    var isBetaCore = this.coresService.IsBetaCore(core.identifier);
 
                     if (isBetaCore.Item1)
                     {
                         core.beta_slot_id = isBetaCore.Item2;
                         core.beta_slot_platform_id_index = isBetaCore.Item3;
+                        core.beta_slot_filename = isBetaCore.Item4;
                         this.coresService.CopyBetaKey(core);
                     }
 
@@ -168,12 +170,13 @@ public class CoreUpdaterService : BaseProcess
                     }
                     else
                     {
-                        var isBetaCore = this.coresService.IsJTBetaCore(core.identifier);
+                        var isBetaCore = this.coresService.IsBetaCore(core.identifier);
 
                         if (isBetaCore.Item1)
                         {
                             core.beta_slot_id = isBetaCore.Item2;
                             core.beta_slot_platform_id_index = isBetaCore.Item3;
+                            core.beta_slot_filename = isBetaCore.Item4;
                             this.coresService.CopyBetaKey(core);
                         }
 
@@ -271,12 +274,13 @@ public class CoreUpdaterService : BaseProcess
 
                 JotegoRename(core);
 
-                var isJtBetaCore = this.coresService.IsJTBetaCore(core.identifier);
+                var isJtBetaCore = this.coresService.IsBetaCore(core.identifier);
 
                 if (isJtBetaCore.Item1)
                 {
                     core.beta_slot_id = isJtBetaCore.Item2;
                     core.beta_slot_platform_id_index = isJtBetaCore.Item3;
+                    core.beta_slot_filename = isJtBetaCore.Item4;
                     this.coresService.CopyBetaKey(core);
                 }
 
@@ -303,7 +307,7 @@ public class CoreUpdaterService : BaseProcess
             }
         }
 
-        this.coresService.DeleteBetaKey();
+        //this.coresService.DeleteBetaKeys();
         this.coresService.RefreshLocalCores();
         this.coresService.RefreshInstalledCores();
 

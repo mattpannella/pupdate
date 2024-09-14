@@ -100,7 +100,7 @@ internal partial class Program
 
             coreUpdaterService.StatusUpdated += coreUpdater_StatusUpdated;
             coreUpdaterService.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
-CoinOpService.FetchBetaKey("sctestuser@proton.me");
+
             switch (parserResult.Value)
             {
                 case UpdateOptions options:
@@ -283,8 +283,8 @@ CoinOpService.FetchBetaKey("sctestuser@proton.me");
 
         if (e.MissingBetaKeys.Count > 0)
         {
-            Console.WriteLine("Missing or incorrect JT Beta Key for the following cores:");
-            Console.WriteLine($"The {CoresService.BETA_KEY_FILENAME} or {CoresService.BETA_KEY_ALT_FILENAME} must be placed on the root of the SD card.");
+            Console.WriteLine("Missing or incorrect License file for the following cores:");
+            //Console.WriteLine($"The {CoresService.BETA_KEY_FILENAME} or {CoresService.BETA_KEY_ALT_FILENAME} must be placed on the root of the SD card.");
 
             foreach (string core in e.MissingBetaKeys)
             {

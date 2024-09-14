@@ -12,6 +12,7 @@ public class Core
     public string version { get; set; }
     public string beta_slot_id;
     public int beta_slot_platform_id_index;
+    public string beta_slot_filename;
     public bool requires_license { get; set; } = false;
 
     public override string ToString()

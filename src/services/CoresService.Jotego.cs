@@ -68,13 +68,13 @@ public partial class CoresService
 
     public bool ExtractJTBetaKey()
     {
-        string keyPath = Path.Combine(this.installPath, EXTRACT_LOCATION);
+        string keyPath = Path.Combine(this.installPath, LICENSE_EXTRACT_LOCATION);
         string zipFile = Path.Combine(this.installPath, JTBETA_KEY_FILENAME);
 
         if (File.Exists(zipFile))
         {
             WriteMessage("JT beta key detected. Extracting...");
-            ZipHelper.ExtractToDirectory(zipFile, keyPath, true);
+            ZipHelper.ExtractToDirectory(zipFile, keyPath, true, false);
 
             return true;
         }
@@ -95,9 +95,9 @@ public partial class CoresService
             return true;
         }
 
-        WriteMessage("JT beta key not found at either location:");
-        WriteMessage($"     {zipFile}");
-        WriteMessage($"     {binFile}");
+        // WriteMessage("JT beta key not found at either location:");
+        // WriteMessage($"     {zipFile}");
+        // WriteMessage($"     {binFile}");
 
         return false;
     }

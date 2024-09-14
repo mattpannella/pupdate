@@ -30,7 +30,6 @@ public static class CoinOpService
         }
 
         var bytes = response.Content.ReadAsByteArrayAsync().Result;
-        File.WriteAllBytes(Path.Combine(ServiceHelper.UpdateDirectory, "coinop.key"), bytes);
 
         return bytes;
     }

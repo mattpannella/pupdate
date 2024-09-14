@@ -50,7 +50,12 @@ public class Config
     [Description("Automatically install updates to Pupdate")]
     public bool auto_install_updates { get; set; } = false;
 
+    [Description("Coin-Op Collection Beta Access")]
+    public bool coin_op_beta { get; set; } = false;
+
     public string temp_directory { get; set; } = null;
+
+    public string patreon_email_address { get; set; } = null;
 
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
     public bool use_local_blacklist { get; set; } = false;

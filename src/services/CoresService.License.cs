@@ -8,21 +8,21 @@ namespace Pannella.Services;
 
 public partial class CoresService
 {
-    private const string EXTRACT_LOCATION = "betakeys";
+    private const string LICENSE_EXTRACT_LOCATION = "licenses";
 
-    public (bool, string, int) IsBetaCore(string identifier)
+    public (bool, string, int, string) IsBetaCore(string identifier)
     {
         var updater = this.ReadUpdatersJson(identifier);
-        if (updater.license == null) {
-            return (false, null, 0);
+        if (updater == null || updater.license == null) {
+            return (false, null, 0, null);
         }
 
         var data = this.ReadDataJson(identifier);
         var slot = data.data.data_slots.FirstOrDefault(x => x.filename == updater.license.filename);
 
         return slot != null
-            ? (true, slot.id, slot.GetPlatformIdIndex())
-            : (false, null, 0);
+            ? (true, slot.id, slot.GetPlatformIdIndex(), updater.license.filename)
+            : (false, null, 0, null);
     }
 
     public void CopyBetaKey(Core core)
@@ -39,54 +39,49 @@ public partial class CoresService
             Directory.CreateDirectory(path);
         }
 
-        string keyPath = Path.Combine(this.installPath, EXTRACT_LOCATION);
+        string keyFile = Path.Combine(this.installPath, LICENSE_EXTRACT_LOCATION, core.beta_slot_filename);
 
-        if (Directory.Exists(keyPath) && Directory.Exists(path))
+        if (File.Exists(keyFile) && Directory.Exists(path))
         {
-            Util.CopyDirectory(keyPath, path, false, true);
+            File.Copy(keyFile, Path.Combine(path, core.beta_slot_filename), true);
             WriteMessage($"License copied to '{path}'.");
         }
     }
 
-    public bool ExtractBetaKey(Core core)
+    public bool RetrieveKeys()
     {
-        string keyPath = Path.Combine(this.installPath, EXTRACT_LOCATION);
-        string zipFile = Path.Combine(this.installPath, BETA_KEY_FILENAME);
+        string keyPath = Path.Combine(this.installPath, LICENSE_EXTRACT_LOCATION);
+        this.ExtractJTBetaKey();
 
-        if (File.Exists(zipFile))
+        string email = ServiceHelper.SettingsService.GetConfig().patreon_email_address;
+        if (email == null && ServiceHelper.SettingsService.GetConfig().coin_op_beta)
         {
-            WriteMessage("License detected. Extracting...");
-            ZipHelper.ExtractToDirectory(zipFile, keyPath, true);
-
-            return true;
+            Console.WriteLine("Unable to retrieve Coin-Op Collection Beta license. Please set your patreon email address.");
+            Console.Write("Enter value: ");
+            email = Console.ReadLine();
+            ServiceHelper.SettingsService.GetConfig().patreon_email_address = email;
+            ServiceHelper.SettingsService.Save();
         }
-
-        string binFile = Path.Combine(this.installPath, BETA_KEY_ALT_FILENAME);
-
-        if (File.Exists(binFile))
+        if (email != null && ServiceHelper.SettingsService.GetConfig().coin_op_beta)
         {
-            WriteMessage("License detected.");
-
-            if (!Directory.Exists(keyPath))
-            {
-                Directory.CreateDirectory(keyPath);
+            try {
+                Console.WriteLine("Retrieving Coin-Op Collection license...");
+                var license = CoinOpService.FetchBetaKey(email);
+                File.WriteAllBytes(Path.Combine(keyPath, "coinop.key"), license);
+                Console.WriteLine("License successfully downloaded.");
+            } catch (Exception e) {
+                Console.WriteLine(e.Message);
+            } finally {
+                Divide();
             }
-
-            File.Copy(binFile, Path.Combine(keyPath, BETA_KEY_ALT_FILENAME), true);
-
-            return true;
         }
-
-        WriteMessage("License not found at either location:");
-        WriteMessage($"     {zipFile}");
-        WriteMessage($"     {binFile}");
-
-        return false;
+        
+        return true;
     }
 
-    public void DeleteBetaKey()
+    public void DeleteBetaKeys()
     {
-        string keyPath = Path.Combine(this.installPath, EXTRACT_LOCATION);
+        string keyPath = Path.Combine(this.installPath, LICENSE_EXTRACT_LOCATION);
 
         if (Directory.Exists(keyPath))
             Directory.Delete(keyPath, true);

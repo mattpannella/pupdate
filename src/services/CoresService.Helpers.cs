@@ -131,11 +131,11 @@ public partial class CoresService
 
             if (!(exists = File.Exists(filePath)))
             {
-                WriteMessage($"JT beta key not found at '{filePath}'");
+                WriteMessage($"License not found at '{filePath}'");
             }
             else if (!(checksum = Util.CompareChecksum(filePath, slot.md5, Util.HashTypes.MD5)))
             {
-                WriteMessage("JT beta key checksum validation failed.");
+                WriteMessage("License checksum validation failed.");
                 WriteMessage($"Location: '{filePath}'");
             }
 
