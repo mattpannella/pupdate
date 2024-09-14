@@ -66,6 +66,21 @@ public partial class CoresService : BaseProcess
         }
     }
 
+    private static List<Core> coresNotInstalled;
+
+    public List<Core> CoresNotInstalled
+    {
+        get
+        {
+            if (coresNotInstalled == null)
+            {
+                RefreshInstalledCores();
+            }
+
+            return coresNotInstalled;
+        }
+    }
+
     public CoresService(string path, SettingsService settingsService, ArchiveService archiveService,
         AssetsService assetsService)
     {
@@ -95,8 +110,26 @@ public partial class CoresService : BaseProcess
 
     public void RefreshInstalledCores()
     {
-        installedCores = cores.Where(c => this.IsInstalled(c.identifier)).ToList();
-        installedCoresWithSponsors = installedCores.Where(c => c.sponsor != null).ToList();
+        installedCores ??= new List<Core>();
+        coresNotInstalled ??= new List<Core>();
+        installedCoresWithSponsors ??= new List<Core>();
+
+        foreach (var core in cores)
+        {
+            if (this.IsInstalled(core.identifier))
+            {
+                installedCores.Add(core);
+
+                if (core.sponsor != null)
+                {
+                    installedCoresWithSponsors.Add(core);
+                }
+            }
+            else
+            {
+                coresNotInstalled.Add(core);
+            }
+        }
     }
 
     public bool Install(Core core, bool clean = false)

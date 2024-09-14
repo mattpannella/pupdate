@@ -286,7 +286,7 @@ internal partial class Program
         combinationPlatformsMenu.Add("Go Back", ConsoleMenu.Close);
         variantCoresMenu.Add("Go Back", ConsoleMenu.Close);
 
-        var menu = new ConsoleMenu()
+        var updateMenu = new ConsoleMenu()
             .Configure(menuConfig)
             .Add("Update All", _ =>
             {
@@ -295,6 +295,30 @@ internal partial class Program
                 ServiceHelper.CoresService.RefreshInstalledCores();
                 Pause();
             })
+            .Add("Update Selected", _ =>
+            {
+                var selectedCores = ShowCoresMenu(
+                    ServiceHelper.CoresService.InstalledCores,
+                    "Which cores would you like to update?",
+                    false);
+
+                coreUpdaterService.RunUpdates(selectedCores.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToArray());
+                Pause();
+            })
+            .Add("Install Selected", _ =>
+            {
+                var selectedCores = RunCoreSelector(
+                    ServiceHelper.CoresService.CoresNotInstalled,
+                    "Which cores would you like to install?");
+
+                coreUpdaterService.RunUpdates(selectedCores.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToArray());
+                Pause();
+            })
+            .Add("Go Back", ConsoleMenu.Close);
+
+        var menu = new ConsoleMenu()
+            .Configure(menuConfig)
+            .Add("Update or Install Cores >", updateMenu.Show)
             .Add("Update Firmware", _ =>
             {
                 ServiceHelper.FirmwareService.UpdateFirmware(ServiceHelper.UpdateDirectory);
@@ -489,8 +513,10 @@ internal partial class Program
         return results;
     }
 
-    private static void RunCoreSelector(List<Core> cores, string message = "Select your cores.")
+    private static Dictionary<string, bool> RunCoreSelector(List<Core> cores, string message = "Select your cores.")
     {
+        Dictionary<string, bool> results = null;
+
         if (ServiceHelper.SettingsService.GetConfig().download_new_cores?.ToLowerInvariant() == "yes")
         {
             foreach (Core core in cores)
@@ -500,7 +526,7 @@ internal partial class Program
         }
         else
         {
-            var results = ShowCoresMenu(cores, message, true);
+            results = ShowCoresMenu(cores, message, true);
 
             foreach (var item in results)
             {
@@ -512,6 +538,8 @@ internal partial class Program
         }
 
         ServiceHelper.SettingsService.Save();
+
+        return results;
     }
 
     private static void PlatformImagePackSelector()

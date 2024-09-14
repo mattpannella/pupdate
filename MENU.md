@@ -1,8 +1,11 @@
-1. Update All
+1. Update or Install Cores
+   1. Update All
+   2. Update Selected
+   3. Install Selected
 2. Update Firmware
 3. Select Cores
 4. Download Assets
-5. Backup Saves
+5. Backup Saves & Memories
 6. Pocket Setup
    1. Add Display Modes
       1. Enable Recommended Display Modes
