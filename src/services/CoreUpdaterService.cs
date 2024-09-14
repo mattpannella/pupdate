@@ -90,6 +90,12 @@ public class CoreUpdaterService : BaseProcess
                     continue;
                 }
 
+                if (core.requires_license && this.coresService.GrossCheck(core))
+                {
+                    missingLicenses.Add(core.identifier);
+                    continue; // skip if you don't have the key
+                }
+
                 if (core.identifier == null)
                 {
                     WriteMessage("Core Name is required. Skipping.");
