@@ -38,6 +38,7 @@ For a full view of the interactive console menu, see [here](MENU.md).
 [CLI Commands and Parameters](#cli-commands-and-parameters) |
 [Jotego Beta Cores](#jotego-beta-cores) |
 [Jotego Cores Analogizer Setup](#jotego-cores-analogizer-setup) |
+[Coin-Op Collection Beta Cores](#coin-op-collection-beta-cores) |
 
 ### Update All
 Install/Update all of your cores, plus a bunch of other stuff. It can basically be used as the "do everything I want" option. Everything marked with a * can be turned on/off via settings.
@@ -293,6 +294,13 @@ Now that Jotego is releasing his beta cores publicly (and requiring a beta key t
 ## Jotego Cores Analogizer Setup
 
 To set your global configuration for the Analogizer in Jotego's Cores just go to `Pocket Setup` > `Jotego Analogizer Config` and it will walk you through the available settings. The settings will be saved to the correct location, so you don't need to do anything else. For more help please refer to his github repo.
+
+## Coin-Op Collection Beta Cores
+
+- Go into Settings and turn on the Coin-Op Beta setting
+- Next time you run Update All it will prompt you to enter your email address that you use for patreon.
+- From now on each time you run Update All it will pull your beta license automatically, so that when you install Coin-Op beta cores, they will function correctly
+- If you ever want to change the email address, go into the Pocket Setup menu
 
 ## Troubleshooting
 
