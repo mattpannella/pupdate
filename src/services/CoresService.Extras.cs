@@ -329,7 +329,7 @@ public partial class CoresService
                 Message = "Complete.",
                 InstalledAssets = (List<string>)results["installed"],
                 SkippedAssets = (List<string>)results["skipped"],
-                MissingLicenses = (bool)results["missingBetaKey"]
+                MissingLicenses = (bool)results["missingLicense"]
                     ? new List<string> { core.identifier }
                     : new List<string>(),
                 SkipOutro = true,
