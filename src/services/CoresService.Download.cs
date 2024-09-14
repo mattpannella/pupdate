@@ -24,7 +24,7 @@ public partial class CoresService
     {
         List<string> installedAssets = new List<string>();
         List<string> skippedAssets = new List<string>();
-        List<string> missingBetaKeys = new List<string>();
+        List<string> missingLicenses = new List<string>();
 
         if (cores == null)
         {
@@ -51,9 +51,9 @@ public partial class CoresService
                 installedAssets.AddRange((List<string>)results["installed"]);
                 skippedAssets.AddRange((List<string>)results["skipped"]);
 
-                if ((bool)results["missingBetaKey"])
+                if ((bool)results["missingLicense"])
                 {
-                    missingBetaKeys.Add(core.identifier);
+                    missingLicenses.Add(core.identifier);
                 }
 
                 Divide();
@@ -74,7 +74,7 @@ public partial class CoresService
             Message = "All Done",
             InstalledAssets = installedAssets,
             SkippedAssets = skippedAssets,
-            MissingBetaKeys = missingBetaKeys,
+            MissingLicenses = missingLicenses,
             SkipOutro = false,
         };
 
@@ -85,7 +85,8 @@ public partial class CoresService
     {
         List<string> installed = new List<string>();
         List<string> skipped = new List<string>();
-        bool missingBetaKey = false;
+        bool missingLicense = false;
+        bool run = false;
 
         // run if:
         // global override is on and core specific is on
@@ -101,7 +102,7 @@ public partial class CoresService
             {
                 { "installed", installed },
                 { "skipped", skipped },
-                { "missingBetaKey", false }
+                { "missingLicense", false }
             };
         }
 
@@ -219,7 +220,7 @@ public partial class CoresService
             {
                 { "installed", installed },
                 { "skipped", skipped },
-                { "missingBetaKey", false }
+                { "missingLicense", false }
             };
         }
 
@@ -231,7 +232,7 @@ public partial class CoresService
             {
                 { "installed", installed },
                 { "skipped", skipped },
-                { "missingBetaKey", false }
+                { "missingLicense", false }
             };
         }
 
@@ -265,12 +266,12 @@ public partial class CoresService
 
                         foreach (DataSlot slot in instanceJson.instance.data_slots)
                         {
-                            var platformId = info.metadata.platform_ids[core.beta_slot_platform_id_index];
+                            var platformId = info.metadata.platform_ids[core.license_slot_platform_id_index];
 
-                            if (!CheckBetaMd5(slot, core.beta_slot_id, platformId))
+                            if (!CheckLicenseMd5(slot, core.license_slot_id, platformId))
                             {
                                 // Moved message to the CheckBetaMd5 method
-                                missingBetaKey = true;
+                                missingLicense = true;
                             }
 
                             if (!this.assetsService.Blacklist.Contains(slot.filename) &&
@@ -326,7 +327,7 @@ public partial class CoresService
         {
             { "installed", installed },
             { "skipped", skipped },
-            { "missingBetaKey", missingBetaKey }
+            { "missingLicense", missingLicense }
         };
 
         return results;

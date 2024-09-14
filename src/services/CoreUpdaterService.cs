@@ -54,7 +54,7 @@ public class CoreUpdaterService : BaseProcess
         List<Dictionary<string, string>> installed = new List<Dictionary<string, string>>();
         List<string> installedAssets = new List<string>();
         List<string> skippedAssets = new List<string>();
-        List<string> missingBetaKeys = new List<string>();
+        List<string> missingLicenses = new List<string>();
         string firmwareDownloaded = null;
 
         if (this.settingsService.GetConfig().backup_saves)
@@ -77,7 +77,7 @@ public class CoreUpdaterService : BaseProcess
             Divide();
         }
 
-        bool jtBetaKeyExists = this.coresService.ExtractBetaKey();
+        this.coresService.RetrieveKeys();
 
         foreach (var core in this.cores.Where(core => ids == null || ids.Any(id => id == core.identifier)))
         {
@@ -91,9 +91,9 @@ public class CoreUpdaterService : BaseProcess
                     continue;
                 }
 
-                if (core.requires_license && !jtBetaKeyExists)
+                if (core.requires_license && this.coresService.GrossCheck(core))
                 {
-                    missingBetaKeys.Add(core.identifier);
+                    missingLicenses.Add(core.identifier);
                     continue; // skip if you don't have the key
                 }
 
@@ -126,22 +126,23 @@ public class CoreUpdaterService : BaseProcess
                 {
                     WriteMessage("No releases found. Skipping.");
 
-                    var isBetaCore = this.coresService.IsBetaCore(core.identifier);
+                    var requiresLicense = this.coresService.RequiresLicense(core.identifier);
 
-                    if (isBetaCore.Item1)
+                    if (requiresLicense.Item1)
                     {
-                        core.beta_slot_id = isBetaCore.Item2;
-                        core.beta_slot_platform_id_index = isBetaCore.Item3;
-                        this.coresService.CopyBetaKey(core);
+                        core.license_slot_id = requiresLicense.Item2;
+                        core.license_slot_platform_id_index = requiresLicense.Item3;
+                        core.license_slot_filename = requiresLicense.Item4;
+                        this.coresService.CopyLicense(core);
                     }
 
                     results = this.coresService.DownloadAssets(core);
                     installedAssets.AddRange(results["installed"] as List<string>);
                     skippedAssets.AddRange(results["skipped"] as List<string>);
 
-                    if ((bool)results["missingBetaKey"])
+                    if ((bool)results["missingLicense"])
                     {
-                        missingBetaKeys.Add(core.identifier);
+                        missingLicenses.Add(core.identifier);
                     }
 
                     JotegoRename(core);
@@ -169,13 +170,14 @@ public class CoreUpdaterService : BaseProcess
                     }
                     else
                     {
-                        var isBetaCore = this.coresService.IsBetaCore(core.identifier);
+                        var requiresLicense = this.coresService.RequiresLicense(core.identifier);
 
-                        if (isBetaCore.Item1)
+                        if (requiresLicense.Item1)
                         {
-                            core.beta_slot_id = isBetaCore.Item2;
-                            core.beta_slot_platform_id_index = isBetaCore.Item3;
-                            this.coresService.CopyBetaKey(core);
+                            core.license_slot_id = requiresLicense.Item2;
+                            core.license_slot_platform_id_index = requiresLicense.Item3;
+                            core.license_slot_filename = requiresLicense.Item4;
+                            this.coresService.CopyLicense(core);
                         }
 
                         if (coreSettings.pocket_extras &&
@@ -207,9 +209,9 @@ public class CoreUpdaterService : BaseProcess
                         installedAssets.AddRange(results["installed"] as List<string>);
                         skippedAssets.AddRange(results["skipped"] as List<string>);
 
-                        if ((bool)results["missingBetaKey"])
+                        if ((bool)results["missingLicense"])
                         {
-                            missingBetaKeys.Add(core.identifier);
+                            missingLicenses.Add(core.identifier);
                         }
 
                         WriteMessage("Up to date. Skipping core.");
@@ -272,22 +274,23 @@ public class CoreUpdaterService : BaseProcess
 
                 JotegoRename(core);
 
-                var isJtBetaCore = this.coresService.IsBetaCore(core.identifier);
+                var isJtBetaCore = this.coresService.RequiresLicense(core.identifier);
 
                 if (isJtBetaCore.Item1)
                 {
-                    core.beta_slot_id = isJtBetaCore.Item2;
-                    core.beta_slot_platform_id_index = isJtBetaCore.Item3;
-                    this.coresService.CopyBetaKey(core);
+                    core.license_slot_id = isJtBetaCore.Item2;
+                    core.license_slot_platform_id_index = isJtBetaCore.Item3;
+                    core.license_slot_filename = isJtBetaCore.Item4;
+                    this.coresService.CopyLicense(core);
                 }
 
                 results = this.coresService.DownloadAssets(core);
                 installedAssets.AddRange(results["installed"] as List<string>);
                 skippedAssets.AddRange(results["skipped"] as List<string>);
 
-                if ((bool)results["missingBetaKey"])
+                if ((bool)results["missingLicense"])
                 {
-                    missingBetaKeys.Add(core.identifier);
+                    missingLicenses.Add(core.identifier);
                 }
 
                 WriteMessage("Installation complete.");
@@ -304,7 +307,6 @@ public class CoreUpdaterService : BaseProcess
             }
         }
 
-        this.coresService.DeleteBetaKey();
         this.coresService.RefreshLocalCores();
         this.coresService.RefreshInstalledCores();
 
@@ -314,7 +316,7 @@ public class CoreUpdaterService : BaseProcess
             InstalledCores = installed,
             InstalledAssets = installedAssets,
             SkippedAssets = skippedAssets,
-            MissingBetaKeys = missingBetaKeys,
+            MissingLicenses = missingLicenses,
             FirmwareUpdated = firmwareDownloaded,
             SkipOutro = false,
         };

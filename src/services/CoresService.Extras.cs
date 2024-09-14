@@ -188,7 +188,7 @@ public partial class CoresService
                     Message = "Complete.",
                     InstalledAssets = (List<string>)results["installed"],
                     SkippedAssets = (List<string>)results["skipped"],
-                    MissingBetaKeys = (bool)results["missingBetaKey"]
+                    MissingLicenses = (bool)results["missingLicense"]
                         ? new List<string> { core.identifier }
                         : new List<string>(),
                     SkipOutro = true,
@@ -208,7 +208,7 @@ public partial class CoresService
 
         if (!this.IsInstalled(core.identifier))
         {
-            bool jtBetaKeyExists = this.ExtractBetaKey();
+            bool jtBetaKeyExists = this.ExtractJTBetaKey();
 
             WriteMessage($"The '{pocketExtra.core_identifiers[0]}' core is not currently installed.");
 
@@ -237,9 +237,9 @@ public partial class CoresService
 
             this.Install(core);
 
-            if (core.requires_license && jtBetaKeyExists)
+            if (core.requires_license)
             {
-                this.CopyBetaKey(core);
+                this.CopyLicense(core);
             }
 
             if (!this.IsInstalled(core.identifier))
@@ -328,7 +328,7 @@ public partial class CoresService
                 Message = "Complete.",
                 InstalledAssets = (List<string>)results["installed"],
                 SkippedAssets = (List<string>)results["skipped"],
-                MissingBetaKeys = (bool)results["missingBetaKey"]
+                MissingLicenses = (bool)results["missingLicense"]
                     ? new List<string> { core.identifier }
                     : new List<string>(),
                 SkipOutro = true,

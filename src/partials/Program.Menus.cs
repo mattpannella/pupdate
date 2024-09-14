@@ -133,6 +133,20 @@ internal partial class Program
 
                 Pause();
             })
+            .Add("Set Patreonn Email Address", () =>
+            {
+                Console.WriteLine($"Current email address: {ServiceHelper.SettingsService.GetConfig().patreon_email_address}");
+                var result = AskYesNoQuestion("Would you like to change your address?");
+
+                if (!result)
+                    return;
+
+                string input = PromptForInput();
+                ServiceHelper.SettingsService.GetConfig().patreon_email_address = input;
+                ServiceHelper.SettingsService.Save();
+
+                Pause();
+            })
             .Add("Go Back", ConsoleMenu.Close);
 
         var pocketSetupMenu = new ConsoleMenu()
@@ -195,28 +209,6 @@ internal partial class Program
 
                     Pause();
                 }
-            })
-            .Add("Remove JT Beta Keys", () =>
-            {
-                Console.WriteLine($"WARNING: This will delete all instances of {CoresService.BETA_KEY_FILENAME} and {CoresService.BETA_KEY_ALT_FILENAME}");
-                var result = AskYesNoQuestion("Would you like to continue?");
-
-                if (!result)
-                    return;
-
-                var binFiles = Directory.EnumerateFiles(ServiceHelper.UpdateDirectory, CoresService.BETA_KEY_ALT_FILENAME,
-                    SearchOption.AllDirectories);
-                var zipFiles = Directory.EnumerateFiles(ServiceHelper.UpdateDirectory, CoresService.BETA_KEY_FILENAME,
-                    SearchOption.AllDirectories);
-                var allFiles = zipFiles.Union(binFiles);
-
-                foreach (var file in allFiles)
-                {
-                    Console.WriteLine($"Deleting '{file}'...");
-                    File.Delete(file);
-                }
-
-                Pause();
             })
             .Add("Prune Save States", _ =>
             {
@@ -358,6 +350,15 @@ internal partial class Program
             .Add("Exit", ConsoleMenu.Close);
 
         menu.Show();
+    }
+
+    private static string PromptForInput()
+    {
+        Console.Write("Enter value: ");
+
+        string value = Console.ReadLine();
+
+        return value;
     }
 
     private static string MenuItemName(string title, bool value, bool requiresLicense = false)

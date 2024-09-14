@@ -17,10 +17,15 @@ public class ZipHelper
         }
     }
 
-    public static void ExtractToDirectory(string zipFile, string destination, bool overwrite = false)
+    public static void ExtractToDirectory(string zipFile, string destination, bool overwrite = false, bool progress = true)
     {
-        Progress<ZipProgress> progress = new Progress<ZipProgress>();
-        progress.ProgressChanged += UpdateProgress;
+        Progress<ZipProgress> _progress = new Progress<ZipProgress>();
+
+        if (progress)
+        {
+            _progress.ProgressChanged += UpdateProgress;
+        }
+        
         var stream = new FileStream(zipFile, FileMode.Open);
         var zip = new ZipArchive(stream);
         zip.ExtractToDirectory(destination, progress, overwrite);
@@ -36,6 +41,7 @@ public class ZipProgress
         Processed = processed;
         CurrentItem = currentItem;
     }
+
     public int Total { get; }
     public int Processed { get; }
     public string CurrentItem { get; }
@@ -47,11 +53,12 @@ public static class ZipExtension
     {
         DirectoryInfo info = Directory.CreateDirectory(target);
         string targetPath = info.FullName;
-
         int count = 0;
+
         foreach (ZipArchiveEntry entry in zipFile.Entries)
         {
             count++;
+
             string fileDestinationPath = Path.GetFullPath(Path.Combine(targetPath, entry.FullName));
 
             if (!fileDestinationPath.StartsWith(targetPath, StringComparison.OrdinalIgnoreCase))
@@ -60,6 +67,7 @@ public static class ZipExtension
             }
 
             var zipProgress = new ZipProgress(zipFile.Entries.Count, count, entry.FullName);
+
             progress.Report(zipProgress);
 
             if (Path.GetFileName(fileDestinationPath).Length == 0)

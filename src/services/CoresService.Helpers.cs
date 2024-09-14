@@ -132,9 +132,9 @@ public partial class CoresService
         return false;
     }
 
-    private bool CheckBetaMd5(DataSlot slot, string betaSlotId, string platform)
+    private bool CheckLicenseMd5(DataSlot slot, string licenseSlotId, string platform)
     {
-        if (slot.md5 != null && (betaSlotId != null && slot.id == betaSlotId))
+        if (slot.md5 != null && (licenseSlotId != null && slot.id == licenseSlotId))
         {
             string path = Path.Combine(this.installPath, "Assets", platform);
             string filePath = Path.Combine(path, "common", slot.filename);
@@ -143,15 +143,34 @@ public partial class CoresService
 
             if (!(exists = File.Exists(filePath)))
             {
-                WriteMessage($"JT beta key not found at '{filePath}'");
+                WriteMessage($"License not found at '{filePath}'");
             }
             else if (!(checksum = Util.CompareChecksum(filePath, slot.md5, Util.HashTypes.MD5)))
             {
-                WriteMessage("JT beta key checksum validation failed.");
+                WriteMessage("License checksum validation failed.");
                 WriteMessage($"Location: '{filePath}'");
             }
 
             return exists && checksum;
+        }
+
+        return true;
+    }
+
+    public bool GrossCheck(Core core)
+    {
+        //if author starts with jt
+        //look for licenses/beta.bin
+
+        //if author is pram0d or atrac17
+        //look for coinop.key
+        if (core.identifier.StartsWith("jt"))
+        {
+            return File.Exists(Path.Combine(this.installPath, "licenses", "beta.bin"));
+        }
+        else if (core.identifier.StartsWith("pram0d") || core.identifier.StartsWith("atrac17"))
+        {
+            return File.Exists(Path.Combine(this.installPath, "licenses", "coinop.key"));
         }
 
         return true;
