@@ -52,7 +52,7 @@ pocket-extras            Download Pocket Extras
   -i, --info                Shows the details for the specified 'name'
   -l, --list                Lists out all of the values for 'name' and their details
 
-display-modes            Enable all Display Modes
+display-modes            Enable the curated list of Display Modes for all cores
   -p, --path                Absolute path to install location
 
 update-self              Check for updates to pupdate

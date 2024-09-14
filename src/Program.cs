@@ -205,7 +205,7 @@ internal partial class Program
                     break;
 
                 case DisplayModesOptions:
-                    EnableDisplayModes();
+                    EnableDisplayModes(isCurated: true);
                     break;
 
                 case PruneMemoriesOptions options:

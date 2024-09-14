@@ -49,8 +49,14 @@ Install/Update all of your cores, plus a bunch of other stuff. It can basically 
 6. Runs the instance JSON generator for each core you have selected (currently, only PC Engine CD) *
 7. Rename every Jotego core you have selected *
 
+### Update Selected
+Presents you with a list of your installed cores and lets you choose which ones you want to update.
+
+### Install Selected
+Presents you with a list of cores you don't have installed and lets you choose which ones you want to install and then immediately installs them with having to run Update All.
+
 ### Update Firmware
-Self explanatory. Just checks for firmware updates and exits.
+Self-explanatory. Just checks for firmware updates and exits.
 
 ### Select Cores
 
@@ -72,6 +78,19 @@ _Note: You are responsible for finding and adding your own ROMs for non-arcade c
 
 This will compress the Saves and Memories directories from your Pocket to the location specified in the config settings.
 
+### Pocket Setup - Display Modes
+
+- Enable Recommended Display Modes
+  
+This enables a curates set of display modes and applies them to specific cores that you have installed. This list can be found in the [`display_modes.json`](display_modes.json) file. If you wish to make changes to this file, download it from GitHub and place it in the same directory as the pupdate executable. Then set `use_local_display_modes` to `true` in your `pupdate_settings.json` file.
+
+- Enable Selected Display Modes for All Cores
+
+This presents you with a list of all of the supported display modes and lets you select which ones you want to apply. Then it applies those display modes to all of the cores you have installed.
+
+- Enable Selected Display Modes for Select Cores
+
+This presents you with a list of all of the supported display modes and lets you select which ones you want to apply. Next, you'll be asked to select which of your installed cores you want to apply the display modes to. Then it applies those display modes to the cores you have selected.
 
 ### Pocket Setup - Download Platform Image Packs
 
@@ -177,21 +196,24 @@ This contains a list of alternate core setups. These take existing cores and mak
 
  The following settings are all available via the `Settings` menu item.
 
-| Name                                   | Description                                                                                                                                                                                                                                                                      |
-|----------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Download Firmware Updates              | Check for firmware updates when running "Update All"                                                                                                                                                                                                                             |
-| Download Missing Assets                | Check for missing assets (ROMs, BIOS files, etc) when running "Update All"                                                                                                                                                                                                       |
-| Download Game & Watch ROMS             | Download Game & Watch ROMS when running "Update All"                                                                                                                                                                                                                             |
-| Build game JSON Files                  | Run the Instance JSON builder during "Update All"                                                                                                                                                                                                                                |
-| Delete untracked cores                 | Any core that is available, but you have not chosen in the "Core Selector" will be uninstalled, if found on your SD card when running "Update All"                                                                                                                               |
-| Automatically rename Jotego cores      | Jotego's cores will be renamed to the correct titles of the platforms they are emulating, when running "Update All". example: jtcontra is Contra                                                                                                                                 |
-| Use CRC check                          | Use CRC file hashes to verify Asset files, and re-download if needed. When running "Update All" or "Download Required Assets"                                                                                                                                                    |
-| Preserve Platforms folder              | Don't overwrite changes made to files in the Platforms folder when running "Update All"                                                                                                                                                                                          |
-| Skip alternative ROMs                  | Ignore files if they are in a folder named "_alternatives" when checking for Assets (Note: this is on by default)                                                                                                                                                                |
-| Compress and backup Saves and Memories | This will compress and backup the Saves and Memories directory to the specified location. By default, a Backups directory will be created off the root. The location can be changed manually by setting the "backup_saves_location" with the absolute path in the settings file. |
-| Show Menu Descriptions                 | This will show descriptions for some of the advanced menu items after they are selected, including a prompt asking if you want to proceed. This is enabled by default.                                                                                                           |
-| Use custom archive                     | Allows you to use a custom site for Asset file checking (there is a pre-configured site available). The actual URL of the custom site can be set manually by editing the settings file in an editor.                                                                             |
-| Automatically install updates to Pupdate  | Turn this on and the application will automatically update itself without asking for input, when you start it                                                                             |
+| Name                                     | Description                                                                                                                                                                                                                                                                      |
+|------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Download Firmware Updates                | Check for firmware updates when running "Update All"                                                                                                                                                                                                                             |
+| Download Missing Assets                  | Check for missing assets (ROMs, BIOS files, etc) when running "Update All"                                                                                                                                                                                                       |
+| Download Game & Watch ROMS               | Download Game & Watch ROMS when running "Update All"                                                                                                                                                                                                                             |
+| Build game JSON Files                    | Run the Instance JSON builder during "Update All"                                                                                                                                                                                                                                |
+| Delete untracked cores                   | Any core that is available, but you have not chosen in the "Core Selector" will be uninstalled, if found on your SD card when running "Update All"                                                                                                                               |
+| Automatically rename Jotego cores        | Jotego's cores will be renamed to the correct titles of the platforms they are emulating, when running "Update All". example: jtcontra is Contra                                                                                                                                 |
+| Use CRC check                            | Use CRC file hashes to verify Asset files, and re-download if needed. When running "Update All" or "Download Required Assets"                                                                                                                                                    |
+| Preserve Platforms folder                | Don't overwrite changes made to files in the Platforms folder when running "Update All"                                                                                                                                                                                          |
+| Skip alternative ROMs                    | Ignore files if they are in a folder named "_alternatives" when checking for Assets (Note: this is on by default)                                                                                                                                                                |
+| Compress and backup Saves and Memories   | This will compress and backup the Saves and Memories directory to the specified location. By default, a Backups directory will be created off the root. The location can be changed manually by setting the "backup_saves_location" with the absolute path in the settings file. |
+| Show Menu Descriptions                   | This will show descriptions for some of the advanced menu items after they are selected, including a prompt asking if you want to proceed. This is enabled by default.                                                                                                           |
+| Use custom archive                       | Allows you to use a custom site for Asset file checking (there is a pre-configured site available). The actual URL of the custom site can be set manually by editing the settings file in an editor.                                                                             |
+| Automatically install updates to Pupdate | Turn this on and the application will automatically update itself without asking for input, when you start it.                                                                                                                                                                   |
+| Use Local Pocket Extras                  | Turn this on and place the `pocket_extras.json` file in the same directory as `pupdate` and it will use the local file instead of getting it from GitHub.                                                                                                                        |
+| Use Local Display Modes                  | Turn this on and place the `display_modes.json` file in the same directory as `pupdate` and it will use the local file instead of getting it from GitHub.                                                                                                                        |
+
 
 ### Additional Settings
 
@@ -205,8 +227,8 @@ This contains a list of alternate core setups. These take existing cores and mak
 | config.custom_archive        | You can set a custom URL here, if you don't want to use the default. `index` is a relative path to the index of your custom site's files. This is not required, but it's needed for CRC checking. If you have CRC checking enabled, the setting will be ignored unless this provides the necessary format. It must match the output of archive.org's json endpoint. https://archive.org/developers/md-read.html |
 | config.backup_saves          | Set this to `true` if you want your Saves directory to be backed up automatically during `Update All`                                                                                                                                                                                                                                                                                                           |
 | config.backup_saves_location | Put the absolute path to the backup location here to backup your `Saves` directory to. This defaults to `Backups` in the current directory when not set.                                                                                                                                                                                                                                                        |
-| config.temp_directory | When left `null` all zip files are downloaded and extracted using a temp directory in your pocket install location. If you supply a path, that will be used, instead                                                                                                                                                                                                                                                        |
-| core_settings                 | This allows you to set a subset of settings on a per core basis. It contains a list of every core, with 3 options. `skip`, `download_assets`, and `platform_rename`. You can use these to override your global defaults                                                                                                                                                                                         |
+| config.temp_directory        | When left `null` all zip files are downloaded and extracted using a temp directory in your pocket install location. If you supply a path, that will be used, instead                                                                                                                                                                                                                                            |
+| core_settings                | This allows you to set a subset of settings on a per core basis. It contains a list of every core, with 3 options. `skip`, `download_assets`, and `platform_rename`. You can use these to override your global defaults                                                                                                                                                                                         |
 
 ## CLI Commands and Parameters
 
@@ -262,7 +284,7 @@ This contains a list of alternate core setups. These take existing cores and mak
     -i, --info                Shows the details for the specified 'name'
     -l, --list                Lists out all of the values for 'name' and their details
 
-  display-modes            Enable all Display Modes
+  display-modes            Enable the curated list of Display Modes for all cores
     -p, --path                Absolute path to install location
 
   prune-memories           Delete all but the latest save states for each game (defaults to all cores)
