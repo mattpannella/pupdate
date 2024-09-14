@@ -86,7 +86,6 @@ public partial class CoresService
         List<string> installed = new List<string>();
         List<string> skipped = new List<string>();
         bool missingLicense = false;
-        bool run = false;
 
         // run if:
         // global override is on and core specific is on

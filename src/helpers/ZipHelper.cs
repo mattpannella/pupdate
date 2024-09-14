@@ -17,17 +17,18 @@ public class ZipHelper
         }
     }
 
-    public static void ExtractToDirectory(string zipFile, string destination, bool overwrite = false, bool progress = true)
+    public static void ExtractToDirectory(string zipFile, string destination, bool overwrite = false, bool useProgress = true)
     {
-        Progress<ZipProgress> _progress = new Progress<ZipProgress>();
+        Progress<ZipProgress> progress = new Progress<ZipProgress>();
 
-        if (progress)
+        if (useProgress)
         {
-            _progress.ProgressChanged += UpdateProgress;
+            progress.ProgressChanged += UpdateProgress;
         }
-        
+
         var stream = new FileStream(zipFile, FileMode.Open);
         var zip = new ZipArchive(stream);
+
         zip.ExtractToDirectory(destination, progress, overwrite);
         stream.Close();
     }
