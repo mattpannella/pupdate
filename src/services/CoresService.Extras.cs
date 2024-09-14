@@ -238,7 +238,7 @@ public partial class CoresService
 
             this.Install(core);
 
-            if (core.requires_license && jtBetaKeyExists)
+            if (core.requires_license)
             {
                 this.CopyLicense(core);
             }
