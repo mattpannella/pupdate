@@ -120,6 +120,20 @@ internal partial class Program
 
                 Pause();
             })
+            .Add("Set Patreonn Email Address", () =>
+            {
+                Console.WriteLine($"Current email address: {ServiceHelper.SettingsService.GetConfig().patreon_email_address}");
+                var result = AskYesNoQuestion("Would you like to change your address?");
+
+                if (!result)
+                    return;
+
+                string input = PromptForInput();
+                ServiceHelper.SettingsService.GetConfig().patreon_email_address = input;
+                ServiceHelper.SettingsService.Save();
+
+                Pause();
+            })
             .Add("Go Back", ConsoleMenu.Close);
 
         var pocketMaintenanceMenu = new ConsoleMenu()
@@ -165,20 +179,6 @@ internal partial class Program
 
                     Pause();
                 }
-            })
-            .Add("Set Patreonn Email Address", () =>
-            {
-                Console.WriteLine($"Current email address: {ServiceHelper.SettingsService.GetConfig().patreon_email_address}");
-                var result = AskYesNoQuestion("Would you like to change your address?");
-
-                if (!result)
-                    return;
-
-                string input = PromptForInput();
-                ServiceHelper.SettingsService.GetConfig().patreon_email_address = input;
-                ServiceHelper.SettingsService.Save();
-
-                Pause();
             })
             .Add("Prune Save States", _ =>
             {
