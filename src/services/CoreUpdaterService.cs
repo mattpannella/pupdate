@@ -274,13 +274,13 @@ public class CoreUpdaterService : BaseProcess
 
                 JotegoRename(core);
 
-                var isBetaCore = this.coresService.IsBetaCore(core.identifier);
+                var isJtBetaCore = this.coresService.IsBetaCore(core.identifier);
 
-                if (isBetaCore.Item1)
+                if (isJtBetaCore.Item1)
                 {
-                    core.beta_slot_id = isBetaCore.Item2;
-                    core.beta_slot_platform_id_index = isBetaCore.Item3;
-                    core.beta_slot_filename = isBetaCore.Item4;
+                    core.beta_slot_id = isJtBetaCore.Item2;
+                    core.beta_slot_platform_id_index = isJtBetaCore.Item3;
+                    core.beta_slot_filename = isJtBetaCore.Item4;
                     this.coresService.CopyBetaKey(core);
                 }
 
