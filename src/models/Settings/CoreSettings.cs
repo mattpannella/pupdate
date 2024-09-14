@@ -13,4 +13,13 @@ public class CoreSettings
 
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
     public string pocket_extras_version { get; set; } = null;
+
+    [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public bool display_modes { get; set; }
+
+    [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public string original_display_modes { get; set; } = null;
+
+    [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public string selected_display_modes { get; set; } = null;
 }

@@ -24,6 +24,7 @@ internal partial class Program
 
                 Console.WriteLine("Updating " + core);
                 ServiceHelper.CoresService.AddDisplayModes(core, displayModes, isCurated);
+                ServiceHelper.SettingsService.Save();
             }
             catch (Exception e)
             {

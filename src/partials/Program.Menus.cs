@@ -168,9 +168,10 @@ internal partial class Program
                     ServiceHelper.CoresService.InstalledCores,
                     "Which cores would you like to reinstall?",
                     false);
-                var identifiers = results.Where(x => x.Value)
-                                               .Select(x => x.Key)
-                                               .ToArray();
+                var identifiers = results
+                    .Where(x => x.Value)
+                    .Select(x => x.Key)
+                    .ToArray();
 
                 if (identifiers.Length > 0)
                 {

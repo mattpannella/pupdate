@@ -1,4 +1,3 @@
-using System.IO.Compression;
 using Pannella.Helpers;
 using Pannella.Models.Analogue.Shared;
 using Pannella.Models.Extras;
@@ -96,6 +95,19 @@ public partial class CoresService
                 WriteMessage("Reapplying Pocket Extras...");
                 this.GetPocketExtra(pocketExtra, this.installPath, false, true);
             }
+        }
+    }
+
+    private void CheckForDisplayModes(string identifier)
+    {
+        var coreSettings = this.settingsService.GetCoreSettings(identifier);
+
+        if (coreSettings.display_modes)
+        {
+            var displayModes = coreSettings.selected_display_modes.Split(',');
+
+            WriteMessage("Reapplying Display Modes...");
+            this.AddDisplayModes(identifier, displayModes, forceOriginal: true);
         }
     }
 

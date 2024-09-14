@@ -116,6 +116,16 @@ public class SettingsService
         }
     }
 
+    public void DisableDisplayModes(string name)
+    {
+        if (settings.core_settings.TryGetValue(name, out CoreSettings value))
+        {
+            value.display_modes = false;
+            value.original_display_modes = null;
+            value.selected_display_modes = null;
+        }
+    }
+
     public List<Core> GetMissingCores() => this.missingCores;
 
     public void EnableMissingCores()

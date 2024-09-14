@@ -24,7 +24,7 @@ public partial class CoresService
         File.WriteAllText(Path.Combine(this.installPath, "Cores", identifier, "video.json"), json);
     }
 
-    public void AddDisplayModes(string identifier, string[] displayModes = null, bool isCurated = false)
+    public void AddDisplayModes(string identifier, string[] displayModes = null, bool isCurated = false, bool forceOriginal = false)
     {
         var info = this.ReadCoreJson(identifier);
         var video = this.ReadVideoJson(identifier);
@@ -75,6 +75,19 @@ public partial class CoresService
             displayModes ??= this.GetAllDisplayModes().Select(m => m.value).ToArray();
             toAdd = displayModes.Select(id => new DisplayMode { id = id }).ToList();
         }
+
+        var settings = this.settingsService.GetCoreSettings(identifier);
+
+        if (!settings.display_modes || forceOriginal)
+        {
+            // if this is the first time custom display modes are being applied, save the original ones
+            settings.original_display_modes = video.display_modes is { Count: > 0 }
+                ? string.Join(',', video.display_modes.Select(d => d.id))
+                : string.Empty;
+        }
+
+        settings.display_modes = true;
+        settings.selected_display_modes = string.Join(',', toAdd.Select(d => d.id));
 
         video.display_modes = toAdd;
 

@@ -110,9 +110,9 @@ public partial class CoresService : BaseProcess
 
     public void RefreshInstalledCores()
     {
-        installedCores ??= new List<Core>();
-        coresNotInstalled ??= new List<Core>();
-        installedCoresWithSponsors ??= new List<Core>();
+        installedCores = new List<Core>();
+        coresNotInstalled = new List<Core>();
+        installedCoresWithSponsors = new List<Core>();
 
         foreach (var core in cores)
         {
@@ -151,7 +151,7 @@ public partial class CoresService : BaseProcess
         {
             this.ReplaceCheck(core.identifier);
 
-            // not resetting the pocket extras on a clean install (a.k.a resinstall)
+            // not resetting the pocket extras on a clean install (a.k.a reinstall)
             // the combination cores and variant cores aren't affected
             // the additional assets extras just add roms so they're not affected either
             this.CheckForPocketExtras(core.identifier);
@@ -160,6 +160,7 @@ public partial class CoresService : BaseProcess
             if (clean)
             {
                 this.settingsService.DisableDisplayModes(core.identifier);
+                this.settingsService.Save();
             }
             else
             {
