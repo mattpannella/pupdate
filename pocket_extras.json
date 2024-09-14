@@ -197,7 +197,7 @@
     },
     {
       "id": "sgb-dual",
-      "name": "Super GameBoy - Dual Aspect Ratio",
+      "name": "Dual Aspect Ratio: Super GameBoy",
       "description": "Installs two cores based of off the Spiritiualized.SuperGB core, one for each aspect ratio (4:3, 8:7). You do not need to have the Super GameBoy core installed prior to using this.",
       "type": "variant_core",
       "core_identifiers": [
@@ -210,7 +210,7 @@
     },
     {
       "id": "sgb2-dual",
-      "name": "Super GameBoy 2 - Dual Aspect Ratio",
+      "name": "Dual Aspect Ratio: Super GameBoy 2",
       "description": "Installs two cores based of off the Spiritiualized.SuperGB core for the Super GameBoy 2 rom, one for each aspect ratio (4:3, 8:7). You do not need to have the Super GameBoy core installed prior to using this.",
       "type": "variant_core",
       "core_identifiers": [
@@ -223,7 +223,7 @@
     },
     {
       "id": "sgb2vw-dual",
-      "name": "Super GameBoy 2: Vaporwave Edition - Dual Aspect Ratio",
+      "name": "Dual Aspect Ratio: Super GameBoy 2: Vaporwave Edition",
       "description": "Installs two cores based of off the Spiritualized.SuperGB core for the Super GameBoy 2: Vaporwave Edition rom hack, one for each aspect ratio (4:3, 8:7). You do not need to have the Super GameBoy or Super GameBoy 2 core installed prior to using this.",
       "type": "variant_core",
       "core_identifiers": [

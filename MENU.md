@@ -4,16 +4,22 @@
 4. Download Assets
 5. Backup Saves
 6. Pocket Setup
-   1. Jotego Analogizer Config
-   2. Download Platform Image Packs
-   3. Download Pocket Library Images
-   4. Download GameBoy Palettes
-   5. Generate Instance JSON Files (PC Engine CD)
-   6. Generate Game & Watch ROMs
-   7. Enable All Display Modes
-   8. Apply 8:7 Aspect Ratio to Super GameBoy cores
-   9. Restore 4:3 Aspect Ratio to Super GameBoy cores
-   10. Go Back
+   1. Add Display Modes
+      1. Enable Recommended Display Modes
+      2. Enable Selected Display Modes for All Cores
+      3. Enable Selected Display Modes for Select Cores
+   2. Download Images and Palettes
+      1. Download Platform Image Packs
+      2. Download Pocket Library Images
+      3. Download GameBoy Palettes
+   3. Generate ROMs & JSON Files
+      1. Generate Instance JSON Files (PC Engine CD)
+      2. Generate Game & Watch ROMs
+   4. Super GameBoy Aspect Ratio
+      1. Apply 8:7 Aspect Ratio to Super GameBoy cores
+      2. Restore 4:3 Aspect Ratio to Super GameBoy cores
+   5. Jotego Analogizer Config
+   6. Go Back
 7. Pocket Maintenance
    1. Reinstall All Cores
    2. Reinstall Select Cores
@@ -33,13 +39,20 @@
       8. Go Back
    2. Combination Platforms
       1. Download Toaplan Version 2 Hardware Combination Core
-      2. Download Sega System 16 Combination Core
-      3. Go Back
+      2. Download Capcom Z80 Hardware Combination Core
+      3. Download Williams 6809 Combination Core
+      4. Download Sega System 16 Combination Core
+      5. Go Back
    3. Variant Cores
       1. Download Vectrex Extras
-      2. Download Super GameBoy 2
-      3. Download Super GameBoy 2: Vaperwave Edition
-      4. Go Back
+      2. Download Dig Dug II
+      3. Download Joust
+      4. Download Super GameBoy 2
+      5. Download Super GameBoy 2: Vaperwave Edition
+      6. Download Dual Aspect Ratio: Super GameBoy
+      7. Download Dual Aspect Ratio: Super GameBoy 2
+      8. Download Dual Aspect Ratio: Super GameBoy 2: Vaperwave Edition
+      9. Go Back
    4. Go Back
 9. Settings
 10. Exit
