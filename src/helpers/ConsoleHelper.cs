@@ -1,5 +1,3 @@
-using System.IO.Compression;
-
 namespace Pannella.Helpers;
 
 public class ConsoleHelper

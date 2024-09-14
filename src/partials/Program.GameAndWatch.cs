@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.IO.Compression;
 using Pannella.Helpers;
 using Pannella.Models.Github;
 using Pannella.Services;

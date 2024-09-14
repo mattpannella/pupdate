@@ -1,4 +1,3 @@
-using System.IO.Compression;
 using Newtonsoft.Json;
 using Pannella.Helpers;
 using Pannella.Models;
@@ -129,7 +128,6 @@ public partial class CoresService
 
                         string contents = File.ReadAllText(renameFile);
                         Uri uri = new Uri(contents);
-                        string urlFileName = Path.GetFileName(uri.LocalPath);
                         string localRenameFileName = Path.Combine(Path.GetDirectoryName(renameFile)!, renamedFileName);
 
                         WriteMessage($"Downloading '{renamedFileName}'");

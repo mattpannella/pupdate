@@ -1,4 +1,3 @@
-using System.IO.Compression;
 using Newtonsoft.Json;
 using Pannella.Helpers;
 using Pannella.Models;

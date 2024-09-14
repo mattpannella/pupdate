@@ -49,19 +49,22 @@ public class Util
         // Create the destination directory
         Directory.CreateDirectory(destinationDir);
 
-        List<string> allfiles = Directory.GetFiles(sourceDir, "*",SearchOption.AllDirectories).ToList();
+        List<string> allFiles = Directory.GetFiles(sourceDir, "*",SearchOption.AllDirectories).ToList();
 
-        int total = (totalFiles == null) ? allfiles.Count() : (int)totalFiles;
+        int total = totalFiles ?? allFiles.Count;
         int count = currentFileCount;
+
         // Get the files in the source directory and copy to the destination directory
         foreach (FileInfo file in dir.GetFiles())
         {
             string targetFilePath = Path.Combine(destinationDir, file.Name);
 
             file.CopyTo(targetFilePath, overwrite);
-            
+
             count++;
-            if(console) ConsoleHelper.ShowProgressBar(count, total);
+
+            if(console)
+                ConsoleHelper.ShowProgressBar(count, total);
         }
 
         // If recursive and copying subdirectories, recursively call this method

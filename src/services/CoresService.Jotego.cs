@@ -1,4 +1,3 @@
-using System.IO.Compression;
 using Pannella.Helpers;
 using Pannella.Models.OpenFPGA_Cores_Inventory;
 using AnalogueCore = Pannella.Models.Analogue.Core.Core;

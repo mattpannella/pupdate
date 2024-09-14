@@ -150,7 +150,21 @@ public partial class CoresService : BaseProcess
         if (this.InstallGithubAsset(core.identifier, core.platform_id, core.download_url))
         {
             this.ReplaceCheck(core.identifier);
+
+            // not resetting the pocket extras on a clean install (a.k.a resinstall)
+            // the combination cores and variant cores aren't affected
+            // the additional assets extras just add roms so they're not affected either
             this.CheckForPocketExtras(core.identifier);
+
+            // reset the display modes customizations on a clean install (a.k.a reinstall)
+            if (clean)
+            {
+                this.settingsService.DisableDisplayModes(core.identifier);
+            }
+            else
+            {
+                this.CheckForDisplayModes(core.identifier);
+            }
 
             return true;
         }
@@ -162,10 +176,11 @@ public partial class CoresService : BaseProcess
     {
         WriteMessage($"Uninstalling {identifier}...");
 
-        Delete(identifier, platformId, nuke);
+        this.Delete(identifier, platformId, nuke);
 
         this.settingsService.DisableCore(identifier);
         this.settingsService.DisablePocketExtras(identifier);
+        this.settingsService.DisableDisplayModes(identifier);
         this.settingsService.Save();
         this.RefreshInstalledCores();
 

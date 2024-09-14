@@ -32,13 +32,13 @@
    6. Go Back
 8. Pocket Extras
    1. Additional Assets
-      1. Download for Eric Lewis's Donkey Kong
+      1. Download extras for Eric Lewis's Donkey Kong
       2. Download extras for Eric Lewis's Radar Scope
-      3. Download for Jotego's Bubble Bobble (jtbubl)
-      4. Download for Jotego's Capcom CPS 1 (jtcps1)
-      5. Download for Jotego's Capcom CPS 1.5 (jtcps15)
-      6. Download for Jotego's Capcom CPS 2 (jtcps2)
-      7. Download for Jotego's Pang / Super Pang (jtpang)
+      3. Download extras for Jotego's Bubble Bobble (jtbubl)
+      4. Download extras for Jotego's Capcom CPS 1 (jtcps1)
+      5. Download extras for Jotego's Capcom CPS 1.5 (jtcps15)
+      6. Download extras for Jotego's Capcom CPS 2 (jtcps2)
+      7. Download extras for Jotego's Pang / Super Pang (jtpang)
       8. Go Back
    2. Combination Platforms
       1. Download Toaplan Version 2 Hardware Combination Core

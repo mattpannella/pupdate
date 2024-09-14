@@ -365,7 +365,7 @@ public class CoreUpdaterService : BaseProcess
 
     public void ReloadSettings()
     {
-        this.settingsService = ServiceHelper.SettingsService;;
+        this.settingsService = ServiceHelper.SettingsService;
         this.coresService = ServiceHelper.CoresService;
     }
 }
