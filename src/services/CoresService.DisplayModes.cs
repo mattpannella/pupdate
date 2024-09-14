@@ -41,16 +41,4 @@ public partial class CoresService
 
         return displayModes;
     }
-
-    public List<DisplayMode> GetCuratedDisplayModes(string[] platformIds)
-    {
-        List<DisplayMode> displayModes = new List<DisplayMode>();
-
-        foreach (string key in this.DisplayModes.Keys.Where(key => key == "all" || platformIds.Contains(key)))
-        {
-            displayModes.AddRange(this.DisplayModes[key]);
-        }
-
-        return displayModes;
-    }
 }

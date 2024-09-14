@@ -45,11 +45,6 @@ internal partial class Program
 
         var displayModesMenu = new ConsoleMenu()
             .Configure(menuConfig)
-            .Add("Enable All Display Modes", () =>
-            {
-                EnableDisplayModes();
-                Pause();
-            })
             .Add("Enable Recommended Display Modes", () =>
             {
                 EnableDisplayModes(isCurated: true);
@@ -58,6 +53,11 @@ internal partial class Program
             .Add("Enable Selected Display Modes", () =>
             {
                 DisplayModeSelector();
+                Pause();
+            })
+            .Add("Enable Selected Display Modes for Selected Cores", () =>
+            {
+                DisplayModeSelector(true);
                 Pause();
             })
             .Add("Go Back", ConsoleMenu.Close);
@@ -384,6 +384,19 @@ internal partial class Program
         var offset = 0;
         bool more = true;
         var results = new Dictionary<string, bool>();
+        string save,
+            quit;
+
+        if (isCoreSelection)
+        {
+            save = "Save Choices";
+            quit = "Quit without saving";
+        }
+        else
+        {
+            save = "Apply Choices";
+            quit = "Quit without applying";
+        }
 
         while (more)
         {
@@ -457,13 +470,13 @@ internal partial class Program
                 });
             }
 
-            menu.Add("Save Choices", thisMenu =>
+            menu.Add(save, thisMenu =>
             {
                 thisMenu.CloseMenu();
                 more = false;
             });
 
-            menu.Add("Quit without saving", thisMenu =>
+            menu.Add(quit, thisMenu =>
             {
                 thisMenu.CloseMenu();
                 results.Clear();
@@ -557,7 +570,7 @@ internal partial class Program
         }
     }
 
-    private static void DisplayModeSelector()
+    private static void DisplayModeSelector(bool showCoreSelector = false)
     {
         Console.Clear();
 
@@ -645,12 +658,32 @@ internal partial class Program
                 });
             }
 
-            menu.Add("Apply Choices", thisMenu =>
+            if (!showCoreSelector)
             {
-                EnableDisplayModes(results.ToArray());
-                thisMenu.CloseMenu();
-                more = false;
-            });
+                menu.Add("Apply Choices", thisMenu =>
+                {
+                    EnableDisplayModes(displayModes: results.ToArray());
+                    thisMenu.CloseMenu();
+                    more = false;
+                });
+            }
+            else
+            {
+                menu.Add("Select Cores", thisMenu =>
+                {
+                    thisMenu.CloseMenu();
+                    more = false;
+
+                    var coreResults = ShowCoresMenu(
+                        ServiceHelper.CoresService.InstalledCores,
+                        "Which cores would you like to apply the selected display modes to?",
+                        false);
+
+                    EnableDisplayModes(
+                        coreResults.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToList(),
+                        results.ToArray());
+                });
+            }
 
             menu.Add("Quit without applying", thisMenu =>
             {
