@@ -40,11 +40,6 @@ public partial class CoresService
             Directory.CreateDirectory(path);
         }
 
-        if (!Directory.Exists(licensePath))
-        {
-            Directory.CreateDirectory(licensePath);
-        }
-
         string keyFile = Path.Combine(licensePath, core.license_slot_filename);
 
         if (File.Exists(keyFile) && Directory.Exists(path))
@@ -70,6 +65,10 @@ public partial class CoresService
         }
         if (email != null && ServiceHelper.SettingsService.GetConfig().coin_op_beta)
         {
+            if (!Directory.Exists(keyPath))
+            {
+                Directory.CreateDirectory(keyPath);
+            }
             try {
                 Console.WriteLine("Retrieving Coin-Op Collection license...");
                 var license = CoinOpService.FetchLicense(email);
