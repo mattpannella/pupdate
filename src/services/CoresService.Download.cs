@@ -87,6 +87,12 @@ public partial class CoresService
         List<string> skipped = new List<string>();
         bool missingLicense = false;
 
+        //dynamically add the license file to the blacklist so we dont try to download it
+        if (core.license_slot_filename != null)
+        {
+            this.assetsService.Blacklist.Add(core.license_slot_filename);
+        }
+
         // run if:
         // global override is on and core specific is on
         // or
