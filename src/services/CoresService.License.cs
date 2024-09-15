@@ -33,13 +33,19 @@ public partial class CoresService
             "Assets",
             info.metadata.platform_ids[core.license_slot_platform_id_index],
             "common");
+        string licensePath = Path.Combine(this.installPath, LICENSE_EXTRACT_LOCATION);
 
         if (!Directory.Exists(path))
         {
             Directory.CreateDirectory(path);
         }
 
-        string keyFile = Path.Combine(this.installPath, LICENSE_EXTRACT_LOCATION, core.license_slot_filename);
+        if (!Directory.Exists(licensePath))
+        {
+            Directory.CreateDirectory(licensePath);
+        }
+
+        string keyFile = Path.Combine(licensePath, core.license_slot_filename);
 
         if (File.Exists(keyFile) && Directory.Exists(path))
         {
