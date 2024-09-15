@@ -211,9 +211,7 @@ public partial class CoresService
 
         // These cores have instance json files and the roms are not in the default archive.
         // Check to see if they have a core specific archive defined, skip otherwise.
-        // this is getting gross
-        if (core.identifier is "Mazamars312.NeoGeo" or "Mazamars312.NeoGeo_Overdrive" or "Mazamars312.NeoGeo_Analogizer" or "obsidian.Vectrex"
-            && archive.type != ArchiveType.core_specific_archive)
+        if (this.IgnoreInstanceJson.Contains(core.identifier) && archive.type != ArchiveType.core_specific_archive)
         {
             return new Dictionary<string, object>
             {

@@ -359,7 +359,7 @@ public class CoreUpdaterService : BaseProcess
         }
 
         // If the platform id is still missing, it's a pocket extra that was already deleted, so skip it.
-        if (string.IsNullOrEmpty(core.platform_id) &&
+        if (!string.IsNullOrEmpty(core.platform_id) &&
             (this.settingsService.GetConfig().delete_skipped_cores || force))
         {
             this.coresService.Uninstall(core.identifier, core.platform_id, nuke);

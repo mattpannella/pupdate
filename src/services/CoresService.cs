@@ -8,6 +8,7 @@ namespace Pannella.Services;
 public partial class CoresService : BaseProcess
 {
     private const string CORES_END_POINT = "https://openfpga-cores-inventory.github.io/analogue-pocket/api/v2/cores.json";
+    private const string IGNORE_INSTANCE_JSON = "https://raw.githubusercontent.com/mattpannella/pupdate/main/ignore_instance.json";
     private const string ZIP_FILE_NAME = "core.zip";
 
     private readonly string installPath;
@@ -15,6 +16,30 @@ public partial class CoresService : BaseProcess
     private readonly ArchiveService archiveService;
     private readonly AssetsService assetsService;
     private static List<Core> cores;
+    private static List<string> ignoreInstanceJson;
+
+    private List<string> IgnoreInstanceJson
+    {
+        get
+        {
+            if (ignoreInstanceJson == null)
+            {
+#if DEBUG
+                string json = File.ReadAllText("ignore_instance.json");
+#else
+                string json = this.settingsService.GetConfig().use_local_ignore_instance_json
+                    ? File.ReadAllText("ignore_instance.json")
+                    : HttpHelper.Instance.GetHTML(IGNORE_INSTANCE_JSON);
+#endif
+
+                var coreIdentifiers = JsonConvert.DeserializeObject<IgnoreInstanceJson>(json);
+
+                ignoreInstanceJson = coreIdentifiers.core_identifiers;
+            }
+
+            return ignoreInstanceJson;
+        }
+    }
 
     public List<Core> Cores
     {

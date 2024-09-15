@@ -71,6 +71,10 @@ public class Config
     public bool use_local_display_modes { get; set; } = false;
 
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    //[Description("Use a local ignore_instance.json file")]
+    public bool use_local_ignore_instance_json { get; set; } = false;
+
+    [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
     //[Description("Suppress the 'Already Installed' messages for core files and assets")]
     public bool suppress_already_installed { get; set; }
 

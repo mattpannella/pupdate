@@ -9,8 +9,7 @@ namespace Pannella.Services;
 
 public class AssetsService
 {
-    private const string BLACKLIST =
-        "https://raw.githubusercontent.com/mattpannella/pupdate/main/blacklist.json";
+    private const string BLACKLIST = "https://raw.githubusercontent.com/mattpannella/pupdate/main/blacklist.json";
 
     private readonly bool useLocalBlacklist;
     private List<string> blacklist;
