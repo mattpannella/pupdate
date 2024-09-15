@@ -164,7 +164,7 @@ public partial class CoresService
 
         //if author is pram0d or atrac17
         //look for coinop.key
-        if (core.identifier.StartsWith("jt"))
+        if (core.identifier.StartsWith("jotego"))
         {
             return File.Exists(Path.Combine(this.installPath, "licenses", "beta.bin"));
         }

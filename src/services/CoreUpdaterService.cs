@@ -91,7 +91,12 @@ public class CoreUpdaterService : BaseProcess
                     continue;
                 }
 
-                if (core.requires_license && this.coresService.GrossCheck(core))
+                var requiresLicense = this.coresService.RequiresLicense(core.identifier);
+                core.license_slot_filename = requiresLicense.Item4;
+                core.license_slot_id = requiresLicense.Item2;
+                core.license_slot_platform_id_index = requiresLicense.Item3;
+
+                if (core.requires_license && !this.coresService.GrossCheck(core))
                 {
                     missingLicenses.Add(core.identifier);
                     continue; // skip if you don't have the key
@@ -126,13 +131,8 @@ public class CoreUpdaterService : BaseProcess
                 {
                     WriteMessage("No releases found. Skipping.");
 
-                    var requiresLicense = this.coresService.RequiresLicense(core.identifier);
-
                     if (requiresLicense.Item1)
                     {
-                        core.license_slot_id = requiresLicense.Item2;
-                        core.license_slot_platform_id_index = requiresLicense.Item3;
-                        core.license_slot_filename = requiresLicense.Item4;
                         this.coresService.CopyLicense(core);
                     }
 
@@ -170,13 +170,8 @@ public class CoreUpdaterService : BaseProcess
                     }
                     else
                     {
-                        var requiresLicense = this.coresService.RequiresLicense(core.identifier);
-
                         if (requiresLicense.Item1)
                         {
-                            core.license_slot_id = requiresLicense.Item2;
-                            core.license_slot_platform_id_index = requiresLicense.Item3;
-                            core.license_slot_filename = requiresLicense.Item4;
                             this.coresService.CopyLicense(core);
                         }
 
