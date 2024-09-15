@@ -9,6 +9,7 @@ public partial class CoresService : BaseProcess
 {
     private const string CORES_END_POINT = "https://openfpga-cores-inventory.github.io/analogue-pocket/api/v2/cores.json";
     private const string IGNORE_INSTANCE_JSON = "https://raw.githubusercontent.com/mattpannella/pupdate/main/ignore_instance.json";
+    private const string CORES_LOCAL_END_POINT = "api_override.json";
     private const string ZIP_FILE_NAME = "core.zip";
 
     private readonly string installPath;
@@ -47,7 +48,17 @@ public partial class CoresService : BaseProcess
         {
             if (cores == null)
             {
-                string json = HttpHelper.Instance.GetHTML(CORES_END_POINT);
+                var localPayload = Path.Combine(ServiceHelper.UpdateDirectory, CORES_LOCAL_END_POINT);
+                string json;
+                if (File.Exists(localPayload))
+                {
+                    json = File.ReadAllText(localPayload);
+                }
+                else
+                {
+                    json = HttpHelper.Instance.GetHTML(CORES_END_POINT);
+                }
+                
                 Dictionary<string, List<Core>> parsed = JsonConvert.DeserializeObject<Dictionary<string, List<Core>>>(json);
 
                 if (parsed.TryGetValue("data", out var coresList))

@@ -33,13 +33,14 @@ public partial class CoresService
             "Assets",
             info.metadata.platform_ids[core.license_slot_platform_id_index],
             "common");
+        string licensePath = Path.Combine(this.installPath, LICENSE_EXTRACT_LOCATION);
 
         if (!Directory.Exists(path))
         {
             Directory.CreateDirectory(path);
         }
 
-        string keyFile = Path.Combine(this.installPath, LICENSE_EXTRACT_LOCATION, core.license_slot_filename);
+        string keyFile = Path.Combine(licensePath, core.license_slot_filename);
 
         if (File.Exists(keyFile) && Directory.Exists(path))
         {
@@ -64,6 +65,10 @@ public partial class CoresService
         }
         if (email != null && ServiceHelper.SettingsService.GetConfig().coin_op_beta)
         {
+            if (!Directory.Exists(keyPath))
+            {
+                Directory.CreateDirectory(keyPath);
+            }
             try {
                 Console.WriteLine("Retrieving Coin-Op Collection license...");
                 var license = CoinOpService.FetchLicense(email);
