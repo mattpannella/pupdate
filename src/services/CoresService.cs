@@ -50,6 +50,7 @@ public partial class CoresService : BaseProcess
             {
                 var localPayload = Path.Combine(ServiceHelper.UpdateDirectory, CORES_LOCAL_END_POINT);
                 string json;
+
                 if (File.Exists(localPayload))
                 {
                     json = File.ReadAllText(localPayload);
@@ -58,7 +59,7 @@ public partial class CoresService : BaseProcess
                 {
                     json = HttpHelper.Instance.GetHTML(CORES_END_POINT);
                 }
-                
+
                 Dictionary<string, List<Core>> parsed = JsonConvert.DeserializeObject<Dictionary<string, List<Core>>>(json);
 
                 if (parsed.TryGetValue("data", out var coresList))

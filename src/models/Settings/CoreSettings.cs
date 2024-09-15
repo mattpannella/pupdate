@@ -22,4 +22,7 @@ public class CoreSettings
 
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
     public string selected_display_modes { get; set; } = null;
+
+    [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public bool requires_license { get; set; } = false;
 }

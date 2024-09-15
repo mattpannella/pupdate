@@ -35,6 +35,7 @@ public static class ServiceHelper
             AssetsService = new AssetsService(SettingsService.GetConfig().use_local_blacklist);
             CoresService = new CoresService(path, SettingsService, ArchiveService, AssetsService);
             SettingsService.InitializeCoreSettings(CoresService.Cores);
+            SettingsService.Save();
             PlatformImagePacksService = new PlatformImagePacksService(path, SettingsService.GetConfig().github_token,
                 SettingsService.GetConfig().use_local_image_packs);
             FirmwareService = new FirmwareService();
