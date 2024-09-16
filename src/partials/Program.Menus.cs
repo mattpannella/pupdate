@@ -167,6 +167,25 @@ internal partial class Program
 
         var pocketMaintenanceMenu = new ConsoleMenu()
             .Configure(menuConfig)
+            .Add("Update Selected", _ =>
+            {
+                var selectedCores = ShowCoresMenu(
+                    ServiceHelper.CoresService.InstalledCores,
+                    "Which cores would you like to update?",
+                    false);
+
+                coreUpdaterService.RunUpdates(selectedCores.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToArray());
+                Pause();
+            })
+            .Add("Install Selected", _ =>
+            {
+                var selectedCores = RunCoreSelector(
+                    ServiceHelper.CoresService.CoresNotInstalled,
+                    "Which cores would you like to install?");
+
+                coreUpdaterService.RunUpdates(selectedCores.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToArray());
+                Pause();
+            })
             .Add("Reinstall All Cores", _ =>
             {
                 coreUpdaterService.RunUpdates(null, true);
@@ -275,7 +294,7 @@ internal partial class Program
         combinationPlatformsMenu.Add("Go Back", ConsoleMenu.Close);
         variantCoresMenu.Add("Go Back", ConsoleMenu.Close);
 
-        var updateMenu = new ConsoleMenu()
+        var menu = new ConsoleMenu()
             .Configure(menuConfig)
             .Add("Update All", _ =>
             {
@@ -284,30 +303,6 @@ internal partial class Program
                 ServiceHelper.CoresService.RefreshInstalledCores();
                 Pause();
             })
-            .Add("Update Selected", _ =>
-            {
-                var selectedCores = ShowCoresMenu(
-                    ServiceHelper.CoresService.InstalledCores,
-                    "Which cores would you like to update?",
-                    false);
-
-                coreUpdaterService.RunUpdates(selectedCores.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToArray());
-                Pause();
-            })
-            .Add("Install Selected", _ =>
-            {
-                var selectedCores = RunCoreSelector(
-                    ServiceHelper.CoresService.CoresNotInstalled,
-                    "Which cores would you like to install?");
-
-                coreUpdaterService.RunUpdates(selectedCores.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToArray());
-                Pause();
-            })
-            .Add("Go Back", ConsoleMenu.Close);
-
-        var menu = new ConsoleMenu()
-            .Configure(menuConfig)
-            .Add("Update or Install Cores >", updateMenu.Show)
             .Add("Update Firmware", _ =>
             {
                 ServiceHelper.FirmwareService.UpdateFirmware(ServiceHelper.UpdateDirectory);

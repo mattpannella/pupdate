@@ -1,7 +1,4 @@
-1. Update or Install Cores
-   1. Update All
-   2. Update Selected
-   3. Install Selected
+1. Update All
 2. Update Firmware
 3. Select Cores
 4. Download Assets
@@ -24,12 +21,13 @@
    5. Jotego Analogizer Config
    6. Go Back
 7. Pocket Maintenance
-   1. Reinstall All Cores
-   2. Reinstall Select Cores
-   3. Uninstall Select Cores
-   4. Remove JT Beta Keys
-   5. Prune Save States
-   6. Go Back
+   1. Update Selected
+   2. Install Selected
+   3. Reinstall All Cores
+   4. Reinstall Select Cores
+   5. Uninstall Select Cores
+   6. Prune Save States
+   7. Go Back
 8. Pocket Extras
    1. Additional Assets
       1. Download extras for Eric Lewis's Donkey Kong
