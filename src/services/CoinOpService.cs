@@ -20,6 +20,10 @@ public static class CoinOpService
             RequestUri = new Uri(url)
         };
 
+        var agent = new ProductInfoHeaderValue("Pupdate", "1.0");
+
+        request.Headers.UserAgent.Add(agent);
+
         var response = client.Send(request);
 
         if (response.StatusCode == HttpStatusCode.NotFound) {
