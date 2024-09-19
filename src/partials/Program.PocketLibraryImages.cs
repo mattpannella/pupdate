@@ -1,4 +1,3 @@
-using System.IO.Compression;
 using Pannella.Helpers;
 using Pannella.Models.Settings;
 using ArchiveFile = Pannella.Models.Archive.File;

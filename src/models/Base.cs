@@ -1,3 +1,5 @@
+using Pannella.Models.Events;
+
 namespace Pannella.Models;
 
 public class Base

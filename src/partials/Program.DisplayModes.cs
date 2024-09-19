@@ -4,30 +4,27 @@ namespace Pannella;
 
 internal partial class Program
 {
-    private static void EnableDisplayModes()
+    private static void EnableDisplayModes(List<string> coreIdentifiers = null, string[] displayModes = null, bool isCurated = false)
     {
-        var cores = ServiceHelper.CoresService.Cores.Where(core =>
-            !ServiceHelper.SettingsService.GetCoreSettings(core.identifier).skip).ToList();
+        coreIdentifiers ??= ServiceHelper.CoresService.Cores
+            .Where(core => !ServiceHelper.SettingsService.GetCoreSettings(core.identifier).skip)
+            .Select(core => core.identifier)
+            .ToList();
 
-        foreach (var core in cores)
+        foreach (var core in coreIdentifiers)
         {
-            if (core == null)
-            {
-                Console.WriteLine("Core name is required. Skipping");
-                return;
-            }
-
             try
             {
                 // not sure if this check is still needed
-                if (core.identifier == null)
+                if (core == null)
                 {
                     Console.WriteLine("Core Name is required. Skipping.");
                     continue;
                 }
 
-                Console.WriteLine("Updating " + core.identifier);
-                ServiceHelper.CoresService.AddDisplayModes(core.identifier);
+                Console.WriteLine("Updating " + core);
+                ServiceHelper.CoresService.AddDisplayModes(core, displayModes, isCurated);
+                ServiceHelper.SettingsService.Save();
             }
             catch (Exception e)
             {

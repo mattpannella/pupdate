@@ -5,64 +5,6 @@ namespace Pannella.Services;
 
 public partial class CoresService
 {
-    private static readonly string[] ALL_MODES =
-    {
-        "0x10", // CRT Trinitron
-        "0x20", // Grayscale LCD
-        "0x30", // Reflective Color LCD
-        "0x40", // Backlit Color LCD
-        "0xE0", // Pinball Neon Matrix
-        "0xE1", // Vacuum Fluorescent
-    };
-
-    private static readonly string[] GB_MODES =
-    {
-        "0x21", // Original GB DMG
-        "0x22", // Original GBP
-        "0x23", // Original GBP Light
-    };
-
-   private static readonly string[] GBC_MODES =
-    {
-        "0x31", // Original GBC LCD
-        "0x32", // Original GBC LCD+
-    };
-
-    private static readonly string[] GBA_MODES =
-    {
-        "0x41", // Original GBA LCD
-        "0x42", // Original GBA SP 101
-    };
-
-    private static readonly string[] GG_MODES =
-    {
-        "0x51", // Original GG
-        "0x52", // Original GG+
-    };
-
-    private static readonly string[] NGP_MODES =
-    {
-        "0x61", // Original NGP
-    };
-
-    private static readonly string[] NGPC_MODES =
-    {
-        "0x62", // Original NGPC
-        "0x63", // Original NGPC+
-    };
-
-    private static readonly string[] PCE_MODES =
-    {
-        "0x71", // TurboExpress
-        "0x72", // PC Engine LT
-    };
-
-    private static readonly string[] LYNX_MODES =
-    {
-        "0x81", // Original Lynx
-        "0x82", // Original Lynx+
-    };
-
     public void ChangeAspectRatio(string identifier, int fromWidth, int fromHeight, int toWidth, int toHeight)
     {
         var video = this.ReadVideoJson(identifier);
@@ -82,44 +24,72 @@ public partial class CoresService
         File.WriteAllText(Path.Combine(this.installPath, "Cores", identifier, "video.json"), json);
     }
 
-    public void AddDisplayModes(string identifier)
+    public void AddDisplayModes(string identifier, string[] displayModes = null, bool isCurated = false, bool forceOriginal = false)
     {
         var info = this.ReadCoreJson(identifier);
         var video = this.ReadVideoJson(identifier);
-        List<DisplayMode> all = new List<DisplayMode>();
+        List<DisplayMode> toAdd = new List<DisplayMode>();
 
-        switch (info.metadata.platform_ids)
-
+        if (isCurated)
         {
-            case string[] p when p.Contains("gb"):
-                all.AddRange(GB_MODES.Select(id => new DisplayMode { id = id }));
-                break;
-            case string[] p when p.Contains("gbc"):
-                all.AddRange(GBC_MODES.Select(id => new DisplayMode { id = id }));
-                break;
-            case string[] p when p.Contains("gba"):
-                all.AddRange(GBA_MODES.Select(id => new DisplayMode { id = id }));
-                break;
-            case string[] p when p.Contains("gg"):
-                all.AddRange(GG_MODES.Select(id => new DisplayMode { id = id }));
-                break;
-            case string[] p when p.Contains("lynx"):
-                all.AddRange(LYNX_MODES.Select(id => new DisplayMode { id = id }));
-                break;
-            case string[] p when p.Any(s => s.EndsWith("ngpc")): // ngpc & jtngpc
-                all.AddRange(NGPC_MODES.Select(id => new DisplayMode { id = id }));
-                break;
-            case string[] p when p.Any(s => s.EndsWith("ngp")): // ngp & jtngp
-                all.AddRange(NGP_MODES.Select(id => new DisplayMode { id = id }));
-                break;
-            case string[] p when p.Any(s => s.StartsWith("pce")): // pce & pcecd
-                all.AddRange(PCE_MODES.Select(id => new DisplayMode { id = id }));
-                break;
+            if (this.DisplayModes.TryGetValue("all", out var all))
+            {
+                toAdd.AddRange(all.Select(displayMode => new DisplayMode { id = displayMode.value }));
+            }
 
+            if (info.metadata.platform_ids.Contains("gb") && this.DisplayModes.TryGetValue("gb", out var gb))
+            {
+                toAdd.AddRange(gb.Select(displayMode => new DisplayMode { id = displayMode.value }));
+            }
+            else if (info.metadata.platform_ids.Contains("gbc") && this.DisplayModes.TryGetValue("gbc", out var gbc))
+            {
+                toAdd.AddRange(gbc.Select(displayMode => new DisplayMode { id = displayMode.value }));
+            }
+            else if (info.metadata.platform_ids.Contains("gba") && this.DisplayModes.TryGetValue("gba", out var gba))
+            {
+                toAdd.AddRange(gba.Select(displayMode => new DisplayMode { id = displayMode.value }));
+            }
+            else if (info.metadata.platform_ids.Contains("gg") && this.DisplayModes.TryGetValue("gg", out var gg))
+            {
+                toAdd.AddRange(gg.Select(displayMode => new DisplayMode { id = displayMode.value }));
+            }
+            else if (info.metadata.platform_ids.Contains("lynx") && this.DisplayModes.TryGetValue("lynx", out var lynx))
+            {
+                toAdd.AddRange(lynx.Select(displayMode => new DisplayMode { id = displayMode.value }));
+            }
+            else if (info.metadata.platform_ids.Contains("jtngpc") && this.DisplayModes.TryGetValue("jtngpc", out var ngpc))
+            {
+                toAdd.AddRange(ngpc.Select(displayMode => new DisplayMode { id = displayMode.value }));
+            }
+            else if (info.metadata.platform_ids.Contains("jtngp") && this.DisplayModes.TryGetValue("jtngp", out var ngp))
+            {
+                toAdd.AddRange(ngp.Select(displayMode => new DisplayMode { id = displayMode.value }));
+            }
+            else if (info.metadata.platform_ids.Contains("pce") && this.DisplayModes.TryGetValue("pce", out var pce))
+            {
+                toAdd.AddRange(pce.Select(displayMode => new DisplayMode { id = displayMode.value }));
+            }
+        }
+        else
+        {
+            displayModes ??= this.GetAllDisplayModes().Select(m => m.value).ToArray();
+            toAdd = displayModes.Select(id => new DisplayMode { id = id }).ToList();
         }
 
-        all.AddRange(ALL_MODES.Select(id => new DisplayMode { id = id }));
-        video.display_modes = all;
+        var settings = this.settingsService.GetCoreSettings(identifier);
+
+        if (!settings.display_modes || forceOriginal)
+        {
+            // if this is the first time custom display modes are being applied, save the original ones
+            settings.original_display_modes = video.display_modes is { Count: > 0 }
+                ? string.Join(',', video.display_modes.Select(d => d.id))
+                : string.Empty;
+        }
+
+        settings.display_modes = true;
+        settings.selected_display_modes = string.Join(',', toAdd.Select(d => d.id));
+
+        video.display_modes = toAdd;
 
         Dictionary<string, Video> output = new Dictionary<string, Video> { { "video", video } };
         string json = JsonConvert.SerializeObject(output, Formatting.Indented);

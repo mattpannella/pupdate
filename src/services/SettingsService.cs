@@ -68,9 +68,19 @@ public class SettingsService
 
         foreach (Core core in cores)
         {
-            if (!settings.core_settings.ContainsKey(core.identifier))
+            // if (!settings.core_settings.ContainsKey(core.identifier))
+            if (!settings.core_settings.TryGetValue(core.identifier, out var coreSettings))
             {
                 this.missingCores.Add(core);
+            }
+            else if (coreSettings.requires_license && !core.requires_license)
+            {
+                this.missingCores.Add(core);
+                coreSettings.requires_license = false;
+            }
+            else if (core.requires_license)
+            {
+                coreSettings.requires_license = true;
             }
         }
     }
@@ -113,6 +123,16 @@ public class SettingsService
         {
             value.pocket_extras = false;
             value.pocket_extras_version = null;
+        }
+    }
+
+    public void DisableDisplayModes(string name)
+    {
+        if (settings.core_settings.TryGetValue(name, out CoreSettings value))
+        {
+            value.display_modes = false;
+            value.original_display_modes = null;
+            value.selected_display_modes = null;
         }
     }
 

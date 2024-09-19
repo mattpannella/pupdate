@@ -16,9 +16,6 @@ public class Config
     [Description("Preserve 'Platforms' folder during 'Update All'")]
     public bool preserve_platforms_folder { get; set; } = false;
 
-   // [Description("Preserve Save Files during 'Update All'. If a core developer packs a pre-configured save file with their update, this file will be installed on your SD card unless you turn this setting on")]
-    //public bool preserve_save_files { get; set; } = false;
-
     [Description("Delete untracked cores during 'Update All'")]
     public bool delete_skipped_cores { get; set; } = true;
 
@@ -50,18 +47,35 @@ public class Config
     [Description("Automatically install updates to Pupdate")]
     public bool auto_install_updates { get; set; } = false;
 
+    [Description("Coin-Op Collection Beta Access")]
+    public bool coin_op_beta { get; set; } = false;
+
     public string temp_directory { get; set; } = null;
 
+    public string patreon_email_address { get; set; } = null;
+
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    //[Description("Use a local blacklist.json file")]
     public bool use_local_blacklist { get; set; } = false;
 
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    //[Description("Use a local image_packs.json file")]
     public bool use_local_image_packs { get; set; } = false;
 
-    [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    //[JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    [Description("Use a local pocket_extras.json file")]
     public bool use_local_pocket_extras { get; set; } = false;
 
+    //[JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    [Description("Use a local display_modes.json file")]
+    public bool use_local_display_modes { get; set; } = false;
+
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    //[Description("Use a local ignore_instance.json file")]
+    public bool use_local_ignore_instance_json { get; set; } = false;
+
+    [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    //[Description("Suppress the 'Already Installed' messages for core files and assets")]
     public bool suppress_already_installed { get; set; }
 
     [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]

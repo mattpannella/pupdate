@@ -7,7 +7,6 @@ namespace Pannella.Helpers;
 public class Util
 {
     private const string PLATFORMS_DIRECTORY = "Platforms";
-    private const string SAVES_DIRECTORY = "Saves";
 
     private static readonly string[] BAD_DIRS = { "__MACOSX" };
 
@@ -17,11 +16,8 @@ public class Util
         MD5
     }
 
-    public static void CopyDirectory(string sourceDir, string destinationDir, bool recursive, bool overwrite)
-    {
-        _copyDirectory(sourceDir, destinationDir, recursive, overwrite);
-    }
-    private static int _copyDirectory(string sourceDir, string destinationDir, bool recursive, bool overwrite, int currentFileCount = 0, int? totalFiles = null)
+    public static int CopyDirectory(string sourceDir, string destinationDir, bool recursive, bool overwrite,
+        int currentFileCount = 0, int? totalFiles = null)
     {
         bool console = false;
 
@@ -34,6 +30,7 @@ public class Util
         {
             // Ignore
         }
+
         // Get information about the source directory
         var dir = new DirectoryInfo(sourceDir);
 
@@ -49,19 +46,22 @@ public class Util
         // Create the destination directory
         Directory.CreateDirectory(destinationDir);
 
-        List<string> allfiles = Directory.GetFiles(sourceDir, "*",SearchOption.AllDirectories).ToList();
+        List<string> allFiles = Directory.GetFiles(sourceDir, "*",SearchOption.AllDirectories).ToList();
 
-        int total = (totalFiles == null) ? allfiles.Count() : (int)totalFiles;
+        int total = totalFiles ?? allFiles.Count;
         int count = currentFileCount;
+
         // Get the files in the source directory and copy to the destination directory
         foreach (FileInfo file in dir.GetFiles())
         {
             string targetFilePath = Path.Combine(destinationDir, file.Name);
 
             file.CopyTo(targetFilePath, overwrite);
-            
+
             count++;
-            if(console) ConsoleHelper.ShowProgressBar(count, total);
+
+            if (console)
+                ConsoleHelper.ShowProgressBar(count, total);
         }
 
         // If recursive and copying subdirectories, recursively call this method
@@ -71,14 +71,14 @@ public class Util
             {
                 string newDestinationDir = Path.Combine(destinationDir, subDir.Name);
 
-                count = _copyDirectory(subDir.FullName, newDestinationDir, true, overwrite, count, total);
+                count = CopyDirectory(subDir.FullName, newDestinationDir, true, overwrite, count, total);
             }
         }
 
         return count;
     }
 
-    public static void CleanDir(string source, string path = "", bool preservePlatformsFolder = false, bool preserveSaveFile = false, string platform = "")
+    public static void CleanDir(string source, string path = "", bool preservePlatformsFolder = false, string platform = "")
     {
         // Clean up any bad directories (like Mac OS directories).
         foreach (var dir in BAD_DIRS)
@@ -111,31 +111,6 @@ public class Util
                 }
             }
         }
-
-        // if (preserveSaveFile)
-        // {
-        //     string existing = Path.Combine(path, SAVES_DIRECTORY, platform, "common");
-        //     if (Directory.Exists(existing))
-        //     {
-        //         var saves = Directory.GetFiles(existing, "*.sav", SearchOption.TopDirectoryOnly);
-        //         foreach (var file in saves)
-        //         {
-        //             var filename = Path.GetFileName(file);
-        //             var sourceFile = Path.Combine(source, SAVES_DIRECTORY, platform, "common", file);
-        //             if (File.Exists(sourceFile))
-        //             {
-        //                 try
-        //                 {
-        //                     File.Delete(file);
-        //                 }
-        //                 catch
-        //                 {
-        //                     // Ignore
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
 
         // Clean files.
         var files = Directory.EnumerateFiles(source).Where(file => IsBadFile(Path.GetFileName(file)));

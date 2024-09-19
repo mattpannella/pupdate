@@ -1,7 +1,7 @@
-using System.IO.Compression;
 using Newtonsoft.Json;
 using Pannella.Helpers;
 using Pannella.Models;
+using Pannella.Models.Events;
 using Pannella.Models.Extras;
 using Pannella.Models.Github;
 using Pannella.Models.OpenFPGA_Cores_Inventory;
@@ -129,7 +129,6 @@ public partial class CoresService
 
                         string contents = File.ReadAllText(renameFile);
                         Uri uri = new Uri(contents);
-                        string urlFileName = Path.GetFileName(uri.LocalPath);
                         string localRenameFileName = Path.Combine(Path.GetDirectoryName(renameFile)!, renamedFileName);
 
                         WriteMessage($"Downloading '{renamedFileName}'");
@@ -189,7 +188,7 @@ public partial class CoresService
                     Message = "Complete.",
                     InstalledAssets = (List<string>)results["installed"],
                     SkippedAssets = (List<string>)results["skipped"],
-                    MissingBetaKeys = (bool)results["missingBetaKey"]
+                    MissingLicenses = (bool)results["missingLicense"]
                         ? new List<string> { core.identifier }
                         : new List<string>(),
                     SkipOutro = true,
@@ -209,7 +208,7 @@ public partial class CoresService
 
         if (!this.IsInstalled(core.identifier))
         {
-            bool jtBetaKeyExists = this.ExtractBetaKey();
+            bool jtBetaKeyExists = this.ExtractJTBetaKey();
 
             WriteMessage($"The '{pocketExtra.core_identifiers[0]}' core is not currently installed.");
 
@@ -238,9 +237,9 @@ public partial class CoresService
 
             this.Install(core);
 
-            if (core.requires_license && jtBetaKeyExists)
+            if (core.requires_license)
             {
-                this.CopyBetaKey(core);
+                this.CopyLicense(core);
             }
 
             if (!this.IsInstalled(core.identifier))
@@ -329,7 +328,7 @@ public partial class CoresService
                 Message = "Complete.",
                 InstalledAssets = (List<string>)results["installed"],
                 SkippedAssets = (List<string>)results["skipped"],
-                MissingBetaKeys = (bool)results["missingBetaKey"]
+                MissingLicenses = (bool)results["missingLicense"]
                     ? new List<string> { core.identifier }
                     : new List<string>(),
                 SkipOutro = true,

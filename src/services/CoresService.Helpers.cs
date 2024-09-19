@@ -1,4 +1,3 @@
-using System.IO.Compression;
 using Pannella.Helpers;
 using Pannella.Models.Analogue.Shared;
 using Pannella.Models.Extras;
@@ -64,7 +63,7 @@ public partial class CoresService
         ZipHelper.ExtractToDirectory(zipPath, tempDir, true);
 
         // Clean problematic directories and files.
-        Util.CleanDir(tempDir, this.installPath, this.settingsService.GetConfig().preserve_platforms_folder, false, platformId);
+        Util.CleanDir(tempDir, this.installPath, this.settingsService.GetConfig().preserve_platforms_folder, platformId);
 
         // Move the files into place and delete our core's temp directory.
         WriteMessage("Installing...");
@@ -99,6 +98,19 @@ public partial class CoresService
         }
     }
 
+    private void CheckForDisplayModes(string identifier)
+    {
+        var coreSettings = this.settingsService.GetCoreSettings(identifier);
+
+        if (coreSettings.display_modes)
+        {
+            var displayModes = coreSettings.selected_display_modes.Split(',');
+
+            WriteMessage("Reapplying Display Modes...");
+            this.AddDisplayModes(identifier, displayModes, forceOriginal: true);
+        }
+    }
+
     private bool CheckCrc(string filePath, ArchiveFile archiveFile)
     {
         if (!this.settingsService.GetConfig().crc_check)
@@ -120,9 +132,9 @@ public partial class CoresService
         return false;
     }
 
-    private bool CheckBetaMd5(DataSlot slot, string betaSlotId, string platform)
+    private bool CheckLicenseMd5(DataSlot slot, string licenseSlotId, string platform)
     {
-        if (slot.md5 != null && (betaSlotId != null && slot.id == betaSlotId))
+        if (slot.md5 != null && (licenseSlotId != null && slot.id == licenseSlotId))
         {
             string path = Path.Combine(this.installPath, "Assets", platform);
             string filePath = Path.Combine(path, "common", slot.filename);
@@ -131,15 +143,34 @@ public partial class CoresService
 
             if (!(exists = File.Exists(filePath)))
             {
-                WriteMessage($"JT beta key not found at '{filePath}'");
+                WriteMessage($"License not found at '{filePath}'");
             }
             else if (!(checksum = Util.CompareChecksum(filePath, slot.md5, Util.HashTypes.MD5)))
             {
-                WriteMessage("JT beta key checksum validation failed.");
+                WriteMessage("License checksum validation failed.");
                 WriteMessage($"Location: '{filePath}'");
             }
 
             return exists && checksum;
+        }
+
+        return true;
+    }
+
+    public bool GrossCheck(Core core)
+    {
+        //if author starts with jt
+        //look for licenses/beta.bin
+
+        //if author is pram0d or atrac17
+        //look for coinop.key
+        if (core.identifier.StartsWith("jotego"))
+        {
+            return File.Exists(Path.Combine(this.installPath, "licenses", "beta.bin"));
+        }
+        else if (core.identifier.StartsWith("pram0d") || core.identifier.StartsWith("atrac17"))
+        {
+            return File.Exists(Path.Combine(this.installPath, "licenses", "coinop.key"));
         }
 
         return true;

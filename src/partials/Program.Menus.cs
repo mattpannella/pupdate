@@ -1,9 +1,6 @@
-using System.ComponentModel;
 using ConsoleTools;
 using Pannella.Helpers;
 using Pannella.Models.Extras;
-using Pannella.Models.OpenFPGA_Cores_Inventory;
-using Pannella.Models.Settings;
 using Pannella.Services;
 
 namespace Pannella;
@@ -42,16 +39,27 @@ internal partial class Program
             SelectedItemForegroundColor = Console.BackgroundColor,
         };
 
-        var pocketSetupMenu = new ConsoleMenu()
+        var displayModesMenu = new ConsoleMenu()
             .Configure(menuConfig)
-            .Add("Jotego Analogizer Config", _=>
+            .Add("Enable Recommended Display Modes", () =>
             {
-                AnalogizerSettingsService settings = new AnalogizerSettingsService();
-                settings.RunAnalogizerSettings();
-
-                Console.WriteLine("Analogizer configuration updated.");
+                EnableDisplayModes(isCurated: true);
                 Pause();
             })
+            .Add("Enable Selected Display Modes", () =>
+            {
+                DisplayModeSelector();
+                Pause();
+            })
+            .Add("Enable Selected Display Modes for Selected Cores", () =>
+            {
+                DisplayModeSelector(true);
+                Pause();
+            })
+            .Add("Go Back", ConsoleMenu.Close);
+
+        var downloadFilesMenu = new ConsoleMenu()
+            .Configure(menuConfig)
             .Add("Download Platform Image Packs", _ =>
             {
                 PlatformImagePackSelector();
@@ -67,6 +75,10 @@ internal partial class Program
                 DownloadGameBoyPalettes();
                 Pause();
             })
+            .Add("Go Back", ConsoleMenu.Close);
+
+        var generateFilesMenu = new ConsoleMenu()
+            .Configure(menuConfig)
             .Add("Generate Instance JSON Files (PC Engine CD)", () =>
             {
                 RunInstanceGenerator(coreUpdaterService);
@@ -77,15 +89,15 @@ internal partial class Program
                 BuildGameAndWatchRoms();
                 Pause();
             })
-            .Add("Enable All Display Modes", () =>
-            {
-                EnableDisplayModes();
-                Pause();
-            })
+            .Add("Go Back", ConsoleMenu.Close);
+
+        var sgbAspectRatioMenu = new ConsoleMenu()
+            .Configure(menuConfig)
             .Add("Apply 8:7 Aspect Ratio to Super GameBoy cores", () =>
             {
                 var results = ShowCoresMenu(
-                    ServiceHelper.CoresService.InstalledCores.Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
+                    ServiceHelper.CoresService.InstalledCores
+                        .Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
                     "Which Super GameBoy cores would you like to change to the 8:7 aspect ratio?\n",
                     false);
 
@@ -104,7 +116,8 @@ internal partial class Program
             .Add("Restore 4:3 Aspect Ratio to Super GameBoy cores", () =>
             {
                 var results = ShowCoresMenu(
-                    ServiceHelper.CoresService.InstalledCores.Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
+                    ServiceHelper.CoresService.InstalledCores
+                        .Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
                     "Which Super GameBoy cores would you like to change to the 8:7 aspect ratio?\n",
                     false);
 
@@ -122,8 +135,57 @@ internal partial class Program
             })
             .Add("Go Back", ConsoleMenu.Close);
 
+        var pocketSetupMenu = new ConsoleMenu()
+            .Configure(menuConfig)
+            .Add("Apply Display Modes          >", displayModesMenu.Show)
+            .Add("Download Images and Palettes >", downloadFilesMenu.Show)
+            .Add("Generate ROMs & JSON Files   >", generateFilesMenu.Show)
+            .Add("Super GameBoy Aspect Ratio   >", sgbAspectRatioMenu.Show)
+            .Add("Jotego Analogizer Config", _=>
+            {
+                AnalogizerSettingsService settings = new AnalogizerSettingsService();
+                settings.RunAnalogizerSettings();
+
+                Console.WriteLine("Analogizer configuration updated.");
+                Pause();
+            })
+            .Add("Set Patreon Email Address", () =>
+            {
+                Console.WriteLine($"Current email address: {ServiceHelper.SettingsService.GetConfig().patreon_email_address}");
+                var result = AskYesNoQuestion("Would you like to change your address?");
+
+                if (!result)
+                    return;
+
+                string input = PromptForInput();
+                ServiceHelper.SettingsService.GetConfig().patreon_email_address = input;
+                ServiceHelper.SettingsService.Save();
+
+                Pause();
+            })
+            .Add("Go Back", ConsoleMenu.Close);
+
         var pocketMaintenanceMenu = new ConsoleMenu()
             .Configure(menuConfig)
+            .Add("Update Selected", _ =>
+            {
+                var selectedCores = ShowCoresMenu(
+                    ServiceHelper.CoresService.InstalledCores,
+                    "Which cores would you like to update?",
+                    false);
+
+                coreUpdaterService.RunUpdates(selectedCores.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToArray());
+                Pause();
+            })
+            .Add("Install Selected", _ =>
+            {
+                var selectedCores = RunCoreSelector(
+                    ServiceHelper.CoresService.CoresNotInstalled,
+                    "Which cores would you like to install?");
+
+                coreUpdaterService.RunUpdates(selectedCores.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToArray());
+                Pause();
+            })
             .Add("Reinstall All Cores", _ =>
             {
                 coreUpdaterService.RunUpdates(null, true);
@@ -135,9 +197,10 @@ internal partial class Program
                     ServiceHelper.CoresService.InstalledCores,
                     "Which cores would you like to reinstall?",
                     false);
-                var identifiers = results.Where(x => x.Value)
-                                               .Select(x => x.Key)
-                                               .ToArray();
+                var identifiers = results
+                    .Where(x => x.Value)
+                    .Select(x => x.Key)
+                    .ToArray();
 
                 if (identifiers.Length > 0)
                 {
@@ -165,28 +228,6 @@ internal partial class Program
 
                     Pause();
                 }
-            })
-            .Add("Remove JT Beta Keys", () =>
-            {
-                Console.WriteLine($"WARNING: This will delete all instances of {CoresService.BETA_KEY_FILENAME} and {CoresService.BETA_KEY_ALT_FILENAME}");
-                var result = AskYesNoQuestion("Would you like to continue?");
-
-                if (!result)
-                    return;
-
-                var binFiles = Directory.EnumerateFiles(ServiceHelper.UpdateDirectory, CoresService.BETA_KEY_ALT_FILENAME,
-                    SearchOption.AllDirectories);
-                var zipFiles = Directory.EnumerateFiles(ServiceHelper.UpdateDirectory, CoresService.BETA_KEY_FILENAME,
-                    SearchOption.AllDirectories);
-                var allFiles = zipFiles.Union(binFiles);
-
-                foreach (var file in allFiles)
-                {
-                    Console.WriteLine($"Deleting '{file}'...");
-                    File.Delete(file);
-                }
-
-                Pause();
             })
             .Add("Prune Save States", _ =>
             {
@@ -306,246 +347,13 @@ internal partial class Program
         menu.Show();
     }
 
-    private static void AskAboutNewCores(bool force = false)
+    private static string PromptForInput()
     {
-        while (ServiceHelper.SettingsService.GetConfig().download_new_cores == null || force)
-        {
-            force = false;
+        Console.Write("Enter value: ");
 
-            Console.WriteLine("Would you like to, by default, install new cores? [Y]es, [N]o, [A]sk for each:");
+        string value = Console.ReadLine();
 
-            ConsoleKey response = Console.ReadKey(true).Key;
-
-            ServiceHelper.SettingsService.GetConfig().download_new_cores = response switch
-            {
-                ConsoleKey.Y => "yes",
-                ConsoleKey.N => "no",
-                ConsoleKey.A => "ask",
-                _ => null
-            };
-        }
-    }
-
-    private static bool AskYesNoQuestion(string question)
-    {
-        Console.WriteLine($"{question} [Y]es, [N]o");
-
-        bool? result = null;
-
-        while (result == null)
-        {
-            result = Console.ReadKey(true).Key switch
-            {
-                ConsoleKey.Y => true,
-                ConsoleKey.N => false,
-                _ => null
-            };
-        }
-
-        return result.Value;
-    }
-
-    private static Dictionary<string, bool> ShowCoresMenu(List<Core> cores, string message, bool isCoreSelection)
-    {
-        const int pageSize = 15;
-        var offset = 0;
-        bool more = true;
-        var results = new Dictionary<string, bool>();
-
-        while (more)
-        {
-            var menu = new ConsoleMenu()
-                .Configure(config =>
-                {
-                    config.Selector = "=>";
-                    config.EnableWriteTitle = false;
-                    config.WriteHeaderAction = () => Console.WriteLine($"{message} Use enter to check/uncheck your choices.");
-                    config.SelectedItemBackgroundColor = Console.ForegroundColor;
-                    config.SelectedItemForegroundColor = Console.BackgroundColor;
-                    config.WriteItemAction = item => Console.Write("{0}", item.Name);
-                });
-            var current = -1;
-
-            if ((offset + pageSize) <= cores.Count)
-            {
-                menu.Add("Next Page", thisMenu =>
-                {
-                    offset += pageSize;
-                    thisMenu.CloseMenu();
-                });
-            }
-
-            foreach (Core core in cores)
-            {
-                current++;
-
-                if ((current <= (offset + pageSize)) && (current >= offset))
-                {
-                    var coreSettings = ServiceHelper.SettingsService.GetCoreSettings(core.identifier);
-                    var selected = isCoreSelection && !coreSettings.skip;
-                    var name = core.identifier;
-                    var title = MenuItemName(name, selected, core.requires_license);
-
-                    menu.Add(title, thisMenu =>
-                    {
-                        selected = !selected;
-
-                        if (results.ContainsKey(core.identifier))
-                        {
-                            results[core.identifier] = selected;
-                        }
-                        else
-                        {
-                            results.Add(core.identifier, selected);
-                        }
-
-                        thisMenu.CurrentItem.Name = MenuItemName(core.identifier, selected, core.requires_license);
-                    });
-                }
-            }
-
-            if ((offset + pageSize) <= cores.Count)
-            {
-                menu.Add("Next Page", thisMenu =>
-                {
-                    offset += pageSize;
-                    thisMenu.CloseMenu();
-                });
-            }
-
-            menu.Add("Save Choices", thisMenu =>
-            {
-                thisMenu.CloseMenu();
-                more = false;
-            });
-
-            menu.Show();
-        }
-
-        return results;
-    }
-
-    private static void RunCoreSelector(List<Core> cores, string message = "Select your cores.")
-    {
-        if (ServiceHelper.SettingsService.GetConfig().download_new_cores?.ToLowerInvariant() == "yes")
-        {
-            foreach (Core core in cores)
-            {
-                ServiceHelper.SettingsService.EnableCore(core.identifier);
-            }
-        }
-        else
-        {
-            var results = ShowCoresMenu(cores, message, true);
-
-            foreach (var item in results)
-            {
-                if (item.Value)
-                    ServiceHelper.SettingsService.EnableCore(item.Key);
-                else
-                    ServiceHelper.SettingsService.DisableCore(item.Key);
-            }
-        }
-
-        ServiceHelper.SettingsService.Save();
-    }
-
-    private static void PlatformImagePackSelector()
-    {
-        Console.Clear();
-
-        if (ServiceHelper.PlatformImagePacksService.List.Count > 0)
-        {
-            int choice = 0;
-            var menu = new ConsoleMenu()
-                .Configure(config =>
-                {
-                    config.Selector = "=>";
-                    config.EnableWriteTitle = false;
-                    config.WriteHeaderAction = () => Console.WriteLine("So, what'll it be?:");
-                    config.SelectedItemBackgroundColor = Console.ForegroundColor;
-                    config.SelectedItemForegroundColor = Console.BackgroundColor;
-                });
-
-            foreach (var pack in ServiceHelper.PlatformImagePacksService.List)
-            {
-                menu.Add($"{pack.owner}: {pack.repository} {pack.variant ?? string.Empty}", thisMenu =>
-                {
-                    choice = thisMenu.CurrentItem.Index;
-                    thisMenu.CloseMenu();
-                });
-            }
-
-            menu.Add("Go Back", thisMenu =>
-            {
-                choice = ServiceHelper.PlatformImagePacksService.List.Count;
-                thisMenu.CloseMenu();
-            });
-
-            menu.Show();
-
-            if (choice < ServiceHelper.PlatformImagePacksService.List.Count && choice >= 0)
-            {
-                ServiceHelper.PlatformImagePacksService.Install(
-                    ServiceHelper.PlatformImagePacksService.List[choice].owner,
-                    ServiceHelper.PlatformImagePacksService.List[choice].repository,
-                    ServiceHelper.PlatformImagePacksService.List[choice].variant);
-            }
-            else if (choice == ServiceHelper.PlatformImagePacksService.List.Count)
-            {
-                // What causes this?
-            }
-            else
-            {
-                Console.WriteLine("You fucked up.");
-            }
-        }
-        else
-        {
-            Console.WriteLine("None found. Have a nice day.");
-        }
-    }
-
-    private static void SettingsMenu()
-    {
-        Console.Clear();
-
-        var type = typeof(Config);
-        var menuItems =
-            from property in type.GetProperties()
-            let attribute = property.GetCustomAttributes(typeof(DescriptionAttribute), true)
-            where attribute.Length == 1
-            select (property.Name, ((DescriptionAttribute)attribute[0]).Description);
-        var menu = new ConsoleMenu()
-            .Configure(config =>
-            {
-                config.Selector = "=>";
-                config.EnableWriteTitle = false;
-                config.WriteHeaderAction = () => Console.WriteLine("Settings. Use enter to check/uncheck your choices.");
-                config.SelectedItemBackgroundColor = Console.ForegroundColor;
-                config.SelectedItemForegroundColor = Console.BackgroundColor;
-                config.WriteItemAction = item => Console.Write("{0}", item.Name);
-            });
-
-        foreach (var (name, text) in menuItems)
-        {
-            var property = type.GetProperty(name);
-            var value = (bool)property!.GetValue(ServiceHelper.SettingsService.GetConfig())!;
-            var title = MenuItemName(text, value);
-
-            menu.Add(title, thisMenu =>
-            {
-                value = !value;
-                property.SetValue(ServiceHelper.SettingsService.GetConfig(), value);
-                thisMenu.CurrentItem.Name = MenuItemName(text, value);
-            });
-        }
-
-        menu.Add("Save", thisMenu => { thisMenu.CloseMenu(); });
-
-        menu.Show();
-
-        ServiceHelper.SettingsService.Save();
+        return value;
     }
 
     private static string MenuItemName(string title, bool value, bool requiresLicense = false)

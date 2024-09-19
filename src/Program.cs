@@ -1,6 +1,7 @@
 ﻿using CommandLine;
 using Pannella.Helpers;
 using Pannella.Models;
+using Pannella.Models.Events;
 using Pannella.Options;
 using Pannella.Services;
 
@@ -205,7 +206,7 @@ internal partial class Program
                     break;
 
                 case DisplayModesOptions:
-                    EnableDisplayModes();
+                    EnableDisplayModes(isCurated: true);
                     break;
 
                 case PruneMemoriesOptions options:
@@ -281,12 +282,11 @@ internal partial class Program
             Console.WriteLine();
         }
 
-        if (e.MissingBetaKeys.Count > 0)
+        if (e.MissingLicenses.Count > 0)
         {
-            Console.WriteLine("Missing or incorrect JT Beta Key for the following cores:");
-            Console.WriteLine($"The {CoresService.BETA_KEY_FILENAME} or {CoresService.BETA_KEY_ALT_FILENAME} must be placed on the root of the SD card.");
+            Console.WriteLine("Missing or incorrect License file for the following cores:");
 
-            foreach (string core in e.MissingBetaKeys)
+            foreach (string core in e.MissingLicenses)
             {
                 Console.WriteLine(core);
             }

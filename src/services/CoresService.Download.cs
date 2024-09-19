@@ -6,6 +6,7 @@ using Pannella.Models;
 using Pannella.Models.Analogue.Data;
 using Pannella.Models.Analogue.Instance;
 using Pannella.Models.Analogue.Instance.Simple;
+using Pannella.Models.Events;
 using Pannella.Models.InstancePackager;
 using Pannella.Models.OpenFPGA_Cores_Inventory;
 using Pannella.Models.Settings;
@@ -23,7 +24,7 @@ public partial class CoresService
     {
         List<string> installedAssets = new List<string>();
         List<string> skippedAssets = new List<string>();
-        List<string> missingBetaKeys = new List<string>();
+        List<string> missingLicenses = new List<string>();
 
         if (cores == null)
         {
@@ -50,9 +51,9 @@ public partial class CoresService
                 installedAssets.AddRange((List<string>)results["installed"]);
                 skippedAssets.AddRange((List<string>)results["skipped"]);
 
-                if ((bool)results["missingBetaKey"])
+                if ((bool)results["missingLicense"])
                 {
-                    missingBetaKeys.Add(core.identifier);
+                    missingLicenses.Add(core.identifier);
                 }
 
                 Divide();
@@ -73,7 +74,7 @@ public partial class CoresService
             Message = "All Done",
             InstalledAssets = installedAssets,
             SkippedAssets = skippedAssets,
-            MissingBetaKeys = missingBetaKeys,
+            MissingLicenses = missingLicenses,
             SkipOutro = false,
         };
 
@@ -84,17 +85,21 @@ public partial class CoresService
     {
         List<string> installed = new List<string>();
         List<string> skipped = new List<string>();
-        bool missingBetaKey = false;
-        bool run = false;
+        bool missingLicense = false;
 
-        //run if:
-        //globaloverride is on and core specific is on
-        //or
-        //globaloverride is off, global setting is on, and core specific is on
-        if ((ignoreGlobalSetting && this.settingsService.GetCoreSettings(core.identifier).download_assets)
-        || (!ignoreGlobalSetting && this.settingsService.GetConfig().download_assets && this.settingsService.GetCoreSettings(core.identifier).download_assets)) {
-            run = true;
+        //dynamically add the license file to the blacklist so we dont try to download it
+        if (core.license_slot_filename != null)
+        {
+            this.assetsService.Blacklist.Add(core.license_slot_filename);
         }
+
+        // run if:
+        // global override is on and core specific is on
+        // or
+        // global override is off, global setting is on, and core specific is on
+        bool run = (ignoreGlobalSetting && this.settingsService.GetCoreSettings(core.identifier).download_assets) ||
+                   (!ignoreGlobalSetting && this.settingsService.GetConfig().download_assets &&
+                    this.settingsService.GetCoreSettings(core.identifier).download_assets);
 
         if (!run)
         {
@@ -102,10 +107,10 @@ public partial class CoresService
             {
                 { "installed", installed },
                 { "skipped", skipped },
-                { "missingBetaKey", false }
+                { "missingLicense", false }
             };
         }
-    
+
         WriteMessage("Looking for Assets...");
         Archive archive = this.archiveService.GetArchive(core.identifier);
         AnalogueCore info = this.ReadCoreJson(core.identifier);
@@ -118,7 +123,7 @@ public partial class CoresService
         {
             foreach (DataSlot slot in dataJson.data.data_slots)
             {
-                if (slot.filename != null && slot.filename != string.Empty &&
+                if (!string.IsNullOrEmpty(slot.filename) &&
                     !slot.filename.EndsWith(".sav") &&
                     !this.assetsService.Blacklist.Contains(slot.filename))
                 {
@@ -212,15 +217,13 @@ public partial class CoresService
 
         // These cores have instance json files and the roms are not in the default archive.
         // Check to see if they have a core specific archive defined, skip otherwise.
-        // this is getting gross
-        if (core.identifier is "Mazamars312.NeoGeo" or "Mazamars312.NeoGeo_Overdrive" or "Mazamars312.NeoGeo_Analogizer" or "obsidian.Vectrex"
-            && archive.type != ArchiveType.core_specific_archive)
+        if (this.IgnoreInstanceJson.Contains(core.identifier) && archive.type != ArchiveType.core_specific_archive)
         {
             return new Dictionary<string, object>
             {
                 { "installed", installed },
                 { "skipped", skipped },
-                { "missingBetaKey", false }
+                { "missingLicense", false }
             };
         }
 
@@ -232,7 +235,7 @@ public partial class CoresService
             {
                 { "installed", installed },
                 { "skipped", skipped },
-                { "missingBetaKey", false }
+                { "missingLicense", false }
             };
         }
 
@@ -266,12 +269,12 @@ public partial class CoresService
 
                         foreach (DataSlot slot in instanceJson.instance.data_slots)
                         {
-                            var platformId = info.metadata.platform_ids[core.beta_slot_platform_id_index];
+                            var platformId = info.metadata.platform_ids[core.license_slot_platform_id_index];
 
-                            if (!CheckBetaMd5(slot, core.beta_slot_id, platformId))
+                            if (!CheckLicenseMd5(slot, core.license_slot_id, platformId))
                             {
                                 // Moved message to the CheckBetaMd5 method
-                                missingBetaKey = true;
+                                missingLicense = true;
                             }
 
                             if (!this.assetsService.Blacklist.Contains(slot.filename) &&
@@ -327,7 +330,7 @@ public partial class CoresService
         {
             { "installed", installed },
             { "skipped", skipped },
-            { "missingBetaKey", missingBetaKey }
+            { "missingLicense", missingLicense }
         };
 
         return results;
@@ -423,7 +426,7 @@ public partial class CoresService
                 simpleInstanceJson.instance = instance;
 
                 string[] parts = dir.Split(commonPath);
-                //split on dir separator and remove last one?
+                // split on dir separator and remove last one?
                 parts = parts[1].Split(dirName);
                 string subDirectory = string.Empty;
 

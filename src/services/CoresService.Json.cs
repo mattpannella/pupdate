@@ -2,6 +2,7 @@ using Newtonsoft.Json;
 using Pannella.Models.Analogue.Data;
 using Pannella.Models.Analogue.Video;
 using Pannella.Models.OpenFPGA_Cores_Inventory;
+using Pannella.Models.Updater;
 using AnalogueCore = Pannella.Models.Analogue.Core.Core;
 
 namespace Pannella.Services;
@@ -68,5 +69,20 @@ public partial class CoresService
         Video config = JsonConvert.DeserializeObject<Dictionary<string, Video>>(json)["video"];
 
         return config;
+    }
+
+    public Updaters ReadUpdatersJson(string identifier)
+    {
+        string file = Path.Combine(this.installPath, "Cores", identifier, "updaters.json");
+
+        if (!File.Exists(file))
+        {
+            return null;
+        }
+
+        string json = File.ReadAllText(file);
+        Updaters data = JsonConvert.DeserializeObject<Updaters>(json);
+
+        return data;
     }
 }

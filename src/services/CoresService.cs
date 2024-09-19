@@ -8,6 +8,8 @@ namespace Pannella.Services;
 public partial class CoresService : BaseProcess
 {
     private const string CORES_END_POINT = "https://openfpga-cores-inventory.github.io/analogue-pocket/api/v2/cores.json";
+    private const string IGNORE_INSTANCE_JSON = "https://raw.githubusercontent.com/mattpannella/pupdate/main/ignore_instance.json";
+    private const string CORES_LOCAL_END_POINT = "api_override.json";
     private const string ZIP_FILE_NAME = "core.zip";
 
     private readonly string installPath;
@@ -15,6 +17,30 @@ public partial class CoresService : BaseProcess
     private readonly ArchiveService archiveService;
     private readonly AssetsService assetsService;
     private static List<Core> cores;
+    private static List<string> ignoreInstanceJson;
+
+    private List<string> IgnoreInstanceJson
+    {
+        get
+        {
+            if (ignoreInstanceJson == null)
+            {
+#if DEBUG
+                string json = File.ReadAllText("ignore_instance.json");
+#else
+                string json = this.settingsService.GetConfig().use_local_ignore_instance_json
+                    ? File.ReadAllText("ignore_instance.json")
+                    : HttpHelper.Instance.GetHTML(IGNORE_INSTANCE_JSON);
+#endif
+
+                var coreIdentifiers = JsonConvert.DeserializeObject<IgnoreInstanceJson>(json);
+
+                ignoreInstanceJson = coreIdentifiers.core_identifiers;
+            }
+
+            return ignoreInstanceJson;
+        }
+    }
 
     public List<Core> Cores
     {
@@ -22,7 +48,18 @@ public partial class CoresService : BaseProcess
         {
             if (cores == null)
             {
-                string json = HttpHelper.Instance.GetHTML(CORES_END_POINT);
+                var localPayload = Path.Combine(ServiceHelper.UpdateDirectory, CORES_LOCAL_END_POINT);
+                string json;
+
+                if (File.Exists(localPayload))
+                {
+                    json = File.ReadAllText(localPayload);
+                }
+                else
+                {
+                    json = HttpHelper.Instance.GetHTML(CORES_END_POINT);
+                }
+
                 Dictionary<string, List<Core>> parsed = JsonConvert.DeserializeObject<Dictionary<string, List<Core>>>(json);
 
                 if (parsed.TryGetValue("data", out var coresList))
@@ -66,6 +103,21 @@ public partial class CoresService : BaseProcess
         }
     }
 
+    private static List<Core> coresNotInstalled;
+
+    public List<Core> CoresNotInstalled
+    {
+        get
+        {
+            if (coresNotInstalled == null)
+            {
+                RefreshInstalledCores();
+            }
+
+            return coresNotInstalled;
+        }
+    }
+
     public CoresService(string path, SettingsService settingsService, ArchiveService archiveService,
         AssetsService assetsService)
     {
@@ -95,8 +147,26 @@ public partial class CoresService : BaseProcess
 
     public void RefreshInstalledCores()
     {
-        installedCores = cores.Where(c => this.IsInstalled(c.identifier)).ToList();
-        installedCoresWithSponsors = installedCores.Where(c => c.sponsor != null).ToList();
+        installedCores = new List<Core>();
+        coresNotInstalled = new List<Core>();
+        installedCoresWithSponsors = new List<Core>();
+
+        foreach (var core in cores)
+        {
+            if (this.IsInstalled(core.identifier))
+            {
+                installedCores.Add(core);
+
+                if (core.sponsor != null)
+                {
+                    installedCoresWithSponsors.Add(core);
+                }
+            }
+            else
+            {
+                coresNotInstalled.Add(core);
+            }
+        }
     }
 
     public bool Install(Core core, bool clean = false)
@@ -117,7 +187,22 @@ public partial class CoresService : BaseProcess
         if (this.InstallGithubAsset(core.identifier, core.platform_id, core.download_url))
         {
             this.ReplaceCheck(core.identifier);
+
+            // not resetting the pocket extras on a clean install (a.k.a reinstall)
+            // the combination cores and variant cores aren't affected
+            // the additional assets extras just add roms so they're not affected either
             this.CheckForPocketExtras(core.identifier);
+
+            // reset the display modes customizations on a clean install (a.k.a reinstall)
+            if (clean)
+            {
+                this.settingsService.DisableDisplayModes(core.identifier);
+                this.settingsService.Save();
+            }
+            else
+            {
+                this.CheckForDisplayModes(core.identifier);
+            }
 
             return true;
         }
@@ -129,10 +214,11 @@ public partial class CoresService : BaseProcess
     {
         WriteMessage($"Uninstalling {identifier}...");
 
-        Delete(identifier, platformId, nuke);
+        this.Delete(identifier, platformId, nuke);
 
         this.settingsService.DisableCore(identifier);
         this.settingsService.DisablePocketExtras(identifier);
+        this.settingsService.DisableDisplayModes(identifier);
         this.settingsService.Save();
         this.RefreshInstalledCores();
 

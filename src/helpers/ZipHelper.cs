@@ -17,13 +17,19 @@ public class ZipHelper
         }
     }
 
-    public static void ExtractToDirectory(string zipFile, string destination, bool overwrite = false)
+    public static void ExtractToDirectory(string zipFile, string destination, bool overwrite = false, bool useProgress = true)
     {
-        Progress<ZipProgress> _progress = new Progress<ZipProgress>();
-        _progress.ProgressChanged += UpdateProgress;
+        Progress<ZipProgress> progress = new Progress<ZipProgress>();
+
+        if (useProgress)
+        {
+            progress.ProgressChanged += UpdateProgress;
+        }
+
         var stream = new FileStream(zipFile, FileMode.Open);
         var zip = new ZipArchive(stream);
-        zip.ExtractToDirectory(destination, _progress, overwrite);
+
+        zip.ExtractToDirectory(destination, progress, overwrite);
         stream.Close();
     }
 }
@@ -36,6 +42,7 @@ public class ZipProgress
         Processed = processed;
         CurrentItem = currentItem;
     }
+
     public int Total { get; }
     public int Processed { get; }
     public string CurrentItem { get; }
@@ -43,28 +50,25 @@ public class ZipProgress
 
 public static class ZipExtension
 {
-    public static void ExtractToDirectory(this ZipArchive zipFile, string target, IProgress<ZipProgress> progress)
+    public static void ExtractToDirectory(this ZipArchive zipFile, string target, IProgress<ZipProgress> progress, bool overwrite = false)
     {
-        ExtractToDirectory(zipFile, target, progress, overwrite: false);
-    }
-
-    public static void ExtractToDirectory(this ZipArchive zipFile, string target, IProgress<ZipProgress> progress, bool overwrite)
-    { 
         DirectoryInfo info = Directory.CreateDirectory(target);
         string targetPath = info.FullName;
-
         int count = 0;
+
         foreach (ZipArchiveEntry entry in zipFile.Entries)
         {
             count++;
+
             string fileDestinationPath = Path.GetFullPath(Path.Combine(targetPath, entry.FullName));
 
             if (!fileDestinationPath.StartsWith(targetPath, StringComparison.OrdinalIgnoreCase))
             {
                 throw new IOException("File is extracting to outside of the folder specified.");
             }
-                
+
             var zipProgress = new ZipProgress(zipFile.Entries.Count, count, entry.FullName);
+
             progress.Report(zipProgress);
 
             if (Path.GetFileName(fileDestinationPath).Length == 0)
@@ -73,12 +77,12 @@ public static class ZipExtension
                 {
                     throw new IOException("Directory entry with data.");
                 }
-                    
+
                 Directory.CreateDirectory(fileDestinationPath);
             }
             else
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(fileDestinationPath));
+                Directory.CreateDirectory(Path.GetDirectoryName(fileDestinationPath)!);
                 entry.ExtractToFile(fileDestinationPath, overwrite: overwrite);
             }
         }
