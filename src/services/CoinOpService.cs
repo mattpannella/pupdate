@@ -13,7 +13,7 @@ public static class CoinOpService
     {
         var client = new HttpClient();
 
-        string url = String.Format(LICENSE_ENDPOINT, email);
+        string url = String.Format(LICENSE_ENDPOINT, System.Web.HttpUtility.UrlEncode(email));
         var request = new HttpRequestMessage
         {
             Method = HttpMethod.Get,
