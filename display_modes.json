@@ -25,10 +25,10 @@
       { "value": "0x51", "description": "Original GG" },
       { "value": "0x52", "description": "Original GG+" }
     ],
-    "ngp": [
+    "jtngp": [
       { "value": "0x61", "description": "Original NGP" }
     ],
-    "ngpc": [
+    "jtngpc": [
       { "value": "0x62", "description": "Original NGPC" },
       { "value": "0x63", "description": "Original NGPC+" }
     ],
