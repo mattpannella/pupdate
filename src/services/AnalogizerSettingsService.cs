@@ -191,7 +191,7 @@ Your selection:    ";
         const string filename = "crtcfg.bin";
         string filepath = Path.Combine(ServiceHelper.UpdateDirectory, filename);
 
-        UserOptions.GenerateUserOptions(new AnalogizerOptionType[] { crt, snac }, filename: filepath, filename2: filepath);
+        UserOptions.GenerateUserOptions(new[] { crt, snac }, filename: filepath, filename2: filepath);
 
         if (File.Exists(filepath))
         {

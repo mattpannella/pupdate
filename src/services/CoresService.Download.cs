@@ -2,7 +2,6 @@ using System.Collections;
 using Newtonsoft.Json;
 using Pannella.Exceptions;
 using Pannella.Helpers;
-using Pannella.Models;
 using Pannella.Models.Analogue.Data;
 using Pannella.Models.Analogue.Instance;
 using Pannella.Models.Analogue.Instance.Simple;
@@ -20,19 +19,19 @@ namespace Pannella.Services;
 
 public partial class CoresService
 {
-    public void DownloadCoreAssets(List<Core> cores)
+    public void DownloadCoreAssets(List<Core> coreList)
     {
         List<string> installedAssets = new List<string>();
         List<string> skippedAssets = new List<string>();
         List<string> missingLicenses = new List<string>();
 
-        if (cores == null)
+        if (coreList == null)
         {
             WriteMessage("List of cores is required.");
             return;
         }
 
-        foreach (var core in cores)
+        foreach (var core in coreList)
         {
             try
             {

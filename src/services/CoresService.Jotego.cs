@@ -1,6 +1,4 @@
 using Pannella.Helpers;
-using Pannella.Models.OpenFPGA_Cores_Inventory;
-using AnalogueCore = Pannella.Models.Analogue.Core.Core;
 using GithubFile = Pannella.Models.Github.File;
 
 namespace Pannella.Services;

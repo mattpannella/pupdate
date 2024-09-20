@@ -1,4 +1,4 @@
-using System.ComponentModel;
+// ReSharper disable InconsistentNaming
 
 namespace Pannella.Models.Updater;
 

@@ -1,4 +1,6 @@
 using Newtonsoft.Json;
+// ReSharper disable InconsistentNaming
+// ReSharper disable RedundantDefaultMemberInitializer
 
 namespace Pannella.Models.Settings;
 

@@ -9,7 +9,8 @@ namespace Pannella.Services;
 
 public class AssetsService
 {
-    private const string BLACKLIST = "https://raw.githubusercontent.com/mattpannella/pupdate/main/blacklist.json";
+    private const string BLACKLIST_END_POINT = "https://raw.githubusercontent.com/mattpannella/pupdate/main/blacklist.json";
+    private const string BLACKLIST_FILE = "blacklist.json";
 
     private readonly bool useLocalBlacklist;
     private List<string> blacklist;
@@ -20,14 +21,54 @@ public class AssetsService
         {
             if (this.blacklist == null)
             {
-#if DEBUG
-                string json = File.ReadAllText("blacklist.json");
-#else
-                string json = useLocalBlacklist
-                    ? File.ReadAllText("blacklist.json")
-                    : HttpHelper.Instance.GetHTML(BLACKLIST);
+                string json = null;
+#if !DEBUG
+                if (useLocalBlacklist)
+                {
 #endif
-                this.blacklist = JsonConvert.DeserializeObject<List<string>>(json);
+                    if (File.Exists(BLACKLIST_FILE))
+                    {
+                        json = File.ReadAllText(BLACKLIST_FILE);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Local file not found: {BLACKLIST_FILE}");
+                    }
+#if !DEBUG
+                }
+                else
+                {
+                    try
+                    {
+                        json = HttpHelper.Instance.GetHTML(BLACKLIST_END_POINT);
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        Console.WriteLine($"There was a error downloading the {BLACKLIST_FILE} file from GitHub.");
+                        Console.WriteLine(ex.Message);
+                    }
+                }
+#endif
+                if (!string.IsNullOrWhiteSpace(json))
+                {
+                    try
+                    {
+                        this.blacklist = JsonConvert.DeserializeObject<List<string>>(json);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"There was an error parsing the {BLACKLIST_FILE} file.");
+#if DEBUG
+                        Console.WriteLine(ex);
+#else
+                        Console.WriteLine(ex.Message);
+#endif
+                    }
+                }
+                else
+                {
+                    this.blacklist = new List<string>();
+                }
             }
 
             return this.blacklist;

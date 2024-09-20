@@ -114,7 +114,12 @@ public class HttpHelper
         }
 
         var response = this.client.GetAsync(uri).Result;
-        string html = response.Content.ReadAsStringAsync().Result;
+
+        string html = response.StatusCode switch
+        {
+            HttpStatusCode.OK => response.Content.ReadAsStringAsync().Result,
+            _ => throw new HttpRequestException($"{response.StatusCode}: {uri}", null, response.StatusCode)
+        };
 
         if (!allowRedirect)
         {
