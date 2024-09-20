@@ -1,4 +1,3 @@
-using Pannella.Models;
 using Pannella.Models.Events;
 using Pannella.Services;
 

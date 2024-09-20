@@ -158,6 +158,7 @@ public class Util
                 var newChecksum = MD5.HashData(fileBytes);
 
                 hash = Convert.ToHexString(newChecksum);
+                // ReSharper disable once RedundantAssignment
                 fileBytes = null;
                 break;
             }
@@ -169,6 +170,7 @@ public class Util
                 var newChecksum = Crc32Algorithm.Compute(fileBytes);
 
                 hash = newChecksum.ToString("x8");
+                // ReSharper disable once RedundantAssignment
                 fileBytes = null;
                 break;
             }

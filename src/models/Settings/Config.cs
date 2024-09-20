@@ -1,5 +1,7 @@
 using System.ComponentModel;
 using Newtonsoft.Json;
+// ReSharper disable RedundantDefaultMemberInitializer
+// ReSharper disable InconsistentNaming
 
 namespace Pannella.Models.Settings;
 
@@ -53,6 +55,10 @@ public class Config
     public string temp_directory { get; set; } = null;
 
     public string patreon_email_address { get; set; } = null;
+
+    [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    //[Description("Use a local cores.json file for the inventory")]
+    public bool use_local_cores_inventory { get; set; } = false;
 
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
     //[Description("Use a local blacklist.json file")]

@@ -66,6 +66,7 @@ internal partial class Program
                     {
                         selected = !selected;
 
+                        // ReSharper disable once RedundantDictionaryContainsKeyBeforeAdding
                         if (results.ContainsKey(core.identifier))
                         {
                             results[core.identifier] = selected;
