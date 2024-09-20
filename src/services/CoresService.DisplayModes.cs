@@ -1,5 +1,4 @@
 using Newtonsoft.Json;
-using Pannella.Helpers;
 using Pannella.Models.DisplayModes;
 
 namespace Pannella.Services;
@@ -7,27 +6,47 @@ namespace Pannella.Services;
 public partial class CoresService
 {
     private const string DISPLAY_MODES_END_POINT = "https://raw.githubusercontent.com/mattpannella/pupdate/main/display_modes.json";
+    private const string DISPLAY_MODES_FILE = "display_modes.json";
 
     private Dictionary<string, List<DisplayMode>> displayModesList;
 
-    public Dictionary<string, List<DisplayMode>> DisplayModes
+    private Dictionary<string, List<DisplayMode>> DisplayModes
     {
-        get { return displayModesList ??= GetDisplayModesList(); }
-    }
+        get
+        {
+            if (displayModesList == null)
+            {
+                string json = this.GetServerJsonFile(
+                    this.settingsService.GetConfig().use_local_display_modes,
+                    DISPLAY_MODES_FILE,
+                    DISPLAY_MODES_END_POINT);
 
-    private Dictionary<string, List<DisplayMode>> GetDisplayModesList()
-    {
+                if (!string.IsNullOrWhiteSpace(json))
+                {
+                    try
+                    {
+                        var localDisplayModes = JsonConvert.DeserializeObject<DisplayModes>(json);
+
+                        return localDisplayModes.display_modes;
+                    }
+                    catch (Exception ex)
+                    {
+                        WriteMessage($"There was an error parsing the {DISPLAY_MODES_FILE} file.");
 #if DEBUG
-        string json = File.ReadAllText("display_modes.json");
+                        WriteMessage(ex.ToString());
 #else
-        string json = this.settingsService.GetConfig().use_local_display_modes
-            ? File.ReadAllText("display_modes.json")
-            : HttpHelper.Instance.GetHTML(DISPLAY_MODES_END_POINT);
+                        WriteMessage(ex.Message);
 #endif
+                    }
+                }
+                else
+                {
+                    displayModesList = new Dictionary<string, List<DisplayMode>>();
+                }
+            }
 
-        DisplayModes localDisplayModes = JsonConvert.DeserializeObject<DisplayModes>(json);
-
-        return localDisplayModes.display_modes;
+            return displayModesList;
+        }
     }
 
     public List<DisplayMode> GetAllDisplayModes()

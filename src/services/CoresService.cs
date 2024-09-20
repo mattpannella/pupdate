@@ -8,8 +8,7 @@ namespace Pannella.Services;
 public partial class CoresService : BaseProcess
 {
     private const string CORES_END_POINT = "https://openfpga-cores-inventory.github.io/analogue-pocket/api/v2/cores.json";
-    private const string IGNORE_INSTANCE_JSON = "https://raw.githubusercontent.com/mattpannella/pupdate/main/ignore_instance.json";
-    private const string CORES_LOCAL_END_POINT = "api_override.json";
+    private const string CORES_FILE = "cores.json";
     private const string ZIP_FILE_NAME = "core.zip";
 
     private readonly string installPath;
@@ -17,30 +16,6 @@ public partial class CoresService : BaseProcess
     private readonly ArchiveService archiveService;
     private readonly AssetsService assetsService;
     private static List<Core> cores;
-    private static List<string> ignoreInstanceJson;
-
-    private List<string> IgnoreInstanceJson
-    {
-        get
-        {
-            if (ignoreInstanceJson == null)
-            {
-#if DEBUG
-                string json = File.ReadAllText("ignore_instance.json");
-#else
-                string json = this.settingsService.GetConfig().use_local_ignore_instance_json
-                    ? File.ReadAllText("ignore_instance.json")
-                    : HttpHelper.Instance.GetHTML(IGNORE_INSTANCE_JSON);
-#endif
-
-                var coreIdentifiers = JsonConvert.DeserializeObject<IgnoreInstanceJson>(json);
-
-                ignoreInstanceJson = coreIdentifiers.core_identifiers;
-            }
-
-            return ignoreInstanceJson;
-        }
-    }
 
     public List<Core> Cores
     {
@@ -48,24 +23,37 @@ public partial class CoresService : BaseProcess
         {
             if (cores == null)
             {
-                var localPayload = Path.Combine(ServiceHelper.UpdateDirectory, CORES_LOCAL_END_POINT);
-                string json;
+                string json = this.GetServerJsonFile(
+                    this.settingsService.GetConfig().use_local_cores_inventory,
+                    CORES_FILE,
+                    CORES_END_POINT);
 
-                if (File.Exists(localPayload))
+                if (!string.IsNullOrEmpty(json))
                 {
-                    json = File.ReadAllText(localPayload);
+                    try
+                    {
+                        var parsed = JsonConvert.DeserializeObject<Dictionary<string, List<Core>>>(json);
+
+                        if (parsed.TryGetValue("data", out var coresList))
+                        {
+                            cores = coresList;
+                            cores.AddRange(this.GetLocalCores());
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        WriteMessage($"There was an error parsing the {CORES_FILE} file from the openFPGA cores inventory.");
+#if DEBUG
+                        WriteMessage(ex.ToString());
+#else
+                        WriteMessage(ex.Message);
+#endif
+                        throw;
+                    }
                 }
                 else
                 {
-                    json = HttpHelper.Instance.GetHTML(CORES_END_POINT);
-                }
-
-                Dictionary<string, List<Core>> parsed = JsonConvert.DeserializeObject<Dictionary<string, List<Core>>>(json);
-
-                if (parsed.TryGetValue("data", out var coresList))
-                {
-                    cores = coresList;
-                    cores.AddRange(this.GetLocalCores());
+                    throw new NullReferenceException("There was an error parsing the openFPGA cores inventory.");
                 }
             }
 
@@ -251,5 +239,38 @@ public partial class CoresService : BaseProcess
                 Directory.Delete(path, true);
             }
         }
+    }
+
+    private string GetServerJsonFile(bool useLocalFile, string fileName, string uri)
+    {
+        string json = null;
+#if !DEBUG
+        if (useLocalFile)
+        {
+#endif
+            if (File.Exists(fileName))
+            {
+                json = File.ReadAllText(fileName);
+            }
+            else
+            {
+                WriteMessage($"Local file not found: {fileName}");
+            }
+#if !DEBUG
+        }
+        else
+        {
+            try
+            {
+                json = HttpHelper.Instance.GetHTML(uri);
+            }
+            catch (HttpRequestException ex)
+            {
+                WriteMessage($"There was a error downloading the {fileName} file from GitHub.");
+                WriteMessage(ex.Message);
+            }
+        }
+#endif
+        return json;
     }
 }

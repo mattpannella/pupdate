@@ -1,6 +1,5 @@
 using Newtonsoft.Json;
 using Pannella.Helpers;
-using Pannella.Models;
 using Pannella.Models.Events;
 using Pannella.Models.Extras;
 using Pannella.Models.Github;
@@ -11,27 +10,48 @@ namespace Pannella.Services;
 
 public partial class CoresService
 {
-    private const string EXTRAS_END_POINT = "https://raw.githubusercontent.com/mattpannella/pupdate/main/pocket_extras.json";
+    private const string POCKET_EXTRAS_END_POINT = "https://raw.githubusercontent.com/mattpannella/pupdate/main/pocket_extras.json";
+    private const string POCKET_EXTRAS_FILE = "pocket_extras.json";
 
     private List<PocketExtra> pocketExtrasList;
 
     public List<PocketExtra> PocketExtrasList
     {
-        get { return pocketExtrasList ??= GetPocketExtrasList(); }
-    }
+        get
+        {
+            if (pocketExtrasList == null)
+            {
+                string json = this.GetServerJsonFile(
+                    this.settingsService.GetConfig().use_local_pocket_extras,
+                    POCKET_EXTRAS_FILE,
+                    POCKET_EXTRAS_END_POINT);
 
-    private List<PocketExtra> GetPocketExtrasList()
-    {
+                if (!string.IsNullOrWhiteSpace(json))
+                {
+                    try
+                    {
+                        var pocketExtras = JsonConvert.DeserializeObject<PocketExtras>(json);
+
+                        pocketExtrasList = pocketExtras.pocket_extras;
+                    }
+                    catch (Exception ex)
+                    {
+                        WriteMessage($"There was an error parsing the {POCKET_EXTRAS_FILE} file.");
 #if DEBUG
-        string json = File.ReadAllText("pocket_extras.json");
+                        WriteMessage(ex.ToString());
 #else
-        string json = this.settingsService.GetConfig().use_local_pocket_extras
-            ? File.ReadAllText("pocket_extras.json")
-            : HttpHelper.Instance.GetHTML(EXTRAS_END_POINT);
+                        WriteMessage(ex.Message);
 #endif
-        PocketExtras files = JsonConvert.DeserializeObject<PocketExtras>(json);
+                    }
+                }
+                else
+                {
+                    pocketExtrasList = new List<PocketExtra>();
+                }
+            }
 
-        return files.pocket_extras;
+            return pocketExtrasList;
+        }
     }
 
     public PocketExtra GetPocketExtra(string pocketExtraIdOrCoreIdentifier)
