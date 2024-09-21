@@ -22,12 +22,14 @@ public class AnalogizerOptionType
     public string GetInput()
     {
         Console.WriteLine(Options);
+
         string input = Console.ReadLine()!.ToLower();
         string notFound = "";
 
         if (Expect1 && input.Length > 1)
         {
             Console.WriteLine($"\nExpected input length: 1\nInput length found: {input.Length}\nTry again.");
+
             return GetInput();
         }
 
@@ -66,6 +68,7 @@ public static class UserOptions
     {
         string finalNum = "";
         string[] files = { filename, filename2 };
+
         if (filename == filename2)
         {
             files[1] = null;
@@ -74,6 +77,7 @@ public static class UserOptions
         foreach (var sel in records)
         {
             string selInput = sel.GetInput();
+
             foreach (var item in sel.Dict)
             {
                 finalNum += string.Join("", item.Value);
@@ -89,7 +93,9 @@ public static class UserOptions
 
         foreach (var file in files)
         {
-            if (file == null) continue;
+            if (file == null)
+                continue;
+
             File.WriteAllBytes(file, Enumerable.Range(0, hexStr.Length)
                 .Where(x => x % 2 == 0)
                 .Select(x => Convert.ToByte(hexStr.Substring(x, 2), 16))

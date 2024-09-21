@@ -6,12 +6,14 @@ namespace Pannella.Services;
 
 public partial class CoresService
 {
-    private const string LICENSE_EXTRACT_LOCATION = "licenses";
+    private const string LICENSE_EXTRACT_LOCATION = "Licenses";
 
     public (bool, string, int, string) RequiresLicense(string identifier)
     {
         var updater = this.ReadUpdatersJson(identifier);
-        if (updater == null || updater.license == null) {
+
+        if (updater?.license == null)
+        {
             return (false, null, 0, null);
         }
 
@@ -80,13 +82,5 @@ public partial class CoresService
         }
 
         return true;
-    }
-
-    public void DeleteBetaKeys()
-    {
-        string keyPath = Path.Combine(this.installPath, LICENSE_EXTRACT_LOCATION);
-
-        if (Directory.Exists(keyPath))
-            Directory.Delete(keyPath, true);
     }
 }
