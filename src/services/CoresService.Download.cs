@@ -86,6 +86,19 @@ public partial class CoresService
         List<string> skipped = new List<string>();
         bool missingLicense = false;
 
+        // Should this just check the Installed Cores collection instead?
+        if (!this.IsInstalled(core.identifier))
+        {
+            WriteMessage($"Core '{core.identifier}' is not installed yet.");
+
+            return new Dictionary<string, object>
+            {
+                { "installed", installed },
+                { "skipped", skipped },
+                { "missingLicense", false }
+            };
+        }
+
         //dynamically add the license file to the blacklist so we dont try to download it
         if (core.license_slot_filename != null)
         {
