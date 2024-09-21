@@ -200,8 +200,12 @@ internal partial class Program
                     ServiceHelper.CoresService.InstalledCores,
                     "Which cores would you like to update?",
                     false);
+                var list = selectedCores.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToArray();
 
-                coreUpdaterService.RunUpdates(selectedCores.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToArray());
+                if (list.Length > 0)
+                {
+                    coreUpdaterService.RunUpdates(list);
+                }
                 Pause();
             })
             .Add("Install Selected", _ =>
@@ -209,8 +213,13 @@ internal partial class Program
                 var selectedCores = RunCoreSelector(
                     ServiceHelper.CoresService.CoresNotInstalled,
                     "Which cores would you like to install?");
+                var list = selectedCores.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToArray();
 
-                coreUpdaterService.RunUpdates(selectedCores.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToArray());
+                if (list.Length > 0)
+                {
+                    coreUpdaterService.RunUpdates(list);
+                }
+
                 Pause();
             })
             .Add("Reinstall All Cores", _ =>
