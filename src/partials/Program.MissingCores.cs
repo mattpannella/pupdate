@@ -49,7 +49,7 @@ internal partial class Program
                     }
                     else
                     {
-                        RunCoreSelector(ServiceHelper.SettingsService.GetMissingCores(), "New cores are available!");
+                        RunCoreSelector(ServiceHelper.SettingsService.GetMissingCores(), "New cores are available!", true);
                     }
 
                     break;
