@@ -23,10 +23,31 @@ public partial class CoresService : BaseProcess
         {
             if (cores == null)
             {
-                string json = this.GetServerJsonFile(
-                    this.settingsService.GetConfig().use_local_cores_inventory,
-                    CORES_FILE,
-                    CORES_END_POINT);
+                string json = null;
+
+                if (this.settingsService.GetConfig().use_local_cores_inventory)
+                {
+                    if (File.Exists(CORES_FILE))
+                    {
+                        json = File.ReadAllText(CORES_FILE);
+                    }
+                    else
+                    {
+                        WriteMessage($"Local file not found: {CORES_FILE}");
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        json = HttpHelper.Instance.GetHTML(CORES_END_POINT);
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        WriteMessage($"There was a error downloading the {CORES_FILE} file from GitHub.");
+                        WriteMessage(ex.Message);
+                    }
+                }
 
                 if (!string.IsNullOrEmpty(json))
                 {
