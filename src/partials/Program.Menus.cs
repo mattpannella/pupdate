@@ -346,7 +346,7 @@ internal partial class Program
             .Add("Select Cores            >", () => // \u00BB
             {
                 AskAboutNewCores(true);
-                RunCoreSelector(ServiceHelper.CoresService.Cores.OrderBy(x => x.identifier.ToLowerInvariant()).ToList());
+                RunCoreSelector(ServiceHelper.CoresService.Cores);
                 // Is reloading the settings file necessary?
                 ServiceHelper.ReloadSettings();
             })

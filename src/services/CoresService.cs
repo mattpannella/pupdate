@@ -59,6 +59,7 @@ public partial class CoresService : BaseProcess
                         {
                             cores = coresList;
                             cores.AddRange(this.GetLocalCores());
+                            cores = cores.OrderBy(c => c.identifier.ToLowerInvariant()).ToList();
                         }
                     }
                     catch (Exception ex)
@@ -176,6 +177,10 @@ public partial class CoresService : BaseProcess
                 coresNotInstalled.Add(core);
             }
         }
+
+        installedCores = installedCores.OrderBy(c => c.identifier.ToLowerInvariant()).ToList();
+        coresNotInstalled = coresNotInstalled.OrderBy(c => c.identifier.ToLowerInvariant()).ToList();
+        installedCoresWithSponsors = installedCoresWithSponsors.OrderBy(c => c.identifier.ToLowerInvariant()).ToList();
     }
 
     public bool Install(Core core, bool clean = false)
