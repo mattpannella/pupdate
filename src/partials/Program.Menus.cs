@@ -39,6 +39,8 @@ internal partial class Program
             SelectedItemForegroundColor = Console.BackgroundColor,
         };
 
+        #region Pocket Setup - Display Modes
+
         var displayModesMenu = new ConsoleMenu()
             .Configure(menuConfig)
             .Add("Enable Recommended Display Modes", () =>
@@ -57,6 +59,10 @@ internal partial class Program
                 Pause();
             })
             .Add("Go Back", ConsoleMenu.Close);
+
+        #endregion
+
+        #region Pocket Setup - Download Files
 
         var downloadFilesMenu = new ConsoleMenu()
             .Configure(menuConfig)
@@ -77,6 +83,10 @@ internal partial class Program
             })
             .Add("Go Back", ConsoleMenu.Close);
 
+        #endregion
+
+        #region Pocket Setup - Generate Files
+
         var generateFilesMenu = new ConsoleMenu()
             .Configure(menuConfig)
             .Add("Generate Instance JSON Files (PC Engine CD)", () =>
@@ -90,6 +100,10 @@ internal partial class Program
                 Pause();
             })
             .Add("Go Back", ConsoleMenu.Close);
+
+        #endregion
+
+        #region Pocket Setup - Super GameBoy Aspect Ratio
 
         var sgbAspectRatioMenu = new ConsoleMenu()
             .Configure(menuConfig)
@@ -135,6 +149,10 @@ internal partial class Program
             })
             .Add("Go Back", ConsoleMenu.Close);
 
+        #endregion
+
+        #region Pocket Setup
+
         var pocketSetupMenu = new ConsoleMenu()
             .Configure(menuConfig)
             .Add("Apply Display Modes          >", displayModesMenu.Show)
@@ -163,7 +181,16 @@ internal partial class Program
 
                 Pause();
             })
+            .Add("Print openFPGA Category Structure", () =>
+            {
+                PrintOpenFpgaCategories();
+                Pause();
+            })
             .Add("Go Back", ConsoleMenu.Close);
+
+        #endregion
+
+        #region Pocket Maintenance
 
         var pocketMaintenanceMenu = new ConsoleMenu()
             .Configure(menuConfig)
@@ -236,6 +263,10 @@ internal partial class Program
             })
             .Add("Go Back", ConsoleMenu.Close);
 
+        #endregion
+
+        #region Pocket Extras
+
         var additionalAssetsMenu = new ConsoleMenu().Configure(menuConfig);
         var combinationPlatformsMenu = new ConsoleMenu().Configure(menuConfig);
         var variantCoresMenu = new ConsoleMenu().Configure(menuConfig);
@@ -294,6 +325,10 @@ internal partial class Program
         combinationPlatformsMenu.Add("Go Back", ConsoleMenu.Close);
         variantCoresMenu.Add("Go Back", ConsoleMenu.Close);
 
+        #endregion
+
+        #region Main Menu
+
         var menu = new ConsoleMenu()
             .Configure(menuConfig)
             .Add("Update All", _ =>
@@ -343,6 +378,8 @@ internal partial class Program
                 coreUpdaterService.ReloadSettings();
             })
             .Add("Exit", ConsoleMenu.Close);
+
+        #endregion
 
         menu.Show();
     }
