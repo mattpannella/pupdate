@@ -32,11 +32,6 @@ public partial class CoresService
 
         if (isCurated)
         {
-            if (this.DisplayModes.TryGetValue("all", out var all))
-            {
-                toAdd.AddRange(all.Select(displayMode => new DisplayMode { id = displayMode.value }));
-            }
-
             if (info.metadata.platform_ids.Contains("gb") && this.DisplayModes.TryGetValue("gb", out var gb))
             {
                 toAdd.AddRange(gb.Select(displayMode => new DisplayMode { id = displayMode.value }));
@@ -68,6 +63,11 @@ public partial class CoresService
             else if (info.metadata.platform_ids.Contains("pce") && this.DisplayModes.TryGetValue("pce", out var pce))
             {
                 toAdd.AddRange(pce.Select(displayMode => new DisplayMode { id = displayMode.value }));
+            }
+
+            if (this.DisplayModes.TryGetValue("all", out var all))
+            {
+                toAdd.AddRange(all.Select(displayMode => new DisplayMode { id = displayMode.value }));
             }
         }
         else
