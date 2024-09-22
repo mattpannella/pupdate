@@ -186,7 +186,7 @@ public class CoreUpdaterService : BaseProcess
                             if (coreSettings.pocket_extras_version != version)
                             {
                                 WriteMessage("Updating Pocket Extras...");
-                                this.coresService.GetPocketExtra(pocketExtra, this.installPath, false, false);
+                                this.coresService.GetPocketExtra(pocketExtra, this.installPath, false);
                             }
                             else
                             {
@@ -226,7 +226,7 @@ public class CoreUpdaterService : BaseProcess
                         this.coresService.Delete(core.identifier, core.platform_id);
                     }
 
-                    this.coresService.GetPocketExtra(pocketExtra, this.installPath, false, false);
+                    this.coresService.GetPocketExtra(pocketExtra, this.installPath, false);
 
                     Dictionary<string, string> summary = new Dictionary<string, string>
                     {
@@ -259,7 +259,7 @@ public class CoreUpdaterService : BaseProcess
                     if (coreSettings.pocket_extras_version != version)
                     {
                         WriteMessage("Updating Pocket Extras...");
-                        this.coresService.GetPocketExtra(pocketExtra, this.installPath, false, false);
+                        this.coresService.GetPocketExtra(pocketExtra, this.installPath, false);
                     }
                     else
                     {

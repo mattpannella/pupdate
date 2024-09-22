@@ -190,7 +190,7 @@ internal partial class Program
                             }
                             else
                             {
-                                ServiceHelper.CoresService.GetPocketExtra(extra, ServiceHelper.UpdateDirectory, true, true);
+                                ServiceHelper.CoresService.GetPocketExtra(extra, ServiceHelper.UpdateDirectory, true);
                             }
                         }
                         else
