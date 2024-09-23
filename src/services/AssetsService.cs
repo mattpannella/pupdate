@@ -90,11 +90,7 @@ public class AssetsService
         BackupDirectory(directory, "Memories", backupLocation);
     }
 
-    public static void BackupDirectory(
-        string rootDirectory,
-        string folderName,
-        string backupLocation
-    )
+    private static void BackupDirectory(string rootDirectory, string folderName, string backupLocation)
     {
         if (string.IsNullOrEmpty(rootDirectory))
         {
@@ -107,6 +103,7 @@ public class AssetsService
         }
 
         Console.WriteLine($"Compressing and backing up {folderName} directory...");
+
         string savesPath = Path.Combine(rootDirectory, folderName);
 
         if (Directory.Exists(savesPath))
@@ -114,7 +111,7 @@ public class AssetsService
             string directoryHash = ComputeDirectoryHash(savesPath);
             string truncatedHash = directoryHash.Substring(0, 8);
             string dateStamp = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
-            string fileName = $"{folderName}_Backup_{dateStamp}-version{truncatedHash}.zip";
+            string fileName = $"{folderName}_Backup_{dateStamp}_version_{truncatedHash}.zip";
             string archiveName = Path.Combine(backupLocation, fileName);
 
             if (!Directory.Exists(backupLocation))
@@ -122,9 +119,9 @@ public class AssetsService
                 Directory.CreateDirectory(backupLocation);
             }
 
-            bool isDuplicateBackup = Directory
-                .GetFiles(backupLocation, $"{folderName}_Backup_*-version{truncatedHash}.zip")
-                .Any();
+            bool isDuplicateBackup =
+                Directory.GetFiles(backupLocation, $"{folderName}_Backup_*_version_{truncatedHash}.zip")
+                         .Any();
 
             if (!isDuplicateBackup)
             {

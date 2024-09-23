@@ -39,6 +39,8 @@ internal partial class Program
             SelectedItemForegroundColor = Console.BackgroundColor,
         };
 
+        #region Pocket Setup - Display Modes
+
         var displayModesMenu = new ConsoleMenu()
             .Configure(menuConfig)
             .Add("Enable Recommended Display Modes", () =>
@@ -57,6 +59,10 @@ internal partial class Program
                 Pause();
             })
             .Add("Go Back", ConsoleMenu.Close);
+
+        #endregion
+
+        #region Pocket Setup - Download Files
 
         var downloadFilesMenu = new ConsoleMenu()
             .Configure(menuConfig)
@@ -77,6 +83,10 @@ internal partial class Program
             })
             .Add("Go Back", ConsoleMenu.Close);
 
+        #endregion
+
+        #region Pocket Setup - Generate Files
+
         var generateFilesMenu = new ConsoleMenu()
             .Configure(menuConfig)
             .Add("Generate Instance JSON Files (PC Engine CD)", () =>
@@ -90,6 +100,10 @@ internal partial class Program
                 Pause();
             })
             .Add("Go Back", ConsoleMenu.Close);
+
+        #endregion
+
+        #region Pocket Setup - Super GameBoy Aspect Ratio
 
         var sgbAspectRatioMenu = new ConsoleMenu()
             .Configure(menuConfig)
@@ -135,6 +149,10 @@ internal partial class Program
             })
             .Add("Go Back", ConsoleMenu.Close);
 
+        #endregion
+
+        #region Pocket Setup
+
         var pocketSetupMenu = new ConsoleMenu()
             .Configure(menuConfig)
             .Add("Apply Display Modes          >", displayModesMenu.Show)
@@ -163,7 +181,16 @@ internal partial class Program
 
                 Pause();
             })
+            .Add("Print openFPGA Category Structure", () =>
+            {
+                PrintOpenFpgaCategories();
+                Pause();
+            })
             .Add("Go Back", ConsoleMenu.Close);
+
+        #endregion
+
+        #region Pocket Maintenance
 
         var pocketMaintenanceMenu = new ConsoleMenu()
             .Configure(menuConfig)
@@ -173,8 +200,12 @@ internal partial class Program
                     ServiceHelper.CoresService.InstalledCores,
                     "Which cores would you like to update?",
                     false);
+                var list = selectedCores.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToArray();
 
-                coreUpdaterService.RunUpdates(selectedCores.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToArray());
+                if (list.Length > 0)
+                {
+                    coreUpdaterService.RunUpdates(list);
+                }
                 Pause();
             })
             .Add("Install Selected", _ =>
@@ -182,8 +213,13 @@ internal partial class Program
                 var selectedCores = RunCoreSelector(
                     ServiceHelper.CoresService.CoresNotInstalled,
                     "Which cores would you like to install?");
+                var list = selectedCores.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToArray();
 
-                coreUpdaterService.RunUpdates(selectedCores.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToArray());
+                if (list.Length > 0)
+                {
+                    coreUpdaterService.RunUpdates(list);
+                }
+
                 Pause();
             })
             .Add("Reinstall All Cores", _ =>
@@ -236,6 +272,10 @@ internal partial class Program
             })
             .Add("Go Back", ConsoleMenu.Close);
 
+        #endregion
+
+        #region Pocket Extras
+
         var additionalAssetsMenu = new ConsoleMenu().Configure(menuConfig);
         var combinationPlatformsMenu = new ConsoleMenu().Configure(menuConfig);
         var variantCoresMenu = new ConsoleMenu().Configure(menuConfig);
@@ -282,7 +322,7 @@ internal partial class Program
 
                 if (result)
                 {
-                    ServiceHelper.CoresService.GetPocketExtra(pocketExtra, ServiceHelper.UpdateDirectory, true, true);
+                    ServiceHelper.CoresService.GetPocketExtra(pocketExtra, ServiceHelper.UpdateDirectory, true);
                     ServiceHelper.CoresService.RefreshLocalCores();
                     ServiceHelper.CoresService.RefreshInstalledCores();
                     Pause();
@@ -293,6 +333,10 @@ internal partial class Program
         additionalAssetsMenu.Add("Go Back", ConsoleMenu.Close);
         combinationPlatformsMenu.Add("Go Back", ConsoleMenu.Close);
         variantCoresMenu.Add("Go Back", ConsoleMenu.Close);
+
+        #endregion
+
+        #region Main Menu
 
         var menu = new ConsoleMenu()
             .Configure(menuConfig)
@@ -311,7 +355,7 @@ internal partial class Program
             .Add("Select Cores            >", () => // \u00BB
             {
                 AskAboutNewCores(true);
-                RunCoreSelector(ServiceHelper.CoresService.Cores.OrderBy(x => x.identifier.ToLowerInvariant()).ToList());
+                RunCoreSelector(ServiceHelper.CoresService.Cores);
                 // Is reloading the settings file necessary?
                 ServiceHelper.ReloadSettings();
             })
@@ -343,6 +387,8 @@ internal partial class Program
                 coreUpdaterService.ReloadSettings();
             })
             .Add("Exit", ConsoleMenu.Close);
+
+        #endregion
 
         menu.Show();
     }

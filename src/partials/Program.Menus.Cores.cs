@@ -6,7 +6,8 @@ namespace Pannella;
 
 internal partial class Program
 {
-    private static Dictionary<string, bool> ShowCoresMenu(List<Core> cores, string message, bool isCoreSelection)
+    private static Dictionary<string, bool> ShowCoresMenu(List<Core> cores, string message, bool isCoreSelection,
+        bool skipQuit = false)
     {
         const int pageSize = 12;
         var offset = 0;
@@ -105,12 +106,15 @@ internal partial class Program
                 more = false;
             });
 
-            menu.Add(quit, thisMenu =>
+            if (!skipQuit)
             {
-                thisMenu.CloseMenu();
-                results.Clear();
-                more = false;
-            });
+                menu.Add(quit, thisMenu =>
+                {
+                    thisMenu.CloseMenu();
+                    results.Clear();
+                    more = false;
+                });
+            }
 
             menu.Show();
         }
@@ -118,7 +122,8 @@ internal partial class Program
         return results;
     }
 
-    private static Dictionary<string, bool> RunCoreSelector(List<Core> cores, string message = "Select your cores.")
+    private static Dictionary<string, bool> RunCoreSelector(List<Core> cores, string message = "Select your cores.",
+        bool skipQuit = false)
     {
         Dictionary<string, bool> results = null;
 
@@ -131,7 +136,7 @@ internal partial class Program
         }
         else
         {
-            results = ShowCoresMenu(cores, message, true);
+            results = ShowCoresMenu(cores, message, true, skipQuit);
 
             foreach (var item in results)
             {

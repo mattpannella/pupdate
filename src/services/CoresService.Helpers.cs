@@ -93,7 +93,7 @@ public partial class CoresService
             if (pocketExtra != null)
             {
                 WriteMessage("Reapplying Pocket Extras...");
-                this.GetPocketExtra(pocketExtra, this.installPath, false, true);
+                this.GetPocketExtra(pocketExtra, this.installPath, false);
             }
         }
     }
