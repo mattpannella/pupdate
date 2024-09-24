@@ -159,18 +159,18 @@ public partial class CoresService
 
     public bool GrossCheck(Core core)
     {
-        //if author starts with jt
-        //look for licenses/beta.bin
-
-        //if author is pram0d or atrac17
-        //look for coinop.key
+        // if author starts with jt
+        // look for licenses/beta.bin
         if (core.identifier.StartsWith("jotego"))
         {
-            return File.Exists(Path.Combine(this.installPath, "licenses", "beta.bin"));
+            return File.Exists(Path.Combine(this.installPath, LICENSE_EXTRACT_LOCATION, "beta.bin"));
         }
-        else if (core.identifier.StartsWith("pram0d") || core.identifier.StartsWith("atrac17"))
+
+        // if author is pram0d or atrac17
+        // look for coinop.key
+        if (core.identifier.StartsWith("pram0d") || core.identifier.StartsWith("atrac17"))
         {
-            return File.Exists(Path.Combine(this.installPath, "licenses", "coinop.key"));
+            return File.Exists(Path.Combine(this.installPath, LICENSE_EXTRACT_LOCATION, "coinop.key"));
         }
 
         return true;
