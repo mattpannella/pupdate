@@ -98,9 +98,9 @@ public partial class CoresService : BaseProcess
         }
     }
 
-    private static List<Core> installedCoresWithSponsors;
+    private static Dictionary<string, List<Core>> installedCoresWithSponsors;
 
-    public List<Core> InstalledCoresWithSponsors
+    public Dictionary<string, List<Core>> InstalledCoresWithSponsors
     {
         get
         {
@@ -159,7 +159,7 @@ public partial class CoresService : BaseProcess
     {
         installedCores = new List<Core>();
         coresNotInstalled = new List<Core>();
-        installedCoresWithSponsors = new List<Core>();
+        installedCoresWithSponsors = new Dictionary<string, List<Core>>();
 
         foreach (var core in cores)
         {
@@ -169,7 +169,17 @@ public partial class CoresService : BaseProcess
 
                 if (core.sponsor != null)
                 {
-                    installedCoresWithSponsors.Add(core);
+                    var info = ServiceHelper.CoresService.ReadCoreJson(core.identifier);
+                    var author = info.metadata.author;
+
+                    if (installedCoresWithSponsors.TryGetValue(author, out List<Core> authorCores))
+                    {
+                        authorCores.Add(core);
+                    }
+                    else
+                    {
+                        installedCoresWithSponsors.Add(author, new List<Core> { core });
+                    }
                 }
             }
             else
@@ -180,7 +190,6 @@ public partial class CoresService : BaseProcess
 
         installedCores = installedCores.OrderBy(c => c.identifier.ToLowerInvariant()).ToList();
         coresNotInstalled = coresNotInstalled.OrderBy(c => c.identifier.ToLowerInvariant()).ToList();
-        installedCoresWithSponsors = installedCoresWithSponsors.OrderBy(c => c.identifier.ToLowerInvariant()).ToList();
     }
 
     public bool Install(Core core, bool clean = false)
