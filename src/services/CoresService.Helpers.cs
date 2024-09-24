@@ -166,11 +166,11 @@ public partial class CoresService
         //look for coinop.key
         if (core.identifier.StartsWith("jotego"))
         {
-            return File.Exists(Path.Combine(this.installPath, "licenses", "beta.bin"));
+            return File.Exists(Path.Combine(this.installPath, "Licenses", "beta.bin"));
         }
         else if (core.identifier.StartsWith("pram0d") || core.identifier.StartsWith("atrac17"))
         {
-            return File.Exists(Path.Combine(this.installPath, "licenses", "coinop.key"));
+            return File.Exists(Path.Combine(this.installPath, "Licenses", "coinop.key"));
         }
 
         return true;
