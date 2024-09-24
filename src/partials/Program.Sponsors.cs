@@ -12,18 +12,15 @@ internal partial class Program
 
         if (ServiceHelper.CoresService.InstalledCoresWithSponsors.Count > 0)
         {
-            var random = new Random();
-            var index = random.Next(ServiceHelper.CoresService.InstalledCoresWithSponsors.Count);
-            var randomItem = ServiceHelper.CoresService.InstalledCoresWithSponsors[index];
+            var random = new Random(DateTime.Now.Millisecond);
+            var keyIndex = random.Next(ServiceHelper.CoresService.InstalledCoresWithSponsors.Count);
+            var author = ServiceHelper.CoresService.InstalledCoresWithSponsors.Keys.ElementAt(keyIndex);
+            var authorCores = ServiceHelper.CoresService.InstalledCoresWithSponsors[author];
+            var coreIndex = random.Next(authorCores.Count);
+            var randomCore = authorCores[coreIndex];
 
-            if (randomItem.sponsor != null)
-            {
-                var info = ServiceHelper.CoresService.ReadCoreJson(randomItem.identifier);
-                var author = info.metadata.author;
-
-                output.AppendLine($"Please consider supporting {author} for their work on the {randomItem} core:");
-                output.Append(randomItem.sponsor);
-            }
+            output.AppendLine($"Please consider supporting {author} for their work on the {randomCore} core:");
+            output.Append(randomCore.sponsor);
         }
 
         return output.ToString();
