@@ -31,13 +31,13 @@ internal partial class Program
         foreach (var (name, text) in menuItems)
         {
             var property = type.GetProperty(name);
-            var value = (bool)property!.GetValue(ServiceHelper.SettingsService.GetConfig())!;
+            var value = (bool)property!.GetValue(ServiceHelper.SettingsService.Config)!;
             var title = MenuItemName(text, value);
 
             menu.Add(title, thisMenu =>
             {
                 value = !value;
-                property.SetValue(ServiceHelper.SettingsService.GetConfig(), value);
+                property.SetValue(ServiceHelper.SettingsService.Config, value);
                 thisMenu.CurrentItem.Name = MenuItemName(text, value);
             });
         }

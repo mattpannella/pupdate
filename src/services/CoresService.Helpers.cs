@@ -1,8 +1,10 @@
 using Pannella.Helpers;
 using Pannella.Models.Analogue.Shared;
+using Pannella.Models.DisplayModes;
 using Pannella.Models.Extras;
 using Pannella.Models.OpenFPGA_Cores_Inventory;
 using ArchiveFile = Pannella.Models.Archive.File;
+using AnalogueDisplayMode = Pannella.Models.Analogue.Video.DisplayMode;
 using File = System.IO.File;
 
 namespace Pannella.Services;
@@ -63,7 +65,7 @@ public partial class CoresService
         ZipHelper.ExtractToDirectory(zipPath, tempDir, true);
 
         // Clean problematic directories and files.
-        Util.CleanDir(tempDir, this.installPath, this.settingsService.GetConfig().preserve_platforms_folder, platformId);
+        Util.CleanDir(tempDir, this.installPath, this.settingsService.Config.preserve_platforms_folder, platformId);
 
         // Move the files into place and delete our core's temp directory.
         WriteMessage("Installing...");
@@ -104,16 +106,39 @@ public partial class CoresService
 
         if (coreSettings.display_modes)
         {
-            var displayModes = coreSettings.selected_display_modes.Split(',');
+            string[] selectedDisplayModes = coreSettings.selected_display_modes.Split(',');
+            List<DisplayMode> displayModes = this.ConvertDisplayModes(selectedDisplayModes);
 
             WriteMessage("Reapplying Display Modes...");
             this.AddDisplayModes(identifier, displayModes, forceOriginal: true);
         }
     }
 
+    public List<DisplayMode> ConvertDisplayModes(IEnumerable<string> displayModes)
+    {
+        List<DisplayMode> convertedDisplayModes =
+            (from analogueDisplayMode in displayModes
+             from displayMode in this.AllDisplayModes
+             where analogueDisplayMode == displayMode.value
+             select displayMode).ToList();
+
+        return convertedDisplayModes;
+    }
+
+    private List<DisplayMode> ConvertDisplayModes(List<AnalogueDisplayMode> analogueDisplayModes)
+    {
+        List<DisplayMode> convertedDisplayModes =
+            (from analogueDisplayMode in analogueDisplayModes
+             from displayMode in this.AllDisplayModes
+             where analogueDisplayMode.id == displayMode.value
+             select displayMode).ToList();
+
+        return convertedDisplayModes;
+    }
+
     private bool CheckCrc(string filePath, ArchiveFile archiveFile)
     {
-        if (!this.settingsService.GetConfig().crc_check)
+        if (!this.settingsService.Config.crc_check)
         {
             return true;
         }

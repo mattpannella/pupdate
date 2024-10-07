@@ -57,13 +57,13 @@ public class CoreUpdaterService : BaseProcess
         List<string> missingLicenses = new List<string>();
         string firmwareDownloaded = null;
 
-        if (this.settingsService.GetConfig().backup_saves)
+        if (this.settingsService.Config.backup_saves)
         {
-            AssetsService.BackupSaves(this.installPath, this.settingsService.GetConfig().backup_saves_location);
-            AssetsService.BackupMemories(this.installPath, this.settingsService.GetConfig().backup_saves_location);
+            AssetsService.BackupSaves(this.installPath, this.settingsService.Config.backup_saves_location);
+            AssetsService.BackupMemories(this.installPath, this.settingsService.Config.backup_saves_location);
         }
 
-        if (this.settingsService.GetConfig().download_firmware && ids == null)
+        if (this.settingsService.Config.download_firmware && ids == null)
         {
             if (this.firmwareService != null)
             {
@@ -321,7 +321,7 @@ public class CoreUpdaterService : BaseProcess
 
     private void JotegoRename(Core core)
     {
-        if (this.settingsService.GetConfig().fix_jt_names &&
+        if (this.settingsService.Config.fix_jt_names &&
             this.settingsService.GetCoreSettings(core.identifier).platform_rename &&
             core.identifier.Contains("jotego"))
         {
@@ -355,7 +355,7 @@ public class CoreUpdaterService : BaseProcess
 
         // If the platform id is still missing, it's a pocket extra that was already deleted, so skip it.
         if (!string.IsNullOrEmpty(core.platform_id) &&
-            (this.settingsService.GetConfig().delete_skipped_cores || force))
+            (this.settingsService.Config.delete_skipped_cores || force))
         {
             this.coresService.Uninstall(core.identifier, core.platform_id, nuke);
         }

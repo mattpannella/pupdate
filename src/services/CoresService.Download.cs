@@ -110,7 +110,7 @@ public partial class CoresService
         // or
         // global override is off, global setting is on, and core specific is on
         bool run = (ignoreGlobalSetting && this.settingsService.GetCoreSettings(core.identifier).download_assets) ||
-                   (!ignoreGlobalSetting && this.settingsService.GetConfig().download_assets &&
+                   (!ignoreGlobalSetting && this.settingsService.Config.download_assets &&
                     this.settingsService.GetCoreSettings(core.identifier).download_assets);
 
         if (!run)
@@ -167,7 +167,7 @@ public partial class CoresService
 
                         if (File.Exists(filePath) && CheckCrc(filePath, archiveFile))
                         {
-                            if (!this.settingsService.GetConfig().suppress_already_installed)
+                            if (!this.settingsService.Config.suppress_already_installed)
                                 WriteMessage($"Already installed: {file}");
                         }
                         else
@@ -205,7 +205,7 @@ public partial class CoresService
 
                 if (File.Exists(filePath) && CheckCrc(filePath, file))
                 {
-                    if (!this.settingsService.GetConfig().suppress_already_installed)
+                    if (!this.settingsService.Config.suppress_already_installed)
                         WriteMessage($"Already installed: {file.name}");
                 }
                 else
@@ -267,7 +267,7 @@ public partial class CoresService
                         continue;
                     }
 
-                    if (this.settingsService.GetConfig().skip_alternative_assets &&
+                    if (this.settingsService.Config.skip_alternative_assets &&
                         file.Contains(Path.Combine(instancesDirectory, "_alternatives")))
                     {
                         continue;
@@ -303,7 +303,7 @@ public partial class CoresService
 
                                 if (File.Exists(slotPath) && CheckCrc(slotPath, archiveFile))
                                 {
-                                    if (!this.settingsService.GetConfig().suppress_already_installed)
+                                    if (!this.settingsService.Config.suppress_already_installed)
                                         WriteMessage($"Already installed: {slot.filename}");
                                 }
                                 else
@@ -350,7 +350,7 @@ public partial class CoresService
 
     public void BuildInstanceJson(string identifier, bool overwrite = true)
     {
-        if (!this.settingsService.GetConfig().build_instance_jsons)
+        if (!this.settingsService.Config.build_instance_jsons)
         {
             return;
         }

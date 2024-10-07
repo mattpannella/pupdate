@@ -127,7 +127,7 @@ internal partial class Program
     {
         Dictionary<string, bool> results = null;
 
-        if (ServiceHelper.SettingsService.GetConfig().download_new_cores?.ToLowerInvariant() == "yes")
+        if (ServiceHelper.SettingsService.Config.download_new_cores?.ToLowerInvariant() == "yes")
         {
             foreach (Core core in cores)
             {

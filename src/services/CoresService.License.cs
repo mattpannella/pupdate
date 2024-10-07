@@ -54,16 +54,16 @@ public partial class CoresService
         string keyPath = Path.Combine(this.installPath, LICENSE_EXTRACT_LOCATION);
         this.ExtractJTBetaKey();
 
-        string email = ServiceHelper.SettingsService.GetConfig().patreon_email_address;
-        if (email == null && ServiceHelper.SettingsService.GetConfig().coin_op_beta)
+        string email = ServiceHelper.SettingsService.Config.patreon_email_address;
+        if (email == null && ServiceHelper.SettingsService.Config.coin_op_beta)
         {
             Console.WriteLine("Unable to retrieve Coin-Op Collection Beta license. Please set your patreon email address.");
             Console.Write("Enter value: ");
             email = Console.ReadLine();
-            ServiceHelper.SettingsService.GetConfig().patreon_email_address = email;
+            ServiceHelper.SettingsService.Config.patreon_email_address = email;
             ServiceHelper.SettingsService.Save();
         }
-        if (email != null && ServiceHelper.SettingsService.GetConfig().coin_op_beta)
+        if (email != null && ServiceHelper.SettingsService.Config.coin_op_beta)
         {
             if (!Directory.Exists(keyPath))
             {

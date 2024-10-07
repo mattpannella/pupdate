@@ -22,7 +22,7 @@ public partial class CoresService
             if (pocketExtrasList == null)
             {
                 string json = this.GetServerJsonFile(
-                    this.settingsService.GetConfig().use_local_pocket_extras,
+                    this.settingsService.Config.use_local_pocket_extras,
                     POCKET_EXTRAS_FILE,
                     POCKET_EXTRAS_END_POINT);
 
@@ -87,7 +87,7 @@ public partial class CoresService
     private void DownloadPocketExtrasPlatform(PocketExtra pocketExtra, string path, bool downloadAssets)
     {
         Release release = GithubApiService.GetLatestRelease(pocketExtra.github_user, pocketExtra.github_repository,
-            this.settingsService.GetConfig().github_token);
+            this.settingsService.Config.github_token);
         Asset asset = release.assets.FirstOrDefault(x => x.name.StartsWith(pocketExtra.github_asset_prefix));
 
         if (asset == null)
@@ -269,7 +269,7 @@ public partial class CoresService
         }
 
         Release release = GithubApiService.GetLatestRelease(pocketExtra.github_user, pocketExtra.github_repository,
-            this.settingsService.GetConfig().github_token);
+            this.settingsService.Config.github_token);
         Asset asset = release.assets.FirstOrDefault(x => x.name.StartsWith(pocketExtra.github_asset_prefix));
 
         if (asset == null)
@@ -361,7 +361,7 @@ public partial class CoresService
     public string GetMostRecentRelease(PocketExtra pocketExtra)
     {
         Release release = GithubApiService.GetLatestRelease(pocketExtra.github_user, pocketExtra.github_repository,
-            this.settingsService.GetConfig().github_token);
+            this.settingsService.Config.github_token);
 
         return release.tag_name;
     }

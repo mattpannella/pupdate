@@ -23,6 +23,8 @@ public class Config
 
     public string download_new_cores { get; set; }
 
+    public string display_modes_option { get; set; }
+
     [Description("Build game JSON files for supported cores during 'Update All'")]
     public bool build_instance_jsons { get; set; } = true;
 
@@ -55,6 +57,9 @@ public class Config
     public string temp_directory { get; set; } = null;
 
     public string patreon_email_address { get; set; } = null;
+
+    [Description("Adds a description element to the video.json display modes (non-breaking)")]
+    public bool add_display_mode_description_to_video_json { get; set; } = false;
 
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
     //[Description("Use a local cores.json file for the inventory")]

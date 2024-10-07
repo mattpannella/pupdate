@@ -14,6 +14,8 @@ public class SettingsService
     private readonly string settingsFile;
     private readonly List<Core> missingCores;
 
+    public Config Config => this.settings.config;
+
     public SettingsService(string settingsPath, List<Core> cores = null)
     {
         this.settings = new Settings();
@@ -152,11 +154,6 @@ public class SettingsService
         {
             DisableCore(core.identifier);
         }
-    }
-
-    public Config GetConfig()
-    {
-        return settings.config;
     }
 
     // This is used by the RetroDriven Pocket Updater Windows Application

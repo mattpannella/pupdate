@@ -14,7 +14,7 @@ internal partial class Program
         try
         {
             List<GithubRelease> releases = GithubApiService.GetReleases(USER, REPOSITORY,
-                ServiceHelper.SettingsService.GetConfig().github_token);
+                ServiceHelper.SettingsService.Config.github_token);
 
             string tagName = releases[0].tag_name;
             string v = SemverUtil.FindSemver(tagName);
