@@ -29,7 +29,7 @@ For a full view of the interactive console menu, see [here](MENU.md).
 [GameBoy Palettes](#pocket-setup---download-gameboy-palettes) |
 [PC Engine CD](#pocket-setup---generating-instance-json-files-pc-engine-cd) |
 [Game & Watch](#pocket-setup---generate-game--watch-roms) |
-[Display Modes](#pocket-setup---enable-all-display-modes) |
+[Display Modes](#pocket-setup---display-modes) |
 [Super GameBoy Aspect Ratio](#pocket-setup---super-gameboy-aspect-ratio) |
 [Pocket Maintenance](#pocket-maintenance---reinstall-or-uninstall-cores) |
 [Pocket Extras](#pocket-extras) |
@@ -93,6 +93,24 @@ This presents you with a list of all of the supported display modes and lets you
 
 This presents you with a list of all of the supported display modes and lets you select which ones you want to apply. Next, you'll be asked to select which of your installed cores you want to apply the display modes to. Then it applies those display modes to the cores you have selected.
 
+- Reset All Customized Display Modes
+
+This will reset all of the cores with customized display modes back to the original list that was specified by the core.
+
+- Reset Selected Customized Display Modes
+
+This will reset the selected cores with customized display modes back to the original list that was specified by the core.
+
+- Change Display Modes Option Setting
+
+This will prompt you to ask how you want to apply the display modes to the cores, with 3 options:
+- Merge
+  - Selecting this will merge the selected or recommended display modes with the ones specified by the core.
+- Overwrite
+  - Selecting this will overwrite the display modes specified by the core with the selected or recommended ones.
+- Ask
+  - Selecting this will ask you if you want to merge or overwrite the core specified display modes with the selected or recommended ones each time you run it.
+
 ### Pocket Setup - Download Platform Image Packs
 
 This will present you with a list of available image packs and automatically download and extract it to the Platforms/_images directory for you
@@ -152,10 +170,6 @@ Should look like this:
 ```
 
 Now just run the menu option in the updater and it will build your games
-
-### Pocket Setup - Enable All Display Modes
-
-This will enable all of the Pocket Display Modes for the openFPGA cores.
 
 ### Pocket Setup - Super GameBoy Aspect Ratio
 
@@ -225,6 +239,7 @@ This contains a list of alternate core setups. These take existing cores and mak
 | config.archive_name          | The account on archive.org that the app will use to check for Assets                                                                                                                                                                                                                                                                                                                                            |
 | config.github_token          | The app will use this when making API calls to GitHub                                                                                                                                                                                                                                                                                                                                                           |
 | config.download_new_cores    | This will be set automatically by the `Select Cores` menu item. It can be set to "yes", "no", or "ask"                                                                                                                                                                                                                                                                                                          |
+| config.display_modes_option  | This will be set automatically by any of the `Display Modes` menu items. It can be set to "merge", "overwrite", or "ask"                                                                                                                                                                                                                                                                                        |
 | config.custom_archive        | You can set a custom URL here, if you don't want to use the default. `index` is a relative path to the index of your custom site's files. This is not required, but it's needed for CRC checking. If you have CRC checking enabled, the setting will be ignored unless this provides the necessary format. It must match the output of archive.org's json endpoint. https://archive.org/developers/md-read.html |
 | config.backup_saves          | Set this to `true` if you want your Saves directory to be backed up automatically during `Update All`                                                                                                                                                                                                                                                                                                           |
 | config.backup_saves_location | Put the absolute path to the backup location here to backup your `Saves` directory to. This defaults to `Backups` in the current directory when not set.                                                                                                                                                                                                                                                        |

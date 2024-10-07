@@ -4,9 +4,12 @@ public class DisplayMode
 {
     public string value { get; set; }
     public string description { get; set; }
+    public int order { get; set; }
+
+    public List<string> exclude_cores { get; set; } = new();
 
     public override string ToString()
     {
-        return value;
+        return $"{this.value} - {this.order} - {this.description}";
     }
 }

@@ -68,7 +68,7 @@ internal partial class Program
             {
                 case MenuOptions options:
                     if (!options.SkipUpdate)
-                        CheckForUpdates(ServiceHelper.UpdateDirectory, false, args, ServiceHelper.SettingsService.GetConfig().auto_install_updates);
+                        CheckForUpdates(ServiceHelper.UpdateDirectory, false, args, ServiceHelper.SettingsService.Config.auto_install_updates);
                     else
                         enableMissingCores = true;
                     break;
@@ -149,7 +149,7 @@ internal partial class Program
 
                     if (options.Save)
                     {
-                        var config = ServiceHelper.SettingsService.GetConfig();
+                        var config = ServiceHelper.SettingsService.Config;
 
                         config.backup_saves = true;
                         config.backup_saves_location = options.BackupPath;

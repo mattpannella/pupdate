@@ -17,7 +17,7 @@ public partial class CoresService
             if (ignoreInstanceJson == null)
             {
                 string json = this.GetServerJsonFile(
-                    this.settingsService.GetConfig().use_local_ignore_instance_json,
+                    this.settingsService.Config.use_local_ignore_instance_json,
                     IGNORE_INSTANCE_JSON_FILE,
                     IGNORE_INSTANCE_JSON_END_POINT);
 

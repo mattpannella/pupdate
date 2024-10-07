@@ -4,10 +4,13 @@
 4. Download Assets
 5. Backup Saves & Memories
 6. Pocket Setup
-   1. Add Display Modes
+   1. Manage Display Modes
       1. Enable Recommended Display Modes
       2. Enable Selected Display Modes for All Cores
       3. Enable Selected Display Modes for Select Cores
+      4. Reset All Customized Display Modes
+      5. Reset Selected Customized Display Modes
+      6. Change Display Modes Option Setting
    2. Download Images and Palettes
       1. Download Platform Image Packs
       2. Download Pocket Library Images

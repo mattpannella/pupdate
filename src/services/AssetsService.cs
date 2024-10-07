@@ -165,7 +165,7 @@ public class AssetsService
 
     public static void PruneSaveStates(string rootDirectory, string coreName = null)
     {
-        BackupMemories(ServiceHelper.UpdateDirectory, ServiceHelper.SettingsService.GetConfig().backup_saves_location);
+        BackupMemories(ServiceHelper.UpdateDirectory, ServiceHelper.SettingsService.Config.backup_saves_location);
         string savesPath = Path.Combine(rootDirectory, "Memories", "Save States");
 
         //YYYYMMDD_HHMMSS_SOMETHING_SOMETHING_GAMETITLE.STA

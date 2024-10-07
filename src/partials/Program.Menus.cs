@@ -58,6 +58,27 @@ internal partial class Program
                 DisplayModeSelector(true);
                 Pause();
             })
+            .Add("Reset All Customized Display Modes", () =>
+            {
+                ResetDisplayModes();
+                Pause();
+            })
+            .Add("Reset Selected Customized Display Modes", () =>
+            {
+                var coreResults = ShowCoresMenu(
+                    ServiceHelper.CoresService.InstalledCores,
+                    "Which cores would you like to reset the display modes for?",
+                    false);
+                var coreIdentifiers = coreResults.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToList();
+
+                ResetDisplayModes(coreIdentifiers);
+                Pause();
+            })
+            .Add("Change Display Modes Option Setting", () =>
+            {
+                 AskAboutDisplayModesSetting(true);
+                 Pause();
+            })
             .Add("Go Back", ConsoleMenu.Close);
 
         #endregion
@@ -155,7 +176,7 @@ internal partial class Program
 
         var pocketSetupMenu = new ConsoleMenu()
             .Configure(menuConfig)
-            .Add("Apply Display Modes          >", displayModesMenu.Show)
+            .Add("Manage Display Modes         >", displayModesMenu.Show)
             .Add("Download Images and Palettes >", downloadFilesMenu.Show)
             .Add("Generate ROMs & JSON Files   >", generateFilesMenu.Show)
             .Add("Super GameBoy Aspect Ratio   >", sgbAspectRatioMenu.Show)
@@ -169,14 +190,14 @@ internal partial class Program
             })
             .Add("Set Patreon Email Address", () =>
             {
-                Console.WriteLine($"Current email address: {ServiceHelper.SettingsService.GetConfig().patreon_email_address}");
+                Console.WriteLine($"Current email address: {ServiceHelper.SettingsService.Config.patreon_email_address}");
                 var result = AskYesNoQuestion("Would you like to change your address?");
 
                 if (!result)
                     return;
 
                 string input = PromptForInput();
-                ServiceHelper.SettingsService.GetConfig().patreon_email_address = input;
+                ServiceHelper.SettingsService.Config.patreon_email_address = input;
                 ServiceHelper.SettingsService.Save();
 
                 Pause();
@@ -304,7 +325,7 @@ internal partial class Program
             {
                 bool result = true;
 
-                if (ServiceHelper.SettingsService.GetConfig().show_menu_descriptions &&
+                if (ServiceHelper.SettingsService.Config.show_menu_descriptions &&
                     !string.IsNullOrEmpty(pocketExtra.description))
                 {
                     Console.WriteLine(Util.WordWrap(pocketExtra.description, 80));
@@ -371,9 +392,9 @@ internal partial class Program
             .Add("Backup Saves & Memories", () =>
             {
                 AssetsService.BackupSaves(ServiceHelper.UpdateDirectory,
-                    ServiceHelper.SettingsService.GetConfig().backup_saves_location);
+                    ServiceHelper.SettingsService.Config.backup_saves_location);
                 AssetsService.BackupMemories(ServiceHelper.UpdateDirectory,
-                    ServiceHelper.SettingsService.GetConfig().backup_saves_location);
+                    ServiceHelper.SettingsService.Config.backup_saves_location);
                 Pause();
             })
             .Add("Pocket Setup            >", pocketSetupMenu.Show)

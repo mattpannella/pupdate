@@ -8,16 +8,35 @@ public partial class CoresService
     private const string DISPLAY_MODES_END_POINT = "https://raw.githubusercontent.com/mattpannella/pupdate/main/display_modes.json";
     private const string DISPLAY_MODES_FILE = "display_modes.json";
 
+    private List<DisplayMode> allDisplayModesList;
     private Dictionary<string, List<DisplayMode>> displayModesList;
 
-    private Dictionary<string, List<DisplayMode>> DisplayModes
+    public List<DisplayMode> AllDisplayModes
     {
         get
         {
-            if (displayModesList == null)
+            if (this.allDisplayModesList == null)
+            {
+                this.allDisplayModesList = new List<DisplayMode>();
+
+                foreach (string key in this.DisplayModes.Keys)
+                {
+                    this.allDisplayModesList.AddRange(this.DisplayModes[key]);
+                }
+            }
+
+            return this.allDisplayModesList;
+        }
+    }
+
+    public Dictionary<string, List<DisplayMode>> DisplayModes
+    {
+        get
+        {
+            if (this.displayModesList == null)
             {
                 string json = this.GetServerJsonFile(
-                    this.settingsService.GetConfig().use_local_display_modes,
+                    this.settingsService.Config.use_local_display_modes,
                     DISPLAY_MODES_FILE,
                     DISPLAY_MODES_END_POINT);
 
@@ -27,7 +46,7 @@ public partial class CoresService
                     {
                         var localDisplayModes = JsonConvert.DeserializeObject<DisplayModes>(json);
 
-                        return localDisplayModes.display_modes;
+                        displayModesList = localDisplayModes.display_modes;
                     }
                     catch (Exception ex)
                     {
@@ -41,23 +60,11 @@ public partial class CoresService
                 }
                 else
                 {
-                    displayModesList = new Dictionary<string, List<DisplayMode>>();
+                    this.displayModesList = new Dictionary<string, List<DisplayMode>>();
                 }
             }
 
-            return displayModesList;
+            return this.displayModesList;
         }
-    }
-
-    public List<DisplayMode> GetAllDisplayModes()
-    {
-        List<DisplayMode> displayModes = new List<DisplayMode>();
-
-        foreach (string key in this.DisplayModes.Keys)
-        {
-            displayModes.AddRange(this.DisplayModes[key]);
-        }
-
-        return displayModes;
     }
 }

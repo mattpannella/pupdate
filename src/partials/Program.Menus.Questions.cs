@@ -6,7 +6,7 @@ internal partial class Program
 {
     private static void AskAboutNewCores(bool force = false)
     {
-        while (ServiceHelper.SettingsService.GetConfig().download_new_cores == null || force)
+        while (ServiceHelper.SettingsService.Config.download_new_cores == null || force)
         {
             force = false;
 
@@ -14,7 +14,7 @@ internal partial class Program
 
             ConsoleKey response = Console.ReadKey(true).Key;
 
-            ServiceHelper.SettingsService.GetConfig().download_new_cores = response switch
+            ServiceHelper.SettingsService.Config.download_new_cores = response switch
             {
                 ConsoleKey.Y => "yes",
                 ConsoleKey.N => "no",
@@ -22,6 +22,49 @@ internal partial class Program
                 _ => null
             };
         }
+    }
+
+    private static void AskAboutDisplayModesSetting(bool force = false)
+    {
+        while (ServiceHelper.SettingsService.Config.display_modes_option == null || force)
+        {
+            force = false;
+
+            Console.WriteLine("Would you like to, by default, merge or overwrite the display modes? [M]erge, [O]verwrite, [A]sk each time:");
+
+            ConsoleKey response = Console.ReadKey(true).Key;
+
+            ServiceHelper.SettingsService.Config.display_modes_option = response switch
+            {
+                ConsoleKey.M => "merge",
+                ConsoleKey.O => "overwrite",
+                ConsoleKey.A => "ask",
+                _ => null
+            };
+        }
+
+        ServiceHelper.SettingsService.Save();
+    }
+
+    private static string AskAboutDisplayModes()
+    {
+        string result = null;
+
+        while (result == null)
+        {
+            Console.WriteLine("Would you like to merge or overwrite the display modes? [M]erge, [O]verwrite:");
+
+            ConsoleKey response = Console.ReadKey(true).Key;
+
+            result = response switch
+            {
+                ConsoleKey.M => "merge",
+                ConsoleKey.O => "overwrite",
+                _ => null
+            };
+        }
+
+        return result;
     }
 
     private static bool AskYesNoQuestion(string question)

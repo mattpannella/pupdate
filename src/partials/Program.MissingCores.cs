@@ -12,7 +12,7 @@ internal partial class Program
             Console.WriteLine("\nNew cores found since the last run.");
             AskAboutNewCores();
 
-            string downloadNewCores = ServiceHelper.SettingsService.GetConfig().download_new_cores?.ToLowerInvariant();
+            string downloadNewCores = ServiceHelper.SettingsService.Config.download_new_cores?.ToLowerInvariant();
 
             switch (downloadNewCores)
             {

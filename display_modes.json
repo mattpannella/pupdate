@@ -1,44 +1,135 @@
 {
   "display_modes": {
     "all": [
-      { "value": "0x10", "description": "CRT Trinitron" },
-      { "value": "0x20", "description": "Greyscale LCD" },
-      { "value": "0x30", "description": "Reflective Color LCD" },
-      { "value": "0x40", "description": "Backlit Color LCD" },
-      { "value": "0xE0", "description": "Pinball Neon Matrix" },
-      { "value": "0xE1", "description": "Vacuum Fluorescent" }
+      {
+        "value": "0x10",
+        "order": 17,
+        "description": "CRT Trinitron"
+      },
+      {
+        "value": "0x20",
+        "order": 18,
+        "description": "Greyscale LCD"
+      },
+      {
+        "value": "0x30",
+        "order": 19,
+        "description": "Reflective Color LCD"
+      },
+      {
+        "value": "0x40",
+        "order": 20,
+        "description": "Backlit Color LCD"
+      },
+      {
+        "value": "0xE0",
+        "order": 21,
+        "description": "Pinball Neon Matrix"
+      },
+      {
+        "value": "0xE1",
+        "order": 22,
+        "description": "Vacuum Fluorescent"
+      }
     ],
     "gb": [
-      { "value": "0x21", "description": "Original GB DMG" },
-      { "value": "0x22", "description": "Original GBP" },
-      { "value": "0x23", "description": "Original GBP Light" }
+      {
+        "value": "0x21",
+        "order": 1,
+        "description": "Original GB DMG (Requires Core Response)",
+        "exclude_cores": [ "Spiritualized.GB" ]
+      },
+      {
+        "value": "0x22",
+        "order": 2,
+        "description": "Original GBP (Requires Core Response)",
+        "exclude_cores": [ "Spiritualized.GB" ]
+      },
+      {
+        "value": "0x23",
+        "order": 3,
+        "description": "Original GBP Light (Requires Core Response)",
+        "exclude_cores": [ "Spiritualized.GB" ]
+      }
     ],
     "gbc": [
-      { "value": "0x31", "description": "Original GBC LCD" },
-      { "value": "0x32", "description": "Original GBC LCD+" }
+      {
+        "value": "0x31",
+        "order": 4,
+        "description": "Original GBC LCD"
+      },
+      {
+        "value": "0x32",
+        "order": 5,
+        "description": "Original GBC LCD+"
+      }
     ],
     "gba": [
-      { "value": "0x41", "description": "Original GBA LCD" },
-      { "value": "0x42", "description": "Original GBA SP 101" }
+      {
+        "value": "0x41",
+        "order": 6,
+        "description": "Original GBA LCD"
+      },
+      {
+        "value": "0x42",
+        "order": 7,
+        "description": "Original GBA SP 101"
+      }
     ],
     "gg": [
-      { "value": "0x51", "description": "Original GG" },
-      { "value": "0x52", "description": "Original GG+" }
+      {
+        "value": "0x51",
+        "order": 8,
+        "description": "Original GG"
+      },
+      {
+        "value": "0x52",
+        "order": 9,
+        "description": "Original GG+"
+      }
     ],
     "jtngp": [
-      { "value": "0x61", "description": "Original NGP" }
+      {
+        "value": "0x61",
+        "order": 10,
+        "description": "Original NGP"
+      }
     ],
     "jtngpc": [
-      { "value": "0x62", "description": "Original NGPC" },
-      { "value": "0x63", "description": "Original NGPC+" }
+      {
+        "value": "0x62",
+        "order": 11,
+        "description": "Original NGPC"
+      },
+      {
+        "value": "0x63",
+        "order": 12,
+        "description": "Original NGPC+"
+      }
     ],
     "pce": [
-      { "value": "0x71", "description": "TurboExpress" },
-      { "value": "0x72", "description": "PC Engine LT" }
+      {
+        "value": "0x71",
+        "order": 13,
+        "description": "TurboExpress"
+      },
+      {
+        "value": "0x72",
+        "order": 14,
+        "description": "PC Engine LT"
+      }
     ],
     "lynx": [
-      { "value": "0x81", "description": "Original Lynx" },
-      { "value": "0x82", "description": "Original Lynx+" }
+      {
+        "value": "0x81",
+        "order": 15,
+        "description": "Original Lynx"
+      },
+      {
+        "value": "0x82",
+        "order": 16,
+        "description": "Original Lynx+"
+      }
     ]
   }
 }

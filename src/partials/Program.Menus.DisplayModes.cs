@@ -1,6 +1,7 @@
 using ConsoleTools;
 using Pannella.Helpers;
 using Pannella.Models.DisplayModes;
+using Pannella.Services;
 
 namespace Pannella;
 
@@ -15,7 +16,6 @@ internal partial class Program
         var more = true;
         var count = 0;
         var results = new List<string>();
-        var allDisplayModes = ServiceHelper.CoresService.GetAllDisplayModes();
 
         while (more)
         {
@@ -27,7 +27,7 @@ internal partial class Program
                     config.WriteHeaderAction = () =>
                     {
                         Console.WriteLine("Which display modes would you like to enable?");
-                        Console.WriteLine($"Note: There is a maximum of 16. You have {16 - count} remaining.");
+                        Console.WriteLine($"Note: There is a maximum of 16. You have {CoresService.DISPLAY_MODES_MAX - count} remaining.");
                     };
                     config.SelectedItemBackgroundColor = Console.ForegroundColor;
                     config.SelectedItemForegroundColor = Console.BackgroundColor;
@@ -35,7 +35,7 @@ internal partial class Program
                 });
             var current = -1;
 
-            if ((offset + pageSize) <= allDisplayModes.Count)
+            if ((offset + pageSize) <= ServiceHelper.CoresService.AllDisplayModes.Count)
             {
                 menu.Add("Next Page", thisMenu =>
                 {
@@ -44,7 +44,7 @@ internal partial class Program
                 });
             }
 
-            foreach (DisplayMode displayMode in allDisplayModes)
+            foreach (DisplayMode displayMode in ServiceHelper.CoresService.AllDisplayModes)
             {
                 current++;
 
@@ -76,7 +76,7 @@ internal partial class Program
                 }
             }
 
-            if ((offset + pageSize) <= allDisplayModes.Count)
+            if ((offset + pageSize) <= ServiceHelper.CoresService.AllDisplayModes.Count)
             {
                 menu.Add("Next Page", thisMenu =>
                 {
@@ -94,11 +94,13 @@ internal partial class Program
                 });
             }
 
+            List<DisplayMode> convertedDisplayModes = ServiceHelper.CoresService.ConvertDisplayModes(results);
+
             if (!showCoreSelector)
             {
                 menu.Add("Apply Choices", thisMenu =>
                 {
-                    EnableDisplayModes(displayModes: results.ToArray());
+                    EnableDisplayModes(displayModes: convertedDisplayModes);
                     thisMenu.CloseMenu();
                     more = false;
                 });
@@ -114,10 +116,9 @@ internal partial class Program
                         ServiceHelper.CoresService.InstalledCores,
                         "Which cores would you like to apply the selected display modes to?",
                         false);
+                    var coreIdentifiers = coreResults.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToList();
 
-                    EnableDisplayModes(
-                        coreResults.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToList(),
-                        results.ToArray());
+                    EnableDisplayModes(coreIdentifiers, convertedDisplayModes);
                 });
             }
 

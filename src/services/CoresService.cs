@@ -25,7 +25,7 @@ public partial class CoresService : BaseProcess
             {
                 string json = null;
 
-                if (this.settingsService.GetConfig().use_local_cores_inventory)
+                if (this.settingsService.Config.use_local_cores_inventory)
                 {
                     if (File.Exists(CORES_FILE))
                     {
@@ -91,7 +91,7 @@ public partial class CoresService : BaseProcess
         {
             if (installedCores == null)
             {
-                RefreshInstalledCores();
+                this.RefreshInstalledCores();
             }
 
             return installedCores;
@@ -106,10 +106,25 @@ public partial class CoresService : BaseProcess
         {
             if (installedCoresWithSponsors == null)
             {
-                RefreshInstalledCores();
+                this.RefreshInstalledCores();
             }
 
             return installedCoresWithSponsors;
+        }
+    }
+
+    private static List<Core> installedCoresWithCustomDisplayModes;
+
+    public List<Core> InstalledCoresWithCustomDisplayModes
+    {
+        get
+        {
+            if (installedCoresWithCustomDisplayModes == null)
+            {
+                this.RefreshInstalledCores();
+            }
+
+            return installedCoresWithCustomDisplayModes;
         }
     }
 
@@ -160,6 +175,7 @@ public partial class CoresService : BaseProcess
         installedCores = new List<Core>();
         coresNotInstalled = new List<Core>();
         installedCoresWithSponsors = new Dictionary<string, List<Core>>();
+        installedCoresWithCustomDisplayModes = new List<Core>();
 
         foreach (var core in cores)
         {
@@ -180,6 +196,11 @@ public partial class CoresService : BaseProcess
                     {
                         installedCoresWithSponsors.Add(author, new List<Core> { core });
                     }
+                }
+
+                if (this.settingsService.GetCoreSettings(core.identifier).display_modes)
+                {
+                    installedCoresWithCustomDisplayModes.Add(core);
                 }
             }
             else
