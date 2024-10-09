@@ -1,5 +1,6 @@
 namespace Pannella.Models.OpenFPGA_Cores_Inventory;
 
+using Pannella.Models.Updater;
 public class Core
 {
     public string identifier { get; set; }
@@ -14,6 +15,7 @@ public class Core
     public int license_slot_platform_id_index;
     public string license_slot_filename;
     public bool requires_license { get; set; } = false;
+    public Updaters updaters { get; set; }
 
     public override string ToString()
     {
