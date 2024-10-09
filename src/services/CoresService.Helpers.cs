@@ -182,22 +182,8 @@ public partial class CoresService
         return true;
     }
 
-    public bool GrossCheck(Core core)
+    public bool CheckLicenseFile(Core core)
     {
-        // if author starts with jt
-        // look for licenses/beta.bin
-        if (core.identifier.StartsWith("jotego"))
-        {
-            return File.Exists(Path.Combine(this.installPath, LICENSE_EXTRACT_LOCATION, "beta.bin"));
-        }
-
-        // if author is pram0d or atrac17
-        // look for coinop.key
-        if (core.identifier.StartsWith("pram0d") || core.identifier.StartsWith("atrac17"))
-        {
-            return File.Exists(Path.Combine(this.installPath, LICENSE_EXTRACT_LOCATION, "coinop.key"));
-        }
-
-        return true;
+         return File.Exists(Path.Combine(this.installPath, LICENSE_EXTRACT_LOCATION, core.updaters?.license.filename));
     }
 }

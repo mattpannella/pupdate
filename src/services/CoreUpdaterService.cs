@@ -96,7 +96,7 @@ public class CoreUpdaterService : BaseProcess
                 core.license_slot_id = requiresLicense.Item2;
                 core.license_slot_platform_id_index = requiresLicense.Item3;
 
-                if (core.requires_license && !this.coresService.GrossCheck(core))
+                if (core.requires_license && !this.coresService.CheckLicenseFile(core))
                 {
                     missingLicenses.Add(core.identifier);
                     continue; // skip if you don't have the key
