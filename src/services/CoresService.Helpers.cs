@@ -184,6 +184,6 @@ public partial class CoresService
 
     public bool CheckLicenseFile(Core core)
     {
-         return File.Exists(Path.Combine(this.installPath, LICENSE_EXTRACT_LOCATION, core.updaters.license.filename));
+         return File.Exists(Path.Combine(this.installPath, LICENSE_EXTRACT_LOCATION, core.updaters?.license.filename));
     }
 }
