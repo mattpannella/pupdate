@@ -191,7 +191,7 @@ public partial class CoresService
             }
         }
 
-        if (archive.type == ArchiveType.core_specific_archive && archive.enabled && !archive.has_instance_jsons)
+        if ((archive.type == ArchiveType.core_specific_archive || archive.type == ArchiveType.core_specific_custom_archive) && archive.enabled && !archive.has_instance_jsons)
         {
             var files = this.archiveService.GetArchiveFiles(archive);
 

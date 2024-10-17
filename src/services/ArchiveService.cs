@@ -69,8 +69,7 @@ public class ArchiveService : Base
 
             if ((useCustomArchive && archive.type != ArchiveType.core_specific_archive) || archive.type == ArchiveType.core_specific_custom_archive)
             {
-                Uri baseUrl = new Uri(archive.url);
-                Uri url = new Uri(baseUrl, archive.index);
+                string url = archive.url + "/" + archive.index;
 
                 internetArchive = ArchiveService.GetFilesCustom(url.ToString());
             }

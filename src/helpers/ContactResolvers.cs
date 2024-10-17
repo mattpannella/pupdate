@@ -20,7 +20,7 @@ namespace Pannella.Helpers
                     {
                         Archive archive = (Archive)instance;
 
-                        return archive.type == ArchiveType.core_specific_archive;
+                        return (archive.type == ArchiveType.core_specific_archive || archive.type == ArchiveType.core_specific_custom_archive);
                     };
             }
 
