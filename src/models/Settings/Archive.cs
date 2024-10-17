@@ -39,5 +39,5 @@ public class Archive
     /// <summary>
     /// This setting only applies to Core Specific Archives
     /// </summary>
-    public bool enabled;
+    public bool enabled { get; set; }
 }
