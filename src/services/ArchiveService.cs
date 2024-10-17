@@ -67,7 +67,7 @@ public class ArchiveService : Base
         {
             WriteMessage($"Loading Assets Index for '{archive.archive_name}'...");
 
-            if (useCustomArchive && archive.type != ArchiveType.core_specific_archive)
+            if ((useCustomArchive && archive.type != ArchiveType.core_specific_archive) || archive.type == ArchiveType.core_specific_custom_archive)
             {
                 Uri baseUrl = new Uri(archive.url);
                 Uri url = new Uri(baseUrl, archive.index);
