@@ -6,6 +6,7 @@ using Pannella.Models.Settings;
 using SettingsArchive = Pannella.Models.Settings.Archive;
 using ArchiveFile = Pannella.Models.Archive.File;
 using Archive = Pannella.Models.Archive.Archive;
+using UrlCombineLib;
 
 namespace Pannella.Services;
 
@@ -69,9 +70,9 @@ public class ArchiveService : Base
 
             if ((useCustomArchive && archive.type != ArchiveType.core_specific_archive) || archive.type == ArchiveType.core_specific_custom_archive)
             {
-                string url = archive.url + "/" + archive.index;
+                string url = UrlCombine.Combine(archive.url, archive.index);
 
-                internetArchive = ArchiveService.GetFilesCustom(url.ToString());
+                internetArchive = ArchiveService.GetFilesCustom(url);
             }
             else
             {
@@ -125,12 +126,9 @@ public class ArchiveService : Base
         {
             string url;
 
-            if (archive.type == ArchiveType.custom_archive)
+            if (archive.type == ArchiveType.custom_archive || archive.type == ArchiveType.core_specific_custom_archive)
             {
-                Uri baseUrl = new Uri(archive.url);
-                Uri uri = new Uri(baseUrl, archiveFile.name);
-
-                url = uri.ToString();
+                url = UrlCombine.Combine(archive.url, archiveFile.name).ToString();
             }
             else
             {
