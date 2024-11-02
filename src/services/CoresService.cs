@@ -222,6 +222,8 @@ public partial class CoresService : BaseProcess
             return false;
         }
 
+        this.ClearUpdatersFile(core.identifier);
+
         if (clean && this.IsInstalled(core.identifier))
         {
             this.Delete(core.identifier, core.platform_id);
@@ -252,6 +254,16 @@ public partial class CoresService : BaseProcess
         }
 
         return false;
+    }
+
+    public void ClearUpdatersFile(string identifier)
+    {
+        string file = Path.Combine(this.installPath, "Cores", identifier, "updaters.json");
+
+        if (this.IsInstalled(identifier) && File.Exists(file))
+        {
+            File.Delete(file);
+        }
     }
 
     public void Uninstall(string identifier, string platformId, bool nuke = false)
