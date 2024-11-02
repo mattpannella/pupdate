@@ -9,6 +9,8 @@ public partial class CoresService : BaseProcess
 {
     private const string CORES_END_POINT = "https://openfpga-cores-inventory.github.io/analogue-pocket/api/v2/cores.json";
     private const string CORES_FILE = "cores.json";
+
+    private const string UPDATERS_FILE = "updaters.json";
     private const string ZIP_FILE_NAME = "core.zip";
 
     private readonly string installPath;
@@ -258,7 +260,7 @@ public partial class CoresService : BaseProcess
 
     public void ClearUpdatersFile(string identifier)
     {
-        string file = Path.Combine(this.installPath, "Cores", identifier, "updaters.json");
+        string file = Path.Combine(this.installPath, "Cores", identifier, UPDATERS_FILE);
 
         if (this.IsInstalled(identifier) && File.Exists(file))
         {

@@ -73,7 +73,7 @@ public partial class CoresService
 
     public Updaters ReadUpdatersJson(string identifier)
     {
-        string file = Path.Combine(this.installPath, "Cores", identifier, "updaters.json");
+        string file = Path.Combine(this.installPath, "Cores", identifier, UPDATERS_FILE);
 
         if (!File.Exists(file))
         {
