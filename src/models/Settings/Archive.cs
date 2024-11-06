@@ -9,6 +9,7 @@ public enum ArchiveType
     internet_archive,
     custom_archive,
     core_specific_archive,
+    core_specific_custom_archive,
 }
 
 public class Archive
@@ -38,5 +39,5 @@ public class Archive
     /// <summary>
     /// This setting only applies to Core Specific Archives
     /// </summary>
-    public bool enabled;
+    public bool enabled { get; set; }
 }
