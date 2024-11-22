@@ -40,4 +40,14 @@ public class Archive
     /// This setting only applies to Core Specific Archives
     /// </summary>
     public bool enabled { get; set; }
+
+    /// <summary>
+    /// This setting only applies to Core Specific Archives
+    /// </summary>
+    public bool one_time { get; set; }
+
+    /// <summary>
+    /// This setting only applies to Core Specific Archives
+    /// </summary>
+    public bool complete { get; set; }
 }

@@ -153,9 +153,17 @@ public class ArchiveService : Base
             }
             while (count < 3 && !ValidateChecksum(destinationFileName, archiveFile));
 
-            if (File.Exists(destinationFileName) && Path.GetExtension(destinationFileName) == "zip") {
+            if (File.Exists(destinationFileName) && Path.GetExtension(destinationFileName) == ".zip")
+            {
                 //extract
-                ZipHelper.ExtractToDirectory(destinationFileName, Path.GetDirectoryName(destinationFileName));
+                ZipHelper.ExtractToDirectory(destinationFileName, Path.GetDirectoryName(destinationFileName), true);
+                //delete
+                File.Delete(destinationFileName);
+            } 
+            else if (File.Exists(destinationFileName) && Path.GetExtension(destinationFileName) == ".7z")
+            {
+                //extract
+                SevenZipHelper.ExtractToDirectory(destinationFileName, Path.GetDirectoryName(destinationFileName));
                 //delete
                 File.Delete(destinationFileName);
             }
