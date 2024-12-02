@@ -191,9 +191,12 @@ public partial class CoresService
             }
         }
 
-        if ((archive.type == ArchiveType.core_specific_archive || archive.type == ArchiveType.core_specific_custom_archive) && archive.enabled && !archive.has_instance_jsons)
+        if ((archive.type == ArchiveType.core_specific_archive || archive.type == ArchiveType.core_specific_custom_archive) 
+            && archive.enabled && !archive.has_instance_jsons
+            && ((archive.one_time && !archive.complete) || !archive.one_time))
         {
             var files = this.archiveService.GetArchiveFiles(archive);
+            bool allSucceeded = true;
 
             string commonPath = Path.Combine(platformPath, "common");
 
@@ -222,8 +225,14 @@ public partial class CoresService
                     {
                         WriteMessage($"Not found: {file.name}");
                         skipped.Add(filePath.Replace(this.installPath, string.Empty));
+                        allSucceeded = false;
                     }
                 }
+            }
+            if (archive.one_time && allSucceeded)
+            {
+                archive.complete = true;
+                this.settingsService.Save();
             }
         }
 
