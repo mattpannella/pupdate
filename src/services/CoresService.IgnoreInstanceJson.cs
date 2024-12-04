@@ -32,7 +32,7 @@ public partial class CoresService
                     catch (Exception ex)
                     {
                         WriteMessage($"There was an error parsing the {IGNORE_INSTANCE_JSON_FILE} file.");
-                        if (ServiceHelper.SettingsService.Config().debug.show_stack_traces)
+                        if (this.settingsService.debug.show_stack_traces)
                         {
                             WriteMessage(ex.ToString());
                         }

@@ -183,7 +183,7 @@ public class ArchiveService : Base
         catch (Exception e)
         {
             WriteMessage($"Something went wrong with '{archiveFile.name}'");
-            if (ServiceHelper.SettingsService.Config().debug.show_stack_traces)
+            if (ServiceHelper.SettingsService.debug.show_stack_traces)
             {
                 WriteMessage(e.ToString());
             }
