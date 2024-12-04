@@ -48,11 +48,14 @@ internal partial class Program
         }
         catch (HttpRequestException e)
         {
-#if DEBUG
-            Console.WriteLine(e);
-#else
-            Console.WriteLine(e.Message);
-#endif
+            if (DEBUG || ServiceHelper.SettingsService.Config().debug.show_stack_traces)
+            {
+                Console.WriteLine(e);
+            }
+            else
+            {
+                Console.WriteLine(e.Message);
+            }
             return false;
         }
     }

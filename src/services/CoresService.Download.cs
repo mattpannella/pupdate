@@ -60,11 +60,14 @@ public partial class CoresService
             catch (Exception e)
             {
                 WriteMessage("Uh oh something went wrong.");
-#if DEBUG
-                WriteMessage(e.ToString());
-#else
-                WriteMessage(e.Message);
-#endif
+                if (DEBUG || ServiceHelper.SettingsService.Config().debug.show_stack_traces)
+                {
+                    WriteMessage(e.ToString());
+                }
+                else
+                {
+                    WriteMessage(e.Message);
+                }
             }
         }
 
@@ -338,11 +341,14 @@ public partial class CoresService
                 catch (Exception e)
                 {
                     WriteMessage($"Error while processing '{file}'");
-#if DEBUG
-                    WriteMessage(e.ToString());
-#else
-                    WriteMessage(e.Message);
-#endif
+                    if (DEBUG || ServiceHelper.SettingsService.Config().debug.show_stack_traces)
+                    {
+                        WriteMessage(e.ToString());
+                    }
+                    else
+                    {
+                        WriteMessage(e.Message);
+                    }
                 }
             }
         }

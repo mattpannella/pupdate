@@ -33,11 +33,14 @@ internal partial class Program
             catch (Exception e)
             {
                 Console.WriteLine("Uh oh something went wrong.");
-#if DEBUG
-                Console.WriteLine(e.ToString());
-#else
-                Console.WriteLine(e.Message);
-#endif
+                if (DEBUG || ServiceHelper.SettingsService.Config().debug.show_stack_traces)
+                {
+                    Console.WriteLine(e.ToString());
+                }
+                else
+                {
+                    Console.WriteLine(e.Message);
+                }
             }
         }
 
@@ -78,11 +81,14 @@ internal partial class Program
             catch (Exception e)
             {
                 Console.WriteLine("Uh oh something went wrong.");
-#if DEBUG
-                Console.WriteLine(e.ToString());
-#else
-                Console.WriteLine(e.Message);
-#endif
+                if (DEBUG || ServiceHelper.SettingsService.Config().debug.show_stack_traces)
+                {
+                    Console.WriteLine(e.ToString());
+                }
+                else
+                {
+                    Console.WriteLine(e.Message);
+                }
             }
         }
 
