@@ -37,7 +37,7 @@ public partial class CoresService
                     catch (Exception ex)
                     {
                         WriteMessage($"There was an error parsing the {POCKET_EXTRAS_FILE} file.");
-                        if (DEBUG || ServiceHelper.SettingsService.Config().debug.show_stack_traces)
+                        if (ServiceHelper.SettingsService.Config().debug.show_stack_traces)
                         {
                             WriteMessage(ex.ToString());
                         }
@@ -180,7 +180,7 @@ public partial class CoresService
         catch (Exception e)
         {
             WriteMessage("Something happened while trying to install the asset files...");
-            if (DEBUG || ServiceHelper.SettingsService.Config().debug.show_stack_traces)
+            if (ServiceHelper.SettingsService.Config().debug.show_stack_traces)
             {
                 WriteMessage(e.ToString());
             }
@@ -332,7 +332,7 @@ public partial class CoresService
         catch (Exception e)
         {
             WriteMessage("Something happened while trying to install the asset files...");
-            if (DEBUG || ServiceHelper.SettingsService.Config().debug.show_stack_traces)
+            if (ServiceHelper.SettingsService.Config().debug.show_stack_traces)
             {
                 WriteMessage(e.ToString());
             }

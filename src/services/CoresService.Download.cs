@@ -60,7 +60,7 @@ public partial class CoresService
             catch (Exception e)
             {
                 WriteMessage("Uh oh something went wrong.");
-                if (DEBUG || ServiceHelper.SettingsService.Config().debug.show_stack_traces)
+                if (ServiceHelper.SettingsService.Config().debug.show_stack_traces)
                 {
                     WriteMessage(e.ToString());
                 }
@@ -341,7 +341,7 @@ public partial class CoresService
                 catch (Exception e)
                 {
                     WriteMessage($"Error while processing '{file}'");
-                    if (DEBUG || ServiceHelper.SettingsService.Config().debug.show_stack_traces)
+                    if (ServiceHelper.SettingsService.Config().debug.show_stack_traces)
                     {
                         WriteMessage(e.ToString());
                     }

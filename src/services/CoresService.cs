@@ -67,7 +67,7 @@ public partial class CoresService : BaseProcess
                     catch (Exception ex)
                     {
                         WriteMessage($"There was an error parsing the {CORES_FILE} file from the openFPGA cores inventory.");
-                        if (DEBUG || ServiceHelper.SettingsService.Config().debug.show_stack_traces)
+                        if (ServiceHelper.SettingsService.Config().debug.show_stack_traces)
                         {
                             WriteMessage(ex.ToString());
                         }

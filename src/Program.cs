@@ -221,7 +221,7 @@ internal partial class Program
         catch (Exception e)
         {
             Console.WriteLine("Well, something went wrong. Sorry about that.");
-            if (DEBUG || ServiceHelper.SettingsService.Config().debug.show_stack_traces)
+            if (ServiceHelper.SettingsService.Config().debug.show_stack_traces)
             {
                 Console.WriteLine(e);
             }

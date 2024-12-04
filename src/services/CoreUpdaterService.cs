@@ -294,7 +294,7 @@ public class CoreUpdaterService : BaseProcess
             catch (Exception e)
             {
                 WriteMessage("Uh oh something went wrong.");
-                if (DEBUG || ServiceHelper.SettingsService.Config().debug.show_stack_traces)
+                if (ServiceHelper.SettingsService.Config().debug.show_stack_traces)
                 {
                     WriteMessage(e.ToString());
                 }

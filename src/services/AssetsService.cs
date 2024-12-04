@@ -58,7 +58,7 @@ public class AssetsService
                     catch (Exception ex)
                     {
                         Console.WriteLine($"There was an error parsing the {BLACKLIST_FILE} file.");
-                        if (DEBUG || ServiceHelper.SettingsService.Config().debug.show_stack_traces)
+                        if (ServiceHelper.SettingsService.Config().debug.show_stack_traces)
                         {
                             Console.WriteLine(ex);
                         }

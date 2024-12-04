@@ -43,7 +43,7 @@ public partial class CoresService
         catch (Exception e)
         {
             WriteMessage("Unable to retrieve archive contents. Asset download may not work.");
-            if (DEBUG || ServiceHelper.SettingsService.Config().debug.show_stack_traces)
+            if (ServiceHelper.SettingsService.Config().debug.show_stack_traces)
             {
                 WriteMessage(e.ToString());
             }

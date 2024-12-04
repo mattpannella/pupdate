@@ -33,7 +33,7 @@ internal partial class Program
             catch (Exception e)
             {
                 Console.WriteLine("Uh oh something went wrong.");
-                if (DEBUG || ServiceHelper.SettingsService.Config().debug.show_stack_traces)
+                if (ServiceHelper.SettingsService.Config().debug.show_stack_traces)
                 {
                     Console.WriteLine(e.ToString());
                 }
@@ -81,7 +81,7 @@ internal partial class Program
             catch (Exception e)
             {
                 Console.WriteLine("Uh oh something went wrong.");
-                if (DEBUG || ServiceHelper.SettingsService.Config().debug.show_stack_traces)
+                if (ServiceHelper.SettingsService.Config().debug.show_stack_traces)
                 {
                     Console.WriteLine(e.ToString());
                 }
