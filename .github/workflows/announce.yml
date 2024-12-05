@@ -1,10 +1,10 @@
 name: Announcements
 on:
   release:
-    types: [published]
+    types: [released]
 
 jobs:
-  synthesis:
+  announce:
     runs-on: ubuntu-latest
 
     steps:
