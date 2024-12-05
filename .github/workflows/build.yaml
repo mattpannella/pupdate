@@ -38,19 +38,19 @@ jobs:
         run: |
           tag=$(git describe --tags --abbrev=0)
           release_name="App-$tag-${{ matrix.target }}"
-          trim="-p:TrimMode=partial"
+          trim="True"
           if [ "${{ matrix.target }}" == "linux" ]; then
-            trim=""
+            trim="False"
           fi
 
           # Build everything
-          dotnet publish pupdate.csproj -r ${{ matrix.target }}-x64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly $($trim)
+          dotnet publish pupdate.csproj -r ${{ matrix.target }}-x64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly -p:PublishTrimmed:$trim -p:TrimMode=partial
           if ${{ matrix.arm }}; then
             mv ${release_name}/pupdate ${release_name}/pupdate_x64
-            dotnet publish pupdate.csproj -r ${{ matrix.target }}-arm64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly $($trim)
+            dotnet publish pupdate.csproj -r ${{ matrix.target }}-arm64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly -p:PublishTrimmed:$trim -p:TrimMode=partial
             mv ${release_name}/pupdate ${release_name}/pupdate_arm64
             if [ "${{ matrix.target }}" == "linux" ]; then
-              dotnet publish pupdate.csproj -r ${{ matrix.target }}-arm --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly $($trim)
+              dotnet publish pupdate.csproj -r ${{ matrix.target }}-arm --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly -p:PublishTrimmed:$trim -p:TrimMode=partial
               mv ${release_name}/pupdate ${release_name}/pupdate_arm32
             fi
           fi
