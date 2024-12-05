@@ -51,11 +51,14 @@ public partial class CoresService
                     catch (Exception ex)
                     {
                         WriteMessage($"There was an error parsing the {DISPLAY_MODES_FILE} file.");
-#if DEBUG
-                        WriteMessage(ex.ToString());
-#else
-                        WriteMessage(ex.Message);
-#endif
+                        if (this.settingsService.debug.show_stack_traces)
+                        {
+                            WriteMessage(ex.ToString());
+                        }
+                        else
+                        {
+                            WriteMessage(ex.Message);
+                        }
                     }
                 }
                 else

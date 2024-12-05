@@ -58,11 +58,14 @@ public class AssetsService
                     catch (Exception ex)
                     {
                         Console.WriteLine($"There was an error parsing the {BLACKLIST_FILE} file.");
-#if DEBUG
-                        Console.WriteLine(ex);
-#else
-                        Console.WriteLine(ex.Message);
-#endif
+                        if (ServiceHelper.SettingsService.debug.show_stack_traces)
+                        {
+                            Console.WriteLine(ex);
+                        }
+                        else
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
                     }
                 }
                 else

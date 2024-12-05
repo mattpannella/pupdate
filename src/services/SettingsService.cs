@@ -15,6 +15,7 @@ public class SettingsService
     private readonly List<Core> missingCores;
 
     public Config Config => this.settings.config;
+    public Debug debug => this.settings.debug;
 
     public SettingsService(string settingsPath, List<Core> cores = null)
     {
