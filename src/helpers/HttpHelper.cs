@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Cache;
 using System.Net.Http.Headers;
 using System.Web;
 
@@ -107,7 +108,9 @@ public class HttpHelper
 
     public void GetAuthCookie(string username, string password, string loginUrl, Dictionary<string, string> additional)
     {
-        var cookies = this.handler.CookieContainer.GetCookies(new Uri("https://archive.org"));
+        var loginUri = new Uri(loginUrl);
+        var host = loginUri.GetLeftPart(UriPartial.Authority);
+        var cookies = this.handler.CookieContainer.GetCookies(new Uri(host));
         if(cookies.Count() > 0) {
             return;
         }
