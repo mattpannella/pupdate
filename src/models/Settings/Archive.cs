@@ -34,6 +34,9 @@ public class Archive
     public List<string> file_extensions { get; set; }
 
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public List<string> files { get; set; }
+
+    [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
     public bool has_instance_jsons { get; set; }
 
     /// <summary>

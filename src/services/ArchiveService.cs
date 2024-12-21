@@ -90,6 +90,14 @@ public class ArchiveService : Base
             return filtered;
         }
 
+        if (archive.files is { Count: > 0 })
+        {
+            var filtered = internetArchive.files.Where(x => archive.files.Any(y =>
+                string.Equals(y, Path.GetFileName(x.name), StringComparison.InvariantCultureIgnoreCase))).ToList();
+
+            return filtered;
+        }
+
         return internetArchive.files;
     }
 
