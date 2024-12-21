@@ -121,17 +121,12 @@ public class HttpHelper
         }
         var formData = new FormUrlEncodedContent(data);
         //throwing shit at the wall at this point
-        this.client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36");
+        this.client.DefaultRequestHeaders.Add("User-Agent", "Pupdate");
         HttpResponseMessage loginResponse = this.client.PostAsync(loginUrl, formData).Result;
         if (loginResponse.IsSuccessStatusCode)
         {
-            // Extract cookies
-            cookies = this.handler.CookieContainer.GetCookies(new Uri("https://archive.org"));
-            Console.WriteLine("Cookies: ");
-            foreach (Cookie cookie in cookies)
-            {
-                Console.WriteLine($"{cookie.Name} = {cookie.Value}");
-            }
+            //do one more?
+            loginResponse = this.client.PostAsync(loginUrl, formData).Result;
         }
     }
 

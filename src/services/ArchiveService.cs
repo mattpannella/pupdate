@@ -20,6 +20,7 @@ public class ArchiveService : Base
     private readonly Dictionary<string, Archive> archiveFiles;
     private readonly List<SettingsArchive> archives;
     private readonly bool useCustomArchive;
+    private Pannella.Models.Settings.InternetArchive creds;
 
     public ArchiveService(List<SettingsArchive> archives, bool crcCheck, bool useCustomArchive)
     {
@@ -27,6 +28,7 @@ public class ArchiveService : Base
         this.useCustomArchive = useCustomArchive;
         this.archives = archives;
         this.archiveFiles = new Dictionary<string, Archive>();
+        this.creds = ServiceHelper.SettingsService.credentials.internet_archive;
     }
 
     public SettingsArchive GetArchive(string coreIdentifier = null)
@@ -141,8 +143,7 @@ public class ArchiveService : Base
             }
             else
             {
-                
-                this.Authenticate("admin@retrodriven.com", "J2m273Q9*SziPm");
+                this.Authenticate();
                 url = string.Format(DOWNLOAD, archive.archive_name, archiveFile.name);
             }
 
@@ -225,13 +226,13 @@ public class ArchiveService : Base
         return false;
     }
 
-    public async void Authenticate(string username, string password)
+    public void Authenticate()
     {
         Dictionary<string, string> headers = new Dictionary<string, string>();
         headers.Add("login", "true");
         headers.Add("remember", "true");
         headers.Add("submit_by_js", "true");
         headers.Add("referrer", "https://archive.org/CREATE/");
-        HttpHelper.Instance.GetAuthCookie(username, password, LOGIN, headers);
+        HttpHelper.Instance.GetAuthCookie(this.creds.username, this.creds.password, LOGIN, headers);
     }
 }
