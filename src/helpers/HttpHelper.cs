@@ -1,5 +1,6 @@
 using System.Net;
-using System.Runtime.InteropServices;
+using System.Net.Http.Headers;
+using System.Web;
 
 namespace Pannella.Helpers;
 
@@ -8,8 +9,6 @@ public class HttpHelper
     private static HttpHelper instance;
     private static readonly object SYNC_LOCK = new();
     private HttpClient client;
- 
-    private FormUrlEncodedContent internetArchiveCreds;
 
     private HttpClientHandler handler;
 
@@ -106,13 +105,28 @@ public class HttpHelper
         }
     }
 
-    private void getIACookie(string loginUrl)
+    public void GetAuthCookie(string username, string password, string loginUrl, Dictionary<string, string> additional)
     {
-        HttpResponseMessage loginResponse = this.client.PostAsync(loginUrl, this.internetArchiveCreds).Result;
+        var cookies = this.handler.CookieContainer.GetCookies(new Uri("https://archive.org"));
+        if(cookies.Count() > 0) {
+            return;
+        }
+        var data = new List<KeyValuePair<string, string>>();
+        data.Add(new KeyValuePair<string, string>("username", username));
+        data.Add(new KeyValuePair<string, string>("password", password) );
+
+        foreach (var item in additional)
+        {
+            data.Add(new KeyValuePair<string, string>(item.Key, item.Value));
+        }
+        var formData = new FormUrlEncodedContent(data);
+        //throwing shit at the wall at this point
+        this.client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36");
+        HttpResponseMessage loginResponse = this.client.PostAsync(loginUrl, formData).Result;
         if (loginResponse.IsSuccessStatusCode)
         {
             // Extract cookies
-            var cookies = this.handler.CookieContainer.GetCookies(new Uri("https://archive.org"));
+            cookies = this.handler.CookieContainer.GetCookies(new Uri("https://archive.org"));
             Console.WriteLine("Cookies: ");
             foreach (Cookie cookie in cookies)
             {
@@ -120,21 +134,6 @@ public class HttpHelper
             }
         }
     }
-
-    public void setInternetArchiveCreds(string username, string password, string endpoint)
-    {
-        if (internetArchiveCreds != null)
-        {
-            var loginData = new FormUrlEncodedContent(new[]
-                {
-                    new KeyValuePair<string, string>("username", username),
-                    new KeyValuePair<string, string>("password", password),
-                });
-            this.internetArchiveCreds = loginData;
-            this.getIACookie(endpoint);
-        }
-    }
-
 
     public string GetHTML(string uri, bool allowRedirect = true)
     {
@@ -166,8 +165,8 @@ public class HttpHelper
 
     private void CreateClient(bool allowRedirect = true)
     {
-        var handler = new HttpClientHandler { AllowAutoRedirect = allowRedirect, CookieContainer = new CookieContainer() };
-        this.handler = handler;
+        //Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+        this.handler = new HttpClientHandler { AllowAutoRedirect = allowRedirect, CookieContainer = new CookieContainer() };
         this.client = new HttpClient(this.handler);
         this.client.Timeout = TimeSpan.FromMinutes(10); // 10min
     }

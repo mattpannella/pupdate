@@ -227,6 +227,11 @@ public class ArchiveService : Base
 
     public async void Authenticate(string username, string password)
     {
-        HttpHelper.Instance.setInternetArchiveCreds(username, password, LOGIN);
+        Dictionary<string, string> headers = new Dictionary<string, string>();
+        headers.Add("login", "true");
+        headers.Add("remember", "true");
+        headers.Add("submit_by_js", "true");
+        headers.Add("referrer", "https://archive.org/CREATE/");
+        HttpHelper.Instance.GetAuthCookie(username, password, LOGIN, headers);
     }
 }
