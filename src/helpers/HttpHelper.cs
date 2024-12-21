@@ -1,4 +1,5 @@
 using System.Net;
+using System.Runtime.InteropServices;
 
 namespace Pannella.Helpers;
 
@@ -7,6 +8,10 @@ public class HttpHelper
     private static HttpHelper instance;
     private static readonly object SYNC_LOCK = new();
     private HttpClient client;
+ 
+    private FormUrlEncodedContent internetArchiveCreds;
+
+    private HttpClientHandler handler;
 
     public event EventHandler<DownloadProgressEventArgs> DownloadProgressUpdate;
 
@@ -101,6 +106,36 @@ public class HttpHelper
         }
     }
 
+    private void getIACookie(string loginUrl)
+    {
+        HttpResponseMessage loginResponse = this.client.PostAsync(loginUrl, this.internetArchiveCreds).Result;
+        if (loginResponse.IsSuccessStatusCode)
+        {
+            // Extract cookies
+            var cookies = this.handler.CookieContainer.GetCookies(new Uri("https://archive.org"));
+            Console.WriteLine("Cookies: ");
+            foreach (Cookie cookie in cookies)
+            {
+                Console.WriteLine($"{cookie.Name} = {cookie.Value}");
+            }
+        }
+    }
+
+    public void setInternetArchiveCreds(string username, string password, string endpoint)
+    {
+        if (internetArchiveCreds != null)
+        {
+            var loginData = new FormUrlEncodedContent(new[]
+                {
+                    new KeyValuePair<string, string>("username", username),
+                    new KeyValuePair<string, string>("password", password),
+                });
+            this.internetArchiveCreds = loginData;
+            this.getIACookie(endpoint);
+        }
+    }
+
+
     public string GetHTML(string uri, bool allowRedirect = true)
     {
         if (!Uri.TryCreate(uri, UriKind.Absolute, out _))
@@ -112,7 +147,7 @@ public class HttpHelper
         {
             this.CreateClient(false);
         }
-
+        
         var response = this.client.GetAsync(uri).Result;
 
         string html = response.StatusCode switch
@@ -131,9 +166,12 @@ public class HttpHelper
 
     private void CreateClient(bool allowRedirect = true)
     {
-        this.client = new HttpClient(new HttpClientHandler { AllowAutoRedirect = allowRedirect });
+        var handler = new HttpClientHandler { AllowAutoRedirect = allowRedirect, CookieContainer = new CookieContainer() };
+        this.handler = handler;
+        this.client = new HttpClient(this.handler);
         this.client.Timeout = TimeSpan.FromMinutes(10); // 10min
     }
+
 
     private void OnDownloadProgressUpdate(DownloadProgressEventArgs e)
     {
