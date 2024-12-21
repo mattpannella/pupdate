@@ -123,12 +123,11 @@ public class HttpHelper
             data.Add(new KeyValuePair<string, string>(item.Key, item.Value));
         }
         var formData = new FormUrlEncodedContent(data);
-        //throwing shit at the wall at this point
         this.client.DefaultRequestHeaders.Add("User-Agent", "Pupdate");
         HttpResponseMessage loginResponse = this.client.PostAsync(loginUrl, formData).Result;
         if (loginResponse.IsSuccessStatusCode)
         {
-            //do one more?
+            //if the login form requires some csrf type headers to be sent up, send the requst a second time so they are included 
             loginResponse = this.client.PostAsync(loginUrl, formData).Result;
         }
     }
