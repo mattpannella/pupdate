@@ -14,6 +14,7 @@ public class ArchiveService : Base
 {
     private const string METADATA = "https://archive.org/metadata/{0}";
     private const string DOWNLOAD = "https://archive.org/download/{0}/{1}";
+    private const string LOGIN = "https://archive.org/account/login";
 
     private readonly bool crcCheck;
     private readonly Dictionary<string, Archive> archiveFiles;
@@ -140,6 +141,8 @@ public class ArchiveService : Base
             }
             else
             {
+                
+                this.Authenticate("admin@retrodriven.com", "J2m273Q9*SziPm");
                 url = string.Format(DOWNLOAD, archive.archive_name, archiveFile.name);
             }
 
@@ -220,5 +223,10 @@ public class ArchiveService : Base
 
         WriteMessage($"Bad checksum for {Path.GetFileName(filePath)}");
         return false;
+    }
+
+    public async void Authenticate(string username, string password)
+    {
+        HttpHelper.Instance.setInternetArchiveCreds(username, password, LOGIN);
     }
 }
