@@ -228,11 +228,11 @@ public class ArchiveService : Base
 
     public void Authenticate()
     {
-        Dictionary<string, string> headers = new Dictionary<string, string>();
-        headers.Add("login", "true");
-        headers.Add("remember", "true");
-        headers.Add("submit_by_js", "true");
-        headers.Add("referrer", "https://archive.org/CREATE/");
-        HttpHelper.Instance.GetAuthCookie(this.creds.username, this.creds.password, LOGIN, headers);
+        Dictionary<string, string> fields = new Dictionary<string, string>();
+        fields.Add("login", "true");
+        fields.Add("remember", "true");
+        fields.Add("submit_by_js", "true");
+        fields.Add("referrer", "https://archive.org/CREATE/");
+        HttpHelper.Instance.GetAuthCookie(this.creds.username, this.creds.password, LOGIN, fields);
     }
 }
