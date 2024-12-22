@@ -246,6 +246,23 @@ This contains a list of alternate core setups. These take existing cores and mak
 | config.temp_directory        | When left `null` all zip files are downloaded and extracted using a temp directory in your pocket install location. If you supply a path, that will be used, instead                                                                                                                                                                                                                                            |
 | core_settings                | This allows you to set a subset of settings on a per core basis. It contains a list of every core, with 3 options. `skip`, `download_assets`, and `platform_rename`. You can use these to override your global defaults                                                                                                                                                                                         |
 
+### Asset Source Archives
+Open pupdate_settings.json and find the `archives` section.
+Pupdate comes with 2 pre-configured asset archives that you can choose between. By default it uses `default`, or if you go into the Settings menu you can switch to using the `custom` archive. The default one is hosted on archive.org and the custom one is hosted by Retrodriven.
+There are 4 types of arvchives you can configure, with various settings.
+#### internet_archive
+The archive is hosted on archive.org.
+Settings:
+ - `name` A unique identifier
+ - `archive_name` The name of the archive on archive.org. Example: htgdb-gamepacks for https://archive.org/details/htgdb-gamepacks
+#### custom
+The archive is hosted on any other website, other than archive.org
+Settings:
+
+This is used for any other site that is not archive.org. It requires a `url` (the full url to where the files are hosted) and `index` (This must match the output of archive.org's json endpoint. https://archive.org/developers/md-read.html)
+#### core_specific_archive
+If you want pupdate to only check this archive for file
+
 ## CLI Commands and Parameters
 
 ```

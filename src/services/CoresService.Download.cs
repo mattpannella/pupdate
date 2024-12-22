@@ -127,7 +127,7 @@ public partial class CoresService
         }
 
         WriteMessage("Looking for Assets...");
-        Archive archive = this.archiveService.GetArchive(core.identifier);
+        Archive archive = this.archiveService.GetArchive();
         AnalogueCore info = this.ReadCoreJson(core.identifier);
         // cores with multiple platforms won't work...not sure any exist right now?
         string platformPath = Path.Combine(this.installPath, "Assets", info.metadata.platform_ids[0]);
@@ -166,7 +166,7 @@ public partial class CoresService
                     foreach (string file in files)
                     {
                         string filePath = Path.Combine(path, file);
-                        ArchiveFile archiveFile = this.archiveService.GetArchiveFile(file, core.identifier);
+                        ArchiveFile archiveFile = this.archiveService.GetArchiveFile(file);
 
                         if (File.Exists(filePath) && CheckCrc(filePath, archiveFile))
                         {
@@ -193,7 +193,9 @@ public partial class CoresService
                 }
             }
         }
-
+        
+        //grab the core specific archive, now
+        archive = this.archiveService.GetArchive(core.identifier);
         if ((archive.type == ArchiveType.core_specific_archive || archive.type == ArchiveType.core_specific_custom_archive) 
             && archive.enabled && !archive.has_instance_jsons
             && ((archive.one_time && !archive.complete) || !archive.one_time))
@@ -311,7 +313,7 @@ public partial class CoresService
 
                                 string slotDirectory = Path.Combine(commonPath, dataPath);
                                 string slotPath = Path.Combine(slotDirectory, slot.filename);
-                                ArchiveFile archiveFile = this.archiveService.GetArchiveFile(slot.filename, core.identifier);
+                                ArchiveFile archiveFile = this.archiveService.GetArchiveFile(slot.filename);
 
                                 if (File.Exists(slotPath) && CheckCrc(slotPath, archiveFile))
                                 {
