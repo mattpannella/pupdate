@@ -18,7 +18,7 @@ public class Config
     [Description("Preserve 'Platforms' folder during 'Update All'")]
     public bool preserve_platforms_folder { get; set; } = false;
 
-    [Description("Delete untracked cores during 'Update All'")]
+    [Description("Delete cores, not managed by pupdate, during 'Update All'")]
     public bool delete_skipped_cores { get; set; } = false;
 
     public string download_new_cores { get; set; }
