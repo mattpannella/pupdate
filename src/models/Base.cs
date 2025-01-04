@@ -6,7 +6,7 @@ public class Base
 {
     public event EventHandler<StatusUpdatedEventArgs> StatusUpdated;
 
-    public const string DIVIDER = "-------------";
+    public const string DIVIDER = "---------------------";
 
     protected void WriteMessage(string message)
     {
