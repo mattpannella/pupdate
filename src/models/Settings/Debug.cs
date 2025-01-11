@@ -1,5 +1,3 @@
-using Newtonsoft.Json;
-
 namespace Pannella.Models.Settings;
 
 public class Debug

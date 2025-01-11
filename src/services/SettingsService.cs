@@ -42,7 +42,7 @@ public class SettingsService
             settings.config.Migrate();
         }
 
-        // bandaid to fix old settings files
+        // band-aid to fix old settings files
         settings.config ??= new Config();
         this.settingsFile = file;
 
@@ -67,7 +67,7 @@ public class SettingsService
     /// </summary>
     public void InitializeCoreSettings(List<Core> cores)
     {
-        settings.core_settings ??= new Dictionary<string, CoreSettings>();
+        settings.core_settings ??= new SortedDictionary<string, CoreSettings>(StringComparer.InvariantCultureIgnoreCase);
 
         foreach (Core core in cores)
         {

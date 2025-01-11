@@ -174,6 +174,8 @@ public partial class CoresService
 
             WriteMessage("Installing...");
             Util.CopyDirectory(extractPath, path, true, true);
+            WriteMessage("Refreshing installed cores...");
+            ServiceHelper.CoresService.RefreshLocalCores();
 
             WriteMessage("Complete.");
         }
