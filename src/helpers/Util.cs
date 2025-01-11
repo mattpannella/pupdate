@@ -4,7 +4,7 @@ using Force.Crc32;
 
 namespace Pannella.Helpers;
 
-public class Util
+public static class Util
 {
     private const string PLATFORMS_DIRECTORY = "Platforms";
 

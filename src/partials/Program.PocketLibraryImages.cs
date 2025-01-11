@@ -37,7 +37,7 @@ internal partial class Program
             catch (Exception e)
             {
                 Console.WriteLine("Something happened while trying to install the asset files...");
-                if (ServiceHelper.SettingsService.debug.show_stack_traces)
+                if (ServiceHelper.SettingsService.Debug.show_stack_traces)
                 {
                     Console.WriteLine(e);
                 }
