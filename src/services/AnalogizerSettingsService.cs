@@ -156,7 +156,8 @@ Your selection:    ";
             { "d", "ak" },
             { "c", "acj" },
             { "b", "abj" },
-            { "x", "" }
+            { "x", "" },
+            { "a", "ad" }
         };
 
         var snac = new AnalogizerOptionType();
