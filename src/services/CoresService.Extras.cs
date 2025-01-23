@@ -37,7 +37,7 @@ public partial class CoresService
                     catch (Exception ex)
                     {
                         WriteMessage($"There was an error parsing the {POCKET_EXTRAS_FILE} file.");
-                        if (ServiceHelper.SettingsService.debug.show_stack_traces)
+                        if (ServiceHelper.SettingsService.Debug.show_stack_traces)
                         {
                             WriteMessage(ex.ToString());
                         }
@@ -174,13 +174,15 @@ public partial class CoresService
 
             WriteMessage("Installing...");
             Util.CopyDirectory(extractPath, path, true, true);
+            WriteMessage("Refreshing installed cores...");
+            ServiceHelper.CoresService.RefreshLocalCores();
 
             WriteMessage("Complete.");
         }
         catch (Exception e)
         {
             WriteMessage("Something happened while trying to install the asset files...");
-            if (ServiceHelper.SettingsService.debug.show_stack_traces)
+            if (ServiceHelper.SettingsService.Debug.show_stack_traces)
             {
                 WriteMessage(e.ToString());
             }
@@ -332,7 +334,7 @@ public partial class CoresService
         catch (Exception e)
         {
             WriteMessage("Something happened while trying to install the asset files...");
-            if (ServiceHelper.SettingsService.debug.show_stack_traces)
+            if (ServiceHelper.SettingsService.Debug.show_stack_traces)
             {
                 WriteMessage(e.ToString());
             }

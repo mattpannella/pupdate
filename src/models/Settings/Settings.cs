@@ -5,9 +5,9 @@ namespace Pannella.Models.Settings;
 public class Settings
 {
     public Config config { get; set; } = new();
-    public Dictionary<string, CoreSettings> core_settings { get; set; } = new();
+    public SortedDictionary<string, CoreSettings> core_settings { get; set; } = new(StringComparer.InvariantCultureIgnoreCase);
     public Debug debug { get; set; } = new();
 
     [JsonProperty]
-    private Dictionary<string, CoreSettings> coreSettings { set => this.core_settings = value; }
+    private SortedDictionary<string, CoreSettings> coreSettings { set => this.core_settings = value; }
 }

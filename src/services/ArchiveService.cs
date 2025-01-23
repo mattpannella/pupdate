@@ -126,9 +126,9 @@ public class ArchiveService : Base
         {
             string url;
 
-            if (archive.type == ArchiveType.custom_archive || archive.type == ArchiveType.core_specific_custom_archive)
+            if (archive.type is ArchiveType.custom_archive or ArchiveType.core_specific_custom_archive)
             {
-                url = UrlCombine.Combine(archive.url, archiveFile.name).ToString();
+                url = UrlCombine.Combine(archive.url, archiveFile.name);
             }
             else
             {
@@ -183,7 +183,8 @@ public class ArchiveService : Base
         catch (Exception e)
         {
             WriteMessage($"Something went wrong with '{archiveFile.name}'");
-            if (ServiceHelper.SettingsService.debug.show_stack_traces)
+            
+            if (ServiceHelper.SettingsService.Debug.show_stack_traces)
             {
                 WriteMessage(e.ToString());
             }
@@ -191,6 +192,7 @@ public class ArchiveService : Base
             {
                 WriteMessage(e.Message);
             }
+            
             return false;
         }
 

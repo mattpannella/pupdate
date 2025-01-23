@@ -48,7 +48,7 @@ internal partial class Program
         }
         catch (HttpRequestException e)
         {
-            if (ServiceHelper.SettingsService.debug.show_stack_traces)
+            if (ServiceHelper.SettingsService.Debug.show_stack_traces)
             {
                 Console.WriteLine(e);
             }
