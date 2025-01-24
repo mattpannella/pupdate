@@ -148,7 +148,7 @@ Your selection:    ";
 
         crt.Replace = new Dictionary<string, string>
         {
-            { "a", "ad" },
+            { "a", "az" },
             { "f", "af" },
             { "h", "afh" },
             { "g", "afg" },
@@ -157,8 +157,8 @@ Your selection:    ";
             { "d", "ak" },
             { "c", "acj" },
             { "b", "abj" },
+            { "z", "d" },
             { "x", "" }
-            
         };
 
         var snac = new AnalogizerOptionType();
