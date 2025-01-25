@@ -249,7 +249,7 @@ This contains a list of alternate core setups. These take existing cores and mak
 ### Asset Source Archives
 Open pupdate_settings.json and find the `archives` section.
 Pupdate comes with 2 pre-configured asset archives that you can choose between. By default it uses `default`, or if you go into the Settings menu you can switch to using the `custom` archive. The default one is hosted on archive.org and the custom one is hosted by Retrodriven.
-There are 4 types of arvchives you can configure, with various settings.
+There are 4 types of archives you can configure, in addition to the 2 pre-configured ones, with various settings.
 #### internet_archive
 The archive is hosted on archive.org.
 Settings:
@@ -258,11 +258,22 @@ Settings:
 #### custom
 The archive is hosted on any other website, other than archive.org
 Settings:
+ - `name` Unique identifier
+ - `url` Example: https://www.mywebsite.com
+ - `index` Example: endpoint.php
 
 This is used for any other site that is not archive.org. It requires a `url` (the full url to where the files are hosted) and `index` (This must match the output of archive.org's json endpoint. https://archive.org/developers/md-read.html)
 #### core_specific_archive
-If you want pupdate to only check this archive for file
+This is an archive hosted on archive.org, but it will only be used by 1 core when retrieving assets.
+ - `name` This must be the name of a core. Example: agg23.GameAndWatch
+ - `archive_name` The name of the archive on archive.org. Example: htgdb-gamepacks for https://archive.org/details/htgdb-gamepacks
+ - `file_extensions` An optional array of file extensions. pupdate will automatically download every file of that extension. Example: [".gnw"]
+ - `files` An optional array of file names. Instead of checking extensions, you can explicitely list the files on the archive. 
+ - `one_time` Set to true if you only want pupdate to download the file(s) one time. This is useful if you have a zip file filled with roms hosted on an archive, because pupdate will download the zip once (and extract it) and then next time you run update all, it will skip the file.
 
+Note: you can't use both file_extensions and files together. It must be one or the other.
+#### core_specific_custom_archive
+This works just like core_specific_archive, only you need to specify a url and index (like the regular custom archive)
 ## CLI Commands and Parameters
 
 ```
