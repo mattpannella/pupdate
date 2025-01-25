@@ -233,7 +233,7 @@ internal partial class Program
             {
                 var selectedCores = RunCoreSelector(
                     ServiceHelper.CoresService.CoresNotInstalled,
-                    "Which cores would you like to install?");
+                    "Which cores would you like pupdate to manage and install?");
                 var list = selectedCores.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToArray();
 
                 if (list.Length > 0)

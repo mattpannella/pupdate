@@ -16,6 +16,7 @@ public class SettingsService
 
     public Config Config => this.settings.config;
     public Debug Debug => this.settings.debug;
+    public Credentials credentials => this.settings.credentials;
 
     public SettingsService(string settingsPath, List<Core> cores = null)
     {

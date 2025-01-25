@@ -217,7 +217,7 @@ This contains a list of alternate core setups. These take existing cores and mak
 | Download Missing Assets                  | Check for missing assets (ROMs, BIOS files, etc) when running "Update All"                                                                                                                                                                                                       |
 | Download Game & Watch ROMS               | Download Game & Watch ROMS when running "Update All"                                                                                                                                                                                                                             |
 | Build game JSON Files                    | Run the Instance JSON builder during "Update All"                                                                                                                                                                                                                                |
-| Delete untracked cores                   | Any core that is available, but you have not chosen in the "Core Selector" will be uninstalled, if found on your SD card when running "Update All"                                                                                                                               |
+| Delete cores, not managed by pupdate     | Any core that is available via pupdate, but you have not chosen to be managed by pupdate, will be uninstalled, if found on your SD card when running "Update All"                                                                                                                               |
 | Automatically rename Jotego cores        | Jotego's cores will be renamed to the correct titles of the platforms they are emulating, when running "Update All". example: jtcontra is Contra                                                                                                                                 |
 | Use CRC check                            | Use CRC file hashes to verify Asset files, and re-download if needed. When running "Update All" or "Download Required Assets"                                                                                                                                                    |
 | Preserve Platforms folder                | Don't overwrite changes made to files in the Platforms folder when running "Update All"                                                                                                                                                                                          |
@@ -246,6 +246,73 @@ This contains a list of alternate core setups. These take existing cores and mak
 | config.temp_directory        | When left `null` all zip files are downloaded and extracted using a temp directory in your pocket install location. If you supply a path, that will be used, instead                                                                                                                                                                                                                                            |
 | core_settings                | This allows you to set a subset of settings on a per core basis. It contains a list of every core, with 3 options. `skip`, `download_assets`, and `platform_rename`. You can use these to override your global defaults                                                                                                                                                                                         |
 
+### Asset Source Archives
+Open pupdate_settings.json and find the `archives` section.
+Pupdate comes with 2 pre-configured asset archives that you can choose between. By default it uses `default`, or if you go into the Settings menu you can switch to using the `custom` archive. The default one is hosted on archive.org and the custom one is hosted by Retrodriven.
+There are 4 types of archives you can configure, in addition to the 2 pre-configured ones, with various settings.
+#### internet_archive
+The archive is hosted on archive.org.
+Settings:
+ - `name` A unique identifier
+ - `archive_name` The name of the archive on archive.org. Example: htgdb-gamepacks for https://archive.org/details/htgdb-gamepacks
+#### custom
+The archive is hosted on any other website, other than archive.org
+Settings:
+ - `name` Unique identifier
+ - `url` Example: https://www.mywebsite.com
+ - `index` Example: endpoint.php
+
+This is used for any other site that is not archive.org. It requires a `url` (the full url to where the files are hosted) and `index` (This must match the output of archive.org's json endpoint. https://archive.org/developers/md-read.html)
+#### core_specific_archive
+This is an archive hosted on archive.org, but it will only be used by 1 core when retrieving assets.
+ - `name` This must be the name of a core. Example: agg23.GameAndWatch
+ - `archive_name` The name of the archive on archive.org. Example: htgdb-gamepacks for https://archive.org/details/htgdb-gamepacks
+ - `file_extensions` An optional array of file extensions. pupdate will automatically download every file of that extension. Example: [".gnw"]
+ - `files` An optional array of file names. Instead of checking extensions, you can explicitely list the files on the archive. 
+ - `one_time` Set to true if you only want pupdate to download the file(s) one time. This is useful if you have a zip file filled with roms hosted on an archive, because pupdate will download the zip once (and extract it) and then next time you run update all, it will skip the file.
+
+Note: you can't use both file_extensions and files together. It must be one or the other.
+Here is an example of a fully configured core_specific_archive:
+```json
+{
+    "name": "Spiritualized.2600",
+    "type": "core_specific_archive",
+    "archive_name": "htgdb-gamepacks",
+    "files": [
+      "@Atari 2600 2021-04-06.zip"
+    ],
+    "enabled": true,
+    "one_time": true,
+  }
+```
+#### core_specific_custom_archive
+This works just like core_specific_archive, only you need to specify a url and index (like the regular custom archive)
+Here is an example of a fully configured core_specific_custom_archive:
+```json
+{
+    "name": "agg23.GameAndWatch",
+    "type": "core_specific_custom_archive",
+    "archive_name": "fpga-gnw-opt",
+    "url": "https://updater.retrodriven.com/fpga-gnw-opt",
+    "index": "index.php",
+    "file_extensions": [
+      ".gnw"
+    ],
+    "enabled": true,
+    "one_time": false,
+  }
+  ```
+
+### Internet Archive Credentials
+Some archive.org sites require authentication to download the files. This makes them incompatible with pupdate, unless you supply your credentials to be used by the app. They can be put into your settings.json file in the `credentials` section like this:
+```json
+"credentials": {
+    "internet_archive": {
+      "username": "me@something.com",
+      "password": "12345"
+    }
+  }
+```  
 ## CLI Commands and Parameters
 
 ```

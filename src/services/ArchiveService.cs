@@ -14,11 +14,13 @@ public class ArchiveService : Base
 {
     private const string METADATA = "https://archive.org/metadata/{0}";
     private const string DOWNLOAD = "https://archive.org/download/{0}/{1}";
+    private const string LOGIN = "https://archive.org/account/login";
 
     private readonly bool crcCheck;
     private readonly Dictionary<string, Archive> archiveFiles;
     private readonly List<SettingsArchive> archives;
     private readonly bool useCustomArchive;
+    private Pannella.Models.Settings.InternetArchive creds;
 
     public ArchiveService(List<SettingsArchive> archives, bool crcCheck, bool useCustomArchive)
     {
@@ -26,6 +28,7 @@ public class ArchiveService : Base
         this.useCustomArchive = useCustomArchive;
         this.archives = archives;
         this.archiveFiles = new Dictionary<string, Archive>();
+        this.creds = ServiceHelper.SettingsService.credentials.internet_archive;
     }
 
     public SettingsArchive GetArchive(string coreIdentifier = null)
@@ -90,6 +93,14 @@ public class ArchiveService : Base
             return filtered;
         }
 
+        if (archive.files is { Count: > 0 })
+        {
+            var filtered = internetArchive.files.Where(x => archive.files.Any(y =>
+                string.Equals(y, Path.GetFileName(x.name), StringComparison.InvariantCultureIgnoreCase))).ToList();
+
+            return filtered;
+        }
+
         return internetArchive.files;
     }
 
@@ -132,6 +143,7 @@ public class ArchiveService : Base
             }
             else
             {
+                this.Authenticate();
                 url = string.Format(DOWNLOAD, archive.archive_name, archiveFile.name);
             }
 
@@ -212,5 +224,15 @@ public class ArchiveService : Base
 
         WriteMessage($"Bad checksum for {Path.GetFileName(filePath)}");
         return false;
+    }
+
+    public void Authenticate()
+    {
+        Dictionary<string, string> fields = new Dictionary<string, string>();
+        fields.Add("login", "true");
+        fields.Add("remember", "true");
+        fields.Add("submit_by_js", "true");
+        fields.Add("referrer", "https://archive.org/CREATE/");
+        HttpHelper.Instance.GetAuthCookie(this.creds.username, this.creds.password, LOGIN, fields);
     }
 }

@@ -1,4 +1,7 @@
 using System.Net;
+using System.Net.Cache;
+using System.Net.Http.Headers;
+using System.Web;
 
 namespace Pannella.Helpers;
 
@@ -7,6 +10,8 @@ public class HttpHelper
     private static HttpHelper instance;
     private static readonly object SYNC_LOCK = new();
     private HttpClient client;
+
+    private HttpClientHandler handler;
 
     public event EventHandler<DownloadProgressEventArgs> DownloadProgressUpdate;
 
@@ -101,6 +106,32 @@ public class HttpHelper
         }
     }
 
+    public void GetAuthCookie(string username, string password, string loginUrl, Dictionary<string, string> additional)
+    {
+        var loginUri = new Uri(loginUrl);
+        var host = loginUri.GetLeftPart(UriPartial.Authority);
+        var cookies = this.handler.CookieContainer.GetCookies(new Uri(host));
+        if(cookies.Count() > 0) {
+            return;
+        }
+        var data = new List<KeyValuePair<string, string>>();
+        data.Add(new KeyValuePair<string, string>("username", username));
+        data.Add(new KeyValuePair<string, string>("password", password) );
+
+        foreach (var item in additional)
+        {
+            data.Add(new KeyValuePair<string, string>(item.Key, item.Value));
+        }
+        var formData = new FormUrlEncodedContent(data);
+        this.client.DefaultRequestHeaders.Add("User-Agent", "Pupdate");
+        HttpResponseMessage loginResponse = this.client.PostAsync(loginUrl, formData).Result;
+        if (loginResponse.IsSuccessStatusCode)
+        {
+            //if the login form requires some csrf type headers to be sent up, send the requst a second time so they are included 
+            loginResponse = this.client.PostAsync(loginUrl, formData).Result;
+        }
+    }
+
     public string GetHTML(string uri, bool allowRedirect = true)
     {
         if (!Uri.TryCreate(uri, UriKind.Absolute, out _))
@@ -112,7 +143,7 @@ public class HttpHelper
         {
             this.CreateClient(false);
         }
-
+        
         var response = this.client.GetAsync(uri).Result;
 
         string html = response.StatusCode switch
@@ -131,9 +162,12 @@ public class HttpHelper
 
     private void CreateClient(bool allowRedirect = true)
     {
-        this.client = new HttpClient(new HttpClientHandler { AllowAutoRedirect = allowRedirect });
+        //Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+        this.handler = new HttpClientHandler { AllowAutoRedirect = allowRedirect, CookieContainer = new CookieContainer() };
+        this.client = new HttpClient(this.handler);
         this.client.Timeout = TimeSpan.FromMinutes(10); // 10min
     }
+
 
     private void OnDownloadProgressUpdate(DownloadProgressEventArgs e)
     {
