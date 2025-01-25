@@ -272,8 +272,36 @@ This is an archive hosted on archive.org, but it will only be used by 1 core whe
  - `one_time` Set to true if you only want pupdate to download the file(s) one time. This is useful if you have a zip file filled with roms hosted on an archive, because pupdate will download the zip once (and extract it) and then next time you run update all, it will skip the file.
 
 Note: you can't use both file_extensions and files together. It must be one or the other.
+Here is an example of a fully configured core_specific_archive:
+```json
+{
+    "name": "Spiritualized.2600",
+    "type": "core_specific_archive",
+    "archive_name": "htgdb-gamepacks",
+    "files": [
+      "@Atari 2600 2021-04-06.zip"
+    ],
+    "enabled": true,
+    "one_time": true,
+  }
+```
 #### core_specific_custom_archive
 This works just like core_specific_archive, only you need to specify a url and index (like the regular custom archive)
+Here is an example of a fully configured core_specific_custom_archive:
+```json
+{
+    "name": "agg23.GameAndWatch",
+    "type": "core_specific_custom_archive",
+    "archive_name": "fpga-gnw-opt",
+    "url": "https://updater.retrodriven.com/fpga-gnw-opt",
+    "index": "index.php",
+    "file_extensions": [
+      ".gnw"
+    ],
+    "enabled": true,
+    "one_time": false,
+  }
+  ```
 
 ### Internet Archive Credentials
 Some archive.org sites require authentication to download the files. This makes them incompatible with pupdate, unless you supply your credentials to be used by the app. They can be put into your settings.json file in the `credentials` section like this:
