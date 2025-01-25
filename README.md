@@ -274,6 +274,17 @@ This is an archive hosted on archive.org, but it will only be used by 1 core whe
 Note: you can't use both file_extensions and files together. It must be one or the other.
 #### core_specific_custom_archive
 This works just like core_specific_archive, only you need to specify a url and index (like the regular custom archive)
+
+### Internet Archive Credentials
+Some archive.org sites require authentication to download the files. This makes them incompatible with pupdate, unless you supply your credentials to be used by the app. They can be put into your settings.json file in the `credentials` section like this:
+```json
+"credentials": {
+    "internet_archive": {
+      "username": "me@something.com",
+      "password": "12345"
+    }
+  }
+```  
 ## CLI Commands and Parameters
 
 ```
