@@ -148,6 +148,7 @@ Your selection:    ";
 
         crt.Replace = new Dictionary<string, string>
         {
+            { "a", "az" },
             { "f", "af" },
             { "h", "afh" },
             { "g", "afg" },
@@ -156,8 +157,8 @@ Your selection:    ";
             { "d", "ak" },
             { "c", "acj" },
             { "b", "abj" },
-            { "x", "" },
-            { "a", "ad" }
+            { "z", "d" },
+            { "x", "" }
         };
 
         var snac = new AnalogizerOptionType();
@@ -190,9 +191,9 @@ Your selection:    ";
         snac.Replace = new Dictionary<string, string>
         {
             { "a", "" },
+            { "e", "eb" },
             { "f", "ec" },
-            { "d", "cb" },
-            { "e", "eb" }
+            { "d", "cb" }
         };
 
         const string filename = "crtcfg.bin";
