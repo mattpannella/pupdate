@@ -20,7 +20,7 @@ public class ArchiveService : Base
     private readonly Dictionary<string, Archive> archiveFiles;
     private readonly List<SettingsArchive> archives;
     private readonly bool useCustomArchive;
-    private Pannella.Models.Settings.InternetArchive creds;
+    private InternetArchive creds;
 
     public ArchiveService(List<SettingsArchive> archives, bool crcCheck, bool useCustomArchive)
     {
@@ -28,7 +28,7 @@ public class ArchiveService : Base
         this.useCustomArchive = useCustomArchive;
         this.archives = archives;
         this.archiveFiles = new Dictionary<string, Archive>();
-        this.creds = ServiceHelper.SettingsService.credentials.internet_archive;
+        this.creds = ServiceHelper.SettingsService.credentials?.internet_archive;
     }
 
     public SettingsArchive GetArchive(string coreIdentifier = null)
@@ -228,11 +228,13 @@ public class ArchiveService : Base
 
     public void Authenticate()
     {
-        Dictionary<string, string> fields = new Dictionary<string, string>();
-        fields.Add("login", "true");
-        fields.Add("remember", "true");
-        fields.Add("submit_by_js", "true");
-        fields.Add("referrer", "https://archive.org/CREATE/");
-        HttpHelper.Instance.GetAuthCookie(this.creds.username, this.creds.password, LOGIN, fields);
+        if (this.creds != null) {
+            Dictionary<string, string> fields = new Dictionary<string, string>();
+            fields.Add("login", "true");
+            fields.Add("remember", "true");
+            fields.Add("submit_by_js", "true");
+            fields.Add("referrer", "https://archive.org/CREATE/");
+            HttpHelper.Instance.GetAuthCookie(this.creds.username, this.creds.password, LOGIN, fields);
+        }  
     }
 }
