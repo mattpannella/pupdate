@@ -1,3 +1,5 @@
+// ReSharper disable InconsistentNaming
+
 namespace Pannella.Models.Archive;
 
 public class File

@@ -1,11 +1,10 @@
 using Pannella.Helpers;
 using Pannella.Models.Settings;
-using Pannella.Services;
 using ArchiveFile = Pannella.Models.Archive.File;
 
 namespace Pannella;
 
-internal partial class Program
+internal static partial class Program
 {
     private static void DownloadPockLibraryImages()
     {
@@ -34,17 +33,12 @@ internal partial class Program
                 Directory.Delete(extractPath, true);
                 Console.WriteLine("Complete.");
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
                 Console.WriteLine("Something happened while trying to install the asset files...");
-                if (ServiceHelper.SettingsService.Debug.show_stack_traces)
-                {
-                    Console.WriteLine(e);
-                }
-                else
-                {
-                    Console.WriteLine(e.Message);
-                }
+                Console.WriteLine(ServiceHelper.SettingsService.Debug.show_stack_traces
+                    ? ex
+                    : Util.GetExceptionMessage(ex));
             }
         }
         else

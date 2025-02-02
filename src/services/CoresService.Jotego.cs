@@ -5,8 +5,8 @@ namespace Pannella.Services;
 
 public partial class CoresService
 {
-    public const string JTBETA_KEY_FILENAME = "jtbeta.zip";
-    public const string JTBETA_KEY_ALT_FILENAME = "beta.bin";
+    private const string JTBETA_KEY_FILENAME = "jtbeta.zip";
+    private const string JTBETA_KEY_ALT_FILENAME = "beta.bin";
 
     private Dictionary<string, string> renamedPlatformFiles;
 
@@ -40,23 +40,19 @@ public partial class CoresService
                 }
             }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
             WriteMessage("Unable to retrieve archive contents. Asset download may not work.");
-            if (ServiceHelper.SettingsService.Debug.show_stack_traces)
-            {
-                WriteMessage(e.ToString());
-            }
-            else
-            {
-                WriteMessage(e.Message);
-            }
+            WriteMessage(this.settingsService.Debug.show_stack_traces
+                ? ex.ToString()
+                : Util.GetExceptionMessage(ex));
         }
 
         return platformFiles;
     }
 
-    public bool ExtractJTBetaKey()
+    // ReSharper disable once InconsistentNaming
+    private bool ExtractJTBetaKey()
     {
         string keyPath = Path.Combine(this.installPath, LICENSE_EXTRACT_LOCATION);
         string zipFile = Path.Combine(this.installPath, JTBETA_KEY_FILENAME);

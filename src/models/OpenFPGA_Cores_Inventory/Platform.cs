@@ -1,3 +1,5 @@
+// ReSharper disable InconsistentNaming
+
 namespace Pannella.Models.OpenFPGA_Cores_Inventory;
 
 public class Platform

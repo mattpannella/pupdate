@@ -11,13 +11,13 @@ public class FirmwareService : Base
     private const string DETAILS = "support/pocket/firmware/{0}/details";
     private const string FILENAME_PATTERN = "pocket_firmware_*.bin";
 
-    private static ReleaseDetails latest;
+    private static ReleaseDetails LATEST;
 
     private static ReleaseDetails GetDetails(string version = "latest")
     {
-        if (latest != null)
+        if (LATEST != null)
         {
-            return latest;
+            return LATEST;
         }
 
         string url = string.Format(BASE_URL + DETAILS, version);
@@ -26,7 +26,7 @@ public class FirmwareService : Base
 
         if (version == "latest")
         {
-            latest = details;
+            LATEST = details;
         }
 
         return details;

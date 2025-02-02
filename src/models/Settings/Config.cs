@@ -1,7 +1,8 @@
-using System.ComponentModel;
-using Newtonsoft.Json;
 // ReSharper disable RedundantDefaultMemberInitializer
 // ReSharper disable InconsistentNaming
+
+using System.ComponentModel;
+using Newtonsoft.Json;
 
 namespace Pannella.Models.Settings;
 
@@ -99,7 +100,7 @@ public class Config
         {
             name = "default",
             type = ArchiveType.internet_archive,
-            archive_name = "openFPGA-Files",
+            archive_name = "openFPGA-Files"
         },
         new Archive
         {
@@ -107,7 +108,7 @@ public class Config
             type = ArchiveType.custom_archive,
             archive_name = "custom",
             url = "https://updater.retrodriven.com",
-            index = "updater.php",
+            index = "updater.php"
         },
         new Archive
         {
@@ -116,7 +117,7 @@ public class Config
             archive_name = "fpga-gnw-opt",
             archive_folder = null,
             file_extensions = new List<string> { ".gnw" },
-            enabled = false,
+            enabled = false
         }
     };
 

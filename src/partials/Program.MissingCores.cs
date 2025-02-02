@@ -3,7 +3,7 @@ using Pannella.Models.OpenFPGA_Cores_Inventory;
 
 namespace Pannella;
 
-internal partial class Program
+internal static partial class Program
 {
     private static void CheckForMissingCores(bool enableMissingCores)
     {

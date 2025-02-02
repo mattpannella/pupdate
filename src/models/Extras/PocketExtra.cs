@@ -1,3 +1,6 @@
+// ReSharper disable InconsistentNaming
+// ReSharper disable CollectionNeverUpdated.Global
+
 using System.Text.Json.Serialization;
 
 namespace Pannella.Models.Extras;

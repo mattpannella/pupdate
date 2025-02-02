@@ -1,6 +1,6 @@
 namespace Pannella;
 
-internal partial class Program
+internal static partial class Program
 {
     private static void CheckForUpdates(string path, bool selfUpdate, string[] args, bool forceUpdate)
     {
@@ -29,6 +29,7 @@ internal partial class Program
             }
             while (!acceptedInputs.Contains(response));
 
+            // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
             switch (response)
             {
                 case ConsoleKey.I:

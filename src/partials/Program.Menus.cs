@@ -5,7 +5,7 @@ using Pannella.Services;
 
 namespace Pannella;
 
-internal partial class Program
+internal static partial class Program
 {
     private static void DisplayMenu(CoreUpdaterService coreUpdaterService)
     {
@@ -36,7 +36,7 @@ internal partial class Program
             EnableWriteTitle = true,
             WriteHeaderAction = () => Console.WriteLine("Choose your destiny:"),
             SelectedItemBackgroundColor = Console.ForegroundColor,
-            SelectedItemForegroundColor = Console.BackgroundColor,
+            SelectedItemForegroundColor = Console.BackgroundColor
         };
 
         #region Pocket Setup - Display Modes

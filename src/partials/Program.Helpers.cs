@@ -6,7 +6,7 @@ using GithubRelease = Pannella.Models.Github.Release;
 
 namespace Pannella;
 
-internal partial class Program
+internal static partial class Program
 {
     // return true if newer version is available
     private static bool CheckVersion(string path)
@@ -46,16 +46,12 @@ internal partial class Program
 
             return false;
         }
-        catch (HttpRequestException e)
+        catch (HttpRequestException ex)
         {
-            if (ServiceHelper.SettingsService.Debug.show_stack_traces)
-            {
-                Console.WriteLine(e);
-            }
-            else
-            {
-                Console.WriteLine(e.Message);
-            }
+            Console.WriteLine(ServiceHelper.SettingsService.Debug.show_stack_traces
+                ? ex
+                : Util.GetExceptionMessage(ex));
+           
             return false;
         }
     }

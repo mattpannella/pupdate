@@ -40,7 +40,7 @@ public partial class CoresService
 
     public void RefreshLocalCores()
     {
-        cores.AddRange(this.GetLocalCores());
+        CORES.AddRange(this.GetLocalCores());
     }
 
     private bool InstallGithubAsset(string identifier, string platformId, string downloadUrl)
@@ -159,7 +159,7 @@ public partial class CoresService
 
     private bool CheckLicenseMd5(DataSlot slot, string licenseSlotId, string platform)
     {
-        if (slot.md5 != null && (licenseSlotId != null && slot.id == licenseSlotId))
+        if (slot.md5 != null && licenseSlotId != null && slot.id == licenseSlotId)
         {
             string path = Path.Combine(this.installPath, "Assets", platform);
             string filePath = Path.Combine(path, "common", slot.filename);
@@ -184,10 +184,7 @@ public partial class CoresService
 
     public bool CheckLicenseFile(Core core)
     {
-        if (core.updaters?.license.filename != null)
-        {
-            return File.Exists(Path.Combine(this.installPath, LICENSE_EXTRACT_LOCATION, core.updaters.license.filename));
-        }
-        return false;
+        return core.updaters?.license.filename != null &&
+               File.Exists(Path.Combine(this.installPath, LICENSE_EXTRACT_LOCATION, core.updaters.license.filename));
     }
 }

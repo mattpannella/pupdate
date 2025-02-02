@@ -3,7 +3,7 @@ using Pannella.Models.DisplayModes;
 
 namespace Pannella;
 
-internal partial class Program
+internal static partial class Program
 {
     private static void EnableDisplayModes(List<string> coreIdentifiers = null, List<DisplayMode> displayModes = null,
         bool isCurated = false)
@@ -30,17 +30,12 @@ internal partial class Program
                 ServiceHelper.CoresService.AddDisplayModes(coreIdentifier, displayModes, isCurated,
                     merge: answer == "merge");
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
                 Console.WriteLine("Uh oh something went wrong.");
-                if (ServiceHelper.SettingsService.Debug.show_stack_traces)
-                {
-                    Console.WriteLine(e.ToString());
-                }
-                else
-                {
-                    Console.WriteLine(e.Message);
-                }
+                Console.WriteLine(ServiceHelper.SettingsService.Debug.show_stack_traces
+                    ? ex
+                    : Util.GetExceptionMessage(ex));
             }
         }
 
@@ -78,17 +73,12 @@ internal partial class Program
                 coreSettings.original_display_modes = null;
                 coreSettings.selected_display_modes = null;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
                 Console.WriteLine("Uh oh something went wrong.");
-                if (ServiceHelper.SettingsService.Debug.show_stack_traces)
-                {
-                    Console.WriteLine(e.ToString());
-                }
-                else
-                {
-                    Console.WriteLine(e.Message);
-                }
+                Console.WriteLine(ServiceHelper.SettingsService.Debug.show_stack_traces
+                    ? ex
+                    : Util.GetExceptionMessage(ex));
             }
         }
 

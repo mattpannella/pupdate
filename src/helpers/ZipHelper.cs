@@ -2,7 +2,7 @@ using System.IO.Compression;
 
 namespace Pannella.Helpers;
 
-public class ZipHelper
+public static class ZipHelper
 {
     private static void UpdateProgress(object sender, ZipProgress zipProgress)
     {

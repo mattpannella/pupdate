@@ -1,13 +1,10 @@
 using System.Net;
-using System.Net.Cache;
-using System.Net.Http.Headers;
-using System.Web;
 
 namespace Pannella.Helpers;
 
 public class HttpHelper
 {
-    private static HttpHelper instance;
+    private static HttpHelper INSTANCE;
     private static readonly object SYNC_LOCK = new();
     private HttpClient client;
 
@@ -26,7 +23,7 @@ public class HttpHelper
         {
             lock (SYNC_LOCK)
             {
-                return instance ??= new HttpHelper();
+                return INSTANCE ??= new HttpHelper();
             }
         }
     }
@@ -111,27 +108,38 @@ public class HttpHelper
         var loginUri = new Uri(loginUrl);
         var host = loginUri.GetLeftPart(UriPartial.Authority);
         var cookies = this.handler.CookieContainer.GetCookies(new Uri(host));
-        if(cookies.Count() > 0) {
+        
+        if(cookies.Any())
+        {
             return;
         }
-        var data = new List<KeyValuePair<string, string>>();
-        data.Add(new KeyValuePair<string, string>("username", username));
-        data.Add(new KeyValuePair<string, string>("password", password) );
+        
+        var data = new List<KeyValuePair<string, string>>
+        {
+            new("username", username),
+            new("password", password)
+        };
 
         foreach (var item in additional)
         {
             data.Add(new KeyValuePair<string, string>(item.Key, item.Value));
         }
+        
         var formData = new FormUrlEncodedContent(data);
+
         this.client.DefaultRequestHeaders.Add("User-Agent", "Pupdate");
+
         HttpResponseMessage loginResponse = this.client.PostAsync(loginUrl, formData).Result;
+        
         if (loginResponse.IsSuccessStatusCode)
         {
-            //if the login form requires some csrf type headers to be sent up, send the requst a second time so they are included 
+            // if the login form requires some csrf type headers to be sent up, send the request a second time so they are included 
+            // ReSharper disable once RedundantAssignment
             loginResponse = this.client.PostAsync(loginUrl, formData).Result;
         }
     }
 
+    // ReSharper disable once InconsistentNaming
     public string GetHTML(string uri, bool allowRedirect = true)
     {
         if (!Uri.TryCreate(uri, UriKind.Absolute, out _))
@@ -146,6 +154,7 @@ public class HttpHelper
         
         var response = this.client.GetAsync(uri).Result;
 
+        // ReSharper disable once SwitchExpressionHandlesSomeKnownEnumValuesWithExceptionInDefault
         string html = response.StatusCode switch
         {
             HttpStatusCode.OK => response.Content.ReadAsStringAsync().Result,
@@ -162,7 +171,7 @@ public class HttpHelper
 
     private void CreateClient(bool allowRedirect = true)
     {
-        //Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+        // Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
         this.handler = new HttpClientHandler { AllowAutoRedirect = allowRedirect, CookieContainer = new CookieContainer() };
         this.client = new HttpClient(this.handler);
         this.client.Timeout = TimeSpan.FromMinutes(10); // 10min
@@ -171,9 +180,9 @@ public class HttpHelper
 
     private void OnDownloadProgressUpdate(DownloadProgressEventArgs e)
     {
-        EventHandler<DownloadProgressEventArgs> handler = DownloadProgressUpdate;
+        EventHandler<DownloadProgressEventArgs> downloadProgressUpdateHandler = DownloadProgressUpdate;
 
-        handler?.Invoke(this, e);
+        downloadProgressUpdateHandler?.Invoke(this, e);
     }
 }
 

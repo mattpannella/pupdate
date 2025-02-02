@@ -1,8 +1,10 @@
+// ReSharper disable UseRawString
+
 using System.Reflection;
 
 namespace Pannella;
 
-internal partial class Program
+internal static partial class Program
 {
     private static readonly string VERSION = Assembly.GetExecutingAssembly().GetName().Version!.ToString(3);
 

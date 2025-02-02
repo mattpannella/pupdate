@@ -7,7 +7,7 @@ using GithubAsset = Pannella.Models.Github.Asset;
 
 namespace Pannella;
 
-internal partial class Program
+internal static partial class Program
 {
     private static void BuildGameAndWatchRoms()
     {
@@ -75,9 +75,9 @@ internal partial class Program
 
             p!.WaitForExit();
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Console.Error.WriteLine($"An error occurred: {e.GetType().Name} : {e}");
+            Console.Error.WriteLine($"An error occurred: {ex.GetType().Name} : {ex}");
         }
     }
 

@@ -5,7 +5,7 @@ using Pannella.Helpers;
 
 namespace Pannella;
 
-internal partial class Program
+internal static partial class Program
 {
     private static int UpdateSelfAndRun(string directory, string[] updaterArgs)
     {
@@ -71,9 +71,9 @@ internal partial class Program
 
             exitCode = p.ExitCode;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Console.Error.WriteLine($"An error occurred: {e.GetType().Name}:{e}");
+            Console.Error.WriteLine($"An error occurred: {ex.GetType().Name}:{ex}");
         }
 
         return exitCode;

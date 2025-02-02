@@ -37,14 +37,9 @@ public partial class CoresService
                     catch (Exception ex)
                     {
                         WriteMessage($"There was an error parsing the {POCKET_EXTRAS_FILE} file.");
-                        if (ServiceHelper.SettingsService.Debug.show_stack_traces)
-                        {
-                            WriteMessage(ex.ToString());
-                        }
-                        else
-                        {
-                            WriteMessage(ex.Message);
-                        }
+                        WriteMessage(this.settingsService.Debug.show_stack_traces
+                            ? ex.ToString()
+                            : Util.GetExceptionMessage(ex));
                     }
                 }
                 else
@@ -66,6 +61,7 @@ public partial class CoresService
 
     public void GetPocketExtra(PocketExtra pocketExtra, string path, bool downloadAssets)
     {
+        // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
         switch (pocketExtra.type)
         {
             case PocketExtraType.additional_assets:
@@ -179,17 +175,13 @@ public partial class CoresService
 
             WriteMessage("Complete.");
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
             WriteMessage("Something happened while trying to install the asset files...");
-            if (ServiceHelper.SettingsService.Debug.show_stack_traces)
-            {
-                WriteMessage(e.ToString());
-            }
-            else
-            {
-                WriteMessage(e.Message);
-            }
+            WriteMessage(this.settingsService.Debug.show_stack_traces
+                ? ex.ToString()
+                : Util.GetExceptionMessage(ex));
+            
             return;
         }
 
@@ -216,7 +208,7 @@ public partial class CoresService
                     MissingLicenses = (bool)results["missingLicense"]
                         ? new List<string> { core.identifier }
                         : new List<string>(),
-                    SkipOutro = true,
+                    SkipOutro = true
                 };
 
                 OnUpdateProcessComplete(args);
@@ -331,17 +323,13 @@ public partial class CoresService
             Directory.Delete(extractPath, true);
             WriteMessage("Complete.");
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
             WriteMessage("Something happened while trying to install the asset files...");
-            if (ServiceHelper.SettingsService.Debug.show_stack_traces)
-            {
-                WriteMessage(e.ToString());
-            }
-            else
-            {
-                WriteMessage(e.Message);
-            }
+            WriteMessage(this.settingsService.Debug.show_stack_traces
+                ? ex.ToString()
+                : Util.GetExceptionMessage(ex));
+
             return;
         }
 
@@ -359,7 +347,7 @@ public partial class CoresService
                 MissingLicenses = (bool)results["missingLicense"]
                     ? new List<string> { core.identifier }
                     : new List<string>(),
-                SkipOutro = true,
+                SkipOutro = true
             };
 
             OnUpdateProcessComplete(args);

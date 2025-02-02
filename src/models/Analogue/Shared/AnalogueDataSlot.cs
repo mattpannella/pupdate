@@ -1,3 +1,5 @@
+// ReSharper disable InconsistentNaming
+
 using System.Collections;
 
 namespace Pannella.Models.Analogue.Shared;
@@ -19,17 +21,9 @@ public class DataSlot
             return null;
         }
 
-        int p;
-
-        if (parameters.StartsWith("0x"))
-        {
-            p = Convert.ToInt32(parameters, 16);
-        }
-        else
-        {
-            p = int.Parse(parameters);
-        }
-
+        int p = parameters.StartsWith("0x")
+            ? Convert.ToInt32(parameters, 16)
+            : int.Parse(parameters);
         byte[] bytes = BitConverter.GetBytes(p);
         BitArray bits = new BitArray(bytes);
 

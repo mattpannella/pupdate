@@ -294,17 +294,12 @@ public class CoreUpdaterService : BaseProcess
                 WriteMessage("Installation complete.");
                 Divide();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
                 WriteMessage("Uh oh something went wrong.");
-                if (ServiceHelper.SettingsService.Debug.show_stack_traces)
-                {
-                    WriteMessage(e.ToString());
-                }
-                else
-                {
-                    WriteMessage(e.Message);
-                }
+                WriteMessage(this.settingsService.Debug.show_stack_traces
+                    ? ex.ToString()
+                    : Util.GetExceptionMessage(ex));
             }
         }
 
@@ -319,7 +314,7 @@ public class CoreUpdaterService : BaseProcess
             SkippedAssets = skippedAssets,
             MissingLicenses = missingLicenses,
             FirmwareUpdated = firmwareDownloaded,
-            SkipOutro = false,
+            SkipOutro = false
         };
 
         OnUpdateProcessComplete(args);

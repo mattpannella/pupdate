@@ -2,7 +2,7 @@ using Pannella.Services;
 
 namespace Pannella;
 
-internal partial class Program
+internal static partial class Program
 {
     private static void RunInstanceGenerator(CoreUpdaterService coreUpdaterService, bool force = false)
     {

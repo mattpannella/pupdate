@@ -1,3 +1,6 @@
+// ReSharper disable UseRawString
+// ReSharper disable UseObjectOrCollectionInitializer
+
 using Pannella.Helpers;
 
 namespace Pannella.Services;
@@ -76,6 +79,7 @@ public static class UserOptions
 
         foreach (var sel in records)
         {
+            // ReSharper disable once UnusedVariable
             string selInput = sel.GetInput();
 
             foreach (var item in sel.Dict)

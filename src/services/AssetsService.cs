@@ -13,6 +13,7 @@ public class AssetsService
     private const string BLACKLIST_FILE = "blacklist.json";
 
     private readonly bool useLocalBlacklist;
+    private readonly bool showStackTraces;
     private List<string> blacklist;
 
     public List<string> Blacklist
@@ -58,7 +59,8 @@ public class AssetsService
                     catch (Exception ex)
                     {
                         Console.WriteLine($"There was an error parsing the {BLACKLIST_FILE} file.");
-                        if (ServiceHelper.SettingsService.Debug.show_stack_traces)
+                        
+                        if (this.showStackTraces)
                         {
                             Console.WriteLine(ex);
                         }
@@ -78,9 +80,10 @@ public class AssetsService
         }
     }
 
-    public AssetsService(bool useLocalBlacklist)
+    public AssetsService(bool useLocalBlacklist, bool showStackTraces)
     {
         this.useLocalBlacklist = useLocalBlacklist;
+        this.showStackTraces = showStackTraces;
     }
 
     public static void BackupSaves(string directory, string backupLocation)
@@ -133,7 +136,7 @@ public class AssetsService
             }
             else
             {
-                Console.WriteLine($"Backup with the same contents already exists, skipping...");
+                Console.WriteLine("Backup with the same contents already exists, skipping...");
             }
         }
         else
@@ -172,7 +175,7 @@ public class AssetsService
         string savesPath = Path.Combine(rootDirectory, "Memories", "Save States");
 
         //YYYYMMDD_HHMMSS_SOMETHING_SOMETHING_GAMETITLE.STA
-        string pattern = @"^(\d\d\d\d\d\d\d\d_\d\d\d\d\d\d)_[A-Za-z]+_[A-Za-z0-9]+_(.*)\.sta$";
+        const string pattern = @"^(\d\d\d\d\d\d\d\d_\d\d\d\d\d\d)_[A-Za-z]+_[A-Za-z0-9]+_(.*)\.sta$";
         Regex regex = new Regex(pattern);
 
         foreach (var dir in Directory.EnumerateDirectories(savesPath) )
@@ -199,7 +202,7 @@ public class AssetsService
                 if (match.Success)
                 {
                     // Extract the timestamp (group 1) and game name (group 2)
-                    long timestamp = long.Parse(match.Groups[1].Value.Replace("_", String.Empty));
+                    long timestamp = long.Parse(match.Groups[1].Value.Replace("_", string.Empty));
                     string applicationName = match.Groups[2].Value;
 
                     // Check if this game already has a file in the dictionary

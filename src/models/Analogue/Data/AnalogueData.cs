@@ -1,3 +1,5 @@
+// ReSharper disable InconsistentNaming
+
 using Pannella.Models.Analogue.Shared;
 
 namespace Pannella.Models.Analogue.Data;

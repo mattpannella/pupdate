@@ -1,3 +1,5 @@
+// ReSharper disable InconsistentNaming
+
 using Newtonsoft.Json;
 
 namespace Pannella.Models.Analogue.Video;
