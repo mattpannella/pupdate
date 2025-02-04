@@ -374,6 +374,10 @@ Some archive.org sites require authentication to download the files. This makes 
    -p, --path                 Absolute path to install location
    -c, --core                 The core you want to prune memories for
 
+  analogizer-setup         Run the setup wizard to generate Analogizer settings files (By default, runs the standard setup)
+   -p, --path                 Absolute path to install location
+   -j, --jotego               Run the setup for Jotego's cores
+
   update-self              Check for updates to pupdate
 
   help                     Display more information on a specific command.

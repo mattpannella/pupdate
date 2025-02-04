@@ -18,7 +18,8 @@ internal static partial class Program
             var parserResult = parser.ParseArguments<MenuOptions, FundOptions, UpdateOptions,
                     AssetsOptions, FirmwareOptions, ImagesOptions, InstanceGeneratorOptions,
                     UpdateSelfOptions, UninstallOptions, BackupSavesOptions, GameBoyPalettesOptions,
-                    PocketLibraryImagesOptions, PocketExtrasOptions, DisplayModesOptions, PruneMemoriesOptions>(args)
+                    PocketLibraryImagesOptions, PocketExtrasOptions, DisplayModesOptions, PruneMemoriesOptions,
+                    AnalogizerSetupOptions>(args)
                 .WithNotParsed(errors =>
                 {
                     foreach (var error in errors)
@@ -211,6 +212,19 @@ internal static partial class Program
 
                 case PruneMemoriesOptions options:
                     AssetsService.PruneSaveStates(ServiceHelper.UpdateDirectory, options.CoreName);
+                    break;
+
+                case AnalogizerSetupOptions options:
+                    if (options.Jotego)
+                    {
+                        JotegoAnalogizerSettingsService settings = new JotegoAnalogizerSettingsService();
+                        settings.RunAnalogizerSettings();
+                        Console.WriteLine("Jotego Analogizer configuration updated.");
+                    }
+                    else 
+                    {
+                        AnalogizerSettingsService.ShowWizard();
+                    }
                     break;
 
                 default:
