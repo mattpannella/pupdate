@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using Pannella.Helpers;
 using Pannella.Models.DisplayModes;
 
 namespace Pannella.Services;
@@ -51,14 +52,9 @@ public partial class CoresService
                     catch (Exception ex)
                     {
                         WriteMessage($"There was an error parsing the {DISPLAY_MODES_FILE} file.");
-                        if (this.settingsService.Debug.show_stack_traces)
-                        {
-                            WriteMessage(ex.ToString());
-                        }
-                        else
-                        {
-                            WriteMessage(ex.Message);
-                        }
+                        WriteMessage(this.settingsService.Debug.show_stack_traces
+                            ? ex.ToString()
+                            : Util.GetExceptionMessage(ex));
                     }
                 }
                 else

@@ -12,7 +12,9 @@ public static class Util
 
     public enum HashTypes
     {
+        // ReSharper disable once InconsistentNaming
         CRC32,
+        // ReSharper disable once InconsistentNaming
         MD5
     }
 
@@ -204,5 +206,19 @@ public static class Util
         }
 
         return message.ToString();
+    }
+
+    public static string GetExceptionMessage(Exception ex)
+    {
+        StringBuilder sb = new();
+        Exception current = ex;
+
+        while (current != null)
+        {
+            sb.AppendLine(current.Message);
+            current = current.InnerException;
+        }
+
+        return sb.ToString();
     }
 }

@@ -5,7 +5,7 @@ using Pannella.Services;
 
 namespace Pannella;
 
-internal partial class Program
+internal static partial class Program
 {
     private static void DisplayModeSelector(bool showCoreSelector = false)
     {
@@ -35,7 +35,7 @@ internal partial class Program
                 });
             var current = -1;
 
-            if ((offset + pageSize) <= ServiceHelper.CoresService.AllDisplayModes.Count)
+            if (offset + pageSize <= ServiceHelper.CoresService.AllDisplayModes.Count)
             {
                 menu.Add("Next Page", thisMenu =>
                 {
@@ -48,7 +48,7 @@ internal partial class Program
             {
                 current++;
 
-                if ((current <= (offset + pageSize)) && (current >= offset))
+                if (current <= offset + pageSize && current >= offset)
                 {
                     var selected = results.Contains(displayMode.value);
                     var title = MenuItemName(displayMode.description, selected);
@@ -76,7 +76,7 @@ internal partial class Program
                 }
             }
 
-            if ((offset + pageSize) <= ServiceHelper.CoresService.AllDisplayModes.Count)
+            if (offset + pageSize <= ServiceHelper.CoresService.AllDisplayModes.Count)
             {
                 menu.Add("Next Page", thisMenu =>
                 {

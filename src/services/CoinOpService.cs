@@ -11,7 +11,7 @@ public static class CoinOpService
     {
         var client = new HttpClient();
 
-        string url = String.Format(LICENSE_ENDPOINT, System.Web.HttpUtility.UrlEncode(email));
+        string url = string.Format(LICENSE_ENDPOINT, System.Web.HttpUtility.UrlEncode(email));
         var request = new HttpRequestMessage
         {
             Method = HttpMethod.Get,
@@ -24,10 +24,14 @@ public static class CoinOpService
 
         var response = client.Send(request);
 
-        if (response.StatusCode == HttpStatusCode.NotFound) {
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
             var responseBody = response.Content.ReadAsStringAsync().Result;
             throw new Exception(responseBody);
-        } else if (response.StatusCode != HttpStatusCode.OK) {
+        }
+        
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
             throw new Exception("Didn't work");
         }
 

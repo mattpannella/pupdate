@@ -4,7 +4,7 @@ using Pannella.Models.OpenFPGA_Cores_Inventory;
 
 namespace Pannella;
 
-internal partial class Program
+internal static partial class Program
 {
     private static Dictionary<string, bool> ShowCoresMenu(List<Core> cores, string message, bool isCoreSelection,
         bool skipQuit = false)
@@ -41,7 +41,7 @@ internal partial class Program
                 });
             var current = -1;
 
-            if ((offset + pageSize) <= cores.Count)
+            if (offset + pageSize <= cores.Count)
             {
                 menu.Add("Next Page", thisMenu =>
                 {
@@ -54,7 +54,7 @@ internal partial class Program
             {
                 current++;
 
-                if ((current <= (offset + pageSize)) && (current >= offset))
+                if (current <= offset + pageSize && current >= offset)
                 {
                     var coreSettings = ServiceHelper.SettingsService.GetCoreSettings(core.identifier);
                     var selected =
@@ -82,7 +82,7 @@ internal partial class Program
                 }
             }
 
-            if ((offset + pageSize) <= cores.Count)
+            if (offset + pageSize <= cores.Count)
             {
                 menu.Add("Next Page", thisMenu =>
                 {

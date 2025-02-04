@@ -16,7 +16,7 @@ public class SettingsService
 
     public Config Config => this.settings.config;
     public Debug Debug => this.settings.debug;
-    public Credentials credentials => this.settings.credentials;
+    public Credentials Credentials => this.settings.credentials;
 
     public SettingsService(string settingsPath, List<Core> cores = null)
     {
@@ -57,7 +57,7 @@ public class SettingsService
 
     public void Save()
     {
-        var options = new JsonSerializerSettings { ContractResolver = ArchiveContractResolver.Instance };
+        var options = new JsonSerializerSettings { ContractResolver = ArchiveContractResolver.INSTANCE };
         var json = JsonConvert.SerializeObject(settings, Formatting.Indented, options);
 
         File.WriteAllText(this.settingsFile, json);

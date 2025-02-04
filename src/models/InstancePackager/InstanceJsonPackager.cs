@@ -1,3 +1,6 @@
+// ReSharper disable InconsistentNaming
+// ReSharper disable CollectionNeverUpdated.Global
+
 namespace Pannella.Models.InstancePackager;
 
 public class InstanceJsonPackager

@@ -1,6 +1,6 @@
 namespace Pannella;
 
-internal partial class Program
+internal static partial class Program
 {
     private const string HELP_TEXT =
 """

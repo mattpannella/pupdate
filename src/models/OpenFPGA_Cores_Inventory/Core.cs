@@ -1,6 +1,9 @@
-namespace Pannella.Models.OpenFPGA_Cores_Inventory;
+// ReSharper disable InconsistentNaming
 
 using Pannella.Models.Updater;
+
+namespace Pannella.Models.OpenFPGA_Cores_Inventory;
+
 public class Core
 {
     public string identifier { get; set; }

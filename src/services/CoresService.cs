@@ -17,13 +17,13 @@ public partial class CoresService : BaseProcess
     private readonly SettingsService settingsService;
     private readonly ArchiveService archiveService;
     private readonly AssetsService assetsService;
-    private static List<Core> cores;
+    private static List<Core> CORES;
 
     public List<Core> Cores
     {
         get
         {
-            if (cores == null)
+            if (CORES == null)
             {
                 string json = null;
 
@@ -62,27 +62,23 @@ public partial class CoresService : BaseProcess
                             if (settingsService.Config.no_analogizer_variants)
                             {
                                 //filter the list if the setting is on
-                                cores = coresList.Where(core => !IsAnalogizerVariant(core.identifier)).ToList();
+                                CORES = coresList.Where(core => !IsAnalogizerVariant(core.identifier)).ToList();
                             }
                             else 
                             {
-                                cores = coresList;
+                                CORES = coresList;
                             }
-                            cores.AddRange(this.GetLocalCores());
-                            cores = cores.OrderBy(c => c.identifier.ToLowerInvariant()).ToList();
+                            CORES.AddRange(this.GetLocalCores());
+                            CORES = CORES.OrderBy(c => c.identifier.ToLowerInvariant()).ToList();
                         }
                     }
                     catch (Exception ex)
                     {
                         WriteMessage($"There was an error parsing the {CORES_FILE} file from the openFPGA cores inventory.");
-                        if (ServiceHelper.SettingsService.Debug.show_stack_traces)
-                        {
-                            WriteMessage(ex.ToString());
-                        }
-                        else
-                        {
-                            WriteMessage(ex.Message);
-                        }
+                        WriteMessage(this.settingsService.Debug.show_stack_traces
+                            ? ex.ToString()
+                            : Util.GetExceptionMessage(ex));
+
                         throw;
                     }
                 }
@@ -92,67 +88,67 @@ public partial class CoresService : BaseProcess
                 }
             }
 
-            return cores;
+            return CORES;
         }
     }
 
-    private static List<Core> installedCores;
+    private static List<Core> INSTALLED_CORES;
 
     public List<Core> InstalledCores
     {
         get
         {
-            if (installedCores == null)
+            if (INSTALLED_CORES == null)
             {
                 this.RefreshInstalledCores();
             }
 
-            return installedCores;
+            return INSTALLED_CORES;
         }
     }
 
-    private static Dictionary<string, List<Core>> installedCoresWithSponsors;
+    private static Dictionary<string, List<Core>> INSTALLED_CORES_WITH_SPONSORS;
 
     public Dictionary<string, List<Core>> InstalledCoresWithSponsors
     {
         get
         {
-            if (installedCoresWithSponsors == null)
+            if (INSTALLED_CORES_WITH_SPONSORS == null)
             {
                 this.RefreshInstalledCores();
             }
 
-            return installedCoresWithSponsors;
+            return INSTALLED_CORES_WITH_SPONSORS;
         }
     }
 
-    private static List<Core> installedCoresWithCustomDisplayModes;
+    private static List<Core> INSTALLED_CORES_WITH_CUSTOM_DISPLAY_MODES;
 
     public List<Core> InstalledCoresWithCustomDisplayModes
     {
         get
         {
-            if (installedCoresWithCustomDisplayModes == null)
+            if (INSTALLED_CORES_WITH_CUSTOM_DISPLAY_MODES == null)
             {
                 this.RefreshInstalledCores();
             }
 
-            return installedCoresWithCustomDisplayModes;
+            return INSTALLED_CORES_WITH_CUSTOM_DISPLAY_MODES;
         }
     }
 
-    private static List<Core> coresNotInstalled;
+    private static List<Core> CORES_NOT_INSTALLED;
 
     public List<Core> CoresNotInstalled
     {
         get
         {
-            if (coresNotInstalled == null)
+            if (CORES_NOT_INSTALLED == null)
             {
                 RefreshInstalledCores();
             }
 
-            return coresNotInstalled;
+            return CORES_NOT_INSTALLED;
         }
     }
 
@@ -192,45 +188,45 @@ public partial class CoresService : BaseProcess
 
     public void RefreshInstalledCores()
     {
-        installedCores = new List<Core>();
-        coresNotInstalled = new List<Core>();
-        installedCoresWithSponsors = new Dictionary<string, List<Core>>();
-        installedCoresWithCustomDisplayModes = new List<Core>();
+        INSTALLED_CORES = new List<Core>();
+        CORES_NOT_INSTALLED = new List<Core>();
+        INSTALLED_CORES_WITH_SPONSORS = new Dictionary<string, List<Core>>();
+        INSTALLED_CORES_WITH_CUSTOM_DISPLAY_MODES = new List<Core>();
 
-        foreach (var core in cores)
+        foreach (var core in CORES)
         {
             if (this.IsInstalled(core.identifier))
             {
-                installedCores.Add(core);
+                INSTALLED_CORES.Add(core);
 
                 if (core.sponsor != null)
                 {
                     var info = ServiceHelper.CoresService.ReadCoreJson(core.identifier);
                     var author = info.metadata.author;
 
-                    if (installedCoresWithSponsors.TryGetValue(author, out List<Core> authorCores))
+                    if (INSTALLED_CORES_WITH_SPONSORS.TryGetValue(author, out List<Core> authorCores))
                     {
                         authorCores.Add(core);
                     }
                     else
                     {
-                        installedCoresWithSponsors.Add(author, new List<Core> { core });
+                        INSTALLED_CORES_WITH_SPONSORS.Add(author, new List<Core> { core });
                     }
                 }
 
                 if (this.settingsService.GetCoreSettings(core.identifier).display_modes)
                 {
-                    installedCoresWithCustomDisplayModes.Add(core);
+                    INSTALLED_CORES_WITH_CUSTOM_DISPLAY_MODES.Add(core);
                 }
             }
             else
             {
-                coresNotInstalled.Add(core);
+                CORES_NOT_INSTALLED.Add(core);
             }
         }
 
-        installedCores = installedCores.OrderBy(c => c.identifier.ToLowerInvariant()).ToList();
-        coresNotInstalled = coresNotInstalled.OrderBy(c => c.identifier.ToLowerInvariant()).ToList();
+        INSTALLED_CORES = INSTALLED_CORES.OrderBy(c => c.identifier.ToLowerInvariant()).ToList();
+        CORES_NOT_INSTALLED = CORES_NOT_INSTALLED.OrderBy(c => c.identifier.ToLowerInvariant()).ToList();
     }
 
     public bool Install(Core core, bool clean = false)

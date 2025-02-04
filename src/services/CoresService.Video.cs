@@ -32,8 +32,7 @@ public partial class CoresService
         bool forceOriginal = false, bool merge = false)
     {
         var info = this.ReadCoreJson(identifier);
-        var video = this.ReadVideoJson(identifier);
-        Dictionary<string, DisplayMode> toAdd = new Dictionary<string, DisplayMode>();
+        var toAdd = new Dictionary<string, DisplayMode>();
 
         if (isCurated)
         {
@@ -64,7 +63,6 @@ public partial class CoresService
                 {
                     toAdd.TryAdd(displayMode.value, displayMode);
                 }
-
             }
             else if (info.metadata.platform_ids.Contains("lynx") && this.DisplayModes.TryGetValue("lynx", out var lynx))
             {
@@ -114,6 +112,7 @@ public partial class CoresService
         }
 
         var settings = this.settingsService.GetCoreSettings(identifier);
+        var video = this.ReadVideoJson(identifier);
 
         if (!settings.display_modes || forceOriginal)
         {
@@ -152,10 +151,41 @@ public partial class CoresService
                    .Select(kvp => new AnalogueDisplayMode { id = kvp.Value.value })
                    .ToList();
 
-        Dictionary<string, Video> output = new Dictionary<string, Video> { { "video", video } };
-        string json = JsonConvert.SerializeObject(output, Formatting.Indented);
+        var output = new Dictionary<string, Video> { { "video", video } };
+        var json = JsonConvert.SerializeObject(output, Formatting.Indented);
+        
+        // making a backup copy of the video.json to account for any errors during the file writing process
+        // related to issue #354
+        var fileName = Path.Combine(this.installPath, "Cores", identifier, "video.json");
+        var backupFileName = Path.Combine(this.installPath, "Cores", identifier, "video.copy.json");
+        var restore = false;
+        
+        if (File.Exists(backupFileName))
+            File.Delete(backupFileName);
+        
+        File.Copy(fileName, backupFileName);
 
-        File.WriteAllText(Path.Combine(this.installPath, "Cores", identifier, "video.json"), json);
+        try
+        {
+            File.WriteAllText(fileName, json);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Unable to write to the video.json file. Restoring the existing one.");
+            Console.WriteLine(this.settingsService.Debug.show_stack_traces
+                ? ex
+                : ex.Message);
+
+            restore = true;
+        }
+        
+        if (restore)
+        {
+            File.Delete(fileName);
+            File.Copy(backupFileName, fileName);
+        }
+        
+        File.Delete(backupFileName);
     }
 
     public void ClearDisplayModes(string identifier)

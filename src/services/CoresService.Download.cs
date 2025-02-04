@@ -57,17 +57,12 @@ public partial class CoresService
 
                 Divide();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
                 WriteMessage("Uh oh something went wrong.");
-                if (ServiceHelper.SettingsService.Debug.show_stack_traces)
-                {
-                    WriteMessage(e.ToString());
-                }
-                else
-                {
-                    WriteMessage(e.Message);
-                }
+                WriteMessage(this.settingsService.Debug.show_stack_traces
+                    ? ex.ToString()
+                    : Util.GetExceptionMessage(ex));
             }
         }
 
@@ -77,7 +72,7 @@ public partial class CoresService
             InstalledAssets = installedAssets,
             SkippedAssets = skippedAssets,
             MissingLicenses = missingLicenses,
-            SkipOutro = false,
+            SkipOutro = false
         };
 
         OnUpdateProcessComplete(args);
@@ -127,6 +122,7 @@ public partial class CoresService
         }
 
         WriteMessage("Looking for Assets...");
+
         Archive archive = this.archiveService.GetArchive();
         AnalogueCore info = this.ReadCoreJson(core.identifier);
         // cores with multiple platforms won't work...not sure any exist right now?
@@ -194,9 +190,10 @@ public partial class CoresService
             }
         }
         
-        //grab the core specific archive, now
+        // grab the core specific archive, now
         archive = this.archiveService.GetArchive(core.identifier);
-        if ((archive.type == ArchiveType.core_specific_archive || archive.type == ArchiveType.core_specific_custom_archive) 
+
+        if (archive.type is ArchiveType.core_specific_archive or ArchiveType.core_specific_custom_archive 
             && archive.enabled && !archive.has_instance_jsons
             && ((archive.one_time && !archive.complete) || !archive.one_time))
         {
@@ -220,6 +217,22 @@ public partial class CoresService
                 {
                     WriteMessage($"Downloading: {file.name}...");
                     bool result = this.archiveService.DownloadArchiveFile(archive, file, commonPath);
+                    string destinationFileName = Path.Combine(commonPath, file.name);
+                    
+                    if (File.Exists(destinationFileName) && Path.GetExtension(destinationFileName) == ".zip")
+                    {
+                        //extract
+                        ZipHelper.ExtractToDirectory(destinationFileName, Path.GetDirectoryName(destinationFileName), true);
+                        //delete
+                        File.Delete(destinationFileName);
+                    } 
+                    else if (File.Exists(destinationFileName) && Path.GetExtension(destinationFileName) == ".7z")
+                    {
+                        //extract
+                        SevenZipHelper.ExtractToDirectory(destinationFileName, Path.GetDirectoryName(destinationFileName));
+                        //delete
+                        File.Delete(destinationFileName);
+                    }
 
                     if (result)
                     {
@@ -340,17 +353,12 @@ public partial class CoresService
                         }
                     }
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
                     WriteMessage($"Error while processing '{file}'");
-                    if (ServiceHelper.SettingsService.Debug.show_stack_traces)
-                    {
-                        WriteMessage(e.ToString());
-                    }
-                    else
-                    {
-                        WriteMessage(e.Message);
-                    }
+                    WriteMessage(this.settingsService.Debug.show_stack_traces
+                        ? ex.ToString()
+                        : Util.GetExceptionMessage(ex));
                 }
             }
         }

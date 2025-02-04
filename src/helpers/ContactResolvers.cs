@@ -7,7 +7,7 @@ namespace Pannella.Helpers
 {
     public class ArchiveContractResolver : DefaultContractResolver
     {
-        public static readonly ArchiveContractResolver Instance = new();
+        public static readonly ArchiveContractResolver INSTANCE = new();
 
         protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
         {
@@ -20,7 +20,7 @@ namespace Pannella.Helpers
                     {
                         Archive archive = (Archive)instance;
 
-                        return (archive.type == ArchiveType.core_specific_archive || archive.type == ArchiveType.core_specific_custom_archive);
+                        return archive.type is ArchiveType.core_specific_archive or ArchiveType.core_specific_custom_archive;
                     };
             }
 

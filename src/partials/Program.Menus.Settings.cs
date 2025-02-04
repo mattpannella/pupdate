@@ -5,7 +5,7 @@ using Pannella.Models.Settings;
 
 namespace Pannella;
 
-internal partial class Program
+internal static partial class Program
 {
     private static void SettingsMenu()
     {
@@ -28,7 +28,7 @@ internal partial class Program
                 config.WriteItemAction = item => Console.Write("{0}", item.Name);
             });
 
-        foreach (var (name, text) in menuItems)
+        foreach ((string name, string text) in menuItems)
         {
             var property = type.GetProperty(name);
             var value = (bool)property!.GetValue(ServiceHelper.SettingsService.Config)!;

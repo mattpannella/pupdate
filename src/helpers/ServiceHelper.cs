@@ -17,21 +17,27 @@ public static class ServiceHelper
     public static EventHandler<StatusUpdatedEventArgs> StatusUpdated { get; private set; }
     public static EventHandler<UpdateProcessCompleteEventArgs> UpdateProcessComplete { get; private set; }
 
-    private static bool isInitialized;
+    private static bool IS_INITIALIZED;
 
     public static void Initialize(string path, string settingsPath, EventHandler<StatusUpdatedEventArgs> statusUpdated = null,
         EventHandler<UpdateProcessCompleteEventArgs> updateProcessComplete = null, bool forceReload = false)
     {
-        if (!isInitialized || forceReload)
+        if (!IS_INITIALIZED || forceReload)
         {
-            isInitialized = true;
+            IS_INITIALIZED = true;
             UpdateDirectory = path;
             SettingsDirectory = settingsPath;
             SettingsService = new SettingsService(settingsPath);
-            ArchiveService = new ArchiveService(SettingsService.Config.archives,
-                SettingsService.Config.crc_check, SettingsService.Config.use_custom_archive);
+            ArchiveService = new ArchiveService(
+                SettingsService.Config.archives,
+                SettingsService.Credentials?.internet_archive,
+                SettingsService.Config.crc_check,
+                SettingsService.Config.use_custom_archive,
+                SettingsService.Debug.show_stack_traces);
             TempDirectory = SettingsService.Config.temp_directory ?? UpdateDirectory;
-            AssetsService = new AssetsService(SettingsService.Config.use_local_blacklist);
+            AssetsService = new AssetsService(
+                SettingsService.Config.use_local_blacklist,
+                SettingsService.Debug.show_stack_traces);
             CoresService = new CoresService(path, SettingsService, ArchiveService, AssetsService);
             SettingsService.InitializeCoreSettings(CoresService.Cores);
             SettingsService.Save();
@@ -60,8 +66,12 @@ public static class ServiceHelper
     {
         SettingsService = new SettingsService(SettingsDirectory, CoresService.Cores);
         // reload the archive service, in case that setting has changed
-        ArchiveService = new ArchiveService(SettingsService.Config.archives,
-            SettingsService.Config.crc_check, SettingsService.Config.use_custom_archive);
+        ArchiveService = new ArchiveService(
+            SettingsService.Config.archives,
+            SettingsService.Credentials?.internet_archive,
+            SettingsService.Config.crc_check,
+            SettingsService.Config.use_custom_archive,
+            SettingsService.Debug.show_stack_traces);
         CoresService = new CoresService(UpdateDirectory, SettingsService, ArchiveService, AssetsService);
         CoresService.StatusUpdated += StatusUpdated;
     }

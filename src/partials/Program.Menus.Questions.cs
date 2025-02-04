@@ -2,7 +2,7 @@ using Pannella.Helpers;
 
 namespace Pannella;
 
-internal partial class Program
+internal static partial class Program
 {
     private static void AskAboutNewCores(bool force = false)
     {

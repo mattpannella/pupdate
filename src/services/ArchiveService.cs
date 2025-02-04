@@ -20,15 +20,17 @@ public class ArchiveService : Base
     private readonly Dictionary<string, Archive> archiveFiles;
     private readonly List<SettingsArchive> archives;
     private readonly bool useCustomArchive;
-    private InternetArchive creds;
+    private readonly InternetArchive credentials;
+    private readonly bool showStackTraces;
 
-    public ArchiveService(List<SettingsArchive> archives, bool crcCheck, bool useCustomArchive)
+    public ArchiveService(List<SettingsArchive> archives, InternetArchive credentials, bool crcCheck, bool useCustomArchive, bool showStackTraces)
     {
         this.crcCheck = crcCheck;
         this.useCustomArchive = useCustomArchive;
         this.archives = archives;
         this.archiveFiles = new Dictionary<string, Archive>();
-        this.creds = ServiceHelper.SettingsService.credentials?.internet_archive;
+        this.credentials = credentials;
+        this.showStackTraces = showStackTraces;
     }
 
     public SettingsArchive GetArchive(string coreIdentifier = null)
@@ -56,6 +58,7 @@ public class ArchiveService : Base
         return files.FirstOrDefault(x => x.name == fileName);
     }
 
+    // ReSharper disable once MemberCanBePrivate.Global
     public IEnumerable<ArchiveFile> GetArchiveFiles(string coreIdentifier)
     {
         SettingsArchive archive = this.GetArchive(coreIdentifier);
@@ -162,27 +165,26 @@ public class ArchiveService : Base
             {
                 HttpHelper.Instance.DownloadFile(url, destinationFileName, 600);
                 count++;
-            }
-            while (count < 3 && !ValidateChecksum(destinationFileName, archiveFile));
+            } while (count < 3 && !ValidateChecksum(destinationFileName, archiveFile));
 
-            if (File.Exists(destinationFileName) && Path.GetExtension(destinationFileName) == ".zip")
-            {
-                //extract
-                ZipHelper.ExtractToDirectory(destinationFileName, Path.GetDirectoryName(destinationFileName), true);
-                //delete
-                File.Delete(destinationFileName);
-            } 
-            else if (File.Exists(destinationFileName) && Path.GetExtension(destinationFileName) == ".7z")
-            {
-                //extract
-                SevenZipHelper.ExtractToDirectory(destinationFileName, Path.GetDirectoryName(destinationFileName));
-                //delete
-                File.Delete(destinationFileName);
-            }
+            // if (File.Exists(destinationFileName) && Path.GetExtension(destinationFileName) == ".zip")
+            // {
+            //     //extract
+            //     ZipHelper.ExtractToDirectory(destinationFileName, Path.GetDirectoryName(destinationFileName), true);
+            //     //delete
+            //     File.Delete(destinationFileName);
+            // } 
+            // else if (File.Exists(destinationFileName) && Path.GetExtension(destinationFileName) == ".7z")
+            // {
+            //     //extract
+            //     SevenZipHelper.ExtractToDirectory(destinationFileName, Path.GetDirectoryName(destinationFileName));
+            //     //delete
+            //     File.Delete(destinationFileName);
+            // }
         }
-        catch (HttpRequestException e)
+        catch (HttpRequestException ex)
         {
-            WriteMessage(e.StatusCode switch
+            WriteMessage(ex.StatusCode switch
             {
                 HttpStatusCode.NotFound => $"Unable to find '{archiveFile.name}' in archive '{archive.name}'",
                 _ => $"There was a problem downloading '{archiveFile.name}'"
@@ -192,19 +194,13 @@ public class ArchiveService : Base
 
             return false;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
             WriteMessage($"Something went wrong with '{archiveFile.name}'");
-            
-            if (ServiceHelper.SettingsService.Debug.show_stack_traces)
-            {
-                WriteMessage(e.ToString());
-            }
-            else
-            {
-                WriteMessage(e.Message);
-            }
-            
+            WriteMessage(this.showStackTraces
+                ? ex.ToString()
+                : Util.GetExceptionMessage(ex));
+
             return false;
         }
 
@@ -226,15 +222,19 @@ public class ArchiveService : Base
         return false;
     }
 
-    public void Authenticate()
+    private void Authenticate()
     {
-        if (this.creds != null) {
-            Dictionary<string, string> fields = new Dictionary<string, string>();
-            fields.Add("login", "true");
-            fields.Add("remember", "true");
-            fields.Add("submit_by_js", "true");
-            fields.Add("referrer", "https://archive.org/CREATE/");
-            HttpHelper.Instance.GetAuthCookie(this.creds.username, this.creds.password, LOGIN, fields);
-        }  
+        if (this.credentials != null)
+        {
+            var fields = new Dictionary<string, string>
+            {
+                { "login", "true" },
+                { "remember", "true" },
+                { "submit_by_js", "true" },
+                { "referrer", "https://archive.org/CREATE/" }
+            };
+            
+            HttpHelper.Instance.GetAuthCookie(this.credentials.username, this.credentials.password, LOGIN, fields);
+        }
     }
 }

@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 
 namespace Pannella.Helpers;
 
-public class SemverUtil
+public static class SemverUtil
 {
     private const string SEMVER_FINDER = @"\D*(\d+(\.\d+)*\.\d+)\D*";
 
