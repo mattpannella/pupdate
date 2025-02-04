@@ -18,8 +18,8 @@ jobs:
       with:
         dotnet-version: 9.0.100
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore pupdate.csproj
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build pupdate.csproj --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test pupdate.csproj --no-build --verbosity normal
