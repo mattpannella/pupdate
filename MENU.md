@@ -22,6 +22,7 @@
       1. Apply 8:7 Aspect Ratio to Super GameBoy cores
       2. Restore 4:3 Aspect Ratio to Super GameBoy cores
    5. Jotego Analogizer Config
+   6. Standard Analogizer Config
    6. Go Back
 7. Pocket Maintenance
    1. Update Selected

@@ -182,8 +182,15 @@ internal static partial class Program
             .Add("Super GameBoy Aspect Ratio   >", sgbAspectRatioMenu.Show)
             .Add("Jotego Analogizer Config", _=>
             {
-                AnalogizerSettingsService settings = new AnalogizerSettingsService();
+                JotegoAnalogizerSettingsService settings = new JotegoAnalogizerSettingsService();
                 settings.RunAnalogizerSettings();
+
+                Console.WriteLine("Jotego Analogizer configuration updated.");
+                Pause();
+            })
+            .Add("Standard Analogizer Config", _=>
+            {
+                AnalogizerSettingsService.ShowWizard();
 
                 Console.WriteLine("Analogizer configuration updated.");
                 Pause();

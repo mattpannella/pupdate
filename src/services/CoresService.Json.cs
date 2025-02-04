@@ -23,6 +23,11 @@ public partial class CoresService
         string dataFile = Path.Combine(platformsFolder, info.metadata.platform_ids[0] + ".json");
         var platforms = JsonConvert.DeserializeObject<Dictionary<string, Platform>>(File.ReadAllText(dataFile));
 
+        // if (platforms == null)
+        // {
+        //     return null;
+        // }
+
         return platforms["platform"];
     }
 
