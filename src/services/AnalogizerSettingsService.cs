@@ -28,7 +28,7 @@ class AnalogizerSettingsService
     static int videoSelection = -1;
     static int snacAssigmentSelection = -1;
     static int snacSelection = -1;
-    static readonly int analogizerEnaSelection = -1;
+    static readonly int analogizerEnaSelection = 1;
     static int pocketBlankScreenSelection =-1;
     static int analogizerOsdOutSelection = -1;
     static string AnalogizerHeader = @"   ###   #     #   ###   #         ####   #######    #### ####### ####### #### 
