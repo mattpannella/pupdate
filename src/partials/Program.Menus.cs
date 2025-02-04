@@ -172,14 +172,10 @@ internal static partial class Program
 
         #endregion
 
-        #region Pocket Setup
+        #region Analogizer Setup
 
-        var pocketSetupMenu = new ConsoleMenu()
+        var analogizerMenu = new ConsoleMenu()
             .Configure(menuConfig)
-            .Add("Manage Display Modes         >", displayModesMenu.Show)
-            .Add("Download Images and Palettes >", downloadFilesMenu.Show)
-            .Add("Generate ROMs & JSON Files   >", generateFilesMenu.Show)
-            .Add("Super GameBoy Aspect Ratio   >", sgbAspectRatioMenu.Show)
             .Add("Jotego Analogizer Config", _=>
             {
                 JotegoAnalogizerSettingsService settings = new JotegoAnalogizerSettingsService();
@@ -195,6 +191,19 @@ internal static partial class Program
                 Console.WriteLine("Analogizer configuration updated.");
                 Pause();
             })
+            .Add("Go Back", ConsoleMenu.Close);
+
+        #endregion
+
+        #region Pocket Setup
+
+        var pocketSetupMenu = new ConsoleMenu()
+            .Configure(menuConfig)
+            .Add("Manage Display Modes         >", displayModesMenu.Show)
+            .Add("Download Images and Palettes >", downloadFilesMenu.Show)
+            .Add("Generate ROMs & JSON Files   >", generateFilesMenu.Show)
+            .Add("Super GameBoy Aspect Ratio   >", sgbAspectRatioMenu.Show)
+            .Add("Analogizer Config            >", analogizerMenu.Show)
             .Add("Set Patreon Email Address", () =>
             {
                 Console.WriteLine($"Current email address: {ServiceHelper.SettingsService.Config.patreon_email_address}");
