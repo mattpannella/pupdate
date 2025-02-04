@@ -185,6 +185,8 @@ public partial class CoresService : BaseProcess
 
     public bool IsAnalogizerVariant(string identifier)
     {
+        //eventually this should be replaced with a check for a flag
+        //inside updaters.json
         return identifier.Contains("Analogizer");
     }
 
