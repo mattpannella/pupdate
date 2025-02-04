@@ -25,6 +25,9 @@ internal static partial class Program
 
                 if (check)
                 {
+#if NET7_0
+                    Console.WriteLine($"A new version {v} is available.");
+#else
                     Console.WriteLine($"A new version {v} is available. Downloading now...");
 
                     string url = string.Format(RELEASE_URL, tagName, SYSTEM_OS_PLATFORM);
@@ -34,7 +37,8 @@ internal static partial class Program
 
                     Console.WriteLine("Download complete.");
                     Console.WriteLine(saveLocation);
-                    Console.WriteLine("Go to " + releases[0].html_url + " for a change log");
+#endif
+                    Console.WriteLine("Go to " + releases[0].html_url + " for a change log.");
                 }
                 else
                 {
