@@ -72,7 +72,6 @@ public class SettingsService
 
         foreach (Core core in cores)
         {
-            // if (!settings.core_settings.ContainsKey(core.identifier))
             if (!settings.core_settings.TryGetValue(core.identifier, out var coreSettings))
             {
                 this.missingCores.Add(core);
