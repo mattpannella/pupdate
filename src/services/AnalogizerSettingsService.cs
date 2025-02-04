@@ -1,6 +1,8 @@
 
 namespace Pannella.Services;
 
+using Pannella.Helpers;
+
 //snac_game_cont_type = analogizer_config_s[4:0];
 //snac_cont_assignment = analogizer_config_s[9:6];
 //analogizer_video_type = analogizer_config_s[13:10];
@@ -308,11 +310,25 @@ class AnalogizerSettingsService
         uint data = (uint)((analogizerOsdOutSelection << 15) | (pocketBlankScreenSelection << 14) | (videoSelection << 10) | (snacAssigmentSelection << 6) | (analogizerEnaSelection << 5) | snacSelection); // Usamos uint para 32 bits
         byte[] buffer = BitConverter.GetBytes(data);
         //Array.Reverse(buffer); // Invertimos el arreglo para big-endian
+        string filename = "analogizer.bin";
+        string filepath = Path.Combine(ServiceHelper.UpdateDirectory, filename);
 
-        File.WriteAllBytes("analogizer.bin", buffer);
+        //Assets/Analogizer/common
+        File.WriteAllBytes(filepath, buffer);
 
-        Console.WriteLine("Analogizer configuration saved to 'analogizer.bin'.");
-        Console.WriteLine("Press a key to close...");
-        Console.ReadKey(); ; // Espera a que el usuario presione Enter antes de cerrar el programa*/
+        if (File.Exists(filepath))
+        {
+            string destination = Path.Combine(ServiceHelper.UpdateDirectory, "Assets", "Analogizer", "common");
+
+            if (!Directory.Exists(destination))
+            {
+                Directory.CreateDirectory(destination);
+            }
+
+            string destPath = Path.Combine(destination, filename);
+
+            File.Move(filepath, destPath, true);
+            Console.WriteLine($"Analogizer configuration saved to '{destPath}");
+        }
     }
 }
