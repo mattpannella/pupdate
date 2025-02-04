@@ -1,0 +1,56 @@
+name: Publish Legacy
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  release:
+    name: Release
+    strategy:
+      matrix:
+        kind: ['macOS']
+        include:
+          - kind: macOS
+            os: macos-latest
+            target: osx
+            arm: true
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 9.0.100
+
+      - name: Build
+        shell: bash
+        run: |
+          tag=$(git describe --tags --abbrev=0)
+          release_name="App-$tag-${{ matrix.target }}"
+          trim="True"
+
+          # Build everything
+          dotnet publish pupdate_legacy.csproj -r ${{ matrix.target }}-x64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly -p:PublishTrimmed=$trim -p:TrimMode=partial
+          mv ${release_name}/pupdate ${release_name}/pupdate_x64
+          dotnet publish pupdate_legacy.csproj -r ${{ matrix.target }}-arm64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly -p:PublishTrimmed=$trim -p:TrimMode=partial
+          mv ${release_name}/pupdate ${release_name}/pupdate_arm64
+
+          # Pack files
+          cd $release_name
+          lipo -create -output pupdate pupdate_arm64 pupdate_x64
+          rm pupdate_arm64
+          rm pupdate_x64
+          zip "../dotnet7_pupdate_mac.zip" "pupdate"; cd ..;
+
+          # Delete output directory
+          rm -r "$release_name"
+
+      - name: Publish Legacy
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "pupdate*.zip"
+        env:
+          GITHUB_TOKEN: ${{ secrets.API_TOKEN }}
