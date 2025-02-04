@@ -59,7 +59,15 @@ public partial class CoresService : BaseProcess
 
                         if (parsed.TryGetValue("data", out var coresList))
                         {
-                            cores = coresList;
+                            if (settingsService.Config.no_analogizer_variants)
+                            {
+                                //filter the list if the setting is on
+                                cores = coresList.Where(core => !IsAnalogizerVariant(core.identifier)).ToList();
+                            }
+                            else 
+                            {
+                                cores = coresList;
+                            }
                             cores.AddRange(this.GetLocalCores());
                             cores = cores.OrderBy(c => c.identifier.ToLowerInvariant()).ToList();
                         }
@@ -173,6 +181,11 @@ public partial class CoresService : BaseProcess
     public Core GetInstalledCore(string identifier)
     {
         return this.InstalledCores.Find(i => i.identifier == identifier);
+    }
+
+    public bool IsAnalogizerVariant(string identifier)
+    {
+        return identifier.Contains("Analogizer");
     }
 
     public void RefreshInstalledCores()

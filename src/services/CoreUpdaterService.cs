@@ -85,9 +85,12 @@ public class CoreUpdaterService : BaseProcess
 
             try
             {
-                if (coreSettings.skip)
+                //if its installed, it's an analogizer variant, and the setting is on
+                bool force = this.coresService.IsInstalled(core.identifier) && 
+                    this.settingsService.Config.no_analogizer_variants && this.coresService.IsAnalogizerVariant(core.identifier);
+                if (coreSettings.skip || force)
                 {
-                    DeleteCore(core);
+                    DeleteCore(core, force);
                     continue;
                 }
 

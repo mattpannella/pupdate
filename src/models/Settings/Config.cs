@@ -89,6 +89,9 @@ public class Config
     //[Description("Suppress the 'Already Installed' messages for core files and assets")]
     public bool suppress_already_installed { get; set; }
 
+    [Description("Hide and uninstall Analogizer core variants")]
+    public bool no_analogizer_variants { get; set; } = false;
+
     [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
     public List<Archive> archives { get; set; } = new()
     {
