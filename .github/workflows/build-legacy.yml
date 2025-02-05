@@ -51,6 +51,6 @@ jobs:
       - name: Publish Legacy
         uses: softprops/action-gh-release@v1
         with:
-          files: "pupdate*.zip"
+          files: "dotnet7*.zip"
         env:
           GITHUB_TOKEN: ${{ secrets.API_TOKEN }}
