@@ -34,9 +34,9 @@ jobs:
 
           # Build everything
           dotnet publish pupdate_legacy.csproj -r ${{ matrix.target }}-x64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly -p:PublishTrimmed=$trim -p:TrimMode=partial
-          mv ${release_name}/pupdate ${release_name}/pupdate_x64
+          mv ${release_name}/pupdate_legacy ${release_name}/pupdate_x64
           dotnet publish pupdate_legacy.csproj -r ${{ matrix.target }}-arm64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly -p:PublishTrimmed=$trim -p:TrimMode=partial
-          mv ${release_name}/pupdate ${release_name}/pupdate_arm64
+          mv ${release_name}/pupdate_legacy ${release_name}/pupdate_arm64
 
           # Pack files
           cd $release_name
