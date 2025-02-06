@@ -11,6 +11,7 @@ internal static partial class Program
 {
     private static void Main(string[] args)
     {
+        
         try
         {
             Parser parser = new Parser(config => config.HelpWriter = null);
