@@ -401,7 +401,7 @@ Now that Jotego is releasing his beta cores publicly (and requiring a beta key t
 
 ## Analogizer Setup
 
-Go to `Pocket Setup` > `Analogizer Config` and then select the configuration tool for either the Standard cores (maintained by [RndMnkIII](https://github.com/RndMnkIII)) or Jotego's cores. For any troubleshooting related to your Analogizer settings, contact the core author.
+Go to `Pocket Setup` > `Analogizer Config` and then select the configuration tool for either the Standard cores (maintained by [RndMnkIII](https://github.com/RndMnkIII)) or Jotego's cores. For any troubleshooting related to your Analogizer settings, contact the core author. Check [supported cores](https://github.com/RndMnkIII/Analogizer/wiki/Supported-Cores-and-How-to-Configure-Them).
 
 ## Coin-Op Collection Beta Cores
 
