@@ -105,7 +105,13 @@ internal static partial class Program
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            return "win";
+            Architecture arch = RuntimeInformation.ProcessArchitecture;
+
+            return arch switch
+            {
+                Architecture.Arm64 => "win_arm64",
+                _ => "win"
+            };
         }
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
