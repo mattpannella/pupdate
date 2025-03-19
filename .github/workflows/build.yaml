@@ -48,14 +48,14 @@ jobs:
           if ${{ matrix.arm }}; then
             if [ "${{ matrix.target }}" == "win" ]; then
               mv ${release_name}/pupdate.exe ${release_name}/pupdate_x64.exe
-            elif
+            else
               mv ${release_name}/pupdate ${release_name}/pupdate_x64
             fi
 
             dotnet publish pupdate.csproj -r ${{ matrix.target }}-arm64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly -p:PublishTrimmed=$trim -p:TrimMode=partial
             if [ "${{ matrix.target }}" == "win" ]; then
               mv ${release_name}/pupdate.exe ${release_name}/pupdate_arm64.exe
-            elif
+            else
               mv ${release_name}/pupdate ${release_name}/pupdate_arm64
             fi
 
