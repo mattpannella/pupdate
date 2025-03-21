@@ -33,7 +33,6 @@ class AnalogizerSettingsService
     static readonly int analogizerEnaSelection = 1;
     static int pocketBlankScreenSelection =-1;
     static int analogizerOsdOutSelection = -1;
-    static int analogizerRegionalSettings = -1;
     static string AnalogizerHeader = @"   ###   #     #   ###   #         ####   #######    #### ####### ####### #### 
   #...#  ##    #. #...#  #.       #....#  #.          #..  ....#. #...... #...#
  #.    # #.#   #.#.    # #.      #.     #.#.          #.      #.  #.      #.  #
@@ -42,7 +41,7 @@ class AnalogizerSettingsService
  #.....#.#.   ##.#.....#.#.      #.     #.#.      #.  #.   #.     #.      #. #.
  #.    #.#.    #.#.    #.#.       #.   #. #.      #.  #.  #.      #.      #.  #
  #.    #.#.    #.#.    #.#######   ####.   #######.  #### ####### ####### #.  #
-===================== C O N F I G U R A T O R   V 0.4 =========================";
+===================== C O N F I G U R A T O R   V 0.3 =========================";
 
     static readonly Dictionary<int, string> VideoOutputOptions = new Dictionary<int, string>
     {
@@ -100,16 +99,6 @@ class AnalogizerSettingsService
     {
         {1, "OSD is show on Analogizer video output (when avalaible)"},
         {0, "OSD is show on Pocket screen (when avalaible)"}
-    };
-
-    static readonly Dictionary<int, string> AnalogizerRegionalSettingsOptions = new Dictionary<int, string>
-    {
-        {0, "Auto > NTSC    (auto detect and disambiguates to NTSC)"},
-        {1, "Auto > PAL     (auto detect and disambiguates to PAL)"},
-        {2, "Auto > Another (auto detect and disambiguates to Another,e.g. NES Dendy)"},
-        {3, "Force NTSC     (Force mode to NTSC)"},
-        {4, "Force PAL      (Force mode to PAL)"},
-        {5, "Force Another  (Force mode to Another,e.g. NES Dendy)"}
     };
 
     static void FlushKeyboard()
@@ -251,35 +240,6 @@ class AnalogizerSettingsService
         }
     }
 
-    private static void RegionalSettingsOptions()
-    {
-        while (analogizerRegionalSettings == -1)
-        {
-            ShowHeader();
-            //Opciones de selección regionales
-            // Console.WriteLine($"\n\n{GREY}{REVERSE}=== SNAC Game Controller Selection:==={NOREVERSE}{NORMAL}");
-            Console.WriteLine($"====== REGIONAL SETTINGS OPTIONS ======");
-            foreach (var option in AnalogizerRegionalSettingsOptions)
-            {
-                Console.WriteLine("{0}: {1}", option.Key, option.Value);
-                //Console.WriteLine("{0}{1}: {2}{3}", GREEN, option.Key, NORMAL, option.Value);
-            }
-            //Console.WriteLine("");
-            Console.Write($"Select an option:");
-            if (int.TryParse(Console.ReadLine(), out int input) && AnalogizerRegionalSettingsOptions.ContainsKey(input))
-            {
-                analogizerRegionalSettings = input;
-            }
-            else
-            {
-                FlushKeyboard();
-                Console.WriteLine($"Option not valid.Try again.");
-                Console.ReadLine(); // Espera a que el usuario presione Enter
-                analogizerRegionalSettings = -1; // Reinicia la selección regional para repetir el menú completo
-            }
-        }
-    }
-
     private static void ShowHeader()
     {
         Console.Clear();
@@ -290,7 +250,6 @@ class AnalogizerSettingsService
         Console.WriteLine("Video output:        {0,-40}", videoSelection == -1 ? "-" : VideoOutputOptions[videoSelection]);
         Console.WriteLine("Pocket Blank Screen: {0,-40}", pocketBlankScreenSelection == -1 ? "-" : PocketBlankScreenOptions[pocketBlankScreenSelection]);
         Console.WriteLine("OSD output:          {0,-40}", analogizerOsdOutSelection == -1 ? "-" : AnalogizerOSDOptions[analogizerOsdOutSelection]);
-        Console.WriteLine("Regional Settings:   {0,-40}", analogizerRegionalSettings == -1 ? "-" : AnalogizerRegionalSettingsOptions[analogizerRegionalSettings]);
         Console.WriteLine($"===============================================================================");
         //Console.WriteLine("");
     }
@@ -298,7 +257,7 @@ class AnalogizerSettingsService
     {
         int menuDone = 1;
 
-        while (menuDone != 7)
+        while (menuDone != 6)
         {
             switch (menuDone)
             {
@@ -343,20 +302,13 @@ class AnalogizerSettingsService
                     menuDone++;
                     break;
                 }
-                case 6:
-                {
-                    //Regional Settings options
-                    RegionalSettingsOptions();
-                    menuDone++;
-                    break;
-                }
                 default:
                     break;
             }
         }
 
         // Almacenar la selección en un archivo binario de 32 bits con big-endian
-        uint data = (uint)((analogizerRegionalSettings << 16) | (analogizerOsdOutSelection << 15) | (pocketBlankScreenSelection << 14) | (videoSelection << 10) | (snacAssigmentSelection << 6) | (analogizerEnaSelection << 5) | snacSelection); // Usamos uint para 32 bits
+        uint data = (uint)((analogizerOsdOutSelection << 15) | (pocketBlankScreenSelection << 14) | (videoSelection << 10) | (snacAssigmentSelection << 6) | (analogizerEnaSelection << 5) | snacSelection); // Usamos uint para 32 bits
         byte[] buffer = BitConverter.GetBytes(data);
         //Array.Reverse(buffer); // Invertimos el arreglo para big-endian
         string filename = "analogizer.bin";

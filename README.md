@@ -37,7 +37,7 @@ For a full view of the interactive console menu, see [here](MENU.md).
 [Additional Settings](#additional-settings) |
 [CLI Commands and Parameters](#cli-commands-and-parameters) |
 [Jotego Beta Cores](#jotego-beta-cores) |
-[Jotego Cores Analogizer Setup](#jotego-cores-analogizer-setup) |
+[Analogizer Setup](#analogizer-setup) |
 [Coin-Op Collection Beta Cores](#coin-op-collection-beta-cores) |
 
 ### Update All
@@ -399,9 +399,9 @@ examples:
 
 Now that Jotego is releasing his beta cores publicly (and requiring a beta key to play them), you can just drop the `jtbeta.zip` file from patreon onto the root of your sd card and run Update All, and it will automatically copy the beta key to the correct folders for the cores that need it. It also will let you install the yhe cores directly from the updater, now. Make sure you don't rename the file, it's going to look for exactly `jtbeta.zip`
 
-## Jotego Cores Analogizer Setup
+## Analogizer Setup
 
-To set your global configuration for the Analogizer in Jotego's Cores just go to `Pocket Setup` > `Jotego Analogizer Config` and it will walk you through the available settings. The settings will be saved to the correct location, so you don't need to do anything else. For more help please refer to his github repo.
+Go to `Pocket Setup` > `Analogizer Config` and then select the configuration tool for either the Standard cores (maintained by [RndMnkIII](https://github.com/RndMnkIII)) or Jotego's cores. For any troubleshooting related to your Analogizer settings, contact the core author. Check [supported cores](https://github.com/RndMnkIII/Analogizer/wiki/Supported-Cores-and-How-to-Configure-Them).
 
 ## Coin-Op Collection Beta Cores
 

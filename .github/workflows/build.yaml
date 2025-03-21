@@ -18,7 +18,7 @@ jobs:
           - kind: windows
             os: windows-latest
             target: win
-            arm: false
+            arm: true
           - kind: linux
             os: ubuntu-latest
             target: linux
@@ -46,9 +46,19 @@ jobs:
           # Build everything
           dotnet publish pupdate.csproj -r ${{ matrix.target }}-x64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly -p:PublishTrimmed=$trim -p:TrimMode=partial
           if ${{ matrix.arm }}; then
-            mv ${release_name}/pupdate ${release_name}/pupdate_x64
+            if [ "${{ matrix.target }}" == "win" ]; then
+              mv ${release_name}/pupdate.exe ${release_name}/pupdate_x64.exe
+            else
+              mv ${release_name}/pupdate ${release_name}/pupdate_x64
+            fi
+
             dotnet publish pupdate.csproj -r ${{ matrix.target }}-arm64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly -p:PublishTrimmed=$trim -p:TrimMode=partial
-            mv ${release_name}/pupdate ${release_name}/pupdate_arm64
+            if [ "${{ matrix.target }}" == "win" ]; then
+              mv ${release_name}/pupdate.exe ${release_name}/pupdate_arm64.exe
+            else
+              mv ${release_name}/pupdate ${release_name}/pupdate_arm64
+            fi
+
             if [ "${{ matrix.target }}" == "linux" ]; then
               dotnet publish pupdate.csproj -r ${{ matrix.target }}-arm --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly -p:PublishTrimmed=$trim -p:TrimMode=partial
               mv ${release_name}/pupdate ${release_name}/pupdate_arm32
@@ -58,7 +68,9 @@ jobs:
           # Pack files
           if [ "${{ matrix.target }}" == "win" ]; then
             # Pack to zip for Windows
+            mv "./${release_name}/pupdate_x64.exe" "./${release_name}/pupdate.exe"
             7z a -tzip "pupdate_win.zip" "./${release_name}/pupdate.exe"
+            7z a -tzip "pupdate_win_arm64.zip" "./${release_name}/pupdate_arm64.exe"
           elif [ "${{ matrix.target }}" == "osx" ]; then
             cd $release_name
             lipo -create -output pupdate pupdate_arm64 pupdate_x64
