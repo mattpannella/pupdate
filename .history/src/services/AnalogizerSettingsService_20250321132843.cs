@@ -298,7 +298,7 @@ class AnalogizerSettingsService
     {
         int menuDone = 1;
 
-        while (menuDone != 7)
+        while (menuDone != 6)
         {
             switch (menuDone)
             {
@@ -343,20 +343,13 @@ class AnalogizerSettingsService
                     menuDone++;
                     break;
                 }
-                case 6:
-                {
-                    //Regional Settings options
-                    RegionalSettingsOptions();
-                    menuDone++;
-                    break;
-                }
                 default:
                     break;
             }
         }
 
         // Almacenar la selección en un archivo binario de 32 bits con big-endian
-        uint data = (uint)((analogizerRegionalSettings << 16) | (analogizerOsdOutSelection << 15) | (pocketBlankScreenSelection << 14) | (videoSelection << 10) | (snacAssigmentSelection << 6) | (analogizerEnaSelection << 5) | snacSelection); // Usamos uint para 32 bits
+        uint data = (uint)((analogizerOsdOutSelection << 15) | (pocketBlankScreenSelection << 14) | (videoSelection << 10) | (snacAssigmentSelection << 6) | (analogizerEnaSelection << 5) | snacSelection); // Usamos uint para 32 bits
         byte[] buffer = BitConverter.GetBytes(data);
         //Array.Reverse(buffer); // Invertimos el arreglo para big-endian
         string filename = "analogizer.bin";
