@@ -109,7 +109,7 @@ class AnalogizerSettingsService
         {2, "Auto > Another (auto detect and disambiguates to Another,e.g. NES Dendy)"},
         {3, "Force NTSC     (Force mode to NTSC)"},
         {4, "Force PAL      (Force mode to PAL)"},
-        {5, "Force Another  (Force mode to Another,e.g. NES Dendy)"},
+        {5, "Force Another  (Force mode to Another,e.g. NES Dendy)"}
     };
 
     static void FlushKeyboard()
