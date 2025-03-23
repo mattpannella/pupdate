@@ -2,9 +2,9 @@ namespace Pannella.Models.OpenFPGA_Cores_Inventory.v3;
 
 public class Platform
 {
-    public string Id { get; set; }
-    public string Category { get; set; }
-    public string Name { get; set; }
-    public string Manufacturer { get; set; }
-    public int Year { get; set; }
+    public string id { get; set; }
+    public string category { get; set; }
+    public string name { get; set; }
+    public string manufacturer { get; set; }
+    public int year { get; set; }
 }

@@ -2,8 +2,8 @@ namespace Pannella.Models.OpenFPGA_Cores_Inventory.v3;
 
 public class Repository
 {
-    public string Platform { get; set; }
-    public string Owner { get; set; }
-    public string Name { get; set; }
-    public Funding Funding { get; set; }
+    public string platform { get; set; }
+    public string owner { get; set; }
+    public string name { get; set; }
+    public Funding funding { get; set; }
 }
