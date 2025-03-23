@@ -1,5 +1,5 @@
 using Pannella.Helpers;
-using Pannella.Models.OpenFPGA_Cores_Inventory;
+using Pannella.Models.OpenFPGA_Cores_Inventory.v3;
 using AnalogueCore = Pannella.Models.Analogue.Core.Core;
 
 namespace Pannella.Services;

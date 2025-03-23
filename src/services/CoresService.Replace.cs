@@ -1,5 +1,5 @@
 using Newtonsoft.Json;
-using Pannella.Models.OpenFPGA_Cores_Inventory;
+using Pannella.Models.OpenFPGA_Cores_Inventory.v3;
 using Pannella.Models.Updater;
 
 namespace Pannella.Services;

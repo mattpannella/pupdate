@@ -1,6 +1,6 @@
 using ConsoleTools;
 using Pannella.Helpers;
-using Pannella.Models.OpenFPGA_Cores_Inventory;
+using Pannella.Models.OpenFPGA_Cores_Inventory.v3;
 
 namespace Pannella;
 

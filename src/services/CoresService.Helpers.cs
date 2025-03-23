@@ -2,7 +2,7 @@ using Pannella.Helpers;
 using Pannella.Models.Analogue.Shared;
 using Pannella.Models.DisplayModes;
 using Pannella.Models.Extras;
-using Pannella.Models.OpenFPGA_Cores_Inventory;
+using Pannella.Models.OpenFPGA_Cores_Inventory.v3;
 using ArchiveFile = Pannella.Models.Archive.File;
 using AnalogueDisplayMode = Pannella.Models.Analogue.Video.DisplayMode;
 using File = System.IO.File;
@@ -11,7 +11,7 @@ namespace Pannella.Services;
 
 public partial class CoresService
 {
-    private IEnumerable<Core> GetLocalCores()
+    private IEnumerable<InventoryCore> GetLocalCores()
     {
         string coresDirectory = Path.Combine(this.installPath, "Cores");
 
@@ -20,17 +20,17 @@ public partial class CoresService
         Directory.CreateDirectory(coresDirectory);
 
         string[] directories = Directory.GetDirectories(coresDirectory, "*", SearchOption.TopDirectoryOnly);
-        List<Core> all = new List<Core>();
+        List<InventoryCore> all = new List<InventoryCore>();
 
         foreach (string name in directories)
         {
             string n = Path.GetFileName(name);
-            var matches = Cores.Where(i => i.identifier == n);
+            var matches = Cores.Where(i => i.id == n);
 
             if (!matches.Any())
             {
-                Core c = new Core { identifier = n };
-                c.platform = this.ReadPlatformJson(c.identifier);
+                InventoryCore c = new InventoryCore { id = n };
+                c.platform = this.ReadPlatformJson(c.id);
                 all.Add(c);
             }
         }

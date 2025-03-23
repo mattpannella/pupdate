@@ -1,7 +1,7 @@
 using Newtonsoft.Json;
 using Pannella.Models.Analogue.Data;
 using Pannella.Models.Analogue.Video;
-using Pannella.Models.OpenFPGA_Cores_Inventory;
+using Pannella.Models.OpenFPGA_Cores_Inventory.v3;
 using Pannella.Models.Updater;
 using AnalogueCore = Pannella.Models.Analogue.Core.Core;
 

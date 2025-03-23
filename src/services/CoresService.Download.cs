@@ -7,7 +7,7 @@ using Pannella.Models.Analogue.Instance;
 using Pannella.Models.Analogue.Instance.Simple;
 using Pannella.Models.Events;
 using Pannella.Models.InstancePackager;
-using Pannella.Models.OpenFPGA_Cores_Inventory;
+using Pannella.Models.OpenFPGA_Cores_Inventory.v3;
 using Pannella.Models.Settings;
 using AnalogueCore = Pannella.Models.Analogue.Core.Core;
 using ArchiveFile = Pannella.Models.Archive.File;

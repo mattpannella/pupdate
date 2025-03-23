@@ -3,7 +3,7 @@ using Pannella.Helpers;
 using Pannella.Models;
 using Pannella.Models.Events;
 using Pannella.Models.Extras;
-using Pannella.Models.OpenFPGA_Cores_Inventory;
+using Pannella.Models.OpenFPGA_Cores_Inventory.v3;
 using File = System.IO.File;
 using AnalogueCore = Pannella.Models.Analogue.Core.Core;
 

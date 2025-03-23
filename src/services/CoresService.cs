@@ -1,13 +1,13 @@
 using Newtonsoft.Json;
 using Pannella.Helpers;
 using Pannella.Models;
-using Pannella.Models.OpenFPGA_Cores_Inventory;
+using Pannella.Models.OpenFPGA_Cores_Inventory.v3;
 
 namespace Pannella.Services;
 
 public partial class CoresService : BaseProcess
 {
-    private const string CORES_END_POINT = "https://openfpga-cores-inventory.github.io/analogue-pocket/api/v2/cores.json";
+    private const string CORES_END_POINT = "https://openfpga-cores-inventory.github.io/analogue-pocket/api/v3/cores.json";
     private const string CORES_FILE = "cores.json";
 
     private const string UPDATERS_FILE = "updaters.json";
@@ -17,9 +17,10 @@ public partial class CoresService : BaseProcess
     private readonly SettingsService settingsService;
     private readonly ArchiveService archiveService;
     private readonly AssetsService assetsService;
-    private static List<Core> CORES;
+    private static List<InventoryCore> CORES;
+    private static List<
 
-    public List<Core> Cores
+    public List<InventoryCore> Cores
     {
         get
         {
@@ -55,22 +56,18 @@ public partial class CoresService : BaseProcess
                 {
                     try
                     {
-                        var parsed = JsonConvert.DeserializeObject<Dictionary<string, List<Core>>>(json);
-
-                        if (parsed.TryGetValue("data", out var coresList))
+                        var parsed = JsonConvert.DeserializeObject<CoresResponseWrapper>(json); 
+                        if (settingsService.Config.no_analogizer_variants)
                         {
-                            if (settingsService.Config.no_analogizer_variants)
-                            {
-                                //filter the list if the setting is on
-                                CORES = coresList.Where(core => !IsAnalogizerVariant(core.identifier)).ToList();
-                            }
-                            else 
-                            {
-                                CORES = coresList;
-                            }
-                            CORES.AddRange(this.GetLocalCores());
-                            CORES = CORES.OrderBy(c => c.identifier.ToLowerInvariant()).ToList();
+                            //filter the list if the setting is on
+                            CORES = parsed.data.Where(core => !IsAnalogizerVariant(core.id)).ToList();
                         }
+                        else 
+                        {
+                            CORES = parsed.data;
+                        }
+                        CORES.AddRange(this.GetLocalCores());
+                        CORES = CORES.OrderBy(c => c.identifier.ToLowerInvariant()).ToList();
                     }
                     catch (Exception ex)
                     {
