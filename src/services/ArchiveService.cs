@@ -7,6 +7,7 @@ using SettingsArchive = Pannella.Models.Settings.Archive;
 using ArchiveFile = Pannella.Models.Archive.File;
 using Archive = Pannella.Models.Archive.Archive;
 using UrlCombineLib;
+using System.Linq.Expressions;
 
 namespace Pannella.Services;
 
@@ -84,6 +85,11 @@ public class ArchiveService : Base
             {
                 internetArchive = ArchiveService.GetFiles(archive.archive_name);
             }
+            if (internetArchive == null) {
+                WriteMessage($"Unable to load Assets Index for '{archive.archive_name}'");
+                internetArchive = new Archive();
+                internetArchive.files = new List<ArchiveFile>(); //empty list
+            }
 
             this.archiveFiles.Add(archive.archive_name, internetArchive);
         }
@@ -104,7 +110,7 @@ public class ArchiveService : Base
             return filtered;
         }
 
-        return internetArchive.files;
+        return internetArchive.files ?? [];
     }
 
     private static Archive GetFiles(string archive)
