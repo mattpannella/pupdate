@@ -110,7 +110,7 @@ public class ArchiveService : Base
             return filtered;
         }
 
-        return internetArchive.files ?? [];
+        return internetArchive.files;
     }
 
     private static Archive GetFiles(string archive)
