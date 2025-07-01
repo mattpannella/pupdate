@@ -7,7 +7,7 @@ namespace Pannella.Services;
 
 public partial class CoresService : BaseProcess
 {
-    private const string CORES_END_POINT = "https://openfpga-cores-inventory.github.io/analogue-pocket/api/v2/cores.json";
+    private const string CORES_END_POINT = "https://openfpga-library.github.io/analogue-pocket/api/v2/cores.json";
     private const string CORES_FILE = "cores.json";
 
     private const string UPDATERS_FILE = "updaters.json";
