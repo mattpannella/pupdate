@@ -1,0 +1,178 @@
+[
+    {
+        "name": "agg23.GameAndWatch",
+        "type": "core_specific_archive",
+        "archive_name": "fpga-gnw-opt",
+        "file_extensions": [
+          ".gnw"
+        ],
+        "enabled": false,
+        "one_time": false,
+        "complete": false
+      },
+      {
+        "name": "billytime.Genesis_SCRevival",
+        "type": "core_specific_archive",
+        "archive_name": "sega-channel-revival-complete-collection",
+        "files": [
+          "Sega Channel Revival - Complete Collection.zip"
+        ],
+        "enabled": true,
+        "one_time": true,
+        "complete": false
+      },
+      {
+        "name": "agg23.nes",
+        "type": "core_specific_archive",
+        "archive_name": "htgdb-gamepacks",
+        "files": [
+          "@NES2.0 2023-12-16.zip"
+        ],
+        "enabled": false,
+        "one_time": true,
+        "complete": false
+      },
+      {
+        "name": "Spiritualized.2600",
+        "type": "core_specific_archive",
+        "archive_name": "htgdb-gamepacks",
+        "files": [
+          "@Atari 2600 2021-04-06.zip"
+        ],
+        "enabled": false,
+        "one_time": true,
+        "complete": false
+      },
+      {
+        "name": "Spiritualized.7800",
+        "type": "core_specific_archive",
+        "archive_name": "htgdb-gamepacks",
+        "files": [
+          "@Atari 7800 2021-04-26.zip"
+        ],
+        "enabled": false,
+        "one_time": true,
+        "complete": false
+      },
+      {
+        "name": "budude2.Lynx",
+        "type": "core_specific_archive",
+        "archive_name": "htgdb-gamepacks",
+        "files": [
+          "@Atari Lynx 2021-03-17.7z"
+        ],
+        "enabled": false,
+        "one_time": true,
+        "complete": false
+      },
+      {
+        "name": "Spiritualized.ChannelF",
+        "type": "core_specific_archive",
+        "archive_name": "htgdb-gamepacks",
+        "files": [
+          "@Channel F 2022-09-06.zip "
+        ],
+        "enabled": false,
+        "one_time": true,
+        "complete": false
+      },
+      {
+        "name": "Spiritualized.GBA",
+        "type": "core_specific_archive",
+        "archive_name": "htgdb-gamepacks",
+        "files": [
+          "@GBA - EverDrive GBA 2022-08-08.zip"
+        ],
+        "enabled": false,
+        "one_time": true,
+        "complete": false
+      },
+      {
+        "name": "Spiritualized.GG",
+        "type": "core_specific_archive",
+        "archive_name": "htgdb-gamepacks",
+        "files": [
+          "@Game Gear - EverDrive GG 2020-12-21.zip"
+        ],
+        "enabled": false,
+        "one_time": true,
+        "complete": false
+      },
+      {
+        "name": "Spiritualized.Genesis",
+        "type": "core_specific_archive",
+        "archive_name": "htgdb-gamepacks",
+        "files": [
+          "@Genesis - MegaSD Mega EverDrive 2024-01-03.zip "
+        ],
+        "enabled": false,
+        "one_time": true,
+        "complete": false
+      },
+      {
+        "name": "agg23.SNES",
+        "type": "core_specific_archive",
+        "archive_name": "htgdb-gamepacks",
+        "files": [
+          "@SNES - SD2SNES - Super EverDrive 2023-12-12.zip"
+        ],
+        "enabled": false,
+        "one_time": true,
+        "complete": false
+      },
+      {
+        "name": "agg23.PC Engine",
+        "type": "core_specific_archive",
+        "archive_name": "htgdb-gamepacks",
+        "files": [
+          "@TurboGrafx - PC Engine - Turbo EverDrive 2023-12-13.zip"
+        ],
+        "enabled": false,
+        "one_time": true,
+        "complete": false
+      },
+      {
+        "name": "obsidian.Vectrex",
+        "type": "core_specific_archive",
+        "archive_name": "htgdb-gamepacks",
+        "files": [
+          "@Vectrex - Vextreme 2020-12-28.zip"
+        ],
+        "enabled": false,
+        "one_time": true,
+        "complete": false
+      },
+      {
+        "name": "agg23.WonderSwan",
+        "type": "core_specific_archive",
+        "archive_name": "htgdb-gamepacks",
+        "files": [
+          "@WonderSwan 2023-11-14.zip"
+        ],
+        "enabled": false,
+        "one_time": true,
+        "complete": false
+      },
+      {
+        "name": "budude2.gb",
+        "type": "core_specific_archive",
+        "archive_name": "htgdb-gamepacks",
+        "files": [
+          "@Game Boy - EverDrive GB 2020-12-22.zip"
+        ],
+        "enabled": false,
+        "one_time": true,
+        "complete": false
+      },
+      {
+        "name": "budude2.gbc",
+        "type": "core_specific_archive",
+        "archive_name": "htgdb-gamepacks",
+        "files": [
+          "@Game Boy Color SMDB 2022-05-12.zip"
+        ],
+        "enabled": false,
+        "one_time": true,
+        "complete": false
+    }
+]

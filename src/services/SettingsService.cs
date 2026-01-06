@@ -9,6 +9,7 @@ public class SettingsService
 {
     private const string OLD_SETTINGS_FILENAME = "pocket_updater_settings.json";
     private const string SETTINGS_FILENAME = "pupdate_settings.json";
+    private const string ROMSETS_ENDPOINT = "https://raw.githubusercontent.com/mattpannella/pupdate/refs/heads/main/romsets.json";
 
     private readonly Settings settings;
     private readonly string settingsFile;
@@ -169,5 +170,66 @@ public class SettingsService
         return settings.core_settings.TryGetValue(name, out CoreSettings value)
             ? value
             : new CoreSettings();
+    }
+
+    public void SyncRomsets()
+    {
+        string json;
+        string filename = "romsets.json";
+        try
+        {
+            if (File.Exists(filename))
+            {
+                json = File.ReadAllText(filename);
+            }
+            else
+            {
+                json = HttpHelper.Instance.GetHTML(ROMSETS_ENDPOINT);
+            }
+
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Failed to fetch romsets from {ROMSETS_ENDPOINT}", ex);
+        }
+
+        List<Archive> remoteRomsets;
+        try
+        {
+            remoteRomsets = JsonConvert.DeserializeObject<List<Archive>>(json);
+            if (remoteRomsets == null)
+            {
+                throw new Exception("Deserialized romsets list is null");
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Failed to deserialize romsets JSON", ex);
+        }
+
+        // Filter to only core_specific_archive types
+        remoteRomsets = remoteRomsets
+            .Where(r => r.type == ArchiveType.core_specific_archive)
+            .ToList();
+
+        foreach (var remoteRomset in remoteRomsets)
+        {
+            var existingArchive = settings.config.archives
+                .FirstOrDefault(a => a.name.Equals(remoteRomset.name, StringComparison.InvariantCultureIgnoreCase));
+
+            if (existingArchive != null)
+            {
+                // Update files and file_extensions for existing entry
+                existingArchive.files = remoteRomset.files;
+                existingArchive.file_extensions = remoteRomset.file_extensions;
+            }
+            else
+            {
+                // Add new entry
+                settings.config.archives.Add(remoteRomset);
+            }
+        }
+
+        this.Save();
     }
 }
