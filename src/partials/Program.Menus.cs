@@ -457,6 +457,25 @@ internal static partial class Program
 
     private static void ShowArchiveManagementMenu()
     {
+        bool syncFirst = AskYesNoQuestion("Would you like to sync your archives with the latest definitions?");
+        
+        if (syncFirst)
+        {
+            try
+            {
+                Console.WriteLine("Syncing archives...");
+                ServiceHelper.SettingsService.SyncRomsets();
+                Console.WriteLine("Archives synced successfully.");
+                Console.WriteLine();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error syncing archives: {ex.Message}");
+                Pause();
+                return;
+            }
+        }
+
         var archives = ServiceHelper.SettingsService.Config.archives
             .Where(a => a.type == Models.Settings.ArchiveType.core_specific_archive)
             .ToList();
@@ -507,7 +526,7 @@ internal static partial class Program
         {
             Selector = "=>",
             EnableWriteTitle = false,
-            WriteHeaderAction = () => Console.WriteLine($"Managing: {archive.name}"),
+            WriteHeaderAction = () => Console.WriteLine($"Managing: {archive.name}\nEnabled: {archive.enabled} | Complete: {archive.complete}"),
             SelectedItemBackgroundColor = Console.ForegroundColor,
             SelectedItemForegroundColor = Console.BackgroundColor
         };

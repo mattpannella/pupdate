@@ -176,21 +176,28 @@ public class SettingsService
     {
         string json;
         string filename = "romsets.json";
-        try
+        
+        if (File.Exists(filename))
         {
-            if (File.Exists(filename))
+            try
             {
                 json = File.ReadAllText(filename);
             }
-            else
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to read local romsets file: {filename}", ex);
+            }
+        }
+        else
+        {
+            try
             {
                 json = HttpHelper.Instance.GetHTML(ROMSETS_ENDPOINT);
             }
-
-        }
-        catch (Exception ex)
-        {
-            throw new Exception($"Failed to fetch romsets from {ROMSETS_ENDPOINT}", ex);
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to fetch romsets from {ROMSETS_ENDPOINT}", ex);
+            }
         }
 
         List<Archive> remoteRomsets;
