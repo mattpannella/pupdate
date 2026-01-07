@@ -107,6 +107,7 @@ public class HttpHelper
 
     public void GetAuthCookie(string username, string password, string loginUrl, Dictionary<string, string> additional)
     {
+        //this code is all internet archive specific now, but whatever
         if (this.loggedIn)
             return;
 
