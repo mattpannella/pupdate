@@ -22,7 +22,7 @@
         "complete": false
       },
       {
-        "name": "agg23.nes",
+        "name": "agg23.NES",
         "type": "core_specific_archive",
         "archive_name": "htgdb-gamepacks",
         "files": [
