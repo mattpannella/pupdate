@@ -302,7 +302,7 @@ internal static partial class Program
                     Pause();
                 }
             })
-            .Add("Manage Archives", () =>
+            .Add("Manage ROM Set Archives", () =>
             {
                 ShowArchiveManagementMenu();
             })
