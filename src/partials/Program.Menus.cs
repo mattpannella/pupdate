@@ -302,6 +302,10 @@ internal static partial class Program
                     Pause();
                 }
             })
+            .Add("Manage ROM Set Archives", () =>
+            {
+                ShowArchiveManagementMenu();
+            })
             .Add("Prune Save States", _ =>
             {
                 AssetsService.PruneSaveStates(ServiceHelper.UpdateDirectory);
@@ -449,5 +453,102 @@ internal static partial class Program
         }
 
         return name;
+    }
+
+    private static void ShowArchiveManagementMenu()
+    {
+        bool syncFirst = AskYesNoQuestion("Would you like to sync your archives with the latest definitions?");
+        
+        if (syncFirst)
+        {
+            try
+            {
+                Console.WriteLine("Syncing archives...");
+                ServiceHelper.SettingsService.SyncRomsets();
+                Console.WriteLine("Archives synced successfully.");
+                Console.WriteLine();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error syncing archives: {ex.Message}");
+                Pause();
+                return;
+            }
+        }
+
+        var archives = ServiceHelper.SettingsService.Config.archives
+            .Where(a => a.type == Models.Settings.ArchiveType.core_specific_archive)
+            .ToList();
+
+        if (archives.Count == 0)
+        {
+            Console.WriteLine("No archives found.");
+            Pause();
+            return;
+        }
+
+        bool keepOpen = true;
+
+        while (keepOpen)
+        {
+            var menuConfig = new MenuConfig
+            {
+                Selector = "=>",
+                EnableWriteTitle = false,
+                WriteHeaderAction = () => Console.WriteLine("Select an archive to manage:"),
+                SelectedItemBackgroundColor = Console.ForegroundColor,
+                SelectedItemForegroundColor = Console.BackgroundColor
+            };
+
+            var archiveMenu = new ConsoleMenu().Configure(menuConfig);
+
+            foreach (var archive in archives)
+            {
+                archiveMenu.Add(archive.name, () =>
+                {
+                    ShowArchiveOptionsMenu(archive);
+                });
+            }
+
+            archiveMenu.Add("Go Back", thisMenu =>
+            {
+                keepOpen = false;
+                thisMenu.CloseMenu();
+            });
+
+            archiveMenu.Show();
+        }
+    }
+
+    private static void ShowArchiveOptionsMenu(Models.Settings.Archive archive)
+    {
+        var menuConfig = new MenuConfig
+        {
+            Selector = "=>",
+            EnableWriteTitle = false,
+            WriteHeaderAction = () => Console.WriteLine($"Managing: {archive.name}\nEnabled: {archive.enabled} | Complete: {archive.complete}"),
+            SelectedItemBackgroundColor = Console.ForegroundColor,
+            SelectedItemForegroundColor = Console.BackgroundColor
+        };
+
+        var optionsMenu = new ConsoleMenu()
+            .Configure(menuConfig)
+            .Add($"Toggle Enable/Disable (Currently: {(archive.enabled ? "Enabled" : "Disabled")})", () =>
+            {
+                archive.enabled = !archive.enabled;
+                ServiceHelper.SettingsService.Save();
+                Console.WriteLine($"Archive is now {(archive.enabled ? "enabled" : "disabled")}.");
+                Pause();
+            })
+            .Add("Mark as Incomplete", () =>
+            {
+                archive.complete = false;
+                ServiceHelper.SettingsService.Save();
+                Console.WriteLine("Archive marked as incomplete.");
+                Pause();
+            })
+            .Add("Go Back", thisMenu => thisMenu.CloseMenu());
+
+        optionsMenu.Show();
     }
 }

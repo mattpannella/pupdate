@@ -12,6 +12,8 @@ public class HttpHelper
 
     public event EventHandler<DownloadProgressEventArgs> DownloadProgressUpdate;
 
+    private bool loggedIn = false;
+
     private HttpHelper()
     {
         this.CreateClient();
@@ -105,38 +107,68 @@ public class HttpHelper
 
     public void GetAuthCookie(string username, string password, string loginUrl, Dictionary<string, string> additional)
     {
-        var loginUri = new Uri(loginUrl);
-        var host = loginUri.GetLeftPart(UriPartial.Authority);
-        var cookies = this.handler.CookieContainer.GetCookies(new Uri(host));
-        
-        if(cookies.Any())
-        {
+        //this code is all internet archive specific now, but whatever
+        if (this.loggedIn)
             return;
+
+        var archiveUri = new Uri("https://archive.org");
+        
+        // First, GET the login page to establish session
+        var loginPageUrl = "https://archive.org/account/login";
+        this.client.GetAsync(loginPageUrl).Wait();
+        
+        // Second, GET the token from the AJAX endpoint
+        var tokenResponse = this.client.GetAsync(loginUrl).Result;
+        var tokenJson = tokenResponse.Content.ReadAsStringAsync().Result;
+        
+        // Parse the JSON to extract the token
+        var tokenMatch = System.Text.RegularExpressions.Regex.Match(tokenJson, @"""token""\s*:\s*""([^""]+)""");
+        if (!tokenMatch.Success)
+        {
+            throw new Exception("Failed to extract authentication token from Archive.org");
         }
         
-        var data = new List<KeyValuePair<string, string>>
+        var token = tokenMatch.Groups[1].Value;
+
+        var jsonData = new
         {
-            new("username", username),
-            new("password", password)
+            username = username,
+            password = password,
+            remember = true,
+            t = token
         };
 
-        foreach (var item in additional)
+        var jsonString = System.Text.Json.JsonSerializer.Serialize(jsonData);
+        var jsonContent = new StringContent(jsonString, System.Text.Encoding.UTF8, "application/json");
+
+        this.client.DefaultRequestHeaders.Clear();
+        this.client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+        this.client.DefaultRequestHeaders.Add("Accept", "*/*");
+        this.client.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.9");
+        this.client.DefaultRequestHeaders.Add("Referer", loginPageUrl);
+        this.client.DefaultRequestHeaders.Add("Origin", "https://archive.org");
+        this.client.DefaultRequestHeaders.Add("Cache-Control", "no-cache");
+        this.client.DefaultRequestHeaders.Add("Pragma", "no-cache");
+
+        HttpResponseMessage loginResponse = this.client.PostAsync(loginUrl, jsonContent).Result;
+        
+        if (!loginResponse.IsSuccessStatusCode)
         {
-            data.Add(new KeyValuePair<string, string>(item.Key, item.Value));
+            var errorBody = loginResponse.Content.ReadAsStringAsync().Result;
+            throw new Exception($"Archive.org login failed: {errorBody}");
         }
         
-        var formData = new FormUrlEncodedContent(data);
-
-        this.client.DefaultRequestHeaders.Add("User-Agent", "Pupdate");
-
-        HttpResponseMessage loginResponse = this.client.PostAsync(loginUrl, formData).Result;
+        // Verify we got the auth cookies
+        var cookies = this.handler.CookieContainer.GetCookies(archiveUri);
+        bool hasAuthCookie = cookies.Cast<Cookie>().Any(c => 
+            c.Name == "logged-in-user" || c.Name == "logged-in-sig");
         
-        if (loginResponse.IsSuccessStatusCode)
+        if (!hasAuthCookie)
         {
-            // if the login form requires some csrf type headers to be sent up, send the request a second time so they are included 
-            // ReSharper disable once RedundantAssignment
-            loginResponse = this.client.PostAsync(loginUrl, formData).Result;
+            throw new Exception("Archive.org login succeeded but authentication cookies were not set");
         }
+        
+        this.loggedIn = true;
     }
 
     // ReSharper disable once InconsistentNaming
@@ -171,8 +203,15 @@ public class HttpHelper
 
     private void CreateClient(bool allowRedirect = true)
     {
-        // Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
-        this.handler = new HttpClientHandler { AllowAutoRedirect = allowRedirect, CookieContainer = new CookieContainer() };
+        // Preserve existing cookies when recreating client
+        var existingCookies = this.handler?.CookieContainer;
+        
+        this.handler = new HttpClientHandler 
+        { 
+            AllowAutoRedirect = allowRedirect,
+            UseCookies = true,
+            CookieContainer = existingCookies ?? new CookieContainer()
+        };
         this.client = new HttpClient(this.handler);
         this.client.Timeout = TimeSpan.FromMinutes(10); // 10min
     }
