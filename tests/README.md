@@ -26,8 +26,20 @@ dotnet test tests/pupdate.Tests/pupdate.Tests.csproj
 ### ReverseComparer Tests (ReverseComparerTests.cs)
 - `IComparer.Compare()` - Reverse comparison logic for sorting
 
+### Sponsor Tests (SponsorTests.cs) ✨ NEW
+- `ToString()` - Property iteration and formatting logic
+- `ToString(string padding)` - Formatted output with padding
+- Tests cover empty sponsors, string properties, list properties, mixed properties, and null handling
+
+### Model ToString Tests (ModelToStringTests.cs) ✨ NEW
+- `Platform.ToString()` - Returns platform name
+- `Core.ToString()` - Formats platform name with identifier
+- `PocketExtra.ToString()` - Returns extra ID
+- `DisplayMode.ToString()` - Formats value, order, and description
+- `AnalogueDisplayMode.ToString()` - Formats ID and description
+
 ## Test Statistics
-- **Total Tests**: 39
-- **Passing**: 39
+- **Total Tests**: 55
+- **Passing**: 55
 - **Test Framework**: xUnit 2.9.2
 - **Assertion Library**: FluentAssertions 8.8.0
