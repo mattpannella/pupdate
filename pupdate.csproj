@@ -48,6 +48,9 @@
     <RuntimeHostConfigurationOption Include="System.Globalization.Invariant" Value="true" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="tests/**" />
+  </ItemGroup>
+  <ItemGroup>
     <Folder Include="pocket\Assets\" />
     <Folder Include="pocket\Cores\" />
     <Folder Include="pocket\Platforms\" />
