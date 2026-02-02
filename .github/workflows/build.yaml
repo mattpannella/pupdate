@@ -38,10 +38,10 @@ jobs:
         run: |
           tag=$(git describe --tags --abbrev=0)
           release_name="App-$tag-${{ matrix.target }}"
-          trim="True"
-          if [ "${{ matrix.target }}" == "linux" ]; then
-            trim="False"
-          fi
+          trim="False"
+          #if [ "${{ matrix.target }}" == "linux" ]; then
+          #  trim="False"
+          #fi
 
           # Build everything
           dotnet publish pupdate.csproj -r ${{ matrix.target }}-x64 --self-contained true -c Release -o "$release_name" --consoleloggerparameters:ErrorsOnly -p:PublishTrimmed=$trim -p:TrimMode=partial
