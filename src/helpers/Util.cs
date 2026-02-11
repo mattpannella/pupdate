@@ -156,12 +156,19 @@ public static class Util
         {
             case HashTypes.MD5:
             {
-                var fileBytes = File.ReadAllBytes(filepath);
-                var newChecksum = MD5.HashData(fileBytes);
+                using var md5 = MD5.Create();
+                var buffer = new byte[64 * 1024];
 
-                hash = Convert.ToHexString(newChecksum);
-                // ReSharper disable once RedundantAssignment
-                fileBytes = null;
+                using var fs = File.OpenRead(filepath);
+                int read;
+
+                while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    md5.TransformBlock(buffer, 0, read, null, 0);
+                }
+
+                md5.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+                hash = Convert.ToHexString(md5.Hash);
                 break;
             }
 
