@@ -168,12 +168,21 @@ public static class Util
             case HashTypes.CRC32:
             default:
             {
-                var fileBytes = File.ReadAllBytes(filepath);
-                var newChecksum = Crc32Algorithm.Compute(fileBytes);
+                var crc = new Crc32Algorithm();
+                var buffer = new byte[64 * 1024];
 
-                hash = newChecksum.ToString("x8");
-                // ReSharper disable once RedundantAssignment
-                fileBytes = null;
+                using var fs = File.OpenRead(filepath);
+                int read;
+
+                while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    crc.TransformBlock(buffer, 0, read, null, 0);
+                }
+
+                crc.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+
+                // Force.Crc32 already returns big-endian CRC32
+                hash = Convert.ToHexString(crc.Hash);
                 break;
             }
         }
