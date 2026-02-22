@@ -9,6 +9,7 @@ public static class ServiceHelper
     public static string UpdateDirectory { get; private set; } // move off this
     public static string SettingsDirectory { get; private set; } // for retrodriven's app
     public static string TempDirectory { get; private set; }
+    public static string CacheDirectory { get; private set; }
     public static CoresService CoresService { get; private set; }
     public static SettingsService SettingsService { get; private set ;}
     public static PlatformImagePacksService PlatformImagePacksService { get; private set; }
@@ -29,13 +30,18 @@ public static class ServiceHelper
             UpdateDirectory = path;
             SettingsDirectory = settingsPath;
             SettingsService = new SettingsService(settingsPath);
+            TempDirectory = SettingsService.Config.temp_directory ?? Path.GetTempPath();
+            CacheDirectory = string.IsNullOrEmpty(SettingsService.Config.archive_cache_location)
+                ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "pupdate", "cache")
+                : SettingsService.Config.archive_cache_location;
             ArchiveService = new ArchiveService(
                 SettingsService.Config.archives,
                 SettingsService.Credentials?.internet_archive,
                 SettingsService.Config.crc_check,
                 SettingsService.Config.use_custom_archive,
-                SettingsService.Debug.show_stack_traces);
-            TempDirectory = SettingsService.Config.temp_directory ?? Path.GetTempPath();
+                SettingsService.Debug.show_stack_traces,
+                SettingsService.Config.cache_archive_files,
+                CacheDirectory);
             AssetsService = new AssetsService(
                 SettingsService.Config.use_local_blacklist,
                 SettingsService.Debug.show_stack_traces);
@@ -67,12 +73,17 @@ public static class ServiceHelper
     {
         SettingsService = new SettingsService(SettingsDirectory, CoresService.Cores);
         // reload the archive service, in case that setting has changed
+        CacheDirectory = string.IsNullOrEmpty(SettingsService.Config.archive_cache_location)
+            ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "pupdate", "cache")
+            : SettingsService.Config.archive_cache_location;
         ArchiveService = new ArchiveService(
             SettingsService.Config.archives,
             SettingsService.Credentials?.internet_archive,
             SettingsService.Config.crc_check,
             SettingsService.Config.use_custom_archive,
-            SettingsService.Debug.show_stack_traces);
+            SettingsService.Debug.show_stack_traces,
+            SettingsService.Config.cache_archive_files,
+            CacheDirectory);
         CoresService = new CoresService(UpdateDirectory, SettingsService, ArchiveService, AssetsService);
         CoresService.StatusUpdated += StatusUpdated;
     }

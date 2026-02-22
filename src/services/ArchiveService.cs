@@ -23,8 +23,10 @@ public class ArchiveService : Base
     private readonly bool useCustomArchive;
     private readonly InternetArchive credentials;
     private readonly bool showStackTraces;
+    private readonly bool cacheArchiveFiles;
+    private readonly string cacheDirectory;
 
-    public ArchiveService(List<SettingsArchive> archives, InternetArchive credentials, bool crcCheck, bool useCustomArchive, bool showStackTraces)
+    public ArchiveService(List<SettingsArchive> archives, InternetArchive credentials, bool crcCheck, bool useCustomArchive, bool showStackTraces, bool cacheArchiveFiles, string cacheDirectory)
     {
         this.crcCheck = crcCheck;
         this.useCustomArchive = useCustomArchive;
@@ -32,6 +34,8 @@ public class ArchiveService : Base
         this.archiveFiles = new Dictionary<string, Archive>();
         this.credentials = credentials;
         this.showStackTraces = showStackTraces;
+        this.cacheArchiveFiles = cacheArchiveFiles;
+        this.cacheDirectory = cacheDirectory;
     }
 
     public SettingsArchive GetArchive(string coreIdentifier = null)
@@ -167,11 +171,55 @@ public class ArchiveService : Base
                 Directory.CreateDirectory(Path.Combine(destinationDirectory));
             }
 
+            // Cache hit check
+            if (this.cacheArchiveFiles && !string.IsNullOrEmpty(archiveFile.md5))
+            {
+                string cacheFilePath = GetCacheFilePath(archive, archiveFile);
+
+                if (File.Exists(cacheFilePath) &&
+                    Util.CompareChecksum(cacheFilePath, archiveFile.md5, Util.HashTypes.MD5))
+                {
+                    WriteMessage($"Cache hit for '{archiveFile.name}', copying from cache...");
+                    try
+                    {
+                        File.Copy(cacheFilePath, destinationFileName, overwrite: true);
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        WriteMessage($"Cache copy failed for '{archiveFile.name}', falling through to download.");
+                        WriteMessage(this.showStackTraces ? ex.ToString() : Util.GetExceptionMessage(ex));
+                    }
+                }
+            }
+
             do
             {
                 HttpHelper.Instance.DownloadFile(url, destinationFileName, 600);
                 count++;
             } while (count < 3 && !ValidateChecksum(destinationFileName, archiveFile));
+
+            // Populate cache after successful download
+            if (this.cacheArchiveFiles && !string.IsNullOrEmpty(archiveFile.md5))
+            {
+                try
+                {
+                    string cacheFilePath = GetCacheFilePath(archive, archiveFile);
+                    string cacheSubDir = Path.GetDirectoryName(cacheFilePath);
+
+                    if (!string.IsNullOrEmpty(cacheSubDir))
+                    {
+                        Directory.CreateDirectory(cacheSubDir);
+                    }
+
+                    File.Copy(destinationFileName, cacheFilePath, overwrite: true);
+                }
+                catch (Exception ex)
+                {
+                    WriteMessage($"Failed to cache '{archiveFile.name}', continuing.");
+                    WriteMessage(this.showStackTraces ? ex.ToString() : Util.GetExceptionMessage(ex));
+                }
+            }
 
             // if (File.Exists(destinationFileName) && Path.GetExtension(destinationFileName) == ".zip")
             // {
@@ -179,7 +227,7 @@ public class ArchiveService : Base
             //     ZipHelper.ExtractToDirectory(destinationFileName, Path.GetDirectoryName(destinationFileName), true);
             //     //delete
             //     File.Delete(destinationFileName);
-            // } 
+            // }
             // else if (File.Exists(destinationFileName) && Path.GetExtension(destinationFileName) == ".7z")
             // {
             //     //extract
@@ -239,8 +287,13 @@ public class ArchiveService : Base
                 { "submit_by_js", "true" },
                 { "referrer", "https://archive.org/CREATE/" }
             };
-            
+
             HttpHelper.Instance.GetAuthCookie(this.credentials.username, this.credentials.password, LOGIN, fields);
         }
+    }
+
+    private string GetCacheFilePath(SettingsArchive archive, ArchiveFile archiveFile)
+    {
+        return Path.Combine(this.cacheDirectory, archive.archive_name, archiveFile.name);
     }
 }
