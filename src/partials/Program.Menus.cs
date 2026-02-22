@@ -477,14 +477,14 @@ internal static partial class Program
     private static void WriteRainbow(string text)
     {
         ConsoleColor[] colors =
-        [
+        {
             ConsoleColor.Red,
             ConsoleColor.Yellow,
             ConsoleColor.Green,
             ConsoleColor.Cyan,
             ConsoleColor.Blue,
             ConsoleColor.Magenta,
-        ];
+        };
         int colorIndex = 0;
 
         foreach (char c in text)
