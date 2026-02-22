@@ -26,15 +26,16 @@ internal static partial class Program
         var menuConfig = new MenuConfig
         {
             Selector = "=>",
-            Title = string.Concat(
-                        welcome,
-                        Environment.NewLine,
-                        GetRandomSponsorLinks(),
-                        Environment.NewLine,
-                        rateLimitMessage,
-                        Environment.NewLine),
-            EnableWriteTitle = true,
-            WriteHeaderAction = () => Console.WriteLine("Choose your destiny:"),
+            EnableWriteTitle = false,
+            WriteHeaderAction = () =>
+            {
+                WriteRainbow(welcome);
+                Console.ResetColor();
+                Console.WriteLine(GetRandomSponsorLinks());
+                Console.WriteLine(rateLimitMessage);
+                Console.WriteLine();
+                Console.WriteLine("Choose your destiny:");
+            },
             SelectedItemBackgroundColor = Console.ForegroundColor,
             SelectedItemForegroundColor = Console.BackgroundColor
         };
@@ -471,6 +472,33 @@ internal static partial class Program
         string value = Console.ReadLine();
 
         return value;
+    }
+
+    private static void WriteRainbow(string text)
+    {
+        ConsoleColor[] colors =
+        [
+            ConsoleColor.Red,
+            ConsoleColor.Yellow,
+            ConsoleColor.Green,
+            ConsoleColor.Cyan,
+            ConsoleColor.Blue,
+            ConsoleColor.Magenta,
+        ];
+        int colorIndex = 0;
+
+        foreach (char c in text)
+        {
+            if (!char.IsWhiteSpace(c))
+            {
+                Console.ForegroundColor = colors[colorIndex % colors.Length];
+                colorIndex++;
+            }
+
+            Console.Write(c);
+        }
+
+        Console.WriteLine();
     }
 
     private static string MenuItemName(string title, bool value, bool requiresLicense = false)
