@@ -156,24 +156,40 @@ public static class Util
         {
             case HashTypes.MD5:
             {
-                var fileBytes = File.ReadAllBytes(filepath);
-                var newChecksum = MD5.HashData(fileBytes);
+                using var md5 = MD5.Create();
+                var buffer = new byte[64 * 1024];
 
-                hash = Convert.ToHexString(newChecksum);
-                // ReSharper disable once RedundantAssignment
-                fileBytes = null;
+                using var fs = File.OpenRead(filepath);
+                int read;
+
+                while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    md5.TransformBlock(buffer, 0, read, null, 0);
+                }
+
+                md5.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+                hash = Convert.ToHexString(md5.Hash);
                 break;
             }
 
             case HashTypes.CRC32:
             default:
             {
-                var fileBytes = File.ReadAllBytes(filepath);
-                var newChecksum = Crc32Algorithm.Compute(fileBytes);
+                var crc = new Crc32Algorithm();
+                var buffer = new byte[64 * 1024];
 
-                hash = newChecksum.ToString("x8");
-                // ReSharper disable once RedundantAssignment
-                fileBytes = null;
+                using var fs = File.OpenRead(filepath);
+                int read;
+
+                while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    crc.TransformBlock(buffer, 0, read, null, 0);
+                }
+
+                crc.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+
+                // Force.Crc32 already returns big-endian CRC32
+                hash = Convert.ToHexString(crc.Hash);
                 break;
             }
         }
