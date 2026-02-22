@@ -43,6 +43,11 @@ public class Config
 
     public string backup_saves_location { get; set; } = "Backups";
 
+    [Description("Cache downloaded archive files locally to avoid re-downloading")]
+    public bool cache_archive_files { get; set; } = false;
+
+    public string archive_cache_location { get; set; } = null;
+
     [Description("Show descriptions for advanced menu items")]
     public bool show_menu_descriptions { get; set; } = true;
 

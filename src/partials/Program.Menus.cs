@@ -311,6 +311,32 @@ internal static partial class Program
                 AssetsService.PruneSaveStates(ServiceHelper.UpdateDirectory);
                 Pause();
             })
+            .Add("Clear Archive Cache", () =>
+            {
+                if (!ServiceHelper.SettingsService.Config.cache_archive_files)
+                {
+                    Console.WriteLine("Archive caching is not enabled.");
+                    Pause();
+                    return;
+                }
+
+                string cacheDir = ServiceHelper.CacheDirectory;
+
+                if (!Directory.Exists(cacheDir))
+                {
+                    Console.WriteLine("Cache directory is already empty.");
+                    Pause();
+                    return;
+                }
+
+                if (AskYesNoQuestion("Are you sure you want to clear the archive cache?"))
+                {
+                    Directory.Delete(cacheDir, recursive: true);
+                    Console.WriteLine("Archive cache cleared.");
+                }
+
+                Pause();
+            })
             .Add("Go Back", ConsoleMenu.Close);
 
         #endregion
