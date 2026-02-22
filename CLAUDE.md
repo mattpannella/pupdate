@@ -72,7 +72,7 @@ There is also `pupdate_legacy.csproj` targeting .NET Framework — keep changes 
   ```
 - **Archive types:** `internet_archive`, `custom`, `core_specific` — configured in settings; `AssetsService` dispatches to the right handler
 - **Jotego cores** have special rename handling in `CoresService.Jotego.cs`
-- The `tests/pupdate.Tests/` project exists but currently has no test source files
+- The `tests/pupdate.Tests/` directory has stale `obj/`/`bin/` artifacts but no `.csproj` or source files. `pupdate.csproj` has `<Compile Remove="tests/**" />` to prevent those generated `.cs` files from being picked up by the main project's `**/*.cs` glob (which would cause duplicate assembly attribute errors and a missing Xunit reference). Do not remove that exclusion.
 
 ## Settings Pattern (Critical)
 
@@ -86,6 +86,8 @@ Use `[JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]` to hide
 ## Adding Constructor Parameters to Services
 
 When adding params to a service constructor (e.g., `ArchiveService`), you must update **both** `Initialize()` and `ReloadSettings()` in `src/helpers/ServiceHelper.cs` — both methods independently construct `ArchiveService`. `ReloadSettings()` is called after the user changes settings in the interactive menu.
+
+`ServiceHelper` exposes computed directory paths as public static properties (`TempDirectory`, `CacheDirectory`) derived from settings with OS-appropriate defaults. Add new ones here rather than recomputing them in callers.
 
 ## Checksum Utilities
 
