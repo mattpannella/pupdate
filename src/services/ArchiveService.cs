@@ -6,7 +6,6 @@ using Pannella.Models.Settings;
 using SettingsArchive = Pannella.Models.Settings.Archive;
 using ArchiveFile = Pannella.Models.Archive.File;
 using Archive = Pannella.Models.Archive.Archive;
-using UrlCombineLib;
 using System.Linq.Expressions;
 
 namespace Pannella.Services;
@@ -81,7 +80,7 @@ public class ArchiveService : Base
 
             if ((useCustomArchive && archive.type != ArchiveType.core_specific_archive) || archive.type == ArchiveType.core_specific_custom_archive)
             {
-                string url = UrlCombine.Combine(archive.url, archive.index);
+                string url = $"{archive.url.TrimEnd('/')}/{archive.index.TrimStart('/')}";
 
                 internetArchive = ArchiveService.GetFilesCustom(url);
             }
@@ -152,7 +151,7 @@ public class ArchiveService : Base
 
             if (archive.type is ArchiveType.custom_archive or ArchiveType.core_specific_custom_archive)
             {
-                url = UrlCombine.Combine(archive.url, archiveFile.name);
+                url = $"{archive.url.TrimEnd('/')}/{archiveFile.name.TrimStart('/')}";
             }
             else
             {

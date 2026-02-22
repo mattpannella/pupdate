@@ -121,6 +121,20 @@ public class SettingsService
         }
     }
 
+    public void PinCoreVersion(string name, string version)
+    {
+        var coreSettings = GetCoreSettings(name);
+        coreSettings.pinned_version = version;
+        settings.core_settings[name] = coreSettings;
+    }
+
+    public void UnpinCoreVersion(string name)
+    {
+        var coreSettings = GetCoreSettings(name);
+        coreSettings.pinned_version = null;
+        settings.core_settings[name] = coreSettings;
+    }
+
     public void DisablePocketExtras(string name)
     {
         if (settings.core_settings.TryGetValue(name, out CoreSettings value))

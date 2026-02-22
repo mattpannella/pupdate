@@ -128,6 +128,14 @@ public class CoreUpdaterService : BaseProcess
                     pocketExtra = null;
                 }
 
+                bool isVersionPinned = !string.IsNullOrEmpty(coreSettings.pinned_version);
+
+                if (isVersionPinned)
+                {
+                    WriteMessage($"Core is pinned to version {coreSettings.pinned_version}.");
+                    mostRecentRelease = coreSettings.pinned_version;
+                }
+
                 Dictionary<string, object> results;
 
                 if (mostRecentRelease == null && pocketExtra == null && !coreSettings.pocket_extras)
@@ -220,6 +228,20 @@ public class CoreUpdaterService : BaseProcess
                 else
                 {
                     WriteMessage("Downloading core...");
+                }
+
+                if (isVersionPinned && core.repository != null)
+                {
+                    string pinnedUrl = this.coresService.GetDownloadUrlForVersion(core, coreSettings.pinned_version);
+
+                    if (pinnedUrl == null)
+                    {
+                        WriteMessage($"Could not find release for pinned version '{coreSettings.pinned_version}'. Skipping.");
+                        Divide();
+                        continue;
+                    }
+
+                    core.download_url = pinnedUrl;
                 }
 
                 if (isPocketExtraCombinationPlatform)

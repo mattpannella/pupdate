@@ -28,4 +28,7 @@ public class CoreSettings
 
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
     public bool requires_license { get; set; } = false;
+
+    [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public string pinned_version { get; set; } = null;
 }

@@ -93,6 +93,14 @@ When adding params to a service constructor (e.g., `ArchiveService`), you must u
 
 `Util.CompareChecksum(filepath, hash, Util.HashTypes.MD5)` in `src/helpers/Util.cs` — supports `HashTypes.CRC32` (default) and `HashTypes.MD5`. The `ArchiveFile` model (`src/models/Archive/File.cs`) has both `crc32` and `md5` fields from the archive index; `md5` may be null for some archive types.
 
+## Core Version Pinning
+
+`CoreSettings` has a `pinned_version` (nullable string, hidden from JSON when null) that locks a core to a specific release tag. During `RunUpdates`, if set, `mostRecentRelease` is overridden with the pinned version and `CoresService.GetDownloadUrlForVersion` resolves the download URL for that tag (trying the tag as-is, then with a "v" prefix). This enables both skipping (already at pinned version) and downgrading (local version differs from pinned).
+
+- Managed via interactive menu: Pocket Maintenance → Pin/Unpin Core Version
+- Cores without a `repository` (local/manual) are excluded from the pin menu and silently bypass pinning
+- `pinned_version` is a string field on `CoreSettings` and must NOT have `[Description]` (same rule as all non-bool `CoreSettings` fields)
+
 ## Bundled JSON Data Files
 
 These are embedded in the build output and consumed at runtime:
