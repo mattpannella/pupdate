@@ -337,6 +337,10 @@ internal static partial class Program
 
                 Pause();
             })
+            .Add("Pin/Unpin Core Version", () =>
+            {
+                PinCoreVersionMenu();
+            })
             .Add("Go Back", ConsoleMenu.Close);
 
         #endregion
@@ -479,6 +483,116 @@ internal static partial class Program
         }
 
         return name;
+    }
+
+    private static void PinCoreVersionMenu()
+    {
+        const int pageSize = 12;
+        var offset = 0;
+        bool more = true;
+        var cores = ServiceHelper.CoresService.InstalledCores
+            .Where(c => c.repository != null)
+            .ToList();
+
+        if (!cores.Any())
+        {
+            Console.WriteLine("No pinnable cores installed.");
+            return;
+        }
+
+        while (more)
+        {
+            var menu = new ConsoleMenu()
+                .Configure(config =>
+                {
+                    config.Selector = "=>";
+                    config.EnableWriteTitle = false;
+                    config.WriteHeaderAction = () => Console.WriteLine("Select a core to pin/unpin:");
+                    config.SelectedItemBackgroundColor = Console.ForegroundColor;
+                    config.SelectedItemForegroundColor = Console.BackgroundColor;
+                    config.WriteItemAction = item => Console.Write("{0}", item.Name);
+                });
+
+            if (offset + pageSize <= cores.Count)
+            {
+                menu.Add("Next Page", thisMenu =>
+                {
+                    offset += pageSize;
+                    thisMenu.CloseMenu();
+                });
+            }
+
+            var current = -1;
+
+            foreach (var core in cores)
+            {
+                current++;
+
+                if (current < offset || current > offset + pageSize)
+                    continue;
+
+                var captured = core;
+                var pinned = ServiceHelper.SettingsService.GetCoreSettings(captured.identifier).pinned_version;
+                string label = pinned != null
+                    ? $"{captured.identifier} [pinned: {pinned}]"
+                    : captured.identifier;
+
+                menu.Add(label, thisMenu =>
+                {
+                    thisMenu.CloseMenu();
+
+                    var currentPin = ServiceHelper.SettingsService.GetCoreSettings(captured.identifier).pinned_version;
+
+                    if (currentPin != null)
+                        Console.WriteLine($"Currently pinned to: {currentPin}");
+                    else
+                        Console.WriteLine("Not currently pinned.");
+
+                    Console.WriteLine("Enter version to pin to, or leave blank to remove pin:");
+                    string input = Console.ReadLine()?.Trim();
+
+                    if (string.IsNullOrEmpty(input))
+                    {
+                        ServiceHelper.SettingsService.UnpinCoreVersion(captured.identifier);
+                        Console.WriteLine("Version pin removed.");
+                    }
+                    else
+                    {
+                        ServiceHelper.SettingsService.PinCoreVersion(captured.identifier, input);
+                        Console.WriteLine($"Pinned to version: {input}");
+                    }
+
+                    ServiceHelper.SettingsService.Save();
+                    Pause();
+                });
+            }
+
+            if (offset + pageSize <= cores.Count)
+            {
+                menu.Add("Next Page", thisMenu =>
+                {
+                    offset += pageSize;
+                    thisMenu.CloseMenu();
+                });
+            }
+
+            if (offset != 0)
+            {
+                menu.Add("Prev Page", thisMenu =>
+                {
+                    offset -= pageSize;
+                    thisMenu.CloseMenu();
+                });
+            }
+
+            menu.Add("Go Back", thisMenu =>
+            {
+                more = false;
+                thisMenu.CloseMenu();
+            });
+
+            menu.Show();
+        }
     }
 
     private static void ShowArchiveManagementMenu()

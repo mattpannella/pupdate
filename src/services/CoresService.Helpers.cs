@@ -2,6 +2,7 @@ using Pannella.Helpers;
 using Pannella.Models.Analogue.Shared;
 using Pannella.Models.DisplayModes;
 using Pannella.Models.Extras;
+using Pannella.Models.Github;
 using Pannella.Models.OpenFPGA_Cores_Inventory;
 using ArchiveFile = Pannella.Models.Archive.File;
 using AnalogueDisplayMode = Pannella.Models.Analogue.Video.DisplayMode;
@@ -180,6 +181,30 @@ public partial class CoresService
         }
 
         return true;
+    }
+
+    public string GetDownloadUrlForVersion(Core core, string version)
+    {
+        if (core.repository == null) return null;
+
+        string owner = core.repository.owner;
+        string repo = core.repository.name;
+
+        Release release = null;
+
+        try { release = GithubApiService.GetRelease(owner, repo, version); }
+        catch { /* tag not found, try with "v" prefix */ }
+
+        if (release == null)
+        {
+            try { release = GithubApiService.GetRelease(owner, repo, "v" + version); }
+            catch { /* tag not found */ }
+        }
+
+        if (release == null) return null;
+
+        var zipAsset = release.assets?.FirstOrDefault(a => a.name.EndsWith(".zip"));
+        return zipAsset?.browser_download_url;
     }
 
     public bool CheckLicenseFile(Core core)
