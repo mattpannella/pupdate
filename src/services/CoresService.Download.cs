@@ -300,6 +300,14 @@ public partial class CoresService
                         continue;
                     }
 
+                    string gameName = Path.GetFileNameWithoutExtension(file);
+
+                    if (this.settingsService.Config.asset_blocklist?.Contains(gameName) == true)
+                    {
+                        WriteMessage($"Skipping blocked game: {gameName}");
+                        continue;
+                    }
+
                     InstanceJSON instanceJson = JsonConvert.DeserializeObject<InstanceJSON>(File.ReadAllText(file));
 
                     if (instanceJson.instance.data_slots is { Length: > 0 })
