@@ -174,5 +174,16 @@
         "enabled": false,
         "one_time": true,
         "complete": false
+    },
+    {
+        "name": "ThinkElastic.PocketQuake",
+        "type": "core_specific_archive",
+        "archive_name": "openFPGA-Files",
+        "files": [
+          "PocketQuake-cd-audio.zip"
+        ],
+        "enabled": false,
+        "one_time": true,
+        "complete": false
     }
 ]
