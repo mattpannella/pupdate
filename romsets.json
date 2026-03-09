@@ -185,5 +185,16 @@
         "enabled": false,
         "one_time": true,
         "complete": false
+    },
+    {
+        "name": "ThinkElastic.PocketDoom",
+        "type": "core_specific_archive",
+        "archive_name": "openFPGA-Files",
+        "files": [
+          "pocketdoom-wads.zip"
+        ],
+        "enabled": false,
+        "one_time": true,
+        "complete": false
     }
 ]
