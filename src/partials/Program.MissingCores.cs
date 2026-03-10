@@ -1,5 +1,5 @@
 using Pannella.Helpers;
-using Pannella.Models.OpenFPGA_Cores_Inventory;
+using Pannella.Models.OpenFPGA_Cores_Inventory.V2;
 
 namespace Pannella;
 

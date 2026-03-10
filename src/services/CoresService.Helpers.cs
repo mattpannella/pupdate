@@ -3,7 +3,7 @@ using Pannella.Models.Analogue.Shared;
 using Pannella.Models.DisplayModes;
 using Pannella.Models.Extras;
 using Pannella.Models.Github;
-using Pannella.Models.OpenFPGA_Cores_Inventory;
+using Pannella.Models.OpenFPGA_Cores_Inventory.V2;
 using ArchiveFile = Pannella.Models.Archive.File;
 using AnalogueDisplayMode = Pannella.Models.Analogue.Video.DisplayMode;
 using File = System.IO.File;
@@ -185,7 +185,8 @@ public partial class CoresService
 
     public string GetDownloadUrlForVersion(Core core, string version)
     {
-        if (core.repository == null) return null;
+        if (core.repository == null)
+            return null;
 
         string owner = core.repository.owner;
         string repo = core.repository.name;
@@ -201,7 +202,8 @@ public partial class CoresService
             catch { /* tag not found */ }
         }
 
-        if (release == null) return null;
+        if (release == null)
+            return null;
 
         var zipAsset = release.assets?.FirstOrDefault(a => a.name.EndsWith(".zip"));
         return zipAsset?.browser_download_url;

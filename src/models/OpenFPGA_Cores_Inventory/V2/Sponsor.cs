@@ -2,7 +2,7 @@
 
 using System.Text;
 
-namespace Pannella.Models.OpenFPGA_Cores_Inventory;
+namespace Pannella.Models.OpenFPGA_Cores_Inventory.V2;
 
 public class Sponsor
 {

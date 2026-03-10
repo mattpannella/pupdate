@@ -1,14 +1,20 @@
 using Newtonsoft.Json;
 using Pannella.Helpers;
 using Pannella.Models;
-using Pannella.Models.OpenFPGA_Cores_Inventory;
+using Pannella.Models.OpenFPGA_Cores_Inventory.V2;
+using CoreV3 = Pannella.Models.OpenFPGA_Cores_Inventory.V3.Core;
+using CoresResponseWrapperV3 = Pannella.Models.OpenFPGA_Cores_Inventory.V3.CoresResponseWrapper;
+using PlatformV3 = Pannella.Models.OpenFPGA_Cores_Inventory.V3.Platform;
+using PlatformsResponseWrapperV3 = Pannella.Models.OpenFPGA_Cores_Inventory.V3.PlatformsResponseWrapper;
 
 namespace Pannella.Services;
 
 public partial class CoresService : BaseProcess
 {
-    private const string CORES_END_POINT = "https://openfpga-library.github.io/analogue-pocket/api/v2/cores.json";
+    private const string CORES_END_POINT = "https://openfpga-library.github.io/analogue-pocket/api/v3/cores.json";
+    private const string PLATFORMS_END_POINT = "https://openfpga-library.github.io/analogue-pocket/api/v3/platforms.json";
     private const string CORES_FILE = "cores.json";
+    private const string PLATFORMS_FILE = "platforms.json";
 
     private const string UPDATERS_FILE = "updaters.json";
     private const string ZIP_FILE_NAME = "core.zip";
@@ -26,22 +32,54 @@ public partial class CoresService : BaseProcess
             if (CORES == null)
             {
                 string json = null;
+                Dictionary<string, PlatformV3> platformsById = null;
 
                 if (this.settingsService.Config.use_local_cores_inventory)
                 {
-                    if (File.Exists(CORES_FILE))
+                    if (File.Exists(CORES_FILE) && File.Exists(PLATFORMS_FILE))
                     {
                         json = File.ReadAllText(CORES_FILE);
+                        string platformsJson = File.ReadAllText(PLATFORMS_FILE);
+
+                        if (string.IsNullOrEmpty(platformsJson))
+                            throw new InvalidOperationException($"Local {PLATFORMS_FILE} is empty. Both {CORES_FILE} and {PLATFORMS_FILE} (v3 format) are required when using local cores inventory.");
+
+                        var platformsWrapper = JsonConvert.DeserializeObject<PlatformsResponseWrapperV3>(platformsJson);
+
+                        if (platformsWrapper?.data == null)
+                            throw new InvalidOperationException($"Local {PLATFORMS_FILE} could not be parsed or has no data. Both files must be v3 format from the openFPGA Library API.");
+
+                        platformsById = platformsWrapper.data
+                            .Where(p => !string.IsNullOrEmpty(p?.id))
+                            .ToDictionary(p => p.id, p => p);
                     }
                     else
                     {
-                        WriteMessage($"Local file not found: {CORES_FILE}");
+                        if (!File.Exists(CORES_FILE))
+                            WriteMessage($"Local file not found: {CORES_FILE}");
+
+                        if (!File.Exists(PLATFORMS_FILE))
+                            WriteMessage($"Local file not found: {PLATFORMS_FILE}. When using local cores inventory, both {CORES_FILE} and {PLATFORMS_FILE} (v3 format) are required.");
                     }
                 }
                 else
                 {
                     try
                     {
+                        string platformsJson = HttpHelper.Instance.GetHTML(PLATFORMS_END_POINT);
+
+                        if (string.IsNullOrEmpty(platformsJson))
+                            throw new InvalidOperationException("Failed to download platforms catalog from the openFPGA Library API (platforms.json).");
+
+                        var platformsWrapper = JsonConvert.DeserializeObject<PlatformsResponseWrapperV3>(platformsJson);
+
+                        if (platformsWrapper?.data == null)
+                            throw new InvalidOperationException("Platforms catalog (platforms.json) could not be parsed or has no data.");
+
+                        platformsById = platformsWrapper.data
+                            .Where(p => !string.IsNullOrEmpty(p?.id))
+                            .ToDictionary(p => p.id, p => p);
+
                         json = HttpHelper.Instance.GetHTML(CORES_END_POINT);
                     }
                     catch (HttpRequestException ex)
@@ -55,22 +93,28 @@ public partial class CoresService : BaseProcess
                 {
                     try
                     {
-                        var parsed = JsonConvert.DeserializeObject<Dictionary<string, List<Core>>>(json);
+                        var coresWrapper = JsonConvert.DeserializeObject<CoresResponseWrapperV3>(json);
 
-                        if (parsed.TryGetValue("data", out var coresList))
+                        if (coresWrapper?.data == null)
+                            throw new InvalidOperationException($"The {CORES_FILE} file from the openFPGA cores inventory could not be parsed or has no data.");
+
+                        List<Core> coresList = new List<Core>();
+
+                        foreach (CoreV3 v3Core in coresWrapper.data)
                         {
-                            if (settingsService.Config.no_analogizer_variants)
-                            {
-                                //filter the list if the setting is on
-                                CORES = coresList.Where(core => !IsAnalogizerVariant(core.identifier)).ToList();
-                            }
-                            else 
-                            {
-                                CORES = coresList;
-                            }
-                            CORES.AddRange(this.GetLocalCores());
-                            CORES = CORES.OrderBy(c => c.identifier.ToLowerInvariant()).ToList();
+                            Core mapped = Pannella.Models.OpenFPGA_Cores_Inventory.V3.CoreMapper.MapToCore(v3Core, platformsById);
+
+                            if (mapped != null)
+                                coresList.Add(mapped);
                         }
+
+                        if (settingsService.Config.no_analogizer_variants)
+                            CORES = coresList.Where(core => !IsAnalogizerVariant(core.identifier)).ToList();
+                        else
+                            CORES = coresList;
+
+                        CORES.AddRange(this.GetLocalCores());
+                        CORES = CORES.OrderBy(c => c.identifier.ToLowerInvariant()).ToList();
                     }
                     catch (Exception ex)
                     {
@@ -84,7 +128,9 @@ public partial class CoresService : BaseProcess
                 }
                 else
                 {
-                    throw new NullReferenceException("There was an error parsing the openFPGA cores inventory.");
+                    throw new NullReferenceException(this.settingsService.Config.use_local_cores_inventory
+                        ? $"Local cores inventory requires both {CORES_FILE} and {PLATFORMS_FILE} (v3 format) in the current directory."
+                        : "There was an error parsing the openFPGA cores inventory.");
                 }
             }
 
