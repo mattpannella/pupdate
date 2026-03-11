@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using System.IO.Enumeration;
 using System.Security.Cryptography;
 using System.Text;
 using Newtonsoft.Json;
@@ -84,6 +85,16 @@ public class AssetsService
     {
         this.useLocalBlacklist = useLocalBlacklist;
         this.showStackTraces = showStackTraces;
+    }
+
+    public bool IsBlacklisted(string filename)
+    {
+        if (string.IsNullOrEmpty(filename)) return false;
+
+        return Blacklist.Any(entry =>
+            entry.Contains('*') || entry.Contains('?')
+                ? FileSystemName.MatchesSimpleExpression(entry, filename, ignoreCase: true)
+                : string.Equals(entry, filename, StringComparison.Ordinal));
     }
 
     public static void BackupSaves(string directory, string backupLocation)
