@@ -91,10 +91,20 @@ public class AssetsService
     {
         if (string.IsNullOrEmpty(filename)) return false;
 
+        // Also check the bare filename in case the slot includes a subdirectory (e.g. "cd/file.bin")
+        string baseName = Path.GetFileName(filename);
+
         return Blacklist.Any(entry =>
-            entry.Contains('*') || entry.Contains('?')
-                ? FileSystemName.MatchesSimpleExpression(entry, filename, ignoreCase: true)
-                : string.Equals(entry, filename, StringComparison.Ordinal));
+        {
+            if (entry.Contains('*') || entry.Contains('?'))
+            {
+                return FileSystemName.MatchesSimpleExpression(entry, filename, ignoreCase: true)
+                    || FileSystemName.MatchesSimpleExpression(entry, baseName, ignoreCase: true);
+            }
+
+            return string.Equals(entry, filename, StringComparison.Ordinal)
+                || string.Equals(entry, baseName, StringComparison.Ordinal);
+        });
     }
 
     public static void BackupSaves(string directory, string backupLocation)
