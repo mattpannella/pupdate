@@ -309,15 +309,16 @@ public partial class CoresService
                         foreach (DataSlot slot in instanceJson.instance.data_slots)
                         {
                             var platformId = info.metadata.platform_ids[core.license_slot_platform_id_index];
-
+                            var fileName = Path.GetFileName(slot.filename);
+                            var filePath = Path.GetDirectoryName(slot.filename) ?? string.Empty;
                             if (!CheckLicenseMd5(slot, core.license_slot_id, platformId))
                             {
                                 // Moved message to the CheckBetaMd5 method
                                 missingLicense = true;
                             }
 
-                            if (!this.assetsService.IsBlacklisted(slot.filename) &&
-                                !slot.filename.EndsWith(".sav"))
+                            if (!this.assetsService.IsBlacklisted(fileName) &&
+                                !fileName.EndsWith(".sav"))
                             {
                                 string commonPath = Path.Combine(platformPath, "common");
 
@@ -325,8 +326,11 @@ public partial class CoresService
                                     Directory.CreateDirectory(commonPath);
 
                                 string slotDirectory = Path.Combine(commonPath, dataPath);
-                                string slotPath = Path.Combine(slotDirectory, slot.filename);
-                                ArchiveFile archiveFile = this.archiveService.GetArchiveFile(slot.filename);
+                                slotDirectory = Path.Combine(commonPath, filePath);
+                                string slotPath = Path.Combine(slotDirectory, fileName);
+                                if (!Directory.Exists(slotDirectory))
+                                    Directory.CreateDirectory(slotDirectory);
+                                ArchiveFile archiveFile = this.archiveService.GetArchiveFile(fileName);
 
                                 if (File.Exists(slotPath) && CheckCrc(slotPath, archiveFile))
                                 {
