@@ -23,5 +23,6 @@
     "palram.bin",
     "savestate.ss",
     "slowhd1.img",
-    "slowhd2.img"
+    "slowhd2.img",
+    "doom_sav*.dsg"
 ]
