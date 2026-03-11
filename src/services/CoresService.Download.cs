@@ -136,7 +136,7 @@ public partial class CoresService
             {
                 if (!string.IsNullOrEmpty(slot.filename) &&
                     !slot.filename.EndsWith(".sav") &&
-                    !this.assetsService.Blacklist.Contains(slot.filename))
+                    !this.assetsService.IsBlacklisted(slot.filename))
                 {
                     string path;
 
@@ -156,7 +156,7 @@ public partial class CoresService
 
                     if (slot.alternate_filenames != null)
                     {
-                        files.AddRange(slot.alternate_filenames.Where(f => !this.assetsService.Blacklist.Contains(f)));
+                        files.AddRange(slot.alternate_filenames.Where(f => !this.assetsService.IsBlacklisted(f)));
                     }
 
                     foreach (string file in files)
@@ -316,7 +316,7 @@ public partial class CoresService
                                 missingLicense = true;
                             }
 
-                            if (!this.assetsService.Blacklist.Contains(slot.filename) &&
+                            if (!this.assetsService.IsBlacklisted(slot.filename) &&
                                 !slot.filename.EndsWith(".sav"))
                             {
                                 string commonPath = Path.Combine(platformPath, "common");

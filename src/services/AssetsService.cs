@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using System.IO.Enumeration;
 using System.Security.Cryptography;
 using System.Text;
 using Newtonsoft.Json;
@@ -84,6 +85,26 @@ public class AssetsService
     {
         this.useLocalBlacklist = useLocalBlacklist;
         this.showStackTraces = showStackTraces;
+    }
+
+    public bool IsBlacklisted(string filename)
+    {
+        if (string.IsNullOrEmpty(filename)) return false;
+
+        // Also check the bare filename in case the slot includes a subdirectory (e.g. "cd/file.bin")
+        string baseName = Path.GetFileName(filename);
+
+        return Blacklist.Any(entry =>
+        {
+            if (entry.Contains('*') || entry.Contains('?'))
+            {
+                return FileSystemName.MatchesSimpleExpression(entry, filename, ignoreCase: true)
+                    || FileSystemName.MatchesSimpleExpression(entry, baseName, ignoreCase: true);
+            }
+
+            return string.Equals(entry, filename, StringComparison.Ordinal)
+                || string.Equals(entry, baseName, StringComparison.Ordinal);
+        });
     }
 
     public static void BackupSaves(string directory, string backupLocation)
