@@ -3,7 +3,9 @@ using Pannella.Models.Analogue.Shared;
 using Pannella.Models.DisplayModes;
 using Pannella.Models.Extras;
 using Pannella.Models.Github;
-using Pannella.Models.OpenFPGA_Cores_Inventory.V2;
+using Pannella.Models.OpenFPGA_Cores_Inventory.V3;
+using DataSlot = Pannella.Models.Analogue.Shared.DataSlot;
+using GithubRelease = Pannella.Models.Github.Release;
 using ArchiveFile = Pannella.Models.Archive.File;
 using AnalogueDisplayMode = Pannella.Models.Analogue.Video.DisplayMode;
 using File = System.IO.File;
@@ -26,12 +28,12 @@ public partial class CoresService
         foreach (string name in directories)
         {
             string n = Path.GetFileName(name);
-            var matches = Cores.Where(i => i.identifier == n);
+            var matches = Cores.Where(i => i.id == n);
 
             if (!matches.Any())
             {
-                Core c = new Core { identifier = n };
-                c.platform = this.ReadPlatformJson(c.identifier);
+                Core c = new Core { id = n };
+                c.platform = this.ReadPlatformJson(c.id);
                 all.Add(c);
             }
         }
@@ -191,7 +193,7 @@ public partial class CoresService
         string owner = core.repository.owner;
         string repo = core.repository.name;
 
-        Release release = null;
+        GithubRelease release = null;
 
         try { release = GithubApiService.GetRelease(owner, repo, version); }
         catch { /* tag not found, try with "v" prefix */ }

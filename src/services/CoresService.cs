@@ -1,11 +1,7 @@
 using Newtonsoft.Json;
 using Pannella.Helpers;
 using Pannella.Models;
-using Pannella.Models.OpenFPGA_Cores_Inventory.V2;
-using CoreV3 = Pannella.Models.OpenFPGA_Cores_Inventory.V3.Core;
-using CoresResponseWrapperV3 = Pannella.Models.OpenFPGA_Cores_Inventory.V3.CoresResponseWrapper;
-using PlatformV3 = Pannella.Models.OpenFPGA_Cores_Inventory.V3.Platform;
-using PlatformsResponseWrapperV3 = Pannella.Models.OpenFPGA_Cores_Inventory.V3.PlatformsResponseWrapper;
+using Pannella.Models.OpenFPGA_Cores_Inventory.V3;
 
 namespace Pannella.Services;
 
@@ -32,7 +28,7 @@ public partial class CoresService : BaseProcess
             if (CORES == null)
             {
                 string json = null;
-                Dictionary<string, PlatformV3> platformsById = null;
+                Dictionary<string, Platform> platformsById = null;
 
                 if (this.settingsService.Config.use_local_cores_inventory)
                 {
@@ -44,7 +40,7 @@ public partial class CoresService : BaseProcess
                         if (string.IsNullOrEmpty(platformsJson))
                             throw new InvalidOperationException($"Local {PLATFORMS_FILE} is empty. Both {CORES_FILE} and {PLATFORMS_FILE} (v3 format) are required when using local cores inventory.");
 
-                        var platformsWrapper = JsonConvert.DeserializeObject<PlatformsResponseWrapperV3>(platformsJson);
+                        var platformsWrapper = JsonConvert.DeserializeObject<PlatformsResponseWrapper>(platformsJson);
 
                         if (platformsWrapper?.data == null)
                             throw new InvalidOperationException($"Local {PLATFORMS_FILE} could not be parsed or has no data. Both files must be v3 format from the openFPGA Library API.");
@@ -71,7 +67,7 @@ public partial class CoresService : BaseProcess
                         if (string.IsNullOrEmpty(platformsJson))
                             throw new InvalidOperationException("Failed to download platforms catalog from the openFPGA Library API (platforms.json).");
 
-                        var platformsWrapper = JsonConvert.DeserializeObject<PlatformsResponseWrapperV3>(platformsJson);
+                        var platformsWrapper = JsonConvert.DeserializeObject<PlatformsResponseWrapper>(platformsJson);
 
                         if (platformsWrapper?.data == null)
                             throw new InvalidOperationException("Platforms catalog (platforms.json) could not be parsed or has no data.");
@@ -93,28 +89,26 @@ public partial class CoresService : BaseProcess
                 {
                     try
                     {
-                        var coresWrapper = JsonConvert.DeserializeObject<CoresResponseWrapperV3>(json);
+                        var coresWrapper = JsonConvert.DeserializeObject<CoresResponseWrapper>(json);
 
                         if (coresWrapper?.data == null)
                             throw new InvalidOperationException($"The {CORES_FILE} file from the openFPGA cores inventory could not be parsed or has no data.");
 
                         List<Core> coresList = new List<Core>();
 
-                        foreach (CoreV3 v3Core in coresWrapper.data)
+                        foreach (Core inventoryCore in coresWrapper.data)
                         {
-                            Core mapped = Pannella.Models.OpenFPGA_Cores_Inventory.V3.CoreMapper.MapToCore(v3Core, platformsById);
-
-                            if (mapped != null)
-                                coresList.Add(mapped);
+                            if (TrySetReleaseAndPlatform(inventoryCore, platformsById))
+                                coresList.Add(inventoryCore);
                         }
 
                         if (settingsService.Config.no_analogizer_variants)
-                            CORES = coresList.Where(core => !IsAnalogizerVariant(core.identifier)).ToList();
+                            CORES = coresList.Where(core => !IsAnalogizerVariant(core.id)).ToList();
                         else
                             CORES = coresList;
 
                         CORES.AddRange(this.GetLocalCores());
-                        CORES = CORES.OrderBy(c => c.identifier.ToLowerInvariant()).ToList();
+                        CORES = CORES.OrderBy(c => c.id.ToLowerInvariant()).ToList();
                     }
                     catch (Exception ex)
                     {
@@ -209,7 +203,7 @@ public partial class CoresService : BaseProcess
 
     public Core GetCore(string identifier)
     {
-        return this.Cores.Find(i => i.identifier == identifier);
+        return this.Cores.Find(i => i.id == identifier);
     }
 
     public bool IsInstalled(string identifier)
@@ -222,7 +216,7 @@ public partial class CoresService : BaseProcess
 
     public Core GetInstalledCore(string identifier)
     {
-        return this.InstalledCores.Find(i => i.identifier == identifier);
+        return this.InstalledCores.Find(i => i.id == identifier);
     }
 
     public bool IsAnalogizerVariant(string identifier)
@@ -241,13 +235,13 @@ public partial class CoresService : BaseProcess
 
         foreach (var core in CORES)
         {
-            if (this.IsInstalled(core.identifier))
+            if (this.IsInstalled(core.id))
             {
                 INSTALLED_CORES.Add(core);
 
-                if (core.sponsor != null)
+                if (core.repository?.funding != null)
                 {
-                    var info = ServiceHelper.CoresService.ReadCoreJson(core.identifier);
+                    var info = ServiceHelper.CoresService.ReadCoreJson(core.id);
                     var author = info.metadata.author;
 
                     if (INSTALLED_CORES_WITH_SPONSORS.TryGetValue(author, out List<Core> authorCores))
@@ -260,7 +254,7 @@ public partial class CoresService : BaseProcess
                     }
                 }
 
-                if (this.settingsService.GetCoreSettings(core.identifier).display_modes)
+                if (this.settingsService.GetCoreSettings(core.id).display_modes)
                 {
                     INSTALLED_CORES_WITH_CUSTOM_DISPLAY_MODES.Add(core);
                 }
@@ -271,8 +265,8 @@ public partial class CoresService : BaseProcess
             }
         }
 
-        INSTALLED_CORES = INSTALLED_CORES.OrderBy(c => c.identifier.ToLowerInvariant()).ToList();
-        CORES_NOT_INSTALLED = CORES_NOT_INSTALLED.OrderBy(c => c.identifier.ToLowerInvariant()).ToList();
+        INSTALLED_CORES = INSTALLED_CORES.OrderBy(c => c.id.ToLowerInvariant()).ToList();
+        CORES_NOT_INSTALLED = CORES_NOT_INSTALLED.OrderBy(c => c.id.ToLowerInvariant()).ToList();
     }
 
     public bool Install(Core core, bool clean = false)
@@ -284,32 +278,32 @@ public partial class CoresService : BaseProcess
             return false;
         }
 
-        this.ClearUpdatersFile(core.identifier);
+        this.ClearUpdatersFile(core.id);
 
-        if (clean && this.IsInstalled(core.identifier))
+        if (clean && this.IsInstalled(core.id))
         {
-            this.Delete(core.identifier, core.platform_id);
+            this.Delete(core.id, core.platform_id);
         }
 
         // iterate through assets to find the zip release
-        if (this.InstallGithubAsset(core.identifier, core.platform_id, core.download_url))
+        if (this.InstallGithubAsset(core.id, core.platform_id, core.download_url))
         {
-            this.ReplaceCheck(core.identifier);
+            this.ReplaceCheck(core.id);
 
             // not resetting the pocket extras on a clean install (a.k.a reinstall)
             // the combination cores and variant cores aren't affected
             // the additional assets extras just add roms so they're not affected either
-            this.CheckForPocketExtras(core.identifier);
+            this.CheckForPocketExtras(core.id);
 
             // reset the display modes customizations on a clean install (a.k.a reinstall)
             if (clean)
             {
-                this.settingsService.DisableDisplayModes(core.identifier);
+                this.settingsService.DisableDisplayModes(core.id);
                 this.settingsService.Save();
             }
             else
             {
-                this.CheckForDisplayModes(core.identifier);
+                this.CheckForDisplayModes(core.id);
             }
 
             return true;
@@ -402,5 +396,72 @@ public partial class CoresService : BaseProcess
         }
 #endif
         return json;
+    }
+
+    private static Release GetLatestRelease(List<Release> releases)
+    {
+        if (releases == null || releases.Count == 0)
+            return null;
+
+        if (releases.Count == 1)
+            return releases[0];
+
+        Release latest = releases[0];
+        string latestDate = latest.core?.metadata?.date_release;
+
+        for (int i = 1; i < releases.Count; i++)
+        {
+            string d = releases[i].core?.metadata?.date_release;
+            if (string.IsNullOrEmpty(d))
+                continue;
+
+            if (string.IsNullOrEmpty(latestDate) || string.CompareOrdinal(d, latestDate) > 0)
+            {
+                latest = releases[i];
+                latestDate = d;
+            }
+        }
+
+        return latest;
+    }
+
+    private static bool TrySetReleaseAndPlatform(
+        Core core,
+        Dictionary<string, Platform> platformsById)
+    {
+        if (core?.releases == null || core.releases.Count == 0)
+            return false;
+
+        Release release = GetLatestRelease(core.releases);
+        if (release?.core?.metadata == null)
+            return false;
+
+        var meta = release.core.metadata;
+        string platformId = meta.platform_ids is { Count: > 0 }
+            ? meta.platform_ids[0]
+            : null;
+
+        if (string.IsNullOrEmpty(platformId))
+            return false;
+
+        if (platformsById == null)
+            throw new InvalidOperationException(
+                "Platforms catalog was not loaded. Cannot set platform without platforms.json.");
+
+        if (!platformsById.TryGetValue(platformId, out Platform platform))
+            throw new InvalidOperationException(
+                $"Core '{core.id}' references platform_id '{platformId}' which is not in the platforms catalog. " +
+                "Ensure platforms.json is loaded and contains this platform.");
+
+        core.release = release;
+        core.platform_id = platformId;
+        core.platform = platform;
+        core.download_url = release.download_url;
+        core.version = meta.version;
+        core.release_date = meta.date_release;
+        core.requires_license = release.requires_license;
+        core.updaters = release.updaters;
+
+        return true;
     }
 }

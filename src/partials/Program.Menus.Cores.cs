@@ -1,6 +1,6 @@
 using ConsoleTools;
 using Pannella.Helpers;
-using Pannella.Models.OpenFPGA_Cores_Inventory.V2;
+using Pannella.Models.OpenFPGA_Cores_Inventory.V3;
 
 namespace Pannella;
 
@@ -56,11 +56,11 @@ internal static partial class Program
 
                 if (current <= offset + pageSize && current >= offset)
                 {
-                    var coreSettings = ServiceHelper.SettingsService.GetCoreSettings(core.identifier);
+                    var coreSettings = ServiceHelper.SettingsService.GetCoreSettings(core.id);
                     var selected =
                         (isCoreSelection && !coreSettings.skip) ||
-                        (results.TryGetValue(core.identifier, out var result) && result);
-                    var name = core.identifier;
+                        (results.TryGetValue(core.id, out var result) && result);
+                    var name = core.id;
                     var title = MenuItemName(name, selected, core.requires_license);
 
                     menu.Add(title, thisMenu =>
@@ -68,16 +68,16 @@ internal static partial class Program
                         selected = !selected;
 
                         // ReSharper disable once RedundantDictionaryContainsKeyBeforeAdding
-                        if (results.ContainsKey(core.identifier))
+                        if (results.ContainsKey(core.id))
                         {
-                            results[core.identifier] = selected;
+                            results[core.id] = selected;
                         }
                         else
                         {
-                            results.Add(core.identifier, selected);
+                            results.Add(core.id, selected);
                         }
 
-                        thisMenu.CurrentItem.Name = MenuItemName(core.identifier, selected, core.requires_license);
+                        thisMenu.CurrentItem.Name = MenuItemName(core.id, selected, core.requires_license);
                     });
                 }
             }
@@ -131,7 +131,7 @@ internal static partial class Program
         {
             foreach (Core core in cores)
             {
-                ServiceHelper.SettingsService.EnableCore(core.identifier);
+                ServiceHelper.SettingsService.EnableCore(core.id);
             }
         }
         else

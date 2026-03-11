@@ -67,17 +67,6 @@
       "github_asset_prefix": "pocket-extras-jotego"
     },
     {
-      "id": "jtpang",
-      "description": "Adds support for the Dokaben 2 rom to the jotego.jtpang core. You will be prompted to install the necessary core if it's missing.",
-      "type": "additional_assets",
-      "core_identifiers": [
-        "jotego.jtpang"
-      ],
-      "github_user": "dyreschlock",
-      "github_repository": "pocket-extras",
-      "github_asset_prefix": "pocket-extras-jotego"
-    },
-    {
       "id": "toaplan2_c",
       "name": "Toaplan Version 2 Hardware Combination Core",
       "description": "Combines pram0d's & atrac17's Battle Garegga, Battle Bakraid, Sorcer Strike, Kingdom Grand Prix, Armed Police Batrider, and Snow Bros 2 cores into a single platform with multiple cores. This allows you to play them all from a single entry in your Pocket menu. You do not need to have them installed prior to using this.",

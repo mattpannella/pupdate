@@ -1,4 +1,4 @@
-﻿using CommandLine;
+using CommandLine;
 using Pannella.Helpers;
 using Pannella.Models;
 using Pannella.Models.Events;
@@ -128,8 +128,8 @@ internal static partial class Program
 
                 case AssetsOptions options:
                     var cores = ServiceHelper.CoresService.Cores
-                        .Where(core => !string.IsNullOrEmpty(options.CoreName) || core.identifier == options.CoreName)
-                        .Where(core => !ServiceHelper.SettingsService.GetCoreSettings(core.identifier).skip)
+                        .Where(core => !string.IsNullOrEmpty(options.CoreName) || core.id == options.CoreName)
+                        .Where(core => !ServiceHelper.SettingsService.GetCoreSettings(core.id).skip)
                         .ToList();
 
                     ServiceHelper.CoresService.DownloadCoreAssets(cores);

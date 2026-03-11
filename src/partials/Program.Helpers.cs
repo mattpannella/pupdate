@@ -85,8 +85,8 @@ internal static partial class Program
         }
 
         string[] sleepSupported = ServiceHelper.CoresService.InstalledCores
-            .Where(c => ServiceHelper.CoresService.ReadCoreJson(c.identifier).framework.sleep_supported)
-            .Select(c => c.identifier)
+            .Where(c => ServiceHelper.CoresService.ReadCoreJson(c.id).framework.sleep_supported)
+            .Select(c => c.id)
             .ToArray();
 
         if (sleepSupported.Any())

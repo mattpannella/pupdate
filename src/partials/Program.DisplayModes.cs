@@ -18,8 +18,8 @@ internal static partial class Program
         }
 
         coreIdentifiers ??= ServiceHelper.CoresService.Cores
-            .Where(core => !ServiceHelper.SettingsService.GetCoreSettings(core.identifier).skip)
-            .Select(core => core.identifier)
+            .Where(core => !ServiceHelper.SettingsService.GetCoreSettings(core.id).skip)
+            .Select(core => core.id)
             .ToList();
 
         foreach (var coreIdentifier in coreIdentifiers)
@@ -46,7 +46,7 @@ internal static partial class Program
 
     private static void ResetDisplayModes(List<string> coreIdentifiers = null)
     {
-        coreIdentifiers ??= ServiceHelper.CoresService.InstalledCoresWithCustomDisplayModes.Select(c => c.identifier)
+        coreIdentifiers ??= ServiceHelper.CoresService.InstalledCoresWithCustomDisplayModes.Select(c => c.id)
             .ToList();
 
         foreach (var coreIdentifier in coreIdentifiers)

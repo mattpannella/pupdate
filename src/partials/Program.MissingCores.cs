@@ -1,5 +1,5 @@
 using Pannella.Helpers;
-using Pannella.Models.OpenFPGA_Cores_Inventory.V2;
+using Pannella.Models.OpenFPGA_Cores_Inventory.V3;
 
 namespace Pannella;
 
@@ -21,7 +21,7 @@ internal static partial class Program
 
                     foreach (Core core in ServiceHelper.SettingsService.GetMissingCores())
                     {
-                        Console.WriteLine($"- {core.identifier}");
+                        Console.WriteLine($"- {core.id}");
                     }
 
                     ServiceHelper.SettingsService.EnableMissingCores();
@@ -33,7 +33,7 @@ internal static partial class Program
 
                     foreach (Core core in ServiceHelper.SettingsService.GetMissingCores())
                     {
-                        Console.WriteLine($"- {core.identifier}");
+                        Console.WriteLine($"- {core.id}");
                     }
 
                     ServiceHelper.SettingsService.DisableMissingCores();

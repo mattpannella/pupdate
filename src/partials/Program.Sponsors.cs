@@ -1,6 +1,6 @@
 using System.Text;
 using Pannella.Helpers;
-using Pannella.Models.OpenFPGA_Cores_Inventory.V2;
+using Pannella.Models.OpenFPGA_Cores_Inventory.V3;
 
 namespace Pannella;
 
@@ -20,7 +20,7 @@ internal static partial class Program
             var randomCore = authorCores[coreIndex];
 
             output.AppendLine($"Please consider supporting {author} for their work on the {randomCore} core:");
-            output.Append(randomCore.sponsor);
+            output.Append(randomCore.repository?.funding);
         }
 
         return output.ToString();
@@ -54,10 +54,10 @@ internal static partial class Program
 
         Console.WriteLine();
 
-        foreach (var core in cores.Where(core => core.sponsor != null))
+        foreach (var core in cores.Where(core => core.repository?.funding != null))
         {
-            Console.WriteLine($"{core.identifier}:");
-            Console.WriteLine(core.sponsor.ToString("    "));
+            Console.WriteLine($"{core.id}:");
+            Console.WriteLine(core.repository.funding.ToString("    "));
         }
     }
 }

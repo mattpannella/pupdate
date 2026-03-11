@@ -1,6 +1,7 @@
 using ConsoleTools;
 using Pannella.Helpers;
 using Pannella.Models.Extras;
+using Pannella.Models.OpenFPGA_Cores_Inventory.V3;
 using Pannella.Services;
 
 namespace Pannella;
@@ -133,16 +134,16 @@ internal static partial class Program
             {
                 var results = ShowCoresMenu(
                     ServiceHelper.CoresService.InstalledCores
-                        .Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
+                        .Where(c => c.id.StartsWith("Spiritualized.SuperGB")).ToList(),
                     "Which Super GameBoy cores would you like to change to the 8:7 aspect ratio?\n",
                     false);
 
                 foreach (var item in results.Where(x => x.Value))
                 {
-                    var core = ServiceHelper.CoresService.InstalledCores.First(c => c.identifier == item.Key);
+                    var core = ServiceHelper.CoresService.InstalledCores.First(c => c.id == item.Key);
 
-                    Console.WriteLine($"Updating '{core.identifier}'...");
-                    ServiceHelper.CoresService.ChangeAspectRatio(core.identifier, 4, 3, 8, 7);
+                    Console.WriteLine($"Updating '{core.id}'...");
+                    ServiceHelper.CoresService.ChangeAspectRatio(core.id, 4, 3, 8, 7);
                     Console.WriteLine("Complete.");
                     Console.WriteLine();
                 }
@@ -153,16 +154,16 @@ internal static partial class Program
             {
                 var results = ShowCoresMenu(
                     ServiceHelper.CoresService.InstalledCores
-                        .Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
+                        .Where(c => c.id.StartsWith("Spiritualized.SuperGB")).ToList(),
                     "Which Super GameBoy cores would you like to change to the 8:7 aspect ratio?\n",
                     false);
 
                 foreach (var item in results.Where(x => x.Value))
                 {
-                    var core = ServiceHelper.CoresService.InstalledCores.First(c => c.identifier == item.Key);
+                    var core = ServiceHelper.CoresService.InstalledCores.First(c => c.id == item.Key);
 
-                    Console.WriteLine($"Updating '{core.identifier}'...");
-                    ServiceHelper.CoresService.ChangeAspectRatio(core.identifier, 8, 7, 4, 3);
+                    Console.WriteLine($"Updating '{core.id}'...");
+                    ServiceHelper.CoresService.ChangeAspectRatio(core.id, 8, 7, 4, 3);
                     Console.WriteLine("Complete.");
                     Console.WriteLine();
                 }
@@ -435,7 +436,7 @@ internal static partial class Program
             {
                 Console.WriteLine("Checking for required files...");
                 var cores = ServiceHelper.CoresService.Cores.Where(core =>
-                    !ServiceHelper.SettingsService.GetCoreSettings(core.identifier).skip).ToList();
+                    !ServiceHelper.SettingsService.GetCoreSettings(core.id).skip).ToList();
 
                 ServiceHelper.CoresService.DownloadCoreAssets(cores);
                 Pause();
@@ -560,16 +561,16 @@ internal static partial class Program
                     continue;
 
                 var captured = core;
-                var pinned = ServiceHelper.SettingsService.GetCoreSettings(captured.identifier).pinned_version;
+                var pinned = ServiceHelper.SettingsService.GetCoreSettings(captured.id).pinned_version;
                 string label = pinned != null
-                    ? $"{captured.identifier} [pinned: {pinned}]"
-                    : captured.identifier;
+                    ? $"{captured.id} [pinned: {pinned}]"
+                    : captured.id;
 
                 menu.Add(label, thisMenu =>
                 {
                     thisMenu.CloseMenu();
 
-                    var currentPin = ServiceHelper.SettingsService.GetCoreSettings(captured.identifier).pinned_version;
+                    var currentPin = ServiceHelper.SettingsService.GetCoreSettings(captured.id).pinned_version;
 
                     if (currentPin != null)
                         Console.WriteLine($"Currently pinned to: {currentPin}");
@@ -581,12 +582,12 @@ internal static partial class Program
 
                     if (string.IsNullOrEmpty(input))
                     {
-                        ServiceHelper.SettingsService.UnpinCoreVersion(captured.identifier);
+                        ServiceHelper.SettingsService.UnpinCoreVersion(captured.id);
                         Console.WriteLine("Version pin removed.");
                     }
                     else
                     {
-                        ServiceHelper.SettingsService.PinCoreVersion(captured.identifier, input);
+                        ServiceHelper.SettingsService.PinCoreVersion(captured.id, input);
                         Console.WriteLine($"Pinned to version: {input}");
                     }
 
