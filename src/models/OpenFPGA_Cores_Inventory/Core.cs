@@ -1,5 +1,6 @@
 // ReSharper disable InconsistentNaming
 
+using Newtonsoft.Json;
 using Pannella.Models.Updater;
 
 namespace Pannella.Models.OpenFPGA_Cores_Inventory;
@@ -17,11 +18,12 @@ public class Core
     public string license_slot_id;
     public int license_slot_platform_id_index;
     public string license_slot_filename;
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public bool requires_license { get; set; } = false;
     public Updaters updaters { get; set; }
 
     public override string ToString()
     {
-        return $"{platform.name} ({identifier})";
+        return $"{platform?.name ?? "Unknown"} ({identifier})";
     }
 }
