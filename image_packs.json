@@ -49,16 +49,31 @@
     {
         "owner": "Shissa43",
         "repository": "Analogue-Pocket-Platform-Art",
-        "variant": "Arcade_platforms"
+        "variant": "Arcade_Multi"
     },
     {
         "owner": "Shissa43",
         "repository": "Analogue-Pocket-Platform-Art",
-        "variant": "Home_platforms"
+        "variant": "Arcade_Single"
     },
     {
         "owner": "Shissa43",
         "repository": "Analogue-Pocket-Platform-Art",
-        "variant": "Simple_platforms"
+        "variant": "Home_USA"
+    },
+    {
+        "owner": "Shissa43",
+        "repository": "Analogue-Pocket-Platform-Art",
+        "variant": "Home_JP"
+    },
+    {
+        "owner": "Shissa43",
+        "repository": "Analogue-Pocket-Platform-Art",
+        "variant": "Simple_USA"
+    },
+    {
+        "owner": "Shissa43",
+        "repository": "Analogue-Pocket-Platform-Art",
+        "variant": "Simple_JP"
     }
 ]
