@@ -24,6 +24,8 @@ internal static partial class Program
                 "Consider adding a Github Token to your settings file, to avoid hitting the rate limit.");
         }
 
+        string sponsorLinks = GetRandomSponsorLinks();
+
         var menuConfig = new MenuConfig
         {
             Selector = "=>",
@@ -32,7 +34,7 @@ internal static partial class Program
             {
                 WriteRainbow(welcome);
                 Console.ResetColor();
-                Console.WriteLine(GetRandomSponsorLinks());
+                Console.WriteLine(sponsorLinks);
                 Console.WriteLine(rateLimitMessage);
                 Console.WriteLine();
                 Console.WriteLine("Choose your destiny:");
