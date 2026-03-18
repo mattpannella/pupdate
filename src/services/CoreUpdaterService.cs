@@ -236,7 +236,7 @@ public class CoreUpdaterService : BaseProcess
 
                     if (pinnedUrl == null)
                     {
-                        WriteMessage($"Could not find release for pinned version '{coreSettings.pinned_version}'. Skipping.");
+                        WriteMessage($"Could not find release for pinned version '{coreSettings.pinned_version}'in the releases list. Skipping.");
                         Divide();
                         continue;
                     }

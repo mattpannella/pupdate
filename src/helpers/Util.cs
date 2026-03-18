@@ -237,4 +237,25 @@ public static class Util
 
         return sb.ToString();
     }
+
+    public static string NormalizeVersionTag(string version)
+    {
+        if (string.IsNullOrEmpty(version))
+            return version ?? string.Empty;
+
+        return version.TrimStart().StartsWith("v", StringComparison.OrdinalIgnoreCase)
+            ? version.TrimStart().Substring(1).TrimStart()
+            : version.TrimStart();
+    }
+
+    public static bool VersionsMatch(string a, string b)
+    {
+        if (a == b)
+            return true;
+
+        if (string.IsNullOrEmpty(a) || string.IsNullOrEmpty(b))
+            return false;
+
+        return string.Equals(NormalizeVersionTag(a), NormalizeVersionTag(b), StringComparison.Ordinal);
+    }
 }
