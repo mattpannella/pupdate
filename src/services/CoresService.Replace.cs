@@ -1,5 +1,5 @@
 using Newtonsoft.Json;
-using Pannella.Models.OpenFPGA_Cores_Inventory;
+using Pannella.Models.OpenFPGA_Cores_Inventory.V3;
 using Pannella.Models.Updater;
 
 namespace Pannella.Services;
@@ -30,12 +30,12 @@ public partial class CoresService
             foreach (var replacement in replaces)
             {
                 string newIdentifier = $"{replacement.author}.{replacement.shortname}";
-                Core core = new Core { identifier = newIdentifier, platform_id = replacement.platform_id };
+                Core core = new Core { id = newIdentifier, platform_id = replacement.platform_id };
 
-                if (this.IsInstalled(core.identifier))
+                if (this.IsInstalled(core.id))
                 {
                     Replace(core, identifier);
-                    this.Uninstall(core.identifier, core.platform_id);
+                    this.Uninstall(core.id, core.platform_id);
                     WriteMessage($"Uninstalled {newIdentifier}. It was replaced by this core.");
                 }
             }
@@ -44,21 +44,21 @@ public partial class CoresService
 
     private void Replace(Core core, string identifier)
     {
-        string path = Path.Combine(this.installPath, "Assets", core.platform_id, core.identifier);
+        string path = Path.Combine(this.installPath, "Assets", core.platform_id, core.id);
 
         if (Directory.Exists(path))
         {
             Directory.Move(path, Path.Combine(this.installPath, "Assets", core.platform_id, identifier));
         }
 
-        path = Path.Combine(this.installPath, "Saves", core.platform_id, core.identifier);
+        path = Path.Combine(this.installPath, "Saves", core.platform_id, core.id);
 
         if (Directory.Exists(path))
         {
             Directory.Move(path, Path.Combine(this.installPath, "Saves", core.platform_id, identifier));
         }
 
-        path = Path.Combine(this.installPath, "Settings", core.identifier);
+        path = Path.Combine(this.installPath, "Settings", core.id);
 
         if (Directory.Exists(path))
         {

@@ -10,7 +10,7 @@ internal static partial class Program
 
         foreach (var core in ServiceHelper.CoresService.InstalledCores)
         {
-            var platform = ServiceHelper.CoresService.ReadPlatformJson(core.identifier);
+            var platform = ServiceHelper.CoresService.ReadPlatformJson(core.id);
             var item = platform.name;
 
             if (!openFpgaFolders.TryAdd(platform.category, new List<string> { item }))

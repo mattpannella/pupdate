@@ -1,5 +1,5 @@
 using Pannella.Helpers;
-using Pannella.Models.OpenFPGA_Cores_Inventory;
+using Pannella.Models.OpenFPGA_Cores_Inventory.V3;
 using AnalogueCore = Pannella.Models.Analogue.Core.Core;
 
 namespace Pannella.Services;
@@ -27,7 +27,7 @@ public partial class CoresService
 
     public void CopyLicense(Core core)
     {
-        AnalogueCore info = this.ReadCoreJson(core.identifier);
+        AnalogueCore info = this.ReadCoreJson(core.id);
         string path = Path.Combine(
             this.installPath,
             "Assets",

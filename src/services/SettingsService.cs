@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 using Pannella.Helpers;
-using Pannella.Models.OpenFPGA_Cores_Inventory;
+using Pannella.Models.OpenFPGA_Cores_Inventory.V3;
 using Pannella.Models.Settings;
 
 namespace Pannella.Services;
@@ -73,7 +73,7 @@ public class SettingsService
 
         foreach (Core core in cores)
         {
-            if (!settings.core_settings.TryGetValue(core.identifier, out var coreSettings))
+            if (!settings.core_settings.TryGetValue(core.id, out var coreSettings))
             {
                 this.missingCores.Add(core);
             }
@@ -160,7 +160,7 @@ public class SettingsService
     {
         foreach (var core in this.missingCores)
         {
-            EnableCore(core.identifier);
+            EnableCore(core.id);
         }
     }
 
@@ -168,7 +168,7 @@ public class SettingsService
     {
         foreach (var core in this.missingCores)
         {
-            DisableCore(core.identifier);
+            DisableCore(core.id);
         }
     }
 

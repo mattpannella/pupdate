@@ -1,9 +1,8 @@
 using Pannella.Helpers;
-using Pannella.Models.Analogue.Shared;
 using Pannella.Models.DisplayModes;
 using Pannella.Models.Extras;
-using Pannella.Models.Github;
-using Pannella.Models.OpenFPGA_Cores_Inventory;
+using Pannella.Models.OpenFPGA_Cores_Inventory.V3;
+using DataSlot = Pannella.Models.Analogue.Shared.DataSlot;
 using ArchiveFile = Pannella.Models.Archive.File;
 using AnalogueDisplayMode = Pannella.Models.Analogue.Video.DisplayMode;
 using File = System.IO.File;
@@ -26,12 +25,12 @@ public partial class CoresService
         foreach (string name in directories)
         {
             string n = Path.GetFileName(name);
-            var matches = Cores.Where(i => i.identifier == n);
+            var matches = Cores.Where(i => i.id == n);
 
             if (!matches.Any())
             {
-                Core c = new Core { identifier = n };
-                c.platform = this.ReadPlatformJson(c.identifier);
+                Core c = new Core { id = n };
+                c.platform = this.ReadPlatformJson(c.id);
                 all.Add(c);
             }
         }
@@ -185,26 +184,20 @@ public partial class CoresService
 
     public string GetDownloadUrlForVersion(Core core, string version)
     {
-        if (core.repository == null) return null;
+        if (core.repository == null || string.IsNullOrEmpty(version))
+            return null;
 
-        string owner = core.repository.owner;
-        string repo = core.repository.name;
-
-        Release release = null;
-
-        try { release = GithubApiService.GetRelease(owner, repo, version); }
-        catch { /* tag not found, try with "v" prefix */ }
-
-        if (release == null)
+        if (core.releases != null && core.releases.Count > 0)
         {
-            try { release = GithubApiService.GetRelease(owner, repo, "v" + version); }
-            catch { /* tag not found */ }
+            foreach (Release r in core.releases)
+            {
+                string releaseVersion = r.core?.metadata?.version;
+                if (!string.IsNullOrEmpty(releaseVersion) && Util.VersionsMatch(version, releaseVersion))
+                    return r.download_url;
+            }
         }
 
-        if (release == null) return null;
-
-        var zipAsset = release.assets?.FirstOrDefault(a => a.name.EndsWith(".zip"));
-        return zipAsset?.browser_download_url;
+        return null;
     }
 
     public bool CheckLicenseFile(Core core)

@@ -1,6 +1,7 @@
 using ConsoleTools;
 using Pannella.Helpers;
 using Pannella.Models.Extras;
+using Pannella.Models.OpenFPGA_Cores_Inventory.V3;
 using Pannella.Services;
 
 namespace Pannella;
@@ -135,16 +136,16 @@ internal static partial class Program
             {
                 var results = ShowCoresMenu(
                     ServiceHelper.CoresService.InstalledCores
-                        .Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
+                        .Where(c => c.id.StartsWith("Spiritualized.SuperGB")).ToList(),
                     "Which Super GameBoy cores would you like to change to the 8:7 aspect ratio?\n",
                     false);
 
                 foreach (var item in results.Where(x => x.Value))
                 {
-                    var core = ServiceHelper.CoresService.InstalledCores.First(c => c.identifier == item.Key);
+                    var core = ServiceHelper.CoresService.InstalledCores.First(c => c.id == item.Key);
 
-                    Console.WriteLine($"Updating '{core.identifier}'...");
-                    ServiceHelper.CoresService.ChangeAspectRatio(core.identifier, 4, 3, 8, 7);
+                    Console.WriteLine($"Updating '{core.id}'...");
+                    ServiceHelper.CoresService.ChangeAspectRatio(core.id, 4, 3, 8, 7);
                     Console.WriteLine("Complete.");
                     Console.WriteLine();
                 }
@@ -155,16 +156,16 @@ internal static partial class Program
             {
                 var results = ShowCoresMenu(
                     ServiceHelper.CoresService.InstalledCores
-                        .Where(c => c.identifier.StartsWith("Spiritualized.SuperGB")).ToList(),
+                        .Where(c => c.id.StartsWith("Spiritualized.SuperGB")).ToList(),
                     "Which Super GameBoy cores would you like to change to the 8:7 aspect ratio?\n",
                     false);
 
                 foreach (var item in results.Where(x => x.Value))
                 {
-                    var core = ServiceHelper.CoresService.InstalledCores.First(c => c.identifier == item.Key);
+                    var core = ServiceHelper.CoresService.InstalledCores.First(c => c.id == item.Key);
 
-                    Console.WriteLine($"Updating '{core.identifier}'...");
-                    ServiceHelper.CoresService.ChangeAspectRatio(core.identifier, 8, 7, 4, 3);
+                    Console.WriteLine($"Updating '{core.id}'...");
+                    ServiceHelper.CoresService.ChangeAspectRatio(core.id, 8, 7, 4, 3);
                     Console.WriteLine("Complete.");
                     Console.WriteLine();
                 }
@@ -437,7 +438,7 @@ internal static partial class Program
             {
                 Console.WriteLine("Checking for required files...");
                 var cores = ServiceHelper.CoresService.Cores.Where(core =>
-                    !ServiceHelper.SettingsService.GetCoreSettings(core.identifier).skip).ToList();
+                    !ServiceHelper.SettingsService.GetCoreSettings(core.id).skip).ToList();
 
                 ServiceHelper.CoresService.DownloadCoreAssets(cores);
                 Pause();
@@ -515,6 +516,182 @@ internal static partial class Program
         return name;
     }
 
+    private static void PinCoreVersionForCore(Core core)
+    {
+        var settings = ServiceHelper.SettingsService;
+        var currentPin = settings.GetCoreSettings(core.id).pinned_version;
+
+        if (core.releases == null || core.releases.Count == 0)
+        {
+            if (currentPin != null)
+            {
+                Console.WriteLine($"Currently pinned to: {currentPin}");
+            }
+            else
+            {
+                Console.WriteLine("Not currently pinned.");
+            }
+
+            Console.WriteLine("Enter version to pin to, or leave blank to remove pin:");
+
+            string input = Console.ReadLine()?.Trim();
+
+            if (string.IsNullOrEmpty(input))
+            {
+                settings.UnpinCoreVersion(core.id);
+                Console.WriteLine("Version pin removed.");
+            }
+            else
+            {
+                settings.PinCoreVersion(core.id, input);
+                Console.WriteLine($"Pinned to version: {input}");
+            }
+
+            settings.Save();
+            return;
+        }
+
+        List<Release> releases = core.releases
+            .Where(r => r.core?.metadata != null)
+            .OrderByDescending(r => r.core.metadata.date_release ?? "")
+            .ToList();
+
+        bool[] step1DoneRef = { false };
+
+        while (!step1DoneRef[0])
+        {
+            var step1Menu = new ConsoleMenu()
+                .Configure(config =>
+                {
+                    config.Selector = "=>";
+                    config.EnableWriteTitle = false;
+                    config.WriteHeaderAction = () => Console.WriteLine($"Pin/unpin version for {core.id}:");
+                    config.SelectedItemBackgroundColor = Console.ForegroundColor;
+                    config.SelectedItemForegroundColor = Console.BackgroundColor;
+                    config.WriteItemAction = item => Console.Write("{0}", item.Name);
+                });
+
+            step1Menu.Add("Unpin", () =>
+            {
+                settings.UnpinCoreVersion(core.id);
+                settings.Save();
+                Console.WriteLine("Version pin removed.");
+                step1DoneRef[0] = true;
+                step1Menu.CloseMenu();
+            });
+
+            step1Menu.Add("Select from releases list", () =>
+            {
+                step1Menu.CloseMenu();
+                ShowReleaseListMenu(core, releases, settings, step1DoneRef);
+            });
+
+            step1Menu.Add("Enter version manually", () =>
+            {
+                Console.WriteLine("Enter version to pin to:");
+                string input = Console.ReadLine()?.Trim();
+
+                if (!string.IsNullOrEmpty(input))
+                {
+                    settings.PinCoreVersion(core.id, input);
+                    settings.Save();
+                    Console.WriteLine($"Pinned to version: {input}");
+                }
+
+                step1DoneRef[0] = true;
+                step1Menu.CloseMenu();
+            });
+
+            step1Menu.Add("Go Back", () =>
+            {
+                step1DoneRef[0] = true;
+                step1Menu.CloseMenu();
+            });
+
+            step1Menu.Show();
+        }
+    }
+
+    private static void ShowReleaseListMenu(Core core, List<Release> releases, SettingsService settings, bool[] step1DoneRef)
+    {
+        const int pageSize = 12;
+        int offset = 0;
+        bool more = true;
+
+        while (more)
+        {
+            var menu = new ConsoleMenu()
+                .Configure(config =>
+                {
+                    config.Selector = "=>";
+                    config.EnableWriteTitle = false;
+                    config.WriteHeaderAction = () => Console.WriteLine($"Select a release for {core.id}:");
+                    config.SelectedItemBackgroundColor = Console.ForegroundColor;
+                    config.SelectedItemForegroundColor = Console.BackgroundColor;
+                    config.WriteItemAction = item => Console.Write("{0}", item.Name);
+                });
+            int index = -1;
+
+            if (offset + pageSize < releases.Count)
+            {
+                menu.Add("Next Page", thisMenu =>
+                {
+                    offset += pageSize;
+                    thisMenu.CloseMenu();
+                });
+            }
+
+            foreach (Release r in releases)
+            {
+                index++;
+
+                if (index < offset || index > offset + pageSize)
+                    continue;
+
+                string ver = r.core?.metadata?.version ?? "?";
+                string date = r.core?.metadata?.date_release ?? "";
+                string label = string.IsNullOrEmpty(date) ? ver : $"{ver} ({date})";
+                var capturedRelease = r;
+                
+                menu.Add(label, thisMenu =>
+                {
+                    settings.PinCoreVersion(core.id, capturedRelease.core.metadata.version);
+                    settings.Save();
+                    Console.WriteLine($"Pinned to version: {capturedRelease.core.metadata.version}");
+                    step1DoneRef[0] = true;
+                    more = false;
+                    thisMenu.CloseMenu();
+                });
+            }
+
+            if (offset + pageSize < releases.Count)
+            {
+                menu.Add("Next Page", thisMenu =>
+                {
+                    offset += pageSize;
+                    thisMenu.CloseMenu();
+                });
+            }
+
+            if (offset > 0)
+            {
+                menu.Add("Prev Page", thisMenu =>
+                {
+                    offset -= pageSize;
+                    thisMenu.CloseMenu();
+                });
+            }
+
+            menu.Add("Go Back", thisMenu =>
+            {
+                more = false;
+                thisMenu.CloseMenu();
+            });
+
+            menu.Show();
+        }
+    }
+
     private static void PinCoreVersionMenu()
     {
         const int pageSize = 12;
@@ -562,37 +739,15 @@ internal static partial class Program
                     continue;
 
                 var captured = core;
-                var pinned = ServiceHelper.SettingsService.GetCoreSettings(captured.identifier).pinned_version;
+                var pinned = ServiceHelper.SettingsService.GetCoreSettings(captured.id).pinned_version;
                 string label = pinned != null
-                    ? $"{captured.identifier} [pinned: {pinned}]"
-                    : captured.identifier;
+                    ? $"{captured.id} [pinned: {pinned}]"
+                    : captured.id;
 
                 menu.Add(label, thisMenu =>
                 {
                     thisMenu.CloseMenu();
-
-                    var currentPin = ServiceHelper.SettingsService.GetCoreSettings(captured.identifier).pinned_version;
-
-                    if (currentPin != null)
-                        Console.WriteLine($"Currently pinned to: {currentPin}");
-                    else
-                        Console.WriteLine("Not currently pinned.");
-
-                    Console.WriteLine("Enter version to pin to, or leave blank to remove pin:");
-                    string input = Console.ReadLine()?.Trim();
-
-                    if (string.IsNullOrEmpty(input))
-                    {
-                        ServiceHelper.SettingsService.UnpinCoreVersion(captured.identifier);
-                        Console.WriteLine("Version pin removed.");
-                    }
-                    else
-                    {
-                        ServiceHelper.SettingsService.PinCoreVersion(captured.identifier, input);
-                        Console.WriteLine($"Pinned to version: {input}");
-                    }
-
-                    ServiceHelper.SettingsService.Save();
+                    PinCoreVersionForCore(captured);
                     Pause();
                 });
             }

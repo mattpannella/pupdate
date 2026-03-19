@@ -1,6 +1,5 @@
 using Pannella.Models.Events;
 using Pannella.Services;
-using System.IO;
 
 namespace Pannella.Helpers;
 

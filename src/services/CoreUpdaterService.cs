@@ -3,7 +3,7 @@ using Pannella.Helpers;
 using Pannella.Models;
 using Pannella.Models.Events;
 using Pannella.Models.Extras;
-using Pannella.Models.OpenFPGA_Cores_Inventory;
+using Pannella.Models.OpenFPGA_Cores_Inventory.V3;
 using File = System.IO.File;
 using AnalogueCore = Pannella.Models.Analogue.Core.Core;
 
@@ -37,10 +37,10 @@ public class CoreUpdaterService : BaseProcess
     {
         foreach (Core core in this.cores)
         {
-            if (this.coresService.CheckInstancePackager(core.identifier) && (coreName == null || coreName == core.identifier))
+            if (this.coresService.CheckInstancePackager(core.id) && (coreName == null || coreName == core.id))
             {
-                WriteMessage(core.identifier);
-                this.coresService.BuildInstanceJson(core.identifier, overwrite);
+                WriteMessage(core.id);
+                this.coresService.BuildInstanceJson(core.id, overwrite);
                 Divide();
             }
         }
@@ -79,41 +79,41 @@ public class CoreUpdaterService : BaseProcess
 
         this.coresService.RetrieveKeys();
 
-        foreach (var core in this.cores.Where(core => ids == null || ids.Any(id => id == core.identifier)))
+        foreach (var core in this.cores.Where(core => ids == null || ids.Any(id => id == core.id)))
         {
-            var coreSettings = this.settingsService.GetCoreSettings(core.identifier);
+            var coreSettings = this.settingsService.GetCoreSettings(core.id);
 
             try
             {
                 //if its installed, it's an analogizer variant, and the setting is on
-                bool force = this.coresService.IsInstalled(core.identifier) && 
-                    this.settingsService.Config.no_analogizer_variants && this.coresService.IsAnalogizerVariant(core.identifier);
+                bool force = this.coresService.IsInstalled(core.id) && 
+                    this.settingsService.Config.no_analogizer_variants && this.coresService.IsAnalogizerVariant(core.id);
                 if (coreSettings.skip || force)
                 {
                     DeleteCore(core, force);
                     continue;
                 }
 
-                var requiresLicense = this.coresService.RequiresLicense(core.identifier);
+                var requiresLicense = this.coresService.RequiresLicense(core.id);
                 core.license_slot_filename = requiresLicense.Item4;
                 core.license_slot_id = requiresLicense.Item2;
                 core.license_slot_platform_id_index = requiresLicense.Item3;
 
                 if (core.requires_license && !this.coresService.CheckLicenseFile(core))
                 {
-                    missingLicenses.Add(core.identifier);
+                    missingLicenses.Add(core.id);
                     continue; // skip if you don't have the key
                 }
 
-                if (core.identifier == null)
+                if (core.id == null)
                 {
                     WriteMessage("Core Name is required. Skipping.");
                     continue;
                 }
 
-                WriteMessage("Checking Core: " + core.identifier);
+                WriteMessage("Checking Core: " + core.id);
 
-                PocketExtra pocketExtra = this.coresService.GetPocketExtra(core.identifier);
+                PocketExtra pocketExtra = this.coresService.GetPocketExtra(core.id);
                 bool isPocketExtraCombinationPlatform = coreSettings.pocket_extras &&
                                                         pocketExtra is { type: PocketExtraType.combination_platform };
                 string mostRecentRelease;
@@ -153,7 +153,7 @@ public class CoreUpdaterService : BaseProcess
 
                     if ((bool)results["missingLicense"])
                     {
-                        missingLicenses.Add(core.identifier);
+                        missingLicenses.Add(core.id);
                     }
 
                     JotegoRename(core);
@@ -163,9 +163,9 @@ public class CoreUpdaterService : BaseProcess
 
                 WriteMessage(mostRecentRelease + " is the most recent release, checking local core...");
 
-                if (this.coresService.IsInstalled(core.identifier))
+                if (this.coresService.IsInstalled(core.id))
                 {
-                    AnalogueCore localCore = this.coresService.ReadCoreJson(core.identifier);
+                    AnalogueCore localCore = this.coresService.ReadCoreJson(core.id);
                     string localVersion = isPocketExtraCombinationPlatform
                         ? coreSettings.pocket_extras_version
                         : localCore.metadata.version;
@@ -217,7 +217,7 @@ public class CoreUpdaterService : BaseProcess
 
                         if ((bool)results["missingLicense"])
                         {
-                            missingLicenses.Add(core.identifier);
+                            missingLicenses.Add(core.id);
                         }
 
                         WriteMessage("Up to date. Skipping core.");
@@ -236,7 +236,7 @@ public class CoreUpdaterService : BaseProcess
 
                     if (pinnedUrl == null)
                     {
-                        WriteMessage($"Could not find release for pinned version '{coreSettings.pinned_version}'. Skipping.");
+                        WriteMessage($"Could not find release for pinned version '{coreSettings.pinned_version}'in the releases list. Skipping.");
                         Divide();
                         continue;
                     }
@@ -246,9 +246,9 @@ public class CoreUpdaterService : BaseProcess
 
                 if (isPocketExtraCombinationPlatform)
                 {
-                    if (clean && this.coresService.IsInstalled(core.identifier))
+                    if (clean && this.coresService.IsInstalled(core.id))
                     {
-                        this.coresService.Delete(core.identifier, core.platform_id);
+                        this.coresService.Delete(core.id, core.platform_id);
                     }
 
                     this.coresService.GetPocketExtra(pocketExtra, this.installPath, false);
@@ -256,7 +256,7 @@ public class CoreUpdaterService : BaseProcess
                     Dictionary<string, string> summary = new Dictionary<string, string>
                     {
                         { "version", mostRecentRelease },
-                        { "core", core.identifier },
+                        { "core", core.id },
                         { "platform", core.platform.name }
                     };
 
@@ -267,7 +267,7 @@ public class CoreUpdaterService : BaseProcess
                     Dictionary<string, string> summary = new Dictionary<string, string>
                     {
                         { "version", mostRecentRelease },
-                        { "core", core.identifier },
+                        { "core", core.id },
                         { "platform", core.platform.name }
                     };
 
@@ -294,7 +294,7 @@ public class CoreUpdaterService : BaseProcess
 
                 JotegoRename(core);
 
-                var isJtBetaCore = this.coresService.RequiresLicense(core.identifier);
+                var isJtBetaCore = this.coresService.RequiresLicense(core.id);
 
                 if (isJtBetaCore.Item1)
                 {
@@ -310,7 +310,7 @@ public class CoreUpdaterService : BaseProcess
 
                 if ((bool)results["missingLicense"])
                 {
-                    missingLicenses.Add(core.identifier);
+                    missingLicenses.Add(core.id);
                 }
 
                 WriteMessage("Installation complete.");
@@ -345,10 +345,10 @@ public class CoreUpdaterService : BaseProcess
     private void JotegoRename(Core core)
     {
         if (this.settingsService.Config.fix_jt_names &&
-            this.settingsService.GetCoreSettings(core.identifier).platform_rename &&
-            core.identifier.Contains("jotego"))
+            this.settingsService.GetCoreSettings(core.id).platform_rename &&
+            core.id.Contains("jotego"))
         {
-            core.platform_id = core.identifier.Split('.')[1];
+            core.platform_id = core.id.Split('.')[1];
 
             string path = Path.Combine(this.installPath, "Platforms", core.platform_id + ".json");
             string json = File.ReadAllText(path);
@@ -371,7 +371,7 @@ public class CoreUpdaterService : BaseProcess
         // Load it from the core.json file if it's missing.
         if (string.IsNullOrEmpty(core.platform_id))
         {
-            var analogueCore = this.coresService.ReadCoreJson(core.identifier);
+            var analogueCore = this.coresService.ReadCoreJson(core.id);
 
             core.platform_id = analogueCore?.metadata.platform_ids[0];
         }
@@ -380,7 +380,7 @@ public class CoreUpdaterService : BaseProcess
         if (!string.IsNullOrEmpty(core.platform_id) &&
             (this.settingsService.Config.delete_skipped_cores || force))
         {
-            this.coresService.Uninstall(core.identifier, core.platform_id, nuke);
+            this.coresService.Uninstall(core.id, core.platform_id, nuke);
         }
     }
 
