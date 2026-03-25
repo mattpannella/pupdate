@@ -17,12 +17,12 @@
     "crtcfg.bin",
     "default.cfg",
     "doomsav*.dsg",
+    "doom_sav*.dsg",
     "fasthd1.img",
     "fasthd2.img",
     "mpu.bin",
     "palram.bin",
     "savestate.ss",
     "slowhd1.img",
-    "slowhd2.img",
-    "doom_sav*.dsg"
+    "slowhd2.img"
 ]

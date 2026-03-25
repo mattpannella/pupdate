@@ -7,7 +7,7 @@ using Pannella.Models.Analogue.Instance;
 using Pannella.Models.Analogue.Instance.Simple;
 using Pannella.Models.Events;
 using Pannella.Models.InstancePackager;
-using Pannella.Models.OpenFPGA_Cores_Inventory;
+using Pannella.Models.OpenFPGA_Cores_Inventory.V3;
 using Pannella.Models.Settings;
 using AnalogueCore = Pannella.Models.Analogue.Core.Core;
 using ArchiveFile = Pannella.Models.Archive.File;
@@ -35,7 +35,7 @@ public partial class CoresService
         {
             try
             {
-                string name = core.identifier;
+                string name = core.id;
 
                 if (name == null)
                 {
@@ -43,7 +43,7 @@ public partial class CoresService
                     continue;
                 }
 
-                WriteMessage(core.identifier);
+                WriteMessage(core.id);
 
                 var results = this.DownloadAssets(core, true);
 
@@ -52,7 +52,7 @@ public partial class CoresService
 
                 if ((bool)results["missingLicense"])
                 {
-                    missingLicenses.Add(core.identifier);
+                    missingLicenses.Add(core.id);
                 }
 
                 Divide();
@@ -85,9 +85,9 @@ public partial class CoresService
         bool missingLicense = false;
 
         // Should this just check the Installed Cores collection instead?
-        if (!this.IsInstalled(core.identifier))
+        if (!this.IsInstalled(core.id))
         {
-            WriteMessage($"Core '{core.identifier}' is not installed yet.");
+            WriteMessage($"Core '{core.id}' is not installed yet.");
 
             return new Dictionary<string, object>
             {
@@ -107,9 +107,9 @@ public partial class CoresService
         // global override is on and core specific is on
         // or
         // global override is off, global setting is on, and core specific is on
-        bool run = (ignoreGlobalSetting && this.settingsService.GetCoreSettings(core.identifier).download_assets) ||
+        bool run = (ignoreGlobalSetting && this.settingsService.GetCoreSettings(core.id).download_assets) ||
                    (!ignoreGlobalSetting && this.settingsService.Config.download_assets &&
-                    this.settingsService.GetCoreSettings(core.identifier).download_assets);
+                    this.settingsService.GetCoreSettings(core.id).download_assets);
 
         if (!run)
         {
@@ -124,11 +124,11 @@ public partial class CoresService
         WriteMessage("Looking for Assets...");
 
         Archive archive = this.archiveService.GetArchive();
-        AnalogueCore info = this.ReadCoreJson(core.identifier);
+        AnalogueCore info = this.ReadCoreJson(core.id);
         // cores with multiple platforms won't work...not sure any exist right now?
         string platformPath = Path.Combine(this.installPath, "Assets", info.metadata.platform_ids[0]);
 
-        DataJSON dataJson = this.ReadDataJson(core.identifier);
+        DataJSON dataJson = this.ReadDataJson(core.id);
 
         if (dataJson.data.data_slots.Length > 0)
         {
@@ -142,7 +142,7 @@ public partial class CoresService
 
                     if (slot.IsCoreSpecific())
                     {
-                        path = Path.Combine(platformPath, core.identifier);
+                        path = Path.Combine(platformPath, core.id);
                     }
                     else
                     {
@@ -191,7 +191,7 @@ public partial class CoresService
         }
         
         // grab the core specific archive, now
-        archive = this.archiveService.GetArchive(core.identifier);
+        archive = this.archiveService.GetArchive(core.id);
 
         if (archive.type is ArchiveType.core_specific_archive or ArchiveType.core_specific_custom_archive 
             && archive.enabled && !archive.has_instance_jsons
@@ -256,7 +256,7 @@ public partial class CoresService
 
         // These cores have instance json files and the roms are not in the default archive.
         // Check to see if they have a core specific archive defined, skip otherwise.
-        if (this.IgnoreInstanceJson.Contains(core.identifier) && archive.type != ArchiveType.core_specific_archive)
+        if (this.IgnoreInstanceJson.Contains(core.id) && archive.type != ArchiveType.core_specific_archive)
         {
             return new Dictionary<string, object>
             {
@@ -266,9 +266,9 @@ public partial class CoresService
             };
         }
 
-        if (CheckInstancePackager(core.identifier))
+        if (CheckInstancePackager(core.id))
         {
-            this.BuildInstanceJson(core.identifier);
+            this.BuildInstanceJson(core.id);
 
             return new Dictionary<string, object>
             {
@@ -278,7 +278,7 @@ public partial class CoresService
             };
         }
 
-        string instancesDirectory = Path.Combine(this.installPath, "Assets", info.metadata.platform_ids[0], core.identifier);
+        string instancesDirectory = Path.Combine(this.installPath, "Assets", info.metadata.platform_ids[0], core.id);
 
         if (Directory.Exists(instancesDirectory))
         {
@@ -311,6 +311,7 @@ public partial class CoresService
                             var platformId = info.metadata.platform_ids[core.license_slot_platform_id_index];
                             var fileName = Path.GetFileName(slot.filename);
                             var filePath = Path.GetDirectoryName(slot.filename) ?? string.Empty;
+
                             if (!CheckLicenseMd5(slot, core.license_slot_id, platformId))
                             {
                                 // Moved message to the CheckBetaMd5 method
@@ -325,11 +326,10 @@ public partial class CoresService
                                 if (!Directory.Exists(commonPath))
                                     Directory.CreateDirectory(commonPath);
 
-                                string slotDirectory = Path.Combine(commonPath, dataPath);
-                                slotDirectory = Path.Combine(commonPath, filePath);
-                                string slotPath = Path.Combine(slotDirectory, fileName);
+                                string slotDirectory = Path.Combine(commonPath, filePath);
                                 if (!Directory.Exists(slotDirectory))
                                     Directory.CreateDirectory(slotDirectory);
+                                string slotPath = Path.Combine(slotDirectory, fileName);
                                 ArchiveFile archiveFile = this.archiveService.GetArchiveFile(fileName);
 
                                 if (File.Exists(slotPath) && CheckCrc(slotPath, archiveFile))

@@ -3,7 +3,8 @@ using Pannella.Helpers;
 using Pannella.Models.Events;
 using Pannella.Models.Extras;
 using Pannella.Models.Github;
-using Pannella.Models.OpenFPGA_Cores_Inventory;
+using Pannella.Models.OpenFPGA_Cores_Inventory.V3;
+using GithubRelease = Pannella.Models.Github.Release;
 using File = System.IO.File;
 
 namespace Pannella.Services;
@@ -85,7 +86,7 @@ public partial class CoresService
 
     private void DownloadPocketExtrasPlatform(PocketExtra pocketExtra, string path, bool downloadAssets)
     {
-        Release release = GithubApiService.GetLatestRelease(pocketExtra.github_user, pocketExtra.github_repository,
+        GithubRelease release = GithubApiService.GetLatestRelease(pocketExtra.github_user, pocketExtra.github_repository,
             this.settingsService.Config.github_token);
         Asset asset = release.assets.FirstOrDefault(x => x.name.StartsWith(pocketExtra.github_asset_prefix));
 
@@ -192,7 +193,7 @@ public partial class CoresService
             string coreIdentifier = Path.GetFileName(coreDirectory);
             Core core = this.GetCore(coreIdentifier);
 
-            this.settingsService.EnableCore(core.identifier, true, release.tag_name);
+            this.settingsService.EnableCore(core.id, true, release.tag_name);
 
             if (downloadAssets)
             {
@@ -206,7 +207,7 @@ public partial class CoresService
                     InstalledAssets = (List<string>)results["installed"],
                     SkippedAssets = (List<string>)results["skipped"],
                     MissingLicenses = (bool)results["missingLicense"]
-                        ? new List<string> { core.identifier }
+                        ? new List<string> { core.id }
                         : new List<string>(),
                     SkipOutro = true
                 };
@@ -223,7 +224,7 @@ public partial class CoresService
     {
         var core = this.GetCore(pocketExtra.core_identifiers[0]);
 
-        if (!this.IsInstalled(core.identifier))
+        if (!this.IsInstalled(core.id))
         {
             bool jtBetaKeyExists = this.ExtractJTBetaKey();
 
@@ -259,16 +260,16 @@ public partial class CoresService
                 this.CopyLicense(core);
             }
 
-            if (!this.IsInstalled(core.identifier))
+            if (!this.IsInstalled(core.id))
             {
                 // WriteMessage("The core still isn't installed.");
                 return;
             }
 
-            this.settingsService.EnableCore(core.identifier);
+            this.settingsService.EnableCore(core.id);
         }
 
-        Release release = GithubApiService.GetLatestRelease(pocketExtra.github_user, pocketExtra.github_repository,
+        GithubRelease release = GithubApiService.GetLatestRelease(pocketExtra.github_user, pocketExtra.github_repository,
             this.settingsService.Config.github_token);
         Asset asset = release.assets.FirstOrDefault(x => x.name.StartsWith(pocketExtra.github_asset_prefix));
 
@@ -302,18 +303,18 @@ public partial class CoresService
             if (Directory.Exists(destinationAssetsMra))
                 Directory.Delete(destinationAssetsMra, true);
 
-            if (core.identifier.StartsWith("jotego"))
+            if (core.id.StartsWith("jotego"))
             {
-                string sourcePresetsCore = Path.Combine(extractPath, "Presets", core.identifier);
-                string destinationPresetsCore = Path.Combine(path, "Presets", core.identifier);
+                string sourcePresetsCore = Path.Combine(extractPath, "Presets", core.id);
+                string destinationPresetsCore = Path.Combine(path, "Presets", core.id);
 
                 Util.CopyDirectory(sourcePresetsCore, destinationPresetsCore, true, true);
             }
             else
             {
-                string sourceDataJson = Path.Combine(extractPath, "Cores", core.identifier, "data.json");
-                string destinationDataJson = Path.Combine(path, "Cores", core.identifier, "data.json");
-                string destinationDataJsonBackup = Path.Combine(path, "Cores", core.identifier,
+                string sourceDataJson = Path.Combine(extractPath, "Cores", core.id, "data.json");
+                string destinationDataJson = Path.Combine(path, "Cores", core.id, "data.json");
+                string destinationDataJsonBackup = Path.Combine(path, "Cores", core.id,
                     $"data.{DateTime.Now:yyyy-MM-dd_HH.mm.ss}.json");
 
                 File.Copy(destinationDataJson, destinationDataJsonBackup, true);
@@ -345,7 +346,7 @@ public partial class CoresService
                 InstalledAssets = (List<string>)results["installed"],
                 SkippedAssets = (List<string>)results["skipped"],
                 MissingLicenses = (bool)results["missingLicense"]
-                    ? new List<string> { core.identifier }
+                    ? new List<string> { core.id }
                     : new List<string>(),
                 SkipOutro = true
             };
@@ -353,13 +354,13 @@ public partial class CoresService
             OnUpdateProcessComplete(args);
         }
 
-        this.settingsService.EnableCore(core.identifier, true, release.tag_name);
+        this.settingsService.EnableCore(core.id, true, release.tag_name);
         this.settingsService.Save();
     }
 
     public string GetMostRecentRelease(PocketExtra pocketExtra)
     {
-        Release release = GithubApiService.GetLatestRelease(pocketExtra.github_user, pocketExtra.github_repository,
+        GithubRelease release = GithubApiService.GetLatestRelease(pocketExtra.github_user, pocketExtra.github_repository,
             this.settingsService.Config.github_token);
 
         return release.tag_name;

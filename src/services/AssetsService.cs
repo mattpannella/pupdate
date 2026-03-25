@@ -91,7 +91,6 @@ public class AssetsService
     {
         if (string.IsNullOrEmpty(filename)) return false;
 
-        // Also check the bare filename in case the slot includes a subdirectory (e.g. "cd/file.bin")
         string baseName = Path.GetFileName(filename);
 
         return Blacklist.Any(entry =>
