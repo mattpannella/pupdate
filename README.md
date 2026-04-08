@@ -1,278 +1,256 @@
 
 [![Current Release](https://img.shields.io/github/v/release/mattpannella/pupdate?label=Current%20Release)](https://github.com/mattpannella/pupdate/releases/latest) ![Downloads](https://img.shields.io/github/downloads/mattpannella/pupdate/latest/total?label=Downloads) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?business=YEERX89E75HQ8&no_recurring=1&currency_code=USD)
 
-A free utility for updating the openFPGA cores, firmware, and a bunch of other stuff on your Analogue Pocket.
+A free utility for updating openFPGA cores, firmware, and related assets on your Analogue Pocket. It can run as an **interactive console menu** or from the **command line**.
 
-A complete list of available cores can also be found here: [https://openfpga-cores-inventory.github.io/analogue-pocket/](https://openfpga-cores-inventory.github.io/analogue-pocket/)
+A browsable list of available cores is here: [openFPGA cores inventory](https://openfpga-cores-inventory.github.io/analogue-pocket/).
 
-I can't (and don't want to) support old versions, so please make sure you download the latest release before submitting any issues.
+Please use the [latest release](https://github.com/mattpannella/pupdate/releases/latest/) before reporting issues; older builds are not supported.
 
-## Easy Mode ##
+---
 
-If you just want to use this utility, do not clone the source repository. Just download the [latest release](https://github.com/mattpannella/pupdate/releases/latest/). Unzip it, put the executable file for your platform (windows, mac os, or linux) in the root of your sd card, and run the program.
+## Easy mode
 
-At the main menu run `Settings` to have it walk through the available settings for you.
+Do **not** clone the repo if you only want to run the tool. Download the latest release, unzip it, place the executable for your OS on the **root of your SD card** (or another folder you use as the install path), and run it.
 
-## Interactive Console Menu ##
+Use **Settings** from the main menu to walk through toggles, or edit `pupdate_settings.json` for advanced options.
 
-For a full view of the interactive console menu, see [here](MENU.md).
+---
 
-## RTFM ##
+## Interactive menu
 
-[Update All](#update-all) |
-[Update Firmware](#update-firmware) |
-[Select Cores](#select-cores) |
-[Download Assets](#download-assets) |
-[Backup Saves & Memories](#backup-saves--memories) |
-[Image Packs](#pocket-setup---download-platform-image-packs) |
-[Library Images](#pocket-setup---download-pocket-library-images) |
-[GameBoy Palettes](#pocket-setup---download-gameboy-palettes) |
-[PC Engine CD](#pocket-setup---generating-instance-json-files-pc-engine-cd) |
-[Game & Watch](#pocket-setup---generate-game--watch-roms) |
-[Display Modes](#pocket-setup---display-modes) |
-[Super GameBoy Aspect Ratio](#pocket-setup---super-gameboy-aspect-ratio) |
-[Pocket Maintenance](#pocket-maintenance---reinstall-or-uninstall-cores) |
-[Pocket Extras](#pocket-extras) |
-[Settings](#settings) |
-[Additional Settings](#additional-settings) |
-[CLI Commands and Parameters](#cli-commands-and-parameters) |
-[Jotego Beta Cores](#jotego-beta-cores) |
-[Analogizer Setup](#analogizer-setup) |
-[Coin-Op Collection Beta Cores](#coin-op-collection-beta-cores) |
+The full menu tree is documented in **[MENU.md](MENU.md)**.
+
+---
+
+## What Pupdate does (overview)
+
+| Area | What it covers |
+|------|----------------|
+| **Cores** | Downloads and updates openFPGA cores from the library inventory; optional local inventory files; per-core skip, assets, rename, display modes, extras, and **version pinning** |
+| **Firmware** | Checks for and installs Analogue Pocket firmware |
+| **Assets** | ROMs, BIOS, and other files from configured archives (archive.org, custom, core-specific) |
+| **Pocket setup** | Display modes, image packs, library images, Game Boy palettes, instance JSON (e.g. PC Engine CD), Game & Watch ROM build flow, Super GameBoy aspect ratio, Analogizer config, Patreon email, debug helpers |
+| **Maintenance** | Update/install/reinstall/uninstall cores, ROM set archives, prune save states, clear archive cache, pin/unpin core versions |
+| **Extras** | Pocket Extras (additional assets, combination platforms, variant cores) from `pocket_extras.json` |
+
+---
+
+## RTFM (quick links)
+
+[Update All](#update-all) · [Update Firmware](#update-firmware) · [Select Cores](#select-cores) · [Download Assets](#download-assets) · [Backup Saves & Memories](#backup-saves--memories) · [Pocket Setup](#pocket-setup) · [Pocket Maintenance](#pocket-maintenance) · [Pocket Extras](#pocket-extras) · [Pin / unpin core version](#pin--unpin-core-version) · [Settings](#settings) · [Additional settings](#additional-settings) · [Asset archives](#asset-source-archives) · [CLI](#cli-commands-and-parameters) · [Jotego beta](#jotego-beta-cores) · [Analogizer](#analogizer-setup) · [Coin-Op beta](#coin-op-collection-beta-cores) · [Troubleshooting](#troubleshooting) · [Developers](#developers)
 
 ### Update All
-Install/Update all of your cores, plus a bunch of other stuff. It can basically be used as the "do everything I want" option. Everything marked with a * can be turned on/off via settings.
-1. Checks for new firmware updates *
+
+The “do everything” option. Steps marked with * follow your **Settings** toggles.
+
+1. Check for firmware updates *
 2. Compress and backup Saves and Memories *
-3. Installs/updates every core you have selected
-4. Checks for missing required assets for each core you have selected *
-5. Deletes cores that you do not have selected *
-6. Runs the instance JSON generator for each core you have selected (currently, only PC Engine CD) *
-7. Rename every Jotego core you have selected *
+3. Install/update every **selected** core
+4. Download missing required assets for selected cores *
+5. Remove cores you have not selected (when that option is enabled) *
+6. Run the instance JSON builder for supported cores (e.g. PC Engine CD) when enabled *
+7. Rename Jotego cores to friendly titles when enabled *
+
+**Pinned versions:** If a core has `pinned_version` set in settings, the updater resolves that version from the **inventory release list** only. If the pin does not match any listed release, that core is skipped with a message and the run continues.
 
 ### Update Selected
-Presents you with a list of your installed cores and lets you choose which ones you want to update.
+
+*(Pocket Maintenance)* — Pick installed cores to update.
 
 ### Install Selected
-Presents you with a list of cores you don't have installed and lets you choose which ones you want to install and then immediately installs them with having to run Update All.
+
+*(Pocket Maintenance)* — Pick cores you do not have installed yet; installs them without running a full Update All.
 
 ### Update Firmware
-Self-explanatory. Just checks for firmware updates and exits.
+
+Checks for Pocket firmware updates only, then exits.
 
 ### Select Cores
 
-This will prompt you to ask if you want new cores installed by default, with 3 options:
-- Yes
-    - Selecting this automatically chooses all existing cores, and will continue to automatically install new cores as they are released.
-- No
-    - Selecting this means as new cores are released, they will not be installed automatically, nor will you be asked about them. Then you will be presented with a list of all currently available cores, to select from for yourself.
-- Ask
-    - Selecting this means as new cores are released, you will be notified each time you run the app and have the option to select them for installation.  Then you will be presented with a list of all currently available cores, to select from for yourself.
+Asks how **new** cores should be handled:
+
+- **Yes** — All current cores selected; new cores auto-install as they appear.
+- **No** — New cores are not installed automatically; you are not prompted. You then choose from the full list which cores to manage.
+- **Ask** — Each run can prompt for new cores; you still choose from the full list for your baseline.
 
 ### Download Assets
 
-Checks for missing assets for each core you have selected (mainly arcade ROM files and BIOSes).
+Fetches missing assets (ROMs, BIOS, etc.) for **selected** cores from your configured archives.
 
-_Note: You are responsible for finding and adding your own ROMs for non-arcade cores._
+*You supply your own ROMs for non-arcade cores where the archive does not provide them.*
 
 ### Backup Saves & Memories
 
-This will compress the Saves and Memories directories from your Pocket to the location specified in the config settings.
+Zips the Pocket **Saves** and **Memories** folders to the path in settings (default: `Backups` next to the executable unless overridden).
 
-### Pocket Setup - Display Modes
+---
 
-- Enable Recommended Display Modes
-  
-This enables a curates set of display modes and applies them to specific cores that you have installed. This list can be found in the [`display_modes.json`](display_modes.json) file. If you wish to make changes to this file, download it from GitHub and place it in the same directory as the pupdate executable. Then set `use_local_display_modes` to `true` in your `pupdate_settings.json` file.
+## Pocket Setup
 
-- Enable Selected Display Modes for All Cores
+### Display modes
 
-This presents you with a list of all of the supported display modes and lets you select which ones you want to apply. Then it applies those display modes to all of the cores you have installed.
+- **Enable Recommended Display Modes** — Applies the curated list from [`display_modes.json`](display_modes.json) to the cores that reference those modes.
+- **Enable Selected Display Modes** — You pick modes from the full list; they are applied to **all** installed cores that support them.
+- **Enable Selected Display Modes for Selected Cores** — Same picker, then you choose which installed cores receive them.
+- **Reset All / Selected Customized Display Modes** — Restore core defaults.
+- **Change Display Modes Option Setting** — **Merge** (combine with core defaults), **Overwrite** (replace), or **Ask** each time.
 
-- Enable Selected Display Modes for Select Cores
+To override the hosted `display_modes.json`, place a copy next to the executable and set `use_local_display_modes` to `true`.
 
-This presents you with a list of all of the supported display modes and lets you select which ones you want to apply. Next, you'll be asked to select which of your installed cores you want to apply the display modes to. Then it applies those display modes to the cores you have selected.
+### Download Platform Image Packs
 
-- Reset All Customized Display Modes
+Lists image packs (from [`image_packs.json`](image_packs.json)), downloads and extracts to `Platforms/_images`.
 
-This will reset all of the cores with customized display modes back to the original list that was specified by the core.
+### Download Pocket Library Images
 
-- Reset Selected Customized Display Modes
+Downloads Spiritualized1997’s system library images for Pocket Library.
 
-This will reset the selected cores with customized display modes back to the original list that was specified by the core.
+### Download GameBoy Palettes
 
-- Change Display Modes Option Setting
+Downloads palette packs maintained by [davewongillies](https://github.com/davewongillies/openfpga-palettes) and others (see original palette credits in prior releases); large collection of official and community palettes.
 
-This will prompt you to ask how you want to apply the display modes to the cores, with 3 options:
-- Merge
-  - Selecting this will merge the selected or recommended display modes with the ones specified by the core.
-- Overwrite
-  - Selecting this will overwrite the display modes specified by the core with the selected or recommended ones.
-- Ask
-  - Selecting this will ask you if you want to merge or overwrite the core specified display modes with the selected or recommended ones each time you run it.
+### Generating instance JSON files (PC Engine CD)
 
-### Pocket Setup - Download Platform Image Packs
+- Supported workflow is centered on **PC Engine CD**; put games under `/Assets/{platform}/common`, one game per folder (full game title as folder name).
+- Games should be **cue/bin**. The generated JSON uses the **cue file name** as the base name—name the cue with the full title too.
+- **Update All** or **Generate Instance JSON Files** walks `common` and builds launch JSONs.
+- Disable in Update All with `build_instance_jsons`: `false` in settings.
+- Optional: local [`ignore_instance.json`](ignore_instance.json) with `use_local_ignore_instance_json` if you maintain exclusions.
 
-This will present you with a list of available image packs and automatically download and extract it to the Platforms/_images directory for you
+### Generate Game & Watch ROMs
 
-### Pocket Setup - Download Pocket Library Images
+Create:
 
-This will download the System Library Images that were published by Spiritualized1997. They are used for the Library functionality on the Pocket.
+- `/Assets/gameandwatch/agg23.GameAndWatch/artwork`
+- `/Assets/gameandwatch/agg23.GameAndWatch/roms`
 
-### Pocket Setup - Download GameBoy Palettes
+Put `[game].zip` in each; run the menu item to build. Game & Watch **asset downloads** are configured under `archives` (core-specific archive for `agg23.GameAndWatch`)—enable/configure there rather than a separate global toggle.
 
-This will download the palette files for the Pocket GameBoy cartridges. This is currently maintained by [davewongillies](https://github.com/davewongillies/) on [GitHub](https://github.com/davewongillies/openfpga-palettes) and by R.A.Helllord on [Discord](https://discord.com/channels/834264850230018058/1199625145405407273) and [Reddit](https://www.reddit.com/r/AnaloguePocket/comments/18q2iz1/collection_of_all_official_game_boy_color_and/).
+### Super GameBoy aspect ratio
 
-Contents:
-- All official GBC, SGB, NSO, and 3DS VC palettes
-- Custom palettes for all Limited Edition Pockets
-- SGB2 Vaporwave Edition palettes courtesy of flamepanther
-- Trashuncle's palettes for Mister
-- Sameboy and BGB palettes
-- Pipboy palettes (Amber, Green, Blue, and White)
-- 300+ palettes covering a ton of systems and themes by TheWolfBunny64
+Apply **8:7** to chosen `Spiritualized.SuperGB*` cores, or restore **4:3**.
 
-### Pocket Setup - Generating Instance JSON Files (PC Engine CD)
+### Analogizer Config
 
-- Only supported by PC Engine CD, currently
+**Jotego** vs **Standard** wizards for Analogizer JSON. See [Analogizer setup](#analogizer-setup).
 
-- Put your games in /Assets/{platform}/common
+### Set Patreon Email Address
 
-- Each game needs to be in its own directory (and be sure to name the directory the full title of the game)
+Used with **Coin-Op Collection beta** license fetch; also editable here if you change Patreon email.
 
-- Examples:
-    - /Assets/pcecd/common/Rondo of Blood
-    - /Assets/pcecd/common/Bonk
-    - etc
+### Print openFPGA Category Structure
 
-- All games (for PC Engine CD) must be in cue/bin format. The generated json file will be saved using the same filename as the cue file, so be sure to also name that with the full title of the game
+Prints a summary of platform categories and cores (debug / reference).
 
-- When you run the `Generate Instance JSON Files` or `Update All` menu items, it will search through every directory in common and create a json file that can be launched by the core
+---
 
-- You can disable this process in Update All by setting `build_instance_jsons` to `false` in your settings file, if you don't want it to run every time you update.
+## Pocket Maintenance
 
-### Pocket Setup - Generate Game & Watch ROMs
+- **Update Selected / Install Selected** — See above.
+- **Reinstall All / Select Cores** — Clean reinstall of core files (ROMs and saves are not removed).
+- **Uninstall Select Cores** — Optional removal of core-specific **Assets**; ROMs/saves untouched.
+- **Manage ROM Set Archives** — Sync and manage ROM set definitions ([`romsets.json`](romsets.json)).
+- **Prune Save States** — Trims old save states under Memories.
+- **Clear Archive Cache** — Deletes cached archive downloads when **cache archive files** is enabled.
+- **Pin/Unpin Core Version** — See [next section](#pin--unpin-core-version).
 
-How to build game and watch roms that are compatible with the Pocket:
+---
 
-Create 2 new folders.
+## Pin / unpin core version
 
-`/Assets/gameandwatch/agg23.GameAndWatch/artwork` and `/Assets/gameandwatch/agg23.GameAndWatch/roms`
+For installed cores with a GitHub-backed inventory entry:
 
-Place your `[artwork].zip` files into the artwork folder and your `[rom]`.zip files into the roms folder
+1. Choose **Unpin**, **Select from releases list**, **Enter version manually**, or **Go Back**.
+2. **Select from releases list** opens a **paginated** list of versions from the inventory (newest-first by release date). Pick one to pin.
+3. **Enter version manually** stores any string; it must match a **`metadata.version`** value in the inventory’s `releases` array for updates to succeed.
 
-Should look like this:
+**Update behavior:** The pinned ZIP URL is taken **only** from the inventory release that matches the pin (with simple `v` prefix normalization). There is **no** GitHub API fallback for pins. If the pin is missing from `releases`, the core is **skipped** for that run with a clear message.
 
-```
-/Assets/gameandwatch/agg23.GameAndWatch/artwork/gnw_dkong.zip
+---
 
-/Assets/gameandwatch/agg23.GameAndWatch/roms/gnw_dkong.zip
-```
+## Pocket Extras
 
-Now just run the menu option in the updater and it will build your games
+Third-party bundles defined in [`pocket_extras.json`](pocket_extras.json). Each entry can show a description and links before install (`show_menu_descriptions` in settings).
 
-### Pocket Setup - Super GameBoy Aspect Ratio
+- **Additional Assets** — Needs the base core; extends ROMs or multi-game support.
+- **Combination Platforms** — Multiple cores under one platform entry.
+- **Variant Cores** — Alternate core packages alongside the original.
 
-This allows you to apply the 8:7 aspect ratio to any of the Super GameBoy cores you may have installed. When selected you will be asked which cores you want to do this for.
+Exact menu labels are built at runtime; see **[MENU.md](MENU.md)** for a current snapshot.
 
-The 8:7 aspect ratio gives you a more 'full screen' look and feel on the Pocket.
+---
 
-You also have the ability to reset any of the Super GameBoy cores back to the original 4:3 aspect ratio.
+## Settings
 
-### Pocket Maintenance - Reinstall or Uninstall Cores
+Toggles exposed in the **Settings** menu (stored in `pupdate_settings.json`):
+
+| Name | Description |
+|------|-------------|
+| Download Firmware Updates | Firmware check during Update All |
+| Download Missing Assets | Asset check during Update All |
+| Build game JSON Files | Instance JSON builder during Update All |
+| Delete cores, not managed by pupdate | Remove unmanaged cores from SD when enabled |
+| Automatically rename Jotego cores | Friendly platform names after install |
+| Use CRC check | Verify assets by CRC; re-download if mismatch |
+| Preserve Platforms folder | Avoid overwriting `Platforms` on Update All |
+| Skip alternative ROMs | Ignore `_alternatives` folders when fetching assets (default on) |
+| Compress and backup Saves and Memories | Backup during Update All |
+| Show Menu Descriptions | Prompts/descriptions for Pocket Extras and similar |
+| Use custom archive | Use the preconfigured “custom” archive entry instead of default archive.org |
+| Automatically install updates to Pupdate | Self-update without prompt on startup |
+| Use Local Pocket Extras | Use local `pocket_extras.json` |
+| Use Local Display Modes | Use local `display_modes.json` |
+| Cache downloaded archive files locally | Keep a reusable cache; optional cache path in JSON |
+| Coin-Op Collection Beta Access | Enables beta license flow (see [Coin-Op](#coin-op-collection-beta-cores)) |
+| Adds a description element to the video.json display modes | Non-breaking extra field in generated video JSON |
+| Hide and uninstall Analogizer core variants | Hides Analogizer-specific core variants |
+
+Game & Watch (and other **core-specific** archives) are enabled in the `archives` array in JSON, not via a separate Settings row.
+
+---
+
+## Additional settings
+
+Edit `pupdate_settings.json` for keys that are not bool menu toggles:
+
+| Name | Description |
+|------|-------------|
+| `config.github_token` | Used for GitHub API calls (rate limits) |
+| `config.download_new_cores` | `yes` / `no` / `ask` — set by Select Cores |
+| `config.display_modes_option` | `merge` / `overwrite` / `ask` |
+| `config.patreon_email_address` | Patreon email for Coin-Op beta license |
+| `config.backup_saves_location` | Backup output directory |
+| `config.temp_directory` | Override temp extract path (default: under install path) |
+| `config.archive_cache_location` | Override archive cache directory when caching is on |
+| `config.suppress_already_installed` | Reduce “already installed” console noise |
+| `config.use_local_cores_inventory` | Use local **`cores.json`** and **`platforms.json`** (openFPGA Library **v3** format) next to the executable |
+| `config.use_local_blacklist` | Use local `blacklist.json` instead of downloading |
+| `config.use_local_image_packs` | Use local `image_packs.json` |
+| `config.use_local_ignore_instance_json` | Use local `ignore_instance.json` |
+| `archives` | Archive definitions: `internet_archive`, `custom_archive`, `core_specific_archive`, `core_specific_custom_archive` (see below) |
+| `credentials.internet_archive` | Optional archive.org username/password |
+| `core_settings.<core_id>.*` | Per core: `skip`, `download_assets`, `platform_rename`, `pocket_extras`, `pocket_extras_version`, `display_modes`, `original_display_modes`, `selected_display_modes`, `requires_license`, **`pinned_version`** |
+
+### Asset blacklist
+
+[`blacklist.json`](blacklist.json) lists filenames **not** downloaded as assets. Entries support `*` and `?` wildcards; matching applies to the full slot path and to the file name alone (useful for paths like `subfolder/game.bin`).
+
+---
+
+## Asset source archives
+
+The `archives` array in `pupdate_settings.json` defines where assets come from. Stock config includes a default **archive.org** archive and a **Retrodriven** custom archive; you can switch via **Use custom archive** or edit JSON.
+
+**Types**
+
+- **`internet_archive`** — `name`, `archive_name` (archive.org identifier).
+- **`custom_archive`** — `name`, `url`, `index` (index format per [archive.org JSON API](https://archive.org/developers/md-read.html)).
+- **`core_specific_archive`** — Same as internet_archive but scoped to one core `name`; optional `file_extensions` **or** `files` (not both); optional `one_time`.
+- **`core_specific_custom_archive`** — Like core-specific but with `url` + `index`.
+
+Example `core_specific_archive`:
 
-These give you the ability to reinstall all or select cores. The reinstall will erase and reinstall all core specific files and assets. It will not touch your ROMs or Save files.
-
-If you wish to uninstall one or more cores, selecting 'Uninstall Select Cores' will allow you to choose which cores you'd like to remove. It will also prompt you to ask if you wish to remove core specific assets. Doing so will not touch your ROMs or Save files. 
-
-### Pocket Extras
-
-This section contains some extra functionality that individuals have created. Each item in this menu will provide a description and links to the authors GitHub before installing it. That way you get more information and can choose accordingly.
-
-_Note: If you are an advanced user, you can disable the description functionality by setting the `show_menu_description` config setting to `false`_
-
-There are 3 main categories:
-
-#### Additional Assets
-
-This contains extras that enhance or modify existing cores. For example, addition additional ROM support to Arcade cores or allowing an Arcade core to load multiple games rather than just one.
-
-This type of extra requires you have the necessary core installed. If you don't, you will be prompted to install it.
-
-#### Combination Platforms
-
-This contains new platforms that combine multiple cores into a single one. This helps in reducing the number of items you see in your openFPGA menu on your Pocket and to leverage the 'Change Core' functionality.
-
-#### Variant Cores
-
-This contains a list of alternate core setups. These take existing cores and make copies of them with some changes, leaving the original core intact and providing new functionality with the additional core.
-
-### Settings
-
- The following settings are all available via the `Settings` menu item.
-
-| Name                                     | Description                                                                                                                                                                                                                                                                      |
-|------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Download Firmware Updates                | Check for firmware updates when running "Update All"                                                                                                                                                                                                                             |
-| Download Missing Assets                  | Check for missing assets (ROMs, BIOS files, etc) when running "Update All"                                                                                                                                                                                                       |
-| Download Game & Watch ROMS               | Download Game & Watch ROMS when running "Update All"                                                                                                                                                                                                                             |
-| Build game JSON Files                    | Run the Instance JSON builder during "Update All"                                                                                                                                                                                                                                |
-| Delete cores, not managed by pupdate     | Any core that is available via pupdate, but you have not chosen to be managed by pupdate, will be uninstalled, if found on your SD card when running "Update All"                                                                                                                               |
-| Automatically rename Jotego cores        | Jotego's cores will be renamed to the correct titles of the platforms they are emulating, when running "Update All". example: jtcontra is Contra                                                                                                                                 |
-| Use CRC check                            | Use CRC file hashes to verify Asset files, and re-download if needed. When running "Update All" or "Download Required Assets"                                                                                                                                                    |
-| Preserve Platforms folder                | Don't overwrite changes made to files in the Platforms folder when running "Update All"                                                                                                                                                                                          |
-| Skip alternative ROMs                    | Ignore files if they are in a folder named "_alternatives" when checking for Assets (Note: this is on by default)                                                                                                                                                                |
-| Compress and backup Saves and Memories   | This will compress and backup the Saves and Memories directory to the specified location. By default, a Backups directory will be created off the root. The location can be changed manually by setting the "backup_saves_location" with the absolute path in the settings file. |
-| Show Menu Descriptions                   | This will show descriptions for some of the advanced menu items after they are selected, including a prompt asking if you want to proceed. This is enabled by default.                                                                                                           |
-| Use custom archive                       | Allows you to use a custom site for Asset file checking (there is a pre-configured site available). The actual URL of the custom site can be set manually by editing the settings file in an editor.                                                                             |
-| Automatically install updates to Pupdate | Turn this on and the application will automatically update itself without asking for input, when you start it.                                                                                                                                                                   |
-| Use Local Pocket Extras                  | Turn this on and place the `pocket_extras.json` file in the same directory as `pupdate` and it will use the local file instead of getting it from GitHub.                                                                                                                        |
-| Use Local Display Modes                  | Turn this on and place the `display_modes.json` file in the same directory as `pupdate` and it will use the local file instead of getting it from GitHub.                                                                                                                        |
-
-
-### Additional Settings
-
- The following settings can be set by editing `pupdate_settings.json` in a text editor.
-
-| Name                         | Description                                                                                                                                                                                                                                                                                                                                                                                                     |
-|------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| config.archive_name          | The account on archive.org that the app will use to check for Assets                                                                                                                                                                                                                                                                                                                                            |
-| config.github_token          | The app will use this when making API calls to GitHub                                                                                                                                                                                                                                                                                                                                                           |
-| config.download_new_cores    | This will be set automatically by the `Select Cores` menu item. It can be set to "yes", "no", or "ask"                                                                                                                                                                                                                                                                                                          |
-| config.display_modes_option  | This will be set automatically by any of the `Display Modes` menu items. It can be set to "merge", "overwrite", or "ask"                                                                                                                                                                                                                                                                                        |
-| config.custom_archive        | You can set a custom URL here, if you don't want to use the default. `index` is a relative path to the index of your custom site's files. This is not required, but it's needed for CRC checking. If you have CRC checking enabled, the setting will be ignored unless this provides the necessary format. It must match the output of archive.org's json endpoint. https://archive.org/developers/md-read.html |
-| config.backup_saves          | Set this to `true` if you want your Saves directory to be backed up automatically during `Update All`                                                                                                                                                                                                                                                                                                           |
-| config.backup_saves_location | Put the absolute path to the backup location here to backup your `Saves` directory to. This defaults to `Backups` in the current directory when not set.                                                                                                                                                                                                                                                        |
-| config.temp_directory        | When left `null` all zip files are downloaded and extracted using a temp directory in your pocket install location. If you supply a path, that will be used, instead                                                                                                                                                                                                                                            |
-| core_settings                | This allows you to set a subset of settings on a per core basis. It contains a list of every core, with 3 options. `skip`, `download_assets`, and `platform_rename`. You can use these to override your global defaults                                                                                                                                                                                         |
-
-### Asset Source Archives
-Open pupdate_settings.json and find the `archives` section.
-Pupdate comes with 2 pre-configured asset archives that you can choose between. By default it uses `default`, or if you go into the Settings menu you can switch to using the `custom` archive. The default one is hosted on archive.org and the custom one is hosted by Retrodriven.
-There are 4 types of archives you can configure, in addition to the 2 pre-configured ones, with various settings.
-#### internet_archive
-The archive is hosted on archive.org.
-Settings:
- - `name` A unique identifier
- - `archive_name` The name of the archive on archive.org. Example: htgdb-gamepacks for https://archive.org/details/htgdb-gamepacks
-#### custom
-The archive is hosted on any other website, other than archive.org
-Settings:
- - `name` Unique identifier
- - `url` Example: https://www.mywebsite.com
- - `index` Example: endpoint.php
-
-This is used for any other site that is not archive.org. It requires a `url` (the full url to where the files are hosted) and `index` (This must match the output of archive.org's json endpoint. https://archive.org/developers/md-read.html)
-#### core_specific_archive
-This is an archive hosted on archive.org, but it will only be used by 1 core when retrieving assets.
- - `name` This must be the name of a core. Example: agg23.GameAndWatch
- - `archive_name` The name of the archive on archive.org. Example: htgdb-gamepacks for https://archive.org/details/htgdb-gamepacks
- - `file_extensions` An optional array of file extensions. pupdate will automatically download every file of that extension. Example: [".gnw"]
- - `files` An optional array of file names. Instead of checking extensions, you can explicitely list the files on the archive. 
- - `one_time` Set to true if you only want pupdate to download the file(s) one time. This is useful if you have a zip file filled with roms hosted on an archive, because pupdate will download the zip once (and extract it) and then next time you run update all, it will skip the file.
-
-Note: you can't use both file_extensions and files together. It must be one or the other.
-Here is an example of a fully configured core_specific_archive:
 ```json
 {
     "name": "Spiritualized.2600",
@@ -282,162 +260,167 @@ Here is an example of a fully configured core_specific_archive:
       "@Atari 2600 2021-04-06.zip"
     ],
     "enabled": true,
-    "one_time": true,
-  }
+    "one_time": true
+}
 ```
-#### core_specific_custom_archive
-This works just like core_specific_archive, only you need to specify a url and index (like the regular custom archive)
-Here is an example of a fully configured core_specific_custom_archive:
-```json
-{
-    "name": "agg23.GameAndWatch",
-    "type": "core_specific_custom_archive",
-    "archive_name": "fpga-gnw-opt",
-    "url": "https://updater.retrodriven.com/fpga-gnw-opt",
-    "index": "index.php",
-    "file_extensions": [
-      ".gnw"
-    ],
-    "enabled": true,
-    "one_time": false,
-  }
-  ```
 
-### Internet Archive Credentials
-Some archive.org sites require authentication to download the files. This makes them incompatible with pupdate, unless you supply your credentials to be used by the app. They can be put into your settings.json file in the `credentials` section like this:
+---
+
+## Internet Archive credentials
+
+Some items need login. Add to `pupdate_settings.json`:
+
 ```json
 "credentials": {
-    "internet_archive": {
-      "username": "me@something.com",
-      "password": "12345"
-    }
+  "internet_archive": {
+    "username": "me@something.com",
+    "password": "12345"
   }
-```  
-## CLI Commands and Parameters
-
-```
-  menu                     Interactive Main Menu (Default Verb)
-    -p, --path                Absolute path to install location
-    -s, --skip-update         Go straight to the menu, without looking for an update
-
-  fund                     List sponsor links. Lists all if no core is provided
-    -p, --path                Absolute path to install location
-    -c, --core                The core to check funding links for
-    
-  update                   Run update all. (Can be configured via the settings menu)
-    -p, --path                Absolute path to install location
-    -c, --core                The core you want to update. Runs for all otherwise
-    -r, --clean               Clean install. Remove all existing core files, and force a fresh re-install
-  
-  uninstall                Delete a core
-    -p, --path                Absolute path to install location
-    -c, --core                The core you want to uninstall. Required
-    -a, --assets              Delete the core specific Assets folder. ex: Assets/{platform}/{corename}
-
-  assets                   Run the asset downloader
-    -p, --path                Absolute path to install location
-    -c, --core                The core you want to download assets for.
-
-  firmware                 Check for Pocket firmware updates
-    -p, --path                Absolute path to install location
-
-  images                   Download image packs
-    -p, --path                Absolute path to install location
-    -o, --owner               Image pack repo username
-    -i, --imagepack           Github repo name for image pack
-    -v, --variant             The optional variant
-
-  instance-generator       Run the instance JSON generator for PC Engine CD
-    -p, --path                Absolute path to install location
-
-  backup-saves             Compress and backup Saves & Memories directories
-    -p, --path                Absolute path to install location
-    -l, --location            Absolute path to backup location. Required
-    -s, --save                Save settings to the config file for use during 'Update All'
-
-  gameboy-palettes         Run the instance JSON generator
-    -p, --path                Absolute path to install location
-
-  pocket-library-images    Run the instance JSON generator
-    -p, --path                Absolute path to install location
-
-  pocket-extras            Download Pocket Extras
-    -p, --path                Absolute path to install location
-    -n, --name                The name of the extra to install. Required
-    -i, --info                Shows the details for the specified 'name'
-    -l, --list                Lists out all of the values for 'name' and their details
-
-  display-modes            Enable the curated list of Display Modes for all cores
-    -p, --path                Absolute path to install location
-
-  prune-memories           Delete all but the latest save states for each game (defaults to all cores)
-   -p, --path                 Absolute path to install location
-   -c, --core                 The core you want to prune memories for
-
-  analogizer-setup         Run the setup wizard to generate Analogizer settings files (By default, runs the standard setup)
-   -p, --path                 Absolute path to install location
-   -j, --jotego               Run the setup for Jotego's cores
-
-  update-self              Check for updates to pupdate
-
-  help                     Display more information on a specific command.
-
-  version                  Display version information.
+}
 ```
 
-examples:
+---
 
-`/path/to/pupdate -p /path/to/sdcard/`
+## CLI commands and parameters
 
-`/path/to/pupdate update -c boogermann.bankpanic`
+```
+  menu                     Interactive main menu (default)
+    -p, --path                Absolute path to Pocket install / SD root
+    -s, --skip-update         Open menu without checking for pupdate self-update
 
-`/path/to/pupdate assets -c jotego.jtcontra`
+  fund                     List sponsor / funding links
+    -p, --path
+    -c, --core                Optional core id filter
 
-`/path/to/pupdate images -i pocket-platform-images -o dyreschlock -v home`
+  update                   Run Update All (respects settings)
+    -p, --path
+    -c, --core                Optional single core id
+    -r, --clean               Clean reinstall cores
 
-## Jotego Beta Cores
+  uninstall                Remove a core
+    -p, --path
+    -c, --core                Required
+    -a, --assets              Also remove Assets/{platform}/{core}
 
-Now that Jotego is releasing his beta cores publicly (and requiring a beta key to play them), you can just drop the `jtbeta.zip` file from patreon onto the root of your sd card and run Update All, and it will automatically copy the beta key to the correct folders for the cores that need it. It also will let you install the yhe cores directly from the updater, now. Make sure you don't rename the file, it's going to look for exactly `jtbeta.zip`
+  assets                   Download assets only
+    -p, --path
+    -c, --core                Optional core id
 
-## Analogizer Setup
+  firmware                 Check firmware
+    -p, --path
 
-Go to `Pocket Setup` > `Analogizer Config` and then select the configuration tool for either the Standard cores (maintained by [RndMnkIII](https://github.com/RndMnkIII)) or Jotego's cores. For any troubleshooting related to your Analogizer settings, contact the core author. Check [supported cores](https://github.com/RndMnkIII/Analogizer/wiki/Supported-Cores-and-How-to-Configure-Them).
+  images                   Download a platform image pack
+    -p, --path
+    -o, --owner               Repo owner
+    -i, --imagepack           Repo name
+    -v, --variant             Optional variant
 
-## Coin-Op Collection Beta Cores
+  instance-generator       Run instance JSON generation (PC Engine CD workflow)
+    -p, --path
 
-- Go into Settings and turn on the Coin-Op Beta setting
-- Next time you run Update All it will prompt you to enter your email address that you use for patreon.
-- From now on each time you run Update All it will pull your beta license automatically, so that when you install Coin-Op beta cores, they will function correctly
-- If you ever want to change the email address, go into the Pocket Setup menu
+  backup-saves             Backup Saves & Memories
+    -p, --path
+    -l, --location            Backup folder (required)
+    -s, --save                Persist location in config for Update All
+
+  gameboy-palettes         Download Game Boy palette pack
+    -p, --path
+
+  pocket-library-images    Download Pocket library images
+    -p, --path
+
+  pocket-extras            Install a Pocket Extra by id
+    -p, --path
+    -n, --name                Extra id (required for install)
+    -i, --info                Show details for name
+    -l, --list                List all extras
+
+  display-modes            Apply **recommended** display modes (same as curated menu action)
+    -p, --path
+
+  prune-memories           Prune old save states (Memories)
+    -p, --path
+    -c, --core                Optional core id
+
+  analogizer-setup         Run Analogizer setup wizard
+    -p, --path
+    -j, --jotego              Jotego-specific wizard
+
+  clear-archive-cache      Clear cached archive downloads (same as Pocket Maintenance → Clear Archive Cache)
+    -p, --path
+    -y, --yes                Required confirmation flag
+
+  update-self              Check for pupdate updates
+
+  help                     Help for a verb
+
+  version                  Print version
+```
+
+**Examples**
+
+```text
+pupdate -p /path/to/sdcard/
+pupdate update -c boogermann.bankpanic
+pupdate assets -c jotego.jtcontra
+pupdate images -i pocket-platform-images -o dyreschlock -v home
+```
+
+---
+
+## Jotego beta cores
+
+Place **`jtbeta.zip`** from Patreon on the **root of the SD card** (exact name). **Update All** copies the beta key into the folders that need it. Do not rename the file.
+
+---
+
+## Analogizer setup
+
+**Pocket Setup → Analogizer Config** — choose **Standard** ([RndMnkIII](https://github.com/RndMnkIII)) or **Jotego** flow. For problems with generated files, ask the core author. [Supported cores](https://github.com/RndMnkIII/Analogizer/wiki/Supported-Cores-and-How-to-Configure-Them).
+
+---
+
+## Coin-Op Collection beta cores
+
+1. Enable **Coin-Op Collection Beta Access** in Settings.
+2. On the next Update All, enter the **Patreon email** tied to your subscription (or set it under **Pocket Setup → Set Patreon Email Address**).
+3. Later runs can refresh the license automatically.
+
+---
 
 ## Troubleshooting
 
- - Slow asset downloads? Try toggling `use_custom_archive` to true, in your settings.
+- **Slow assets** — Try **Use custom archive** or another archive entry in `archives`.
+- **`Error in framework RS: bridge not responding`** — Run pupdate on a local disk, then copy results to the SD card.
+- **`Missing ROM ID [1]` in `_alternatives`** — Turn **off** “Skip alternative ROMs” if you need those files installed.
+- **Pinned core skipped** — Pin must match a version string present in the core’s inventory `releases` list.
 
- - If you run the update process and get a message like `Error in framework RS: bridge not responding` when running a core, try to run the updater in a local folder on your pc, and then copy the files over to the sd card afterwards. I'm not entirely sure what the issue is, but I've seen it reported a bunch of times now and running the updater locally seems to help.
+---
 
- - I keep getting a `Missing ROM ID [1]` message when trying to launch arcade games in the _alternatives folder. Check your settings and make sure you have `Skip Alternative ROMS` turned off.
-  
+## Developers
 
-## Submitting new cores ##
+- **.NET** — `dotnet restore`, `dotnet build`, `dotnet run --project pupdate.csproj -- [verb] [options]`.
+- **Layout** — `src/Program.cs`, `src/partials/`, `src/services/`, `src/models/`, `src/options/`.
+- **Legacy** — `pupdate_legacy.csproj` targets .NET Framework where applicable.
 
-You can submit new cores here [https://github.com/openfpga-cores-inventory/analogue-pocket](https://github.com/openfpga-cores-inventory/analogue-pocket)
+---
 
-## Credits ##
+## Submitting new cores
 
-Thanks to [neil-morrison44](https://github.com/neil-morrison44). This is a port built on top of the work originally done by him [here](https://gist.github.com/neil-morrison44/34fbb18de90cd9a32ca5bdafb2a812b8).
+[openfpga-cores-inventory / analogue-pocket](https://github.com/openfpga-cores-inventory/analogue-pocket)
 
-### With special thanks to: ### 
-[Michael Hallett](https://github.com/hallem) for contributing a ton to the project.
+---
 
-[RetroDriven](https://github.com/RetroDriven/) for maintaining the arcade rom archive.
+## Credits
 
-[dyreschlock](https://github.com/dyreschlock/pocket-platform-images/tree/main/arcade/Platforms) for hosting the updated platform files for Jotego's cores.
+Thanks to [neil-morrison44](https://github.com/neil-morrison44) — this project builds on [his original script](https://gist.github.com/neil-morrison44/34fbb18de90cd9a32ca5bdafb2a812b8).
 
-[espiox](https://github.com/espiox) for maintaining the game & watch rom archive.
+**With special thanks to**  
+[Michael Hallett](https://github.com/hallem) · [RetroDriven](https://github.com/RetroDriven/) · [dyreschlock](https://github.com/dyreschlock/pocket-platform-images/tree/main/arcade/Platforms) · [espiox](https://github.com/espiox)
 
-## Other Options ##
+---
 
-If you're looking for something with a few more features and a user interface, check out this updater. [https://github.com/RetroDriven/Pocket_Updater](https://github.com/RetroDriven/Pocket_Updater)
+## Other updaters
 
-Or if you want something cross platform that will run on a mac or linux: [https://github.com/neil-morrison44/pocket-sync](https://github.com/neil-morrison44/pocket-sync)
+- [Pocket_Updater](https://github.com/RetroDriven/Pocket_Updater) (GUI, more features)  
+- [pocket-sync](https://github.com/neil-morrison44/pocket-sync) (cross-platform)

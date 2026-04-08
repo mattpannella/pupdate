@@ -6,8 +6,8 @@
 6. Pocket Setup
    1. Manage Display Modes
       1. Enable Recommended Display Modes
-      2. Enable Selected Display Modes for All Cores
-      3. Enable Selected Display Modes for Select Cores
+      2. Enable Selected Display Modes
+      3. Enable Selected Display Modes for Selected Cores
       4. Reset All Customized Display Modes
       5. Reset Selected Customized Display Modes
       6. Change Display Modes Option Setting
@@ -24,15 +24,20 @@
    5. Analogizer Config
       1. Jotego Analogizer Config
       2. Standard Analogizer Config
-   6. Go Back
+   6. Set Patreon Email Address
+   7. Print openFPGA Category Structure
+   8. Go Back
 7. Pocket Maintenance
    1. Update Selected
    2. Install Selected
    3. Reinstall All Cores
    4. Reinstall Select Cores
    5. Uninstall Select Cores
-   6. Prune Save States
-   7. Go Back
+   6. Manage ROM Set Archives
+   7. Prune Save States
+   8. Clear Archive Cache
+   9. Pin/Unpin Core Version
+   10. Go Back
 8. Pocket Extras
    1. Additional Assets
       1. Download extras for Eric Lewis's Donkey Kong
@@ -41,8 +46,7 @@
       4. Download extras for Jotego's Capcom CPS 1 (jtcps1)
       5. Download extras for Jotego's Capcom CPS 1.5 (jtcps15)
       6. Download extras for Jotego's Capcom CPS 2 (jtcps2)
-      7. Download extras for Jotego's Pang / Super Pang (jtpang)
-      8. Go Back
+      7. Go Back
    2. Combination Platforms
       1. Download Toaplan Version 2 Hardware Combination Core
       2. Download Capcom Z80 Hardware Combination Core
@@ -54,10 +58,10 @@
       2. Download Dig Dug II
       3. Download Joust
       4. Download Super GameBoy 2
-      5. Download Super GameBoy 2: Vaperwave Edition
+      5. Download Super GameBoy 2: Vaporwave Edition
       6. Download Dual Aspect Ratio: Super GameBoy
       7. Download Dual Aspect Ratio: Super GameBoy 2
-      8. Download Dual Aspect Ratio: Super GameBoy 2: Vaperwave Edition
+      8. Download Dual Aspect Ratio: Super GameBoy 2: Vaporwave Edition
       9. Go Back
    4. Go Back
 9. Settings

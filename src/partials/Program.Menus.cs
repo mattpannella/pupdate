@@ -210,14 +210,38 @@ internal static partial class Program
             .Add("Analogizer Config            >", analogizerMenu.Show)
             .Add("Set Patreon Email Address", () =>
             {
-                Console.WriteLine($"Current email address: {ServiceHelper.SettingsService.Config.patreon_email_address}");
+                var config = ServiceHelper.SettingsService.Config;
+
+                Console.WriteLine($"Current email address: {config.patreon_email_address}");
+
                 var result = AskYesNoQuestion("Would you like to change your address?");
 
                 if (!result)
                     return;
 
                 string input = PromptForInput();
-                ServiceHelper.SettingsService.Config.patreon_email_address = input;
+                string newEmail = string.IsNullOrWhiteSpace(input) ? null : input.Trim();
+
+                string previousComparable = string.IsNullOrWhiteSpace(config.patreon_email_address)
+                    ? string.Empty
+                    : config.patreon_email_address.Trim();
+                string newComparable = newEmail ?? string.Empty;
+
+                if (string.Equals(previousComparable, newComparable, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    Pause();
+                    return;
+                }
+
+                if (!config.coin_op_beta && newEmail != null)
+                {
+                    if (AskYesNoQuestion("Would you like to enable Coin-Op Collection beta access?"))
+                    {
+                        config.coin_op_beta = true;
+                    }
+                }
+
+                config.patreon_email_address = newEmail;
                 ServiceHelper.SettingsService.Save();
 
                 Pause();
@@ -317,28 +341,7 @@ internal static partial class Program
             })
             .Add("Clear Archive Cache", () =>
             {
-                if (!ServiceHelper.SettingsService.Config.cache_archive_files)
-                {
-                    Console.WriteLine("Archive caching is not enabled.");
-                    Pause();
-                    return;
-                }
-
-                string cacheDir = ServiceHelper.CacheDirectory;
-
-                if (!Directory.Exists(cacheDir))
-                {
-                    Console.WriteLine("Cache directory is already empty.");
-                    Pause();
-                    return;
-                }
-
-                if (AskYesNoQuestion("Are you sure you want to clear the archive cache?"))
-                {
-                    Directory.Delete(cacheDir, recursive: true);
-                    Console.WriteLine("Archive cache cleared.");
-                }
-
+                TryClearArchiveCache(promptForConfirmation: true);
                 Pause();
             })
             .Add("Pin/Unpin Core Version", () =>
@@ -652,7 +655,7 @@ internal static partial class Program
                 string date = r.core?.metadata?.date_release ?? "";
                 string label = string.IsNullOrEmpty(date) ? ver : $"{ver} ({date})";
                 var capturedRelease = r;
-                
+
                 menu.Add(label, thisMenu =>
                 {
                     settings.PinCoreVersion(core.id, capturedRelease.core.metadata.version);
