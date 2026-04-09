@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using Pannella.Helpers;
 using Pannella.Models.Extras;
+using Pannella.Models.PocketLibraryImages;
 using Pannella.Services;
 using GithubRelease = Pannella.Models.Github.Release;
 
@@ -73,6 +74,20 @@ internal static partial class Program
         {
             Console.WriteLine($"                {additionalLink}");
         }
+
+        Console.WriteLine();
+    }
+
+    private static void PrintPocketLibraryImageInfo(PocketLibraryImage image)
+    {
+        Console.WriteLine(image.id);
+        Console.WriteLine($"  {image.menu_label ?? image.id}");
+
+        if (!string.IsNullOrWhiteSpace(image.description))
+            Console.WriteLine(Util.WordWrap(image.description, 80, "    "));
+
+        if (!string.IsNullOrWhiteSpace(image.github_user) && !string.IsNullOrWhiteSpace(image.github_repository))
+            Console.WriteLine($"    https://github.com/{image.github_user.Trim()}/{image.github_repository.Trim()}");
 
         Console.WriteLine();
     }

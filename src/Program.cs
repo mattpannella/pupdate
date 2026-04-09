@@ -3,6 +3,7 @@ using CommandLine;
 using Pannella.Helpers;
 using Pannella.Models;
 using Pannella.Models.Events;
+using Pannella.Models.PocketLibraryImages;
 using Pannella.Options;
 using Pannella.Services;
 
@@ -182,8 +183,49 @@ internal static partial class Program
                     DownloadGameBoyPalettes();
                     break;
 
-                case PocketLibraryImagesOptions:
-                    DownloadPockLibraryImages();
+                case PocketLibraryImagesOptions options:
+                    if (options.List)
+                    {
+                        Console.WriteLine();
+                        Console.WriteLine(
+                            "Spiritualized: run pocket-library-images with no -n to install from your configured archive.");
+                        Console.WriteLine();
+
+                        foreach (PocketLibraryImageMenu menu in ServiceHelper.CoresService.PocketLibraryImagesList)
+                        {
+                            Console.WriteLine($"{menu.menu_title}");
+                            foreach (PocketLibraryImage image in menu.entries)
+                            {
+                                PrintPocketLibraryImageInfo(image);
+                            }
+                        }
+                    }
+                    else if (!string.IsNullOrEmpty(options.Name))
+                    {
+                        PocketLibraryImage image = ServiceHelper.CoresService.GetPocketLibraryImage(options.Name);
+
+                        if (image != null)
+                        {
+                            if (options.Info)
+                            {
+                                Console.WriteLine();
+                                PrintPocketLibraryImageInfo(image);
+                            }
+                            else
+                            {
+                                ServiceHelper.CoresService.DownloadPocketLibraryImages(image);
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Pocket library image '{options.Name}' not found.");
+                        }
+                    }
+                    else
+                    {
+                        ServiceHelper.CoresService.DownloadPockLibraryImages();
+                    }
+
                     break;
 
                 case PocketExtrasOptions options:

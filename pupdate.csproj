@@ -38,6 +38,9 @@
     <None Update="pocket_extras.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="pocket_library_images.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="display_modes.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

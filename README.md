@@ -104,7 +104,10 @@ Lists image packs (from [`image_packs.json`](image_packs.json)), downloads and e
 
 ### Download Pocket Library Images
 
-Downloads Spiritualized1997’s system library images for Pocket Library.
+- **Spiritualized1997 (GB, GBC, GBA, GG)** — hardcoded in the app: `Library_Image_Set_v1.0.zip` from your configured archive.
+- **All other submenu titles and items** come from [`pocket_library_images.json`](pocket_library_images.json) (bundled next to the executable), same idea as Pocket Extras. Each group has a **`menu_title`** (submenu label) and **`entries`** with **`menu_label`**, **`id`**, **`github_user`**, **`github_repository`**, and **`sources`**: an array of **`release_asset`** (zip on the release), **`path_under_extract`** (folder path inside that zip to `.bin` files, `/`-separated), and **`dest_images_subfolder`** (under `System/Library/Images/` on the device). Optional **`post_install_note`** is printed after a successful install (when any files were copied). Enable **Use a local pocket_library_images.json file** in Settings to read only the local copy instead of fetching the catalog from GitHub (see `use_local_pocket_library_images` in `pupdate_settings.json`).
+
+CLI (like `pocket-extras`): `pocket-library-images` alone installs Spiritualized. **`pocket-library-images -l`** lists catalog entry **`id`** values; **`-n <id>`** installs that entry; **`-n <id> -i`** prints details. Example: `pocket-library-images -n codewario_boxarts`.
 
 ### Download GameBoy Palettes
 
@@ -328,6 +331,9 @@ Some items need login. Add to `pupdate_settings.json`:
 
   pocket-library-images    Download Pocket library images
     -p, --path
+    -n, --name                Catalog entry id (omit for Spiritualized archive)
+    -i, --info                Show details for -n
+    -l, --list                List catalog ids (Spiritualized = no -n)
 
   pocket-extras            Install a Pocket Extra by id
     -p, --path

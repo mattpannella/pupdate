@@ -14,6 +14,9 @@
    2. Download Images and Palettes
       1. Download Platform Image Packs
       2. Download Pocket Library Images
+         1. Spiritualized1997 (GB, GBC, GBA, GG)
+         2. … <submenus from pocket_library_images.json> …
+         3. Go Back
       3. Download GameBoy Palettes
    3. Generate ROMs & JSON Files
       1. Generate Instance JSON Files (PC Engine CD)

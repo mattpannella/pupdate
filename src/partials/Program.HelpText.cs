@@ -50,6 +50,9 @@ Usage:
 
   pocket-library-images    Download and install Pocket library images
     -p, --path                Absolute path to install location
+    -n, --name                Catalog entry id from pocket_library_images.json (omit for Spiritualized archive)
+    -i, --info                Show details for the specified name
+    -l, --list                List catalog entries (Spiritualized = run with no -n)
 
   pocket-extras            Download Pocket Extras
     -p, --path                Absolute path to install location

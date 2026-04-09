@@ -40,11 +40,14 @@ backup-saves             Compress and backup Saves & Memories directories
   -l, --location            Absolute path to backup location. Required
   -s, --save                Save settings to the config file for use during 'Update All'
 
-gameboy-palettes         Run the instance JSON generator
+gameboy-palettes         Download and install Game Boy color palettes
   -p, --path                Absolute path to install location
 
-pocket-library-images    Run the instance JSON generator
+pocket-library-images    Download and install Pocket library images
   -p, --path                Absolute path to install location
+  -n, --name                Catalog entry id (required for a GitHub catalog install; omit for Spiritualized)
+  -i, --info                Show details for the specified name
+  -l, --list                List catalog entry ids and descriptions
 
 pocket-extras            Download Pocket Extras
   -p, --path                Absolute path to install location

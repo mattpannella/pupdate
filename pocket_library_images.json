@@ -1,0 +1,201 @@
+{
+  "pocket_library_images": [
+    {
+      "id": "codewario",
+      "menu_title": "CodeWario (GB, GBC, GBA, GG)",
+      "entries": [
+        {
+          "id": "codewario_boxarts",
+          "menu_label": "Box Art",
+          "description": "Box art from codewario/PocketLibraryImages (GB, GBA, GG zips) into System/Library/Images/{GB,GBA,GG}.",
+          "github_user": "codewario",
+          "github_repository": "PocketLibraryImages",
+          "sources": [
+            { "release_asset": "GB.zip", "path_under_extract": "GB/BoxArts", "dest_images_subfolder": "GB" },
+            { "release_asset": "GBA.zip", "path_under_extract": "GBA/BoxArts", "dest_images_subfolder": "GBA" },
+            { "release_asset": "GG.zip", "path_under_extract": "GG/BoxArts", "dest_images_subfolder": "GG" }
+          ]
+        },
+        {
+          "id": "codewario_titles",
+          "menu_label": "Title Images",
+          "description": "Title screens from codewario/PocketLibraryImages into System/Library/Images/{GB,GBA,GG}.",
+          "github_user": "codewario",
+          "github_repository": "PocketLibraryImages",
+          "sources": [
+            { "release_asset": "GB.zip", "path_under_extract": "GB/Titles", "dest_images_subfolder": "GB" },
+            { "release_asset": "GBA.zip", "path_under_extract": "GBA/Titles", "dest_images_subfolder": "GBA" },
+            { "release_asset": "GG.zip", "path_under_extract": "GG/Titles", "dest_images_subfolder": "GG" }
+          ]
+        },
+        {
+          "id": "codewario_snaps",
+          "menu_label": "Gameplay Images (snaps)",
+          "description": "Gameplay snaps from codewario/PocketLibraryImages into System/Library/Images/{GB,GBA,GG}.",
+          "github_user": "codewario",
+          "github_repository": "PocketLibraryImages",
+          "sources": [
+            { "release_asset": "GB.zip", "path_under_extract": "GB/Snaps", "dest_images_subfolder": "GB" },
+            { "release_asset": "GBA.zip", "path_under_extract": "GBA/Snaps", "dest_images_subfolder": "GBA" },
+            { "release_asset": "GG.zip", "path_under_extract": "GG/Snaps", "dest_images_subfolder": "GG" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "neogeo",
+      "menu_title": "Neo Geo",
+      "entries": [
+        {
+          "id": "neogeo_box_eu",
+          "menu_label": "Box Art (EU)",
+          "description": "pocket-neogeo-library-images — BoxArt_EU.zip → System/Library/Images/ngp.",
+          "github_user": "g026r",
+          "github_repository": "pocket-neogeo-library-images",
+          "post_install_note": "Replacing Neo Geo thumbnails may require deleting System/Library/Images/ngp_thumbs.bin on the device (see upstream release notes).",
+          "sources": [
+            { "release_asset": "BoxArt_EU.zip", "path_under_extract": "ngp", "dest_images_subfolder": "ngp" }
+          ]
+        },
+        {
+          "id": "neogeo_box_jp",
+          "menu_label": "Box Art (JP)",
+          "description": "pocket-neogeo-library-images — BoxArt_JP.zip → System/Library/Images/ngp.",
+          "github_user": "g026r",
+          "github_repository": "pocket-neogeo-library-images",
+          "post_install_note": "Replacing Neo Geo thumbnails may require deleting System/Library/Images/ngp_thumbs.bin on the device (see upstream release notes).",
+          "sources": [
+            { "release_asset": "BoxArt_JP.zip", "path_under_extract": "ngp", "dest_images_subfolder": "ngp" }
+          ]
+        },
+        {
+          "id": "neogeo_box_us",
+          "menu_label": "Box Art (US)",
+          "description": "pocket-neogeo-library-images — BoxArt_US.zip → System/Library/Images/ngp.",
+          "github_user": "g026r",
+          "github_repository": "pocket-neogeo-library-images",
+          "post_install_note": "Replacing Neo Geo thumbnails may require deleting System/Library/Images/ngp_thumbs.bin on the device (see upstream release notes).",
+          "sources": [
+            { "release_asset": "BoxArt_US.zip", "path_under_extract": "ngp", "dest_images_subfolder": "ngp" }
+          ]
+        },
+        {
+          "id": "neogeo_title_eu",
+          "menu_label": "Title Images (EU)",
+          "description": "pocket-neogeo-library-images — Title_EU.zip → System/Library/Images/ngp.",
+          "github_user": "g026r",
+          "github_repository": "pocket-neogeo-library-images",
+          "post_install_note": "Replacing Neo Geo thumbnails may require deleting System/Library/Images/ngp_thumbs.bin on the device (see upstream release notes).",
+          "sources": [
+            { "release_asset": "Title_EU.zip", "path_under_extract": "ngp", "dest_images_subfolder": "ngp" }
+          ]
+        },
+        {
+          "id": "neogeo_title_jp",
+          "menu_label": "Title Images (JP)",
+          "description": "pocket-neogeo-library-images — Title_JP.zip → System/Library/Images/ngp.",
+          "github_user": "g026r",
+          "github_repository": "pocket-neogeo-library-images",
+          "post_install_note": "Replacing Neo Geo thumbnails may require deleting System/Library/Images/ngp_thumbs.bin on the device (see upstream release notes).",
+          "sources": [
+            { "release_asset": "Title_JP.zip", "path_under_extract": "ngp", "dest_images_subfolder": "ngp" }
+          ]
+        },
+        {
+          "id": "neogeo_snap_eu",
+          "menu_label": "Gameplay Images (EU)",
+          "description": "pocket-neogeo-library-images — Snap_EU.zip → System/Library/Images/ngp.",
+          "github_user": "g026r",
+          "github_repository": "pocket-neogeo-library-images",
+          "post_install_note": "Replacing Neo Geo thumbnails may require deleting System/Library/Images/ngp_thumbs.bin on the device (see upstream release notes).",
+          "sources": [
+            { "release_asset": "Snap_EU.zip", "path_under_extract": "ngp", "dest_images_subfolder": "ngp" }
+          ]
+        },
+        {
+          "id": "neogeo_snap_jp",
+          "menu_label": "Gameplay Images (JP)",
+          "description": "pocket-neogeo-library-images — Snap_JP.zip → System/Library/Images/ngp.",
+          "github_user": "g026r",
+          "github_repository": "pocket-neogeo-library-images",
+          "post_install_note": "Replacing Neo Geo thumbnails may require deleting System/Library/Images/ngp_thumbs.bin on the device (see upstream release notes).",
+          "sources": [
+            { "release_asset": "Snap_JP.zip", "path_under_extract": "ngp", "dest_images_subfolder": "ngp" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lynx",
+      "menu_title": "Lynx",
+      "entries": [
+        {
+          "id": "lynx_boxart",
+          "menu_label": "Box Art",
+          "description": "pocket-lynx-library-images — BoxArt.zip → System/Library/Images/lynx.",
+          "github_user": "g026r",
+          "github_repository": "pocket-lynx-library-images",
+          "sources": [
+            { "release_asset": "BoxArt.zip", "path_under_extract": "lynx", "dest_images_subfolder": "lynx" }
+          ]
+        },
+        {
+          "id": "lynx_title",
+          "menu_label": "Title Images",
+          "description": "pocket-lynx-library-images — Title.zip → System/Library/Images/lynx.",
+          "github_user": "g026r",
+          "github_repository": "pocket-lynx-library-images",
+          "sources": [
+            { "release_asset": "Title.zip", "path_under_extract": "lynx", "dest_images_subfolder": "lynx" }
+          ]
+        },
+        {
+          "id": "lynx_snap",
+          "menu_label": "Gameplay Images (snaps)",
+          "description": "pocket-lynx-library-images — Snap.zip → System/Library/Images/lynx.",
+          "github_user": "g026r",
+          "github_repository": "pocket-lynx-library-images",
+          "sources": [
+            { "release_asset": "Snap.zip", "path_under_extract": "lynx", "dest_images_subfolder": "lynx" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pce",
+      "menu_title": "PC Engine",
+      "entries": [
+        {
+          "id": "pce_boxart",
+          "menu_label": "Box Art",
+          "description": "pocket-pce-library-images — BoxArt.zip → System/Library/Images/pce.",
+          "github_user": "g026r",
+          "github_repository": "pocket-pce-library-images",
+          "sources": [
+            { "release_asset": "BoxArt.zip", "path_under_extract": "pce", "dest_images_subfolder": "pce" }
+          ]
+        },
+        {
+          "id": "pce_title",
+          "menu_label": "Title Images",
+          "description": "pocket-pce-library-images — Title.zip → System/Library/Images/pce.",
+          "github_user": "g026r",
+          "github_repository": "pocket-pce-library-images",
+          "sources": [
+            { "release_asset": "Title.zip", "path_under_extract": "pce", "dest_images_subfolder": "pce" }
+          ]
+        },
+        {
+          "id": "pce_snap",
+          "menu_label": "Gameplay Images (snaps)",
+          "description": "pocket-pce-library-images — Snap.zip → System/Library/Images/pce.",
+          "github_user": "g026r",
+          "github_repository": "pocket-pce-library-images",
+          "sources": [
+            { "release_asset": "Snap.zip", "path_under_extract": "pce", "dest_images_subfolder": "pce" }
+          ]
+        }
+      ]
+    }
+  ]
+}

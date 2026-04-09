@@ -2,6 +2,7 @@ using ConsoleTools;
 using Pannella.Helpers;
 using Pannella.Models.Extras;
 using Pannella.Models.OpenFPGA_Cores_Inventory.V3;
+using Pannella.Models.PocketLibraryImages;
 using Pannella.Services;
 
 namespace Pannella;
@@ -89,18 +90,48 @@ internal static partial class Program
 
         #region Pocket Setup - Download Files
 
+        var pocketLibraryImagesMenu = new ConsoleMenu()
+            .Configure(menuConfig)
+            .Add("Spiritualized1997 (GB, GBC, GBA, GG)", _ =>
+            {
+                ServiceHelper.CoresService.DownloadPockLibraryImages();
+                Pause();
+            });
+
+        foreach (PocketLibraryImageMenu libraryImageMenu in ServiceHelper.CoresService.PocketLibraryImagesList)
+        {
+            var subMenu = new ConsoleMenu().Configure(menuConfig);
+
+            foreach (PocketLibraryImage image in libraryImageMenu.entries)
+            {
+                PocketLibraryImage img = image;
+                string label = string.IsNullOrWhiteSpace(img.menu_label) ? img.id : img.menu_label.Trim();
+                subMenu.Add(label, _ =>
+                {
+                    ServiceHelper.CoresService.DownloadPocketLibraryImages(img);
+                    Pause();
+                });
+            }
+
+            subMenu.Add("Go Back", ConsoleMenu.Close);
+
+            string parentLabel = libraryImageMenu.menu_title.TrimEnd();
+            if (!parentLabel.EndsWith('>'))
+                parentLabel = string.Concat(parentLabel, " >");
+
+            pocketLibraryImagesMenu.Add(parentLabel, subMenu.Show);
+        }
+
+        pocketLibraryImagesMenu.Add("Go Back", ConsoleMenu.Close);
+
         var downloadFilesMenu = new ConsoleMenu()
             .Configure(menuConfig)
-            .Add("Download Platform Image Packs", _ =>
+            .Add("Download Platform Image Packs >", _ =>
             {
                 PlatformImagePackSelector();
                 Pause();
             })
-            .Add("Download Pocket Library Images", _ =>
-            {
-                DownloadPockLibraryImages();
-                Pause();
-            })
+            .Add("Download Pocket Library Images >", pocketLibraryImagesMenu.Show)
             .Add("Download GameBoy Palettes", _ =>
             {
                 DownloadGameBoyPalettes();
