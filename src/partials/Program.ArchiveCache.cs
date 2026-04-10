@@ -4,7 +4,7 @@ namespace Pannella;
 
 internal static partial class Program
 {
-    private static bool TryClearArchiveCache(bool promptForConfirmation)
+    private static bool ClearArchiveCache(bool promptForConfirmation)
     {
         if (!ServiceHelper.SettingsService.Config.cache_archive_files)
         {

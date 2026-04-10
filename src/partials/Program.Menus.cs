@@ -372,7 +372,7 @@ internal static partial class Program
             })
             .Add("Clear Archive Cache", () =>
             {
-                TryClearArchiveCache(promptForConfirmation: true);
+                ClearArchiveCache(promptForConfirmation: true);
                 Pause();
             })
             .Add("Pin/Unpin Core Version", () =>

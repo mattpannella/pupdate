@@ -294,7 +294,7 @@ internal static partial class Program
                         break;
                     }
 
-                    TryClearArchiveCache(promptForConfirmation: false);
+                    ClearArchiveCache(promptForConfirmation: false);
                     break;
 
                 default:
