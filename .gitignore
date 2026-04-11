@@ -379,7 +379,6 @@ FodyWeavers.xsd
 
 # globs
 Makefile.in
-*.userprefs
 *.usertasks
 config.make
 config.status
@@ -460,3 +459,4 @@ $RECYCLE.BIN/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+*.zip

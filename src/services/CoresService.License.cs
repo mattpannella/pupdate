@@ -56,6 +56,7 @@ public partial class CoresService
         this.ExtractJTBetaKey();
 
         string email = ServiceHelper.SettingsService.Config.patreon_email_address;
+        
         if (email == null && ServiceHelper.SettingsService.Config.coin_op_beta)
         {
             Console.WriteLine("Unable to retrieve Coin-Op Collection Beta license. Please set your patreon email address.");

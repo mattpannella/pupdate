@@ -5,7 +5,7 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
-    <Version>4.9.0</Version>
+    <Version>4.9.1</Version>
     <Description>Keep your Analogue Pocket up to date</Description>
     <Copyright>2025 Matt Pannella</Copyright>
     <Authors>Matt Pannella</Authors>
@@ -35,6 +35,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="pocket_extras.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="pocket_library_images.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="display_modes.json">

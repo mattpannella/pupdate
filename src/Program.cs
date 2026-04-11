@@ -1,7 +1,9 @@
+using System;
 using CommandLine;
 using Pannella.Helpers;
 using Pannella.Models;
 using Pannella.Models.Events;
+using Pannella.Models.PocketLibraryImages;
 using Pannella.Options;
 using Pannella.Services;
 
@@ -9,17 +11,34 @@ namespace Pannella;
 
 internal static partial class Program
 {
+    private static readonly Type[] VerbOptionTypes =
+    {
+        typeof(MenuOptions), 
+        typeof(FundOptions), 
+        typeof(UpdateOptions),
+        typeof(AssetsOptions), 
+        typeof(FirmwareOptions), 
+        typeof(ImagesOptions), 
+        typeof(InstanceGeneratorOptions),
+        typeof(UpdateSelfOptions), 
+        typeof(UninstallOptions), 
+        typeof(BackupSavesOptions), 
+        typeof(GameBoyPalettesOptions),
+        typeof(PocketLibraryImagesOptions), 
+        typeof(PocketExtrasOptions), 
+        typeof(DisplayModesOptions), 
+        typeof(PruneMemoriesOptions),
+        typeof(AnalogizerSetupOptions), 
+        typeof(ClearArchiveCacheOptions),
+    };
+
     private static void Main(string[] args)
     {
         try
         {
             Parser parser = new Parser(config => config.HelpWriter = null);
 
-            var parserResult = parser.ParseArguments<MenuOptions, FundOptions, UpdateOptions,
-                    AssetsOptions, FirmwareOptions, ImagesOptions, InstanceGeneratorOptions,
-                    UpdateSelfOptions, UninstallOptions, BackupSavesOptions, GameBoyPalettesOptions,
-                    PocketLibraryImagesOptions, PocketExtrasOptions, DisplayModesOptions, PruneMemoriesOptions,
-                    AnalogizerSetupOptions>(args)
+            var parserResult = parser.ParseArguments(args, VerbOptionTypes)
                 .WithNotParsed(errors =>
                 {
                     foreach (var error in errors)
@@ -164,8 +183,49 @@ internal static partial class Program
                     DownloadGameBoyPalettes();
                     break;
 
-                case PocketLibraryImagesOptions:
-                    DownloadPockLibraryImages();
+                case PocketLibraryImagesOptions options:
+                    if (options.List)
+                    {
+                        Console.WriteLine();
+                        Console.WriteLine(
+                            "Spiritualized: run pocket-library-images with no -n to install from your configured archive.");
+                        Console.WriteLine();
+
+                        foreach (PocketLibraryImageMenu menu in ServiceHelper.CoresService.PocketLibraryImagesList)
+                        {
+                            Console.WriteLine($"{menu.menu_title}");
+                            foreach (PocketLibraryImage image in menu.entries)
+                            {
+                                PrintPocketLibraryImageInfo(image);
+                            }
+                        }
+                    }
+                    else if (!string.IsNullOrEmpty(options.Name))
+                    {
+                        PocketLibraryImage image = ServiceHelper.CoresService.GetPocketLibraryImage(options.Name);
+
+                        if (image != null)
+                        {
+                            if (options.Info)
+                            {
+                                Console.WriteLine();
+                                PrintPocketLibraryImageInfo(image);
+                            }
+                            else
+                            {
+                                ServiceHelper.CoresService.DownloadPocketLibraryImages(image);
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Pocket library image '{options.Name}' not found.");
+                        }
+                    }
+                    else
+                    {
+                        ServiceHelper.CoresService.DownloadPockLibraryImages();
+                    }
+
                     break;
 
                 case PocketExtrasOptions options:
@@ -225,6 +285,16 @@ internal static partial class Program
                     {
                         AnalogizerSettingsService.ShowWizard();
                     }
+                    break;
+
+                case ClearArchiveCacheOptions options:
+                    if (!options.Yes)
+                    {
+                        Console.WriteLine("Specify -y or --yes to confirm clearing the archive cache.");
+                        break;
+                    }
+
+                    ClearArchiveCache(promptForConfirmation: false);
                     break;
 
                 default:

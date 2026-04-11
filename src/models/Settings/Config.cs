@@ -83,6 +83,9 @@ public class Config
     [Description("Use a local pocket_extras.json file")]
     public bool use_local_pocket_extras { get; set; } = false;
 
+    [Description("Use a local pocket_library_images.json file")]
+    public bool use_local_pocket_library_images { get; set; } = false;
+
     //[JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
     [Description("Use a local display_modes.json file")]
     public bool use_local_display_modes { get; set; } = false;
