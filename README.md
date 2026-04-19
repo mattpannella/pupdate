@@ -402,7 +402,7 @@ Jotego distributes `jtbeta.zip` via a private GitHub repo (`jotego/jtbeta`). Per
 
 1. Open <https://www.patreon.com> in your browser and log in.
 2. Open DevTools (F12 or ⌘⌥I) → **Application** (Chrome/Edge/Brave) or **Storage** (Firefox) → **Cookies** → `https://www.patreon.com`.
-3. Copy the **value** of the `session_id` cookie. (The cookie is `HttpOnly`, so JavaScript tricks like bookmarklets can't read it — DevTools is the reliable way.)
+3. Copy the **value** of the `session_id` cookie.
 4. In pupdate: **Pocket Setup > Set Patreon Session Cookie**, paste the value.
 5. Enable **Auto-fetch Jotego jtbeta.zip from Patreon** in the Settings menu.
 
