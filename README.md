@@ -378,6 +378,41 @@ pupdate images -i pocket-platform-images -o dyreschlock -v home
 
 Place **`jtbeta.zip`** from Patreon on the **root of the SD card** (exact name). **Update All** copies the beta key into the folders that need it. Do not rename the file.
 
+### Auto-fetching `jtbeta.zip` (optional)
+
+Pupdate can download the latest `jtbeta.zip` for you. **Manual placement (putting `jtbeta.zip` on the SD root yourself) always wins** — auto-fetch only runs when no manual key is present. Two optional sources are supported; if both are enabled, GitHub is tried first and Patreon is the fallback.
+
+**Option A — GitHub (recommended):**
+
+Jotego distributes `jtbeta.zip` via a private GitHub repo (`jotego/jtbeta`). Per Jotego's own [Beta Files FAQ](https://github.com/jotego/jtbin/wiki/Beta-Files-FAQ), access is granted to **GitHub Sponsors of Jotego** — and since Jotego's [GitHub Sponsors page](https://github.com/sponsors/jotego) accepts Patreon as a payment route, existing Patreon patrons can get the same sponsor status (and therefore the repo invite) by linking their Patreon to their GitHub account.
+
+1. Make sure you have an active paid Jotego subscription. Either:
+   - Subscribe directly on [Jotego's GitHub Sponsors page](https://github.com/sponsors/jotego), or
+   - If you're already a Patreon patron, [link your Patreon account to GitHub](https://docs.github.com/en/sponsors/sponsoring-open-source-contributors/sponsoring-an-open-source-contributor-through-patreon) so GitHub recognizes your Patreon subscription as a sponsorship.
+2. Accept the invite to `jotego/jtbeta` once it arrives.
+3. Create a GitHub Personal Access Token with read access to private repos (classic PAT with `repo` scope, or a fine-grained PAT with `Contents: Read` on `jotego/jtbeta`).
+4. Set `github_token` in `pupdate_settings.json` to that PAT.
+5. Enable **Auto-fetch Jotego jtbeta.zip from GitHub** in the Settings menu.
+
+**Option B — Patreon session cookie (experimental, fallback):**
+
+> **Experimental and flaky.** This uses Patreon's undocumented frontend API with your browser session cookie, not a supported public API. Cookies expire (usually in weeks, sooner if you log out or clear cookies), and Patreon can change response field names without notice. Prefer Option A if you have any way to. Treat this as a best-effort fallback, not a stable integration.
+
+>  pupdate will **never** use your Patreon session cookie for anything other than making HTTP requests to `patreon.com` to locate and download `jtbeta.zip` (and, if you run the diagnostic, to verify your login and Jotego membership). It's stored locally in `pupdate_settings.json` and is never sent to any third party, telemetry endpoint, or server that isn't `patreon.com`.
+
+1. Open <https://www.patreon.com> in your browser and log in.
+2. Open DevTools (F12 or ⌘⌥I) → **Application** (Chrome/Edge/Brave) or **Storage** (Firefox) → **Cookies** → `https://www.patreon.com`.
+3. Copy the **value** of the `session_id` cookie.
+4. In pupdate: **Pocket Setup > Set Patreon Session Cookie**, paste the value.
+5. Enable **Auto-fetch Jotego jtbeta.zip from Patreon** in the Settings menu.
+
+Use **Pocket Setup > Test Patreon Session Cookie** to verify the cookie works and whether your account is currently a Jotego patron.
+
+**Notes:**
+
+- Your subscription/access must actually grant beta privileges — pupdate will tell you if it doesn't.
+- Auto-fetch failures never break an update run; you can always fall back to placing `jtbeta.zip` on the SD root manually.
+
 ---
 
 ## Analogizer setup
