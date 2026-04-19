@@ -394,9 +394,11 @@ Jotego distributes `jtbeta.zip` via a private GitHub repo (`jotego/jtbeta`). Per
 4. Set `github_token` in `pupdate_settings.json` to that PAT.
 5. Enable **Auto-fetch Jotego jtbeta.zip from GitHub** in the Settings menu.
 
-**Option B — Patreon session cookie (fallback):**
+**Option B — Patreon session cookie (experimental, fallback):**
 
-Uses Patreon's unofficial frontend API with your session cookie. This is fragile — cookies expire, Patreon can change field names without notice.
+> **Experimental and flaky.** This uses Patreon's undocumented frontend API with your browser session cookie, not a supported public API. Cookies expire (usually in weeks, sooner if you log out or clear cookies), and Patreon can change response field names without notice. Prefer Option A if you have any way to. Treat this as a best-effort fallback, not a stable integration.
+
+>  pupdate will **never** use your Patreon session cookie for anything other than making HTTP requests to `patreon.com` to locate and download `jtbeta.zip` (and, if you run the diagnostic, to verify your login and Jotego membership). It's stored locally in `pupdate_settings.json` and is never sent to any third party, telemetry endpoint, or server that isn't `patreon.com`.
 
 1. Open <https://www.patreon.com> in your browser and log in.
 2. Open DevTools (F12 or ⌘⌥I) → **Application** (Chrome/Edge/Brave) or **Storage** (Firefox) → **Cookies** → `https://www.patreon.com`.
@@ -406,7 +408,7 @@ Uses Patreon's unofficial frontend API with your session cookie. This is fragile
 
 Use **Pocket Setup > Test Patreon Session Cookie** to verify the cookie works and whether your account is currently a Jotego patron.
 
-**Caveats (both paths):**
+**Notes:**
 
 - Your subscription/access must actually grant beta privileges — pupdate will tell you if it doesn't.
 - Auto-fetch failures never break an update run; you can always fall back to placing `jtbeta.zip` on the SD root manually.
