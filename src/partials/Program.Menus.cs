@@ -289,8 +289,7 @@ internal static partial class Program
                 Console.WriteLine("  2. Open DevTools (F12 or Cmd+Opt+I).");
                 Console.WriteLine("  3. Go to the Application tab (Chrome/Edge/Brave) or Storage tab (Firefox).");
                 Console.WriteLine("  4. Expand Cookies > https://www.patreon.com.");
-                Console.WriteLine("  5. Copy the Value of the 'session_id' row (the cookie is HttpOnly, so only");
-                Console.WriteLine("     DevTools can see it — JS-based bookmarklet shortcuts won't work).");
+                Console.WriteLine("  5. Copy the Value of the 'session_id' row");
 
                 var result = AskYesNoQuestion("Would you like to set/change the session cookie?");
 

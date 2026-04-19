@@ -69,7 +69,6 @@ public static class GithubApiService
         };
 
         request.Headers.UserAgent.Add(new ProductInfoHeaderValue("Pupdate", "1.0"));
-        // Requests raw file bytes directly instead of the base64-in-JSON response.
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github.raw"));
 
         if (!string.IsNullOrEmpty(githubToken))

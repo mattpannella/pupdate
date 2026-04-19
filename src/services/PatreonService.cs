@@ -11,7 +11,7 @@ public static class PatreonService
     private const int PAGE_SIZE = 20;
     private const int MAX_PAGES = 5;
 
-    // Browser-like UA — Patreon's frontend API rejects some requests without one.
+    //fake a user agent to make the api happy
     private const string USER_AGENT =
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 " +
         "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
@@ -52,11 +52,7 @@ public static class PatreonService
         public List<string> Messages { get; } = new();
     }
 
-    /// <summary>
-    /// Verifies the session cookie works. If <paramref name="creatorVanity"/> is provided,
-    /// also checks whether the authenticated user is a patron of that creator and that
-    /// the campaign/posts lookup works end-to-end.
-    /// </summary>
+    //verify the session cookie works.
     public static SessionCookieDiagnostics TestSessionCookie(string sessionCookie, string creatorVanity = null)
     {
         var diag = new SessionCookieDiagnostics { CreatorVanity = creatorVanity };
@@ -69,7 +65,6 @@ public static class PatreonService
 
         using var client = BuildClient(sessionCookie);
 
-        // 1. Validate cookie by hitting /api/current_user
         try
         {
             string url = $"{PATREON_BASE}/api/current_user?include=memberships.currently_entitled_tiers,memberships.campaign" +
@@ -107,7 +102,7 @@ public static class PatreonService
             diag.PatreonUserName = userName;
             diag.Messages.Add($"Cookie valid. Logged in as: {userName}");
 
-            // 2. If a creator vanity was supplied, look for that membership in 'included'
+            //if a creator vanity was supplied, look for that membership in 'included'
             if (!string.IsNullOrWhiteSpace(creatorVanity))
             {
                 var included = json["included"] as JArray ?? new JArray();
@@ -174,7 +169,6 @@ public static class PatreonService
         if (string.IsNullOrWhiteSpace(creatorVanity))
             return diag;
 
-        // 3. Resolve the creator's campaign id (confirms the scraping path works)
         try
         {
             diag.CampaignId = ResolveCampaignId(client, creatorVanity);
@@ -186,7 +180,7 @@ public static class PatreonService
             return diag;
         }
 
-        // 4. Verify the posts endpoint responds (request only 1 post so we don't burn rate limit)
+        //verify the posts endpoint responds
         try
         {
             string postsUrl =
@@ -247,7 +241,7 @@ public static class PatreonService
 
         string html = response.Content.ReadAsStringAsync().Result;
 
-        // Matches patterns like "id":"123456","type":"campaign"
+        //matches patterns like "id":"123456","type":"campaign"
         var match = Regex.Match(html, @"""id""\s*:\s*""(\d+)""\s*,\s*""type""\s*:\s*""campaign""");
 
         if (!match.Success)

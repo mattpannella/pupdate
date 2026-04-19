@@ -93,7 +93,6 @@ public partial class CoresService
     {
         var config = ServiceHelper.SettingsService.Config;
 
-        // Try GitHub first — stable auth, official API, long-lived tokens.
         if (config.jt_beta_github_fetch && TryFetchJtBetaFromGithub())
         {
             return;
