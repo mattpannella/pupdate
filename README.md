@@ -378,6 +378,29 @@ pupdate images -i pocket-platform-images -o dyreschlock -v home
 
 Place **`jtbeta.zip`** from Patreon on the **root of the SD card** (exact name). **Update All** copies the beta key into the folders that need it. Do not rename the file.
 
+### Auto-fetching `jtbeta.zip` from Patreon (experimental)
+
+Pupdate can download the latest `jtbeta.zip` from Jotego's Patreon for you. This is **optional**, **opt-in**, and **fragile** — it uses your Patreon session cookie against Patreon's unofficial web API, not a stable public API.
+
+**Setup:**
+
+1. Open <https://www.patreon.com> in your browser and log in.
+2. Open DevTools (F12 or ⌘⌥I) → **Application** (Chrome/Edge/Brave) or **Storage** (Firefox) → **Cookies** → `https://www.patreon.com`.
+3. Copy the **value** of the `session_id` cookie. (The cookie is `HttpOnly`, so JavaScript tricks like bookmarklets can't read it — DevTools is the reliable way.)
+4. In pupdate: **Pocket Setup > Set Patreon Session Cookie**, paste the value.
+5. Enable **Auto-fetch Jotego jtbeta.zip from Patreon** in the Settings menu (or accept the prompt when setting the cookie).
+
+On the next **Update All**, pupdate will:
+- Skip auto-fetch if you already placed `jtbeta.zip` on the SD root manually (manual always wins).
+- Otherwise, walk Jotego's recent Patreon posts newest-first, find the first post with an attachment named `jtbeta.zip`, download it, and extract the key normally.
+
+**Caveats:**
+
+- Session cookies **expire** (weeks at most, sooner if you log out or clear cookies). Re-paste a fresh one when auto-fetch stops working.
+- This is **not** the official Patreon API — field names can change without notice.
+- Your Patreon account must be subscribed to a Jotego tier that grants beta access. If it isn't, pupdate will tell you.
+- Auto-fetch failures never break an update run; you'll just see a message and can fall back to placing `jtbeta.zip` manually.
+
 ---
 
 ## Analogizer setup

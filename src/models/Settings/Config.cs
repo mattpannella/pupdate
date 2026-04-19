@@ -60,9 +60,14 @@ public class Config
     [Description("Coin-Op Collection Beta Access")]
     public bool coin_op_beta { get; set; } = false;
 
+    [Description("Auto-fetch Jotego jtbeta.zip from Patreon (requires session cookie)")]
+    public bool jt_beta_auto_fetch { get; set; } = false;
+
     public string temp_directory { get; set; } = null;
 
     public string patreon_email_address { get; set; } = null;
+
+    public string patreon_session_cookie { get; set; } = null;
 
     [Description("Adds a description element to the video.json display modes (non-breaking)")]
     public bool add_display_mode_description_to_video_json { get; set; } = false;

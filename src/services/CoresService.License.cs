@@ -52,8 +52,13 @@ public partial class CoresService
     public void RetrieveKeys()
     {
         string keyPath = Path.Combine(this.installPath, LICENSE_EXTRACT_LOCATION);
-        
-        this.ExtractJTBetaKey();
+
+        bool foundLocalJtBeta = this.ExtractJTBetaKey();
+
+        if (!foundLocalJtBeta && ServiceHelper.SettingsService.Config.jt_beta_auto_fetch)
+        {
+            this.AutoFetchJtBetaFromPatreon();
+        }
 
         string email = ServiceHelper.SettingsService.Config.patreon_email_address;
         
