@@ -300,11 +300,11 @@ internal static partial class Program
                 string input = PromptForInput();
                 config.patreon_session_cookie = string.IsNullOrWhiteSpace(input) ? null : input.Trim();
 
-                if (!config.jt_beta_auto_fetch && config.patreon_session_cookie != null)
+                if (!config.jt_beta_patreon_fetch && config.patreon_session_cookie != null)
                 {
-                    if (AskYesNoQuestion("Would you like to enable JT Beta auto-fetch?"))
+                    if (AskYesNoQuestion("Would you like to enable JT Beta auto-fetch via Patreon?"))
                     {
-                        config.jt_beta_auto_fetch = true;
+                        config.jt_beta_patreon_fetch = true;
                     }
                 }
 

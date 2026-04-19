@@ -57,6 +57,38 @@ public static class GithubApiService
         return files;
     }
 
+    public static byte[] DownloadFileContents(string user, string repository, string path, string githubToken = null)
+    {
+        string url = string.Format(CONTENTS, user, repository, path);
+
+        var client = new HttpClient();
+        var request = new HttpRequestMessage
+        {
+            Method = HttpMethod.Get,
+            RequestUri = new Uri(url)
+        };
+
+        request.Headers.UserAgent.Add(new ProductInfoHeaderValue("Pupdate", "1.0"));
+        // Requests raw file bytes directly instead of the base64-in-JSON response.
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github.raw"));
+
+        if (!string.IsNullOrEmpty(githubToken))
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("token", githubToken);
+        }
+
+        var response = client.Send(request);
+
+        response.EnsureSuccessStatusCode();
+
+        if (response.Headers.TryGetValues("x-ratelimit-remaining", out var values))
+        {
+            RemainingCalls = int.Parse(values.First());
+        }
+
+        return response.Content.ReadAsByteArrayAsync().Result;
+    }
+
     private static string CallApi(string url, string token)
     {
         var client = new HttpClient();

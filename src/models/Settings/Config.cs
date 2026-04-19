@@ -60,8 +60,11 @@ public class Config
     [Description("Coin-Op Collection Beta Access")]
     public bool coin_op_beta { get; set; } = false;
 
+    [Description("Auto-fetch Jotego jtbeta.zip from GitHub (requires github_token + access to jotego/jtbeta)")]
+    public bool jt_beta_github_fetch { get; set; } = false;
+
     [Description("Auto-fetch Jotego jtbeta.zip from Patreon (requires session cookie)")]
-    public bool jt_beta_auto_fetch { get; set; } = false;
+    public bool jt_beta_patreon_fetch { get; set; } = false;
 
     public string temp_directory { get; set; } = null;
 

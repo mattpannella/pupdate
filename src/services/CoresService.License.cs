@@ -55,9 +55,14 @@ public partial class CoresService
 
         bool foundLocalJtBeta = this.ExtractJTBetaKey();
 
-        if (!foundLocalJtBeta && ServiceHelper.SettingsService.Config.jt_beta_auto_fetch)
+        if (!foundLocalJtBeta)
         {
-            this.AutoFetchJtBetaFromPatreon();
+            var config = ServiceHelper.SettingsService.Config;
+
+            if (config.jt_beta_github_fetch || config.jt_beta_patreon_fetch)
+            {
+                this.AutoFetchJtBetaKey();
+            }
         }
 
         string email = ServiceHelper.SettingsService.Config.patreon_email_address;
