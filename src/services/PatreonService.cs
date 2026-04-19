@@ -236,7 +236,7 @@ public static class PatreonService
         // Scrape the creator's public campaign page — the campaign id is embedded in the
         // bootstrap JSON. This is more resilient than the frontend /api/campaigns filter
         // endpoints, which Patreon changes periodically.
-        string url = $"{PATREON_BASE}/{creatorVanity}";
+        string url = $"{PATREON_BASE}/{Uri.EscapeDataString(creatorVanity)}";
         var response = client.GetAsync(url).Result;
 
         if (!response.IsSuccessStatusCode)
