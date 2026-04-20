@@ -24,7 +24,8 @@ public class ArchiveService : Base
     private readonly bool cacheArchiveFiles;
     private readonly string cacheDirectory;
 
-    public ArchiveService(List<SettingsArchive> archives, InternetArchive credentials, bool crcCheck, bool useCustomArchive, bool showStackTraces, bool cacheArchiveFiles, string cacheDirectory)
+    public ArchiveService(List<SettingsArchive> archives, InternetArchive credentials, bool crcCheck, 
+        bool useCustomArchive, bool showStackTraces, bool cacheArchiveFiles, string cacheDirectory)
     {
         this.crcCheck = crcCheck;
         this.useCustomArchive = useCustomArchive;
