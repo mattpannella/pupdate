@@ -2,6 +2,7 @@
 // ReSharper disable RedundantDefaultMemberInitializer
 
 using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace Pannella.Models.Settings;
 
@@ -31,4 +32,7 @@ public class CoreSettings
 
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
     public string pinned_version { get; set; } = null;
+
+    [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public List<string> instance_json_blocklist { get; set; } = null;
 }

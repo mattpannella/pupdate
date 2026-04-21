@@ -103,6 +103,7 @@ public partial class CoresService
             this.assetsService.Blacklist.Add(core.license_slot_filename);
         }
 
+
         // run if:
         // global override is on and core specific is on
         // or
@@ -279,6 +280,22 @@ public partial class CoresService
         }
 
         string instancesDirectory = Path.Combine(this.installPath, "Assets", info.metadata.platform_ids[0], core.id);
+
+        var instanceJsonBlocklist = this.settingsService.GetCoreSettings(core.id).instance_json_blocklist;
+
+        if (Directory.Exists(instancesDirectory) && instanceJsonBlocklist != null)
+        {
+            foreach (string entry in instanceJsonBlocklist)
+            {
+                string blockedFileName = Path.GetFileNameWithoutExtension(entry) + ".json";
+
+                foreach (string blockedFile in Directory.GetFiles(instancesDirectory, blockedFileName, SearchOption.AllDirectories))
+                {
+                    File.Delete(blockedFile);
+                    WriteMessage($"Deleted blocked instance JSON: {Path.GetFileNameWithoutExtension(entry)}");
+                }
+            }
+        }
 
         if (Directory.Exists(instancesDirectory))
         {
