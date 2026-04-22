@@ -31,13 +31,13 @@
           16. Shissa43: Analogue-Pocket-Platform-Art (Simple_JP)
           17. Go Back
       2. Download Pocket Library Images >
-          1. Spiritualized1997 (GB, GBC, GBA, GG)
-          2. CodeWario (GB, GBC, GBA, GG) >
+          1. Spiritualized1997 >
+          2. CodeWario         >
               1. Box Art
               2. Title Images
               3. Gameplay Images (snaps)
               4. Go Back
-          3. Neo Geo >
+          3. Neo Geo           >
               1. Box Art (EU)
               2. Box Art (JP)
               3. Box Art (US)
@@ -46,12 +46,12 @@
               6. Gameplay Images (EU)
               7. Gameplay Images (JP)
               8. Go Back
-          4. Lynx >
+          4. Lynx              >
               1. Box Art
               2. Title Images
               3. Gameplay Images (snaps)
               4. Go Back
-          5. PC Engine >
+          5. PC Engine         >
               1. Box Art
               2. Title Images
               3. Gameplay Images (snaps)

@@ -112,20 +112,20 @@ internal static partial class Program
 
         var pocketLibraryImagesMenu = new ConsoleMenu()
             .Configure(menuConfig)
-            .Add("Spiritualized1997 (GB, GBC, GBA, GG)", _ =>
+            .Add("Spiritualized1997 >", _ =>
             {
                 ServiceHelper.CoresService.DownloadPockLibraryImages();
                 Pause();
             });
 
-        foreach (PocketLibraryImageMenu libraryImageMenu in ServiceHelper.CoresService.PocketLibraryImagesList)
+        foreach (var libraryImageMenu in ServiceHelper.CoresService.PocketLibraryImagesList)
         {
             var subMenu = new ConsoleMenu().Configure(menuConfig);
 
-            foreach (PocketLibraryImage image in libraryImageMenu.entries)
+            foreach (var image in libraryImageMenu.entries)
             {
                 PocketLibraryImage img = image;
-                string label = string.IsNullOrWhiteSpace(img.menu_label) ? img.id : img.menu_label.Trim();
+                string label = string.IsNullOrWhiteSpace(image.menu_label) ? image.id : image.menu_label.Trim();
                 subMenu.Add(label, _ =>
                 {
                     ServiceHelper.CoresService.DownloadPocketLibraryImages(img);
@@ -135,12 +135,7 @@ internal static partial class Program
 
             subMenu.Add("Go Back", ConsoleMenu.Close);
 
-            string parentLabel = libraryImageMenu.menu_title.TrimEnd();
-            
-            if (!parentLabel.EndsWith('>'))
-                parentLabel = string.Concat(parentLabel, " >");
-
-            pocketLibraryImagesMenu.Add(parentLabel, subMenu.Show);
+            pocketLibraryImagesMenu.Add(libraryImageMenu.menu_title ?? string.Empty, subMenu.Show);
         }
 
         pocketLibraryImagesMenu.Add("Go Back", ConsoleMenu.Close);
