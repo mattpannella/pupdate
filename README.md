@@ -30,7 +30,7 @@ The full menu tree is documented in **[MENU.md](MENU.md)**.
 | **Cores** | Downloads and updates openFPGA cores from the library inventory; optional local inventory files; per-core skip, assets, rename, display modes, extras, and **version pinning** |
 | **Firmware** | Checks for and installs Analogue Pocket firmware |
 | **Assets** | ROMs, BIOS, and other files from configured archives (archive.org, custom, core-specific) |
-| **Pocket setup** | Display modes, image packs, library images, Game Boy palettes, instance JSON (e.g. PC Engine CD), Game & Watch ROM build flow, Super GameBoy aspect ratio, Analogizer config, Patreon email, debug helpers |
+| **Pocket setup** | Display modes, image packs, library images, Game Boy palettes, instance JSON (e.g. PC Engine CD), Game & Watch ROM build flow, Super GameBoy aspect ratio, Analogizer config, Patreon email, GitHub token (API rate limits), backup path / archive cache / temp directory, debug helpers |
 | **Maintenance** | Update/install/reinstall/uninstall cores, ROM set archives, prune save states, clear archive cache, pin/unpin core versions |
 | **Extras** | Pocket Extras (additional assets, combination platforms, variant cores) from `pocket_extras.json` |
 
@@ -142,6 +142,22 @@ Apply **8:7** to chosen `Spiritualized.SuperGB*` cores, or restore **4:3**.
 
 Used with **Coin-Op Collection beta** license fetch; also editable here if you change Patreon email.
 
+### Set GitHub Token
+
+Stores a [personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) for GitHub API calls (higher rate limits than anonymous requests). The current value is shown when you open this item (same idea as **Set Patreon Email Address**). You can also set `config.github_token` in `pupdate_settings.json`.
+
+### Set Backup Saves Location
+
+Folder where **Backup Saves & Memories** writes zip files. Default `Backups` is a relative path (resolved from the process **current directory** when the tool runs; use an absolute path if you need a fixed location). Clearing the value when prompted resets to `Backups`. Same as `config.backup_saves_location` in JSON.
+
+### Set Archive Cache Location
+
+When **Cache downloaded archive files locally** is enabled, this overrides the default cache folder under your user **LocalApplicationData** `pupdate\cache` (Windows) / equivalent. Leave empty (or save an empty line) to use that default. Same as `config.archive_cache_location`.
+
+### Set Temp Directory
+
+Where pupdate extracts downloads and temporary files. Empty means the OS temp folder (`Path.GetTempPath()`). Same as `config.temp_directory`.
+
 ### Print openFPGA Category Structure
 
 Prints a summary of platform categories and cores (debug / reference).
@@ -219,13 +235,13 @@ Edit `pupdate_settings.json` for keys that are not bool menu toggles:
 
 | Name | Description |
 |------|-------------|
-| `config.github_token` | Used for GitHub API calls (rate limits) |
+| `config.github_token` | Used for GitHub API calls (rate limits); also settable under **Pocket Setup → Set GitHub Token** |
 | `config.download_new_cores` | `yes` / `no` / `ask` — set by Select Cores |
 | `config.display_modes_option` | `merge` / `overwrite` / `ask` |
 | `config.patreon_email_address` | Patreon email for Coin-Op beta license |
-| `config.backup_saves_location` | Backup output directory |
-| `config.temp_directory` | Override temp extract path (default: under install path) |
-| `config.archive_cache_location` | Override archive cache directory when caching is on |
+| `config.backup_saves_location` | Backup output directory; **Pocket Setup → Set Backup Saves Location** |
+| `config.temp_directory` | Override temp extract path (default: OS temp); **Pocket Setup → Set Temp Directory** |
+| `config.archive_cache_location` | Override archive cache directory when caching is on; **Pocket Setup → Set Archive Cache Location** |
 | `config.suppress_already_installed` | Reduce “already installed” console noise |
 | `config.use_local_cores_inventory` | Use local **`cores.json`** and **`platforms.json`** (openFPGA Library **v3** format) next to the executable |
 | `config.use_local_blacklist` | Use local `blacklist.json` instead of downloading |
@@ -400,6 +416,7 @@ Place **`jtbeta.zip`** from Patreon on the **root of the SD card** (exact name).
 - **`Error in framework RS: bridge not responding`** — Run pupdate on a local disk, then copy results to the SD card.
 - **`Missing ROM ID [1]` in `_alternatives`** — Turn **off** “Skip alternative ROMs” if you need those files installed.
 - **Pinned core skipped** — Pin must match a version string present in the core’s inventory `releases` list.
+- **GitHub API rate limit** — Add a token via **Pocket Setup → Set GitHub Token** or `config.github_token` in `pupdate_settings.json`.
 
 ---
 

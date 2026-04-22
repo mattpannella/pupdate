@@ -71,6 +71,7 @@ public static class ServiceHelper
     public static void ReloadSettings()
     {
         SettingsService = new SettingsService(SettingsDirectory, CoresService.Cores);
+        TempDirectory = SettingsService.Config.temp_directory ?? Path.GetTempPath();
         // reload the archive service, in case that setting has changed
         CacheDirectory = string.IsNullOrEmpty(SettingsService.Config.archive_cache_location)
             ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "pupdate", "cache")

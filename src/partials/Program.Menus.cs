@@ -31,6 +31,7 @@ internal static partial class Program
         {
             Selector = "=>",
             EnableWriteTitle = false,
+            EnableAlphabet = true,
             WriteHeaderAction = () =>
             {
                 WriteRainbow(welcome);
@@ -90,6 +91,25 @@ internal static partial class Program
 
         #region Pocket Setup - Download Files
 
+        var platformImagePacksMenu = new ConsoleMenu()
+            .Configure(menuConfig);
+
+        foreach (var pack in ServiceHelper.PlatformImagePacksService.List)
+        {
+            var p = pack;
+            string label = string.IsNullOrWhiteSpace(p.variant)
+                ? $"{p.owner}: {p.repository}"
+                : $"{p.owner}: {p.repository} ({p.variant.Trim()})";
+
+            platformImagePacksMenu.Add(label, _ =>
+            {
+                ServiceHelper.PlatformImagePacksService.Install(p.owner, p.repository, p.variant);
+                Pause();
+            });
+        }
+
+        platformImagePacksMenu.Add("Go Back", ConsoleMenu.Close);
+
         var pocketLibraryImagesMenu = new ConsoleMenu()
             .Configure(menuConfig)
             .Add("Spiritualized1997 (GB, GBC, GBA, GG)", _ =>
@@ -116,6 +136,7 @@ internal static partial class Program
             subMenu.Add("Go Back", ConsoleMenu.Close);
 
             string parentLabel = libraryImageMenu.menu_title.TrimEnd();
+            
             if (!parentLabel.EndsWith('>'))
                 parentLabel = string.Concat(parentLabel, " >");
 
@@ -126,10 +147,16 @@ internal static partial class Program
 
         var downloadFilesMenu = new ConsoleMenu()
             .Configure(menuConfig)
-            .Add("Download Platform Image Packs >", _ =>
+            .Add("Download Platform Image Packs  >", _ =>
             {
-                PlatformImagePackSelector();
-                Pause();
+                if (ServiceHelper.PlatformImagePacksService.List.Count == 0)
+                {
+                    Console.WriteLine("No platform image packs found in catalog.");
+                    Pause();
+                    return;
+                }
+
+                platformImagePacksMenu.Show();
             })
             .Add("Download Pocket Library Images >", pocketLibraryImagesMenu.Show)
             .Add("Download GameBoy Palettes", _ =>
@@ -245,7 +272,7 @@ internal static partial class Program
 
                 Console.WriteLine($"Current email address: {config.patreon_email_address}");
 
-                var result = AskYesNoQuestion("Would you like to change your address?");
+                var result = AskYesNoQuestion("Would you like to change your email address?");
 
                 if (!result)
                     return;
@@ -274,6 +301,122 @@ internal static partial class Program
 
                 config.patreon_email_address = newEmail;
                 ServiceHelper.SettingsService.Save();
+
+                Pause();
+            })
+            .Add("Set GitHub Token", () =>
+            {
+                var config = ServiceHelper.SettingsService.Config;
+
+                Console.WriteLine($"Current GitHub token: {config.github_token}");
+
+                var result = AskYesNoQuestion("Would you like to change your GitHub token?");
+
+                if (!result)
+                    return;
+
+                string input = PromptForInput();
+                string newToken = string.IsNullOrWhiteSpace(input) ? string.Empty : input.Trim();
+
+                if (string.Equals(config.github_token, newToken, StringComparison.Ordinal))
+                {
+                    Pause();
+                    return;
+                }
+
+                config.github_token = newToken;
+                ServiceHelper.SettingsService.Save();
+
+                Pause();
+            })
+            .Add("Set Backup Saves Location", () =>
+            {
+                var config = ServiceHelper.SettingsService.Config;
+
+                Console.WriteLine($"Current backup saves location: {config.backup_saves_location}");
+
+                var result = AskYesNoQuestion("Would you like to change your backup saves location?");
+
+                if (!result)
+                    return;
+
+                string input = PromptForInput();
+                string newLocation = string.IsNullOrWhiteSpace(input) ? "Backups" : input.Trim();
+
+                string previousComparable = string.IsNullOrWhiteSpace(config.backup_saves_location)
+                    ? "Backups"
+                    : config.backup_saves_location.Trim();
+
+                if (string.Equals(previousComparable, newLocation, StringComparison.Ordinal))
+                {
+                    Pause();
+                    return;
+                }
+
+                config.backup_saves_location = newLocation;
+                ServiceHelper.SettingsService.Save();
+
+                Pause();
+            })
+            .Add("Set Archive Cache Location", () =>
+            {
+                var config = ServiceHelper.SettingsService.Config;
+
+                Console.WriteLine($"Current archive cache location: {config.archive_cache_location}");
+
+                var result = AskYesNoQuestion("Would you like to change your archive cache location?");
+
+                if (!result)
+                    return;
+
+                string input = PromptForInput();
+                string newLocation = string.IsNullOrWhiteSpace(input) ? null : input.Trim();
+
+                string previousComparable = string.IsNullOrWhiteSpace(config.archive_cache_location)
+                    ? null
+                    : config.archive_cache_location.Trim();
+
+                if (string.Equals(previousComparable ?? string.Empty, newLocation ?? string.Empty, StringComparison.Ordinal))
+                {
+                    Pause();
+                    return;
+                }
+
+                config.archive_cache_location = newLocation;
+                ServiceHelper.SettingsService.Save();
+                ServiceHelper.ReloadSettings();
+                coreUpdaterService.ReloadSettings();
+
+                Pause();
+            })
+            .Add("Set Temp Directory", () =>
+            {
+                var config = ServiceHelper.SettingsService.Config;
+
+                Console.WriteLine($"Current temp directory: {config.temp_directory}");
+
+                var result = AskYesNoQuestion("Would you like to change your temp directory?");
+
+                if (!result)
+                    return;
+
+                string input = PromptForInput();
+                string newLocation = string.IsNullOrWhiteSpace(input) ? null : input.Trim();
+
+                string previousComparable = string.IsNullOrWhiteSpace(config.temp_directory)
+                    ? null
+                    : config.temp_directory.Trim();
+
+                if (string.Equals(previousComparable ?? string.Empty, newLocation ?? string.Empty, StringComparison.Ordinal))
+                {
+                    Pause();
+                    return;
+                }
+
+                config.temp_directory = newLocation;
+                ServiceHelper.SettingsService.Save();
+                ServiceHelper.ReloadSettings();
+                coreUpdaterService.ReloadSettings();
 
                 Pause();
             })
