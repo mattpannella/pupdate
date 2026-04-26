@@ -241,6 +241,35 @@ public class CoreUpdaterServiceTests : IDisposable
     }
 
     [Fact]
+    public void RunUpdates_CleanFlag_DeletesExistingBeforeReinstall()
+    {
+        // Pre-create a stale core dir with a marker file that should NOT survive a clean install.
+        Directory.CreateDirectory(Path.Combine(_fx.PocketDir, "Cores", CoreId));
+        File.WriteAllText(Path.Combine(_fx.PocketDir, "Cores", CoreId, "stale-marker.txt"), "stale");
+        File.WriteAllText(Path.Combine(_fx.PocketDir, "Cores", CoreId, "core.json"),
+            $$"""{ "core": { "magic":"x", "metadata": { "platform_ids":["{{PlatformId}}"], "version":"0.0.1" }, "framework":{ "version_required":"0","sleep_supported":false } } }""");
+
+        string downloadUrl = StubCoreReleaseZipDownload();
+        var inventoryCore = OrchestrationFixture.BuildInventoryCore(
+            CoreId, PlatformId, Version, downloadUrl);
+        _fx.WriteInventory(new[] { inventoryCore }, new[] { BuildPlatform() });
+        _fx.WriteSettings();
+
+        var (updater, captured) = BuildUpdater();
+
+        // Act — clean install: orchestration deletes the existing dir before re-extracting.
+        updater.RunUpdates(new[] { CoreId }, clean: true);
+
+        // Assert — fresh core.json present, but the stale marker is gone.
+        File.Exists(Path.Combine(_fx.PocketDir, "Cores", CoreId, "core.json")).Should().BeTrue();
+        File.Exists(Path.Combine(_fx.PocketDir, "Cores", CoreId, "stale-marker.txt"))
+            .Should().BeFalse("clean=true must delete the existing core dir before reinstalling");
+
+        captured[0]!.InstalledCores.Should().ContainSingle(c =>
+            c["core"] == CoreId && c["version"] == Version);
+    }
+
+    [Fact]
     public void RunUpdates_RequiresLicense_NoKey_RecordsMissingLicense()
     {
         // Arrange — inventory core with requires_license=true and updaters.license set;

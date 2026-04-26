@@ -236,6 +236,41 @@ public class ArchiveServiceTests : IDisposable
     }
 
     [Fact]
+    public void DownloadArchiveFile_ThreeConsecutiveBadCrcs_StillReturnsTrue()
+    {
+        // Pin a known bug in DownloadArchiveFile (ArchiveService.cs:194-198): the do-while
+        // loop runs up to 3 times if checksums fail, but the loop's exit condition only checks
+        // count==3 — it doesn't check whether the final pass passed validation. As a result, a
+        // file with 3 consecutive bad checksums returns TRUE, identical to a healthy download.
+        // Worth filing as a separate issue.
+        var goodBytes = "PERFECT"u8.ToArray();
+        var goodCrc = ComputeCrc32Hex(goodBytes);
+
+        // Always return bad bytes — never the good ones.
+        _mock.Server
+            .Given(Request.Create().WithPath("/download/crc-always-bad/file.bin").UsingGet())
+            .RespondWith(Response.Create().WithStatusCode(200).WithBody("ALWAYS_BAD"u8.ToArray()));
+
+        var archive = InternetArchiveOf("crc-always-bad");
+        var svc = Build(archive, crc: true);
+        var file = new ArchiveFile { name = "file.bin", crc32 = goodCrc };
+
+        string outDir = Path.Combine(_temp.Path, "out-always-bad");
+        Directory.CreateDirectory(outDir);
+
+        var ok = svc.DownloadArchiveFile(archive, file, outDir);
+
+        ok.Should().BeTrue("known bug: returns true regardless of final checksum result");
+        // Verify the loop actually ran 3 times (3 GET requests).
+        _mock.Server.LogEntries
+            .Where(e => e.RequestMessage.AbsolutePath == "/download/crc-always-bad/file.bin")
+            .Should().HaveCount(3, "retry loop runs exactly 3 times before exiting");
+        // The on-disk file is the bad one.
+        ComputeCrc32Hex(File.ReadAllBytes(Path.Combine(outDir, "file.bin")))
+            .Should().NotBe(goodCrc);
+    }
+
+    [Fact]
     public void DownloadArchiveFile_CrcMismatch_RetriesAndReturnsTrue_WhenEventuallyValid()
     {
         // Sequence: bad bytes twice, then good bytes the third time.

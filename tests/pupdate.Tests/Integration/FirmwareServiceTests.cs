@@ -90,6 +90,36 @@ public class FirmwareServiceTests : IDisposable
     }
 
     [Fact]
+    public void UpdateFirmware_PostDownloadBytesDontMatchAdvertisedMd5_FileWrittenAnyway()
+    {
+        // Pin current behavior: UpdateFirmware does NOT validate the downloaded bytes against
+        // details.md5. If the server lies (or content is corrupted), the file is written as-is
+        // and the next run will detect the mismatch and re-download. Worth flagging — silent
+        // first-pass acceptance of bad bytes is a small bug.
+        var advertisedBytes = Encoding.UTF8.GetBytes("ADVERTISED_BYTES");
+        var actualBytes = Encoding.UTF8.GetBytes("CORRUPTED_BYTES");
+        var advertisedMd5 = Md5Hex(advertisedBytes);  // server claims this hash
+        string filename = "pocket_firmware_v9_9.bin";
+        string downloadUrl = _mock.BaseUrl + "/files/" + filename;
+
+        _mock.Server
+            .Given(Request.Create().WithPath("/support/pocket/firmware/latest/details").UsingGet())
+            .RespondWith(Response.Create().WithStatusCode(200)
+                .WithBody($$"""{ "download_url": "{{downloadUrl}}", "md5": "{{advertisedMd5}}" }"""));
+        // Server returns bytes that DON'T match the advertised md5.
+        _mock.Server
+            .Given(Request.Create().WithPath("/files/" + filename).UsingGet())
+            .RespondWith(Response.Create().WithStatusCode(200).WithBody(actualBytes));
+
+        var svc = new FirmwareService();
+        string result = svc.UpdateFirmware(_temp.Path);
+
+        result.Should().Be(filename);
+        File.ReadAllBytes(Path.Combine(_temp.Path, filename))
+            .Should().Equal(actualBytes, "the corrupted bytes are written without validation");
+    }
+
+    [Fact]
     public void UpdateFirmware_RedownloadsAndDeletesOldFiles_WhenLocalMd5Mismatches()
     {
         var oldBytes = Encoding.UTF8.GetBytes("OLD_FIRMWARE");

@@ -74,6 +74,36 @@ public class AssetsServiceTests : IClassFixture<TempDirectoryFixture>, IDisposab
     }
 
     [Fact]
+    public void Blacklist_MalformedJson_LogsParseError_AndLeavesBlacklistNull()
+    {
+        // Pin a small bug: when the JSON is non-empty but malformed, the catch handler logs
+        // the error but does NOT fall through to "this.blacklist = new List<string>();". The
+        // Blacklist getter ends up returning null. Subsequent calls to IsBlacklisted with a
+        // non-empty filename would NRE on Blacklist.Any(). Worth filing as an issue.
+        string scratch = Path.Combine(_temp.Path, "malformed-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(scratch);
+        File.WriteAllText(Path.Combine(scratch, "blacklist.json"), "this is not valid json {");
+        Directory.SetCurrentDirectory(scratch);
+
+        var stderr = new StringWriter();
+        var origOut = Console.Out;
+        Console.SetOut(stderr);
+        try
+        {
+            var svc = new AssetsService(useLocalBlacklist: true, showStackTraces: false);
+
+            svc.Blacklist.Should().BeNull(
+                "current behavior — see comment; should arguably be an empty list");
+            stderr.ToString().Should().Contain("error parsing",
+                "parse error must be logged");
+        }
+        finally
+        {
+            Console.SetOut(origOut);
+        }
+    }
+
+    [Fact]
     public void IsBlacklisted_MissingBlacklistFile_ReturnsEmptyList_NoThrow()
     {
         string scratch = Path.Combine(_temp.Path, "no-blacklist-" + Guid.NewGuid().ToString("N"));

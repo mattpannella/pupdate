@@ -136,6 +136,57 @@ public class GithubApiServiceTests : IDisposable
     }
 
     [Fact]
+    public void GetFile_ReturnsParsedFileMetadata()
+    {
+        const string body = """
+        { "name": "blacklist.json", "path": "blacklist.json", "sha": "abc123",
+          "size": 1234, "url": "u", "html_url": "h", "download_url": "https://example.com/raw" }
+        """;
+        _mock.Server
+            .Given(Request.Create().WithPath("/repos/foo/bar/contents/blacklist.json").UsingGet())
+            .RespondWith(Response.Create().WithStatusCode(200).WithBody(body));
+
+        var file = GithubApiService.GetFile("foo", "bar", "blacklist.json");
+
+        file.Should().NotBeNull();
+        file.name.Should().Be("blacklist.json");
+        file.sha.Should().Be("abc123");
+        file.size.Should().Be(1234);
+        file.download_url.Should().Be("https://example.com/raw");
+    }
+
+    [Fact]
+    public void GetFiles_DirectoryListing_ReturnsParsedArray()
+    {
+        const string body = """
+        [
+          { "name": "a.txt", "path": "dir/a.txt", "sha": "s1", "size": 1, "download_url": "u1" },
+          { "name": "b.txt", "path": "dir/b.txt", "sha": "s2", "size": 2, "download_url": "u2" }
+        ]
+        """;
+        _mock.Server
+            .Given(Request.Create().WithPath("/repos/foo/bar/contents/dir").UsingGet())
+            .RespondWith(Response.Create().WithStatusCode(200).WithBody(body));
+
+        var files = GithubApiService.GetFiles("foo", "bar", "dir");
+
+        files.Should().HaveCount(2);
+        files[0].name.Should().Be("a.txt");
+        files[1].download_url.Should().Be("u2");
+    }
+
+    [Fact]
+    public void GetFile_404_Throws()
+    {
+        _mock.Server
+            .Given(Request.Create().WithPath("/repos/foo/bar/contents/missing").UsingGet())
+            .RespondWith(Response.Create().WithStatusCode(404));
+
+        var act = () => GithubApiService.GetFile("foo", "bar", "missing");
+        act.Should().Throw<HttpRequestException>();
+    }
+
+    [Fact]
     public void DownloadFileContents_ReturnsRawBytes_AndSendsAcceptRawHeader()
     {
         var bytes = new byte[] { 0x01, 0x02, 0x03, 0x04 };
