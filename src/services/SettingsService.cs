@@ -9,7 +9,7 @@ public class SettingsService
 {
     private const string OLD_SETTINGS_FILENAME = "pocket_updater_settings.json";
     private const string SETTINGS_FILENAME = "pupdate_settings.json";
-    private const string ROMSETS_ENDPOINT = "https://raw.githubusercontent.com/mattpannella/pupdate/refs/heads/main/romsets.json";
+    internal static string ROMSETS_ENDPOINT = "https://raw.githubusercontent.com/mattpannella/pupdate/refs/heads/main/romsets.json";
 
     private readonly Settings settings;
     private readonly string settingsFile;

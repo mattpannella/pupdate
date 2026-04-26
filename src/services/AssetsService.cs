@@ -10,8 +10,14 @@ namespace Pannella.Services;
 
 public class AssetsService
 {
-    private const string BLACKLIST_END_POINT = "https://raw.githubusercontent.com/mattpannella/pupdate/main/blacklist.json";
+    internal static string BLACKLIST_END_POINT = "https://raw.githubusercontent.com/mattpannella/pupdate/main/blacklist.json";
     private const string BLACKLIST_FILE = "blacklist.json";
+
+    // Set PUPDATE_LOCAL_FILES=true to force local-file loading (e.g. dev mode via launchSettings.json),
+    // overriding the use_local_blacklist setting.
+    private static bool FORCE_LOCAL_FILES => string.Equals(
+        Environment.GetEnvironmentVariable("PUPDATE_LOCAL_FILES"), "true",
+        StringComparison.OrdinalIgnoreCase);
 
     private readonly bool useLocalBlacklist;
     private readonly bool showStackTraces;
@@ -24,10 +30,8 @@ public class AssetsService
             if (this.blacklist == null)
             {
                 string json = null;
-#if !DEBUG
-                if (useLocalBlacklist)
+                if (useLocalBlacklist || FORCE_LOCAL_FILES)
                 {
-#endif
                     if (File.Exists(BLACKLIST_FILE))
                     {
                         json = File.ReadAllText(BLACKLIST_FILE);
@@ -36,7 +40,6 @@ public class AssetsService
                     {
                         Console.WriteLine($"Local file not found: {BLACKLIST_FILE}");
                     }
-#if !DEBUG
                 }
                 else
                 {
@@ -50,7 +53,6 @@ public class AssetsService
                         Console.WriteLine(ex.Message);
                     }
                 }
-#endif
                 if (!string.IsNullOrWhiteSpace(json))
                 {
                     try

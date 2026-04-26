@@ -4,9 +4,11 @@ public static class ConsoleHelper
 {
     public static void ShowProgressBar(long current, long total)
     {
-        var progress = (double)current / total;
+        if (total <= 0) return;
         var progressWidth = Console.WindowWidth - 14;
-        var progressBarWidth = (int)(progress * progressWidth);
+        if (progressWidth <= 0) return;
+        var progress = (double)current / total;
+        var progressBarWidth = Math.Clamp((int)(progress * progressWidth), 0, progressWidth);
         var progressBar = new string('=', progressBarWidth);
         var emptyProgressBar = new string(' ', progressWidth - progressBarWidth);
 

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "pupdate": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "PUPDATE_LOCAL_FILES": "true"
+      }
+    }
+  }
+}

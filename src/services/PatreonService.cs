@@ -7,7 +7,7 @@ namespace Pannella.Services;
 
 public static class PatreonService
 {
-    private const string PATREON_BASE = "https://www.patreon.com";
+    internal static string PATREON_BASE = "https://www.patreon.com";
     private const int PAGE_SIZE = 20;
     private const int MAX_PAGES = 5;
 
