@@ -7,25 +7,61 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
-
+  test:
+    name: Test
     runs-on: ubuntu-latest
-
+    permissions:
+      checks: write
+      pull-requests: write
     steps:
-    - uses: actions/checkout@v3
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 9.0.100
-    - name: Restore dependencies
-      run: dotnet restore pupdate.csproj
-    - name: Build
-      run: dotnet build pupdate.csproj --no-restore
-    - name: Test
-      run: dotnet test pupdate.csproj --no-build --verbosity normal
-    - name: Restore legacy dependencies
-      run: dotnet restore pupdate_legacy.csproj
-    - name: Build legacy
-      run: dotnet build pupdate_legacy.csproj --no-restore
-    - name: Test legacy
-      run: dotnet test pupdate_legacy.csproj --no-build --verbosity normal
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.100
+      - name: Restore
+        run: dotnet restore tests/pupdate.Tests/pupdate.Tests.csproj
+      - name: Test
+        run: |
+          dotnet test tests/pupdate.Tests/pupdate.Tests.csproj \
+            --configuration Release \
+            --logger "trx;LogFileName=test-results.trx" \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./TestResults
+      - name: Publish test report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: dotnet test results
+          path: TestResults/test-results.trx
+          reporter: dotnet-trx
+          fail-on-error: false
+      - name: Generate coverage summary
+        if: success() || failure()
+        # Install + invoke ReportGenerator from $RUNNER_TEMP to dodge an SDK quirk where
+        # `dotnet tool install` fails in a directory containing multiple .csproj files.
+        run: |
+          pushd "$RUNNER_TEMP"
+          dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools --version 5.4.4
+          popd
+          "$RUNNER_TEMP/tools/reportgenerator" \
+            "-reports:$GITHUB_WORKSPACE/TestResults/**/coverage.cobertura.xml" \
+            "-targetdir:$GITHUB_WORKSPACE/TestResults/coverage-report" \
+            "-reporttypes:MarkdownSummaryGithub"
+          if [ -f TestResults/coverage-report/SummaryGithub.md ]; then
+            cat TestResults/coverage-report/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  build-legacy:
+    name: Build (legacy net7)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.100
+      - name: Restore
+        run: dotnet restore pupdate_legacy.csproj
+      - name: Build
+        run: dotnet build pupdate_legacy.csproj --no-restore --configuration Release

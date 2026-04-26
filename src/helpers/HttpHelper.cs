@@ -10,6 +10,17 @@ public class HttpHelper
 
     private HttpClientHandler handler;
 
+    // Test-only seam: dispose the singleton and clear cookie/login state. Production code
+    // never calls this — the HttpClient/CookieContainer is intentionally process-singleton.
+    internal static void Reset()
+    {
+        lock (SYNC_LOCK)
+        {
+            INSTANCE?.client?.Dispose();
+            INSTANCE = null;
+        }
+    }
+
     public event EventHandler<DownloadProgressEventArgs> DownloadProgressUpdate;
 
     private bool loggedIn = false;
@@ -112,7 +123,7 @@ public class HttpHelper
             return;
 
         var archiveUri = new Uri("https://archive.org");
-        
+
         // First, GET the login page to establish session
         var loginPageUrl = "https://archive.org/account/login";
         this.client.GetAsync(loginPageUrl).Wait();

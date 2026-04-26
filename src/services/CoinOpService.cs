@@ -5,7 +5,7 @@ namespace Pannella.Services;
 
 public static class CoinOpService
 {
-    private const string LICENSE_ENDPOINT = "https://key.coinopcollection.org/?username={0}";
+    internal static string LICENSE_ENDPOINT = "https://key.coinopcollection.org/?username={0}";
 
     public static byte[] FetchLicense(string email)
     {

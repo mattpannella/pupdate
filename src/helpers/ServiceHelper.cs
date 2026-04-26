@@ -20,6 +20,28 @@ public static class ServiceHelper
 
     private static bool IS_INITIALIZED;
 
+    internal static void ResetForTests()
+    {
+        IS_INITIALIZED = false;
+        UpdateDirectory = null;
+        SettingsDirectory = null;
+        TempDirectory = null;
+        CacheDirectory = null;
+        CoresService = null;
+        SettingsService = null;
+        PlatformImagePacksService = null;
+        FirmwareService = null;
+        ArchiveService = null;
+        AssetsService = null;
+        StatusUpdated = null;
+        UpdateProcessComplete = null;
+        // The Services. qualifier disambiguates from the static properties on this class
+        // (CoresService / FirmwareService) which shadow the type names in scope.
+        Services.CoresService.ResetCachesForTests();
+        Services.FirmwareService.ResetLatest();
+        HttpHelper.Reset();
+    }
+
     public static void Initialize(string path, string settingsPath, EventHandler<StatusUpdatedEventArgs> statusUpdated = null,
         EventHandler<UpdateProcessCompleteEventArgs> updateProcessComplete = null, bool forceReload = false)
     {
