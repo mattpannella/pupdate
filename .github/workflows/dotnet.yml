@@ -7,20 +7,6 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 9.0.100
-      - name: Restore
-        run: dotnet restore pupdate.csproj
-      - name: Build
-        run: dotnet build pupdate.csproj --no-restore --configuration Release
-
   test:
     name: Test
     runs-on: ubuntu-latest
@@ -50,15 +36,16 @@ jobs:
           path: TestResults/test-results.trx
           reporter: dotnet-trx
           fail-on-error: false
-      - name: Generate coverage summary
+      - name: Generate coverage report
+        if: success() || failure()
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.4.4
+        with:
+          reports: TestResults/**/coverage.cobertura.xml
+          targetdir: TestResults/coverage-report
+          reporttypes: MarkdownSummaryGithub
+      - name: Post coverage summary
         if: success() || failure()
         run: |
-          dotnet tool install -g dotnet-reportgenerator-globaltool
-          export PATH="$PATH:$HOME/.dotnet/tools"
-          reportgenerator \
-            "-reports:TestResults/**/coverage.cobertura.xml" \
-            "-targetdir:TestResults/coverage-report" \
-            "-reporttypes:MarkdownSummaryGithub"
           if [ -f TestResults/coverage-report/SummaryGithub.md ]; then
             cat TestResults/coverage-report/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
           fi
