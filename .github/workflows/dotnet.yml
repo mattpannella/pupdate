@@ -36,16 +36,18 @@ jobs:
           path: TestResults/test-results.trx
           reporter: dotnet-trx
           fail-on-error: false
-      - name: Generate coverage report
+      - name: Generate coverage summary
         if: success() || failure()
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.4.4
-        with:
-          reports: TestResults/**/coverage.cobertura.xml
-          targetdir: TestResults/coverage-report
-          reporttypes: MarkdownSummaryGithub
-      - name: Post coverage summary
-        if: success() || failure()
+        # Install + invoke ReportGenerator from $RUNNER_TEMP to dodge an SDK quirk where
+        # `dotnet tool install` fails in a directory containing multiple .csproj files.
         run: |
+          pushd "$RUNNER_TEMP"
+          dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools --version 5.4.4
+          popd
+          "$RUNNER_TEMP/tools/reportgenerator" \
+            "-reports:$GITHUB_WORKSPACE/TestResults/**/coverage.cobertura.xml" \
+            "-targetdir:$GITHUB_WORKSPACE/TestResults/coverage-report" \
+            "-reporttypes:MarkdownSummaryGithub"
           if [ -f TestResults/coverage-report/SummaryGithub.md ]; then
             cat TestResults/coverage-report/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
           fi
