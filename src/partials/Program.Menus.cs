@@ -415,6 +415,81 @@ internal static partial class Program
 
                 Pause();
             })
+            .Add("Set Patreon Session Cookie (for JT Beta auto-fetch)", () =>
+            {
+                var config = ServiceHelper.SettingsService.Config;
+
+                Console.WriteLine($"Session cookie: {(string.IsNullOrWhiteSpace(config.patreon_session_cookie) ? "not set" : "set")}");
+                Console.WriteLine("Note: session cookies expire periodically. If auto-fetch starts failing, re-paste a fresh one.");
+                Console.WriteLine();
+                Console.WriteLine("To get the cookie:");
+                Console.WriteLine("  1. Open patreon.com in your browser and log in.");
+                Console.WriteLine("  2. Open DevTools (F12 or Cmd+Opt+I).");
+                Console.WriteLine("  3. Go to the Application tab (Chrome/Edge/Brave) or Storage tab (Firefox).");
+                Console.WriteLine("  4. Expand Cookies > https://www.patreon.com.");
+                Console.WriteLine("  5. Copy the Value of the 'session_id' row");
+
+                var result = AskYesNoQuestion("Would you like to set/change the session cookie?");
+
+                if (!result)
+                    return;
+
+                string input = PromptForInput();
+                config.patreon_session_cookie = string.IsNullOrWhiteSpace(input) ? null : input.Trim();
+
+                if (!config.jt_beta_patreon_fetch && config.patreon_session_cookie != null)
+                {
+                    if (AskYesNoQuestion("Would you like to enable JT Beta auto-fetch via Patreon?"))
+                    {
+                        config.jt_beta_patreon_fetch = true;
+                    }
+                }
+
+                ServiceHelper.SettingsService.Save();
+
+                Pause();
+            })
+            .Add("Test Patreon Session Cookie", () =>
+            {
+                string cookie = ServiceHelper.SettingsService.Config.patreon_session_cookie;
+
+                if (string.IsNullOrWhiteSpace(cookie))
+                {
+                    Console.WriteLine("No Patreon session cookie is set. Use 'Set Patreon Session Cookie' first.");
+                    Pause();
+                    return;
+                }
+
+                Console.WriteLine("Testing Patreon session cookie (this hits /api/current_user and the Jotego campaign page)...");
+                Console.WriteLine();
+
+                var diag = PatreonService.TestSessionCookie(cookie, "jotego");
+
+                foreach (var msg in diag.Messages)
+                    Console.WriteLine("  - " + msg);
+
+                Console.WriteLine();
+
+                if (!diag.CookieValid)
+                {
+                    Console.WriteLine("RESULT: Cookie is NOT valid. Re-grab a fresh session_id from your browser.");
+                }
+                else if (diag.IsPatron)
+                {
+                    string status = string.IsNullOrEmpty(diag.PatronStatus) ? "unknown" : diag.PatronStatus;
+                    string tier = string.IsNullOrEmpty(diag.TierName) ? "(no tier returned)" : diag.TierName;
+
+                    Console.WriteLine($"RESULT: You ARE a Jotego patron. Status: {status}. Tier(s): {tier}.");
+                    Console.WriteLine("Whether your tier includes beta access is decided per-post; auto-fetch will tell you if it can't see a beta post.");
+                }
+                else
+                {
+                    Console.WriteLine("RESULT: Cookie works, but this account is NOT currently a Jotego patron.");
+                    Console.WriteLine("Auto-fetch will still attempt to find jtbeta.zip but will fail on the tier-gate check.");
+                }
+
+                Pause();
+            })
             .Add("Print openFPGA Category Structure", () =>
             {
                 PrintOpenFpgaCategories();

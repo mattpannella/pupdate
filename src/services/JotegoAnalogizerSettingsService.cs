@@ -178,6 +178,7 @@ C   | NES                                        |
 D   | SNES                                       |
 E   | PCE 2BTN/6BTN                              |
 F   | PCE Multitap                               |
+G   | PSX Digital Normal                         |
 ----------------------------------------------------|
 
 Your selection:    ";
@@ -195,9 +196,11 @@ Your selection:    ";
         snac.Replace = new Dictionary<string, string>
         {
             { "a", "" },
+            { "d", "cb" },
             { "e", "eb" },
             { "f", "ec" },
-            { "d", "cb" }
+            { "g", "a" },
+            { "h", "ac" }
         };
 
         const string filename = "crtcfg.bin";
