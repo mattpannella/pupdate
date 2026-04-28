@@ -68,13 +68,17 @@
    5. Analogizer Config
       1. Jotego Analogizer Config
       2. Standard Analogizer Config
-   6. Set Patreon Email Address
-   7. Set GitHub Token
-   8. Set Backup Saves Location
-   9. Set Archive Cache Location
-   10. Set Temp Directory
-   11. Print openFPGA Category Structure
-   12. Go Back
+   6. Patreon Config
+      1. Set Patreon Email Address
+      2. Set Patreon Session Cookie (for JT Beta auto-fetch)
+      3. Test Patreon Session Cookie
+   7. Directory Locations
+      1. Set Backup Saves Location
+      2. Set Archive Cache Location
+      3. Set Temp Directory
+   8. Set GitHub Token
+   9. Print openFPGA Category Structure
+   10. Go Back
 7. Pocket Maintenance
    1. Update Selected
    2. Install Selected
