@@ -1013,7 +1013,7 @@ internal static partial class Program
                 {
                     thisMenu.CloseMenu();
                     PinCoreVersionForCore(captured);
-                    Pause();
+                    //Pause();
                 });
             }
 
