@@ -31,6 +31,7 @@ internal static partial class Program
         {
             Selector = "=>",
             EnableWriteTitle = false,
+            EnableAlphabet = true,
             WriteHeaderAction = () =>
             {
                 WriteRainbow(welcome);
@@ -90,22 +91,41 @@ internal static partial class Program
 
         #region Pocket Setup - Download Files
 
+        var platformImagePacksMenu = new ConsoleMenu()
+            .Configure(menuConfig);
+
+        foreach (var pack in ServiceHelper.PlatformImagePacksService.List)
+        {
+            var p = pack;
+            string label = string.IsNullOrWhiteSpace(p.variant)
+                ? $"{p.owner}: {p.repository}"
+                : $"{p.owner}: {p.repository} ({p.variant.Trim()})";
+
+            platformImagePacksMenu.Add(label, _ =>
+            {
+                ServiceHelper.PlatformImagePacksService.Install(p.owner, p.repository, p.variant);
+                Pause();
+            });
+        }
+
+        platformImagePacksMenu.Add("Go Back", ConsoleMenu.Close);
+
         var pocketLibraryImagesMenu = new ConsoleMenu()
             .Configure(menuConfig)
-            .Add("Spiritualized1997 (GB, GBC, GBA, GG)", _ =>
+            .Add("Spiritualized1997 >", _ =>
             {
                 ServiceHelper.CoresService.DownloadPockLibraryImages();
                 Pause();
             });
 
-        foreach (PocketLibraryImageMenu libraryImageMenu in ServiceHelper.CoresService.PocketLibraryImagesList)
+        foreach (var libraryImageMenu in ServiceHelper.CoresService.PocketLibraryImagesList)
         {
             var subMenu = new ConsoleMenu().Configure(menuConfig);
 
-            foreach (PocketLibraryImage image in libraryImageMenu.entries)
+            foreach (var image in libraryImageMenu.entries)
             {
                 PocketLibraryImage img = image;
-                string label = string.IsNullOrWhiteSpace(img.menu_label) ? img.id : img.menu_label.Trim();
+                string label = string.IsNullOrWhiteSpace(image.menu_label) ? image.id : image.menu_label.Trim();
                 subMenu.Add(label, _ =>
                 {
                     ServiceHelper.CoresService.DownloadPocketLibraryImages(img);
@@ -115,21 +135,23 @@ internal static partial class Program
 
             subMenu.Add("Go Back", ConsoleMenu.Close);
 
-            string parentLabel = libraryImageMenu.menu_title.TrimEnd();
-            if (!parentLabel.EndsWith('>'))
-                parentLabel = string.Concat(parentLabel, " >");
-
-            pocketLibraryImagesMenu.Add(parentLabel, subMenu.Show);
+            pocketLibraryImagesMenu.Add(libraryImageMenu.menu_title ?? string.Empty, subMenu.Show);
         }
 
         pocketLibraryImagesMenu.Add("Go Back", ConsoleMenu.Close);
 
         var downloadFilesMenu = new ConsoleMenu()
             .Configure(menuConfig)
-            .Add("Download Platform Image Packs >", _ =>
+            .Add("Download Platform Image Packs  >", _ =>
             {
-                PlatformImagePackSelector();
-                Pause();
+                if (ServiceHelper.PlatformImagePacksService.List.Count == 0)
+                {
+                    Console.WriteLine("No platform image packs found in catalog.");
+                    Pause();
+                    return;
+                }
+
+                platformImagePacksMenu.Show();
             })
             .Add("Download Pocket Library Images >", pocketLibraryImagesMenu.Show)
             .Add("Download GameBoy Palettes", _ =>
@@ -207,7 +229,7 @@ internal static partial class Program
 
         #endregion
 
-        #region Analogizer Setup
+        #region Pocket Setup - Analogizer Setup
 
         var analogizerMenu = new ConsoleMenu()
             .Configure(menuConfig)
@@ -230,22 +252,17 @@ internal static partial class Program
 
         #endregion
 
-        #region Pocket Setup
+        #region Pocket Setup - Patreon Config
 
-        var pocketSetupMenu = new ConsoleMenu()
+        var patreonConfigMenu = new ConsoleMenu()
             .Configure(menuConfig)
-            .Add("Manage Display Modes         >", displayModesMenu.Show)
-            .Add("Download Images and Palettes >", downloadFilesMenu.Show)
-            .Add("Generate ROMs & JSON Files   >", generateFilesMenu.Show)
-            .Add("Super GameBoy Aspect Ratio   >", sgbAspectRatioMenu.Show)
-            .Add("Analogizer Config            >", analogizerMenu.Show)
             .Add("Set Patreon Email Address", () =>
             {
                 var config = ServiceHelper.SettingsService.Config;
 
                 Console.WriteLine($"Current email address: {config.patreon_email_address}");
 
-                var result = AskYesNoQuestion("Would you like to change your address?");
+                var result = AskYesNoQuestion("Would you like to change your email address?");
 
                 if (!result)
                     return;
@@ -349,6 +366,145 @@ internal static partial class Program
                     Console.WriteLine("RESULT: Cookie works, but this account is NOT currently a Jotego patron.");
                     Console.WriteLine("Auto-fetch will still attempt to find jtbeta.zip but will fail on the tier-gate check.");
                 }
+
+                Pause();
+            })
+            .Add("Go Back", ConsoleMenu.Close);
+
+        #endregion
+
+        #region Pocket Setup - Directory Locations
+
+        var directoryLocationsMenu = new ConsoleMenu()
+            .Configure(menuConfig)
+            .Add("Set Backup Saves Location", () =>
+            {
+                var config = ServiceHelper.SettingsService.Config;
+
+                Console.WriteLine($"Current backup saves location: {config.backup_saves_location}");
+
+                var result = AskYesNoQuestion("Would you like to change your backup saves location?");
+
+                if (!result)
+                    return;
+
+                string input = PromptForInput();
+                string newLocation = string.IsNullOrWhiteSpace(input) ? "Backups" : input.Trim();
+
+                string previousComparable = string.IsNullOrWhiteSpace(config.backup_saves_location)
+                    ? "Backups"
+                    : config.backup_saves_location.Trim();
+
+                if (string.Equals(previousComparable, newLocation, StringComparison.Ordinal))
+                {
+                    Pause();
+                    return;
+                }
+
+                config.backup_saves_location = newLocation;
+                ServiceHelper.SettingsService.Save();
+
+                Pause();
+            })
+            .Add("Set Archive Cache Location", () =>
+            {
+                var config = ServiceHelper.SettingsService.Config;
+
+                Console.WriteLine($"Current archive cache location: {config.archive_cache_location}");
+
+                var result = AskYesNoQuestion("Would you like to change your archive cache location?");
+
+                if (!result)
+                    return;
+
+                string input = PromptForInput();
+                string newLocation = string.IsNullOrWhiteSpace(input) ? null : input.Trim();
+
+                string previousComparable = string.IsNullOrWhiteSpace(config.archive_cache_location)
+                    ? null
+                    : config.archive_cache_location.Trim();
+
+                if (string.Equals(previousComparable ?? string.Empty, newLocation ?? string.Empty, StringComparison.Ordinal))
+                {
+                    Pause();
+                    return;
+                }
+
+                config.archive_cache_location = newLocation;
+                ServiceHelper.SettingsService.Save();
+                ServiceHelper.ReloadSettings();
+                coreUpdaterService.ReloadSettings();
+
+                Pause();
+            })
+            .Add("Set Temp Directory", () =>
+            {
+                var config = ServiceHelper.SettingsService.Config;
+
+                Console.WriteLine($"Current temp directory: {config.temp_directory}");
+
+                var result = AskYesNoQuestion("Would you like to change your temp directory?");
+
+                if (!result)
+                    return;
+
+                string input = PromptForInput();
+                string newLocation = string.IsNullOrWhiteSpace(input) ? null : input.Trim();
+
+                string previousComparable = string.IsNullOrWhiteSpace(config.temp_directory)
+                    ? null
+                    : config.temp_directory.Trim();
+
+                if (string.Equals(previousComparable ?? string.Empty, newLocation ?? string.Empty, StringComparison.Ordinal))
+                {
+                    Pause();
+                    return;
+                }
+
+                config.temp_directory = newLocation;
+                ServiceHelper.SettingsService.Save();
+                ServiceHelper.ReloadSettings();
+                coreUpdaterService.ReloadSettings();
+
+                Pause();
+            })
+            .Add("Go Back", ConsoleMenu.Close);
+
+        #endregion
+
+        #region Pocket Setup
+
+        var pocketSetupMenu = new ConsoleMenu()
+            .Configure(menuConfig)
+            .Add("Manage Display Modes         >", displayModesMenu.Show)
+            .Add("Download Images and Palettes >", downloadFilesMenu.Show)
+            .Add("Generate ROMs & JSON Files   >", generateFilesMenu.Show)
+            .Add("Super GameBoy Aspect Ratio   >", sgbAspectRatioMenu.Show)
+            .Add("Analogizer Config            >", analogizerMenu.Show)
+            .Add("Patreon Config               >", patreonConfigMenu.Show)
+            .Add("Directory Locations          >", directoryLocationsMenu.Show)
+            .Add("Set GitHub Token", () =>
+            {
+                var config = ServiceHelper.SettingsService.Config;
+
+                Console.WriteLine($"Current GitHub token: {config.github_token}");
+
+                var result = AskYesNoQuestion("Would you like to change your GitHub token?");
+
+                if (!result)
+                    return;
+
+                string input = PromptForInput();
+                string newToken = string.IsNullOrWhiteSpace(input) ? string.Empty : input.Trim();
+
+                if (string.Equals(config.github_token, newToken, StringComparison.Ordinal))
+                {
+                    Pause();
+                    return;
+                }
+
+                config.github_token = newToken;
+                ServiceHelper.SettingsService.Save();
 
                 Pause();
             })
@@ -857,7 +1013,7 @@ internal static partial class Program
                 {
                     thisMenu.CloseMenu();
                     PinCoreVersionForCore(captured);
-                    Pause();
+                    //Pause();
                 });
             }
 
@@ -929,6 +1085,7 @@ internal static partial class Program
             {
                 Selector = "=>",
                 EnableWriteTitle = false,
+                EnableAlphabet = true,
                 WriteHeaderAction = () => Console.WriteLine("Select an archive to manage:"),
                 SelectedItemBackgroundColor = Console.ForegroundColor,
                 SelectedItemForegroundColor = Console.BackgroundColor

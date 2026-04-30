@@ -30,7 +30,7 @@ The full menu tree is documented in **[MENU.md](MENU.md)**.
 | **Cores** | Downloads and updates openFPGA cores from the library inventory; optional local inventory files; per-core skip, assets, rename, display modes, extras, and **version pinning** |
 | **Firmware** | Checks for and installs Analogue Pocket firmware |
 | **Assets** | ROMs, BIOS, and other files from configured archives (archive.org, custom, core-specific) |
-| **Pocket setup** | Display modes, image packs, library images, Game Boy palettes, instance JSON (e.g. PC Engine CD), Game & Watch ROM build flow, Super GameBoy aspect ratio, Analogizer config, Patreon email, debug helpers |
+| **Pocket setup** | Display modes, image packs, library images, Game Boy palettes, instance JSON (e.g. PC Engine CD), Game & Watch ROM build flow, Super GameBoy aspect ratio, Analogizer config, **Patreon Config** (email, Patreon session cookie for JT beta auto-fetch, cookie test), **Directory Locations** (backup saves path, archive cache, temp directory), GitHub token (API rate limits), debug helpers |
 | **Maintenance** | Update/install/reinstall/uninstall cores, ROM set archives, prune save states, clear archive cache, pin/unpin core versions |
 | **Extras** | Pocket Extras (additional assets, combination platforms, variant cores) from `pocket_extras.json` |
 
@@ -138,9 +138,25 @@ Apply **8:7** to chosen `Spiritualized.SuperGB*` cores, or restore **4:3**.
 
 **Jotego** vs **Standard** wizards for Analogizer JSON. See [Analogizer setup](#analogizer-setup).
 
-### Set Patreon Email Address
+### Patreon Config
 
-Used with **Coin-Op Collection beta** license fetch; also editable here if you change Patreon email.
+Submenu under **Pocket Setup**.
+
+- **Set Patreon Email Address** — Used with **Coin-Op Collection beta** license fetch; also editable here if you change Patreon email.
+- **Set Patreon Session Cookie (for JT Beta auto-fetch)** — Stores your browser `session_id` cookie for experimental Patreon-based `jtbeta.zip` auto-fetch. See [Jotego beta](#jotego-beta-cores) for full steps and caveats.
+- **Test Patreon Session Cookie** — Verifies the cookie and whether the account is a Jotego patron (diagnostic only).
+
+### Directory Locations
+
+Submenu under **Pocket Setup**.
+
+- **Set Backup Saves Location** — Folder where **Backup Saves & Memories** writes zip files. Default `Backups` is a relative path (resolved from the process **current directory** when the tool runs; use an absolute path if you need a fixed location). Clearing the value when prompted resets to `Backups`. Same as `config.backup_saves_location` in JSON.
+- **Set Archive Cache Location** — When **Cache downloaded archive files locally** is enabled, this overrides the default cache folder under your user **LocalApplicationData** `pupdate\cache` (Windows) / equivalent. Leave empty (or save an empty line) to use that default. Same as `config.archive_cache_location`.
+- **Set Temp Directory** — Where pupdate extracts downloads and temporary files. Empty means the OS temp folder (`Path.GetTempPath()`). Same as `config.temp_directory`.
+
+### Set GitHub Token
+
+Stores a [personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) for GitHub API calls (higher rate limits than anonymous requests). The current value is shown when you open this item (same idea as **Patreon Config → Set Patreon Email Address**). You can also set `config.github_token` in `pupdate_settings.json`.
 
 ### Print openFPGA Category Structure
 
@@ -219,13 +235,13 @@ Edit `pupdate_settings.json` for keys that are not bool menu toggles:
 
 | Name | Description |
 |------|-------------|
-| `config.github_token` | Used for GitHub API calls (rate limits) |
+| `config.github_token` | Used for GitHub API calls (rate limits); also settable under **Pocket Setup → Set GitHub Token** |
 | `config.download_new_cores` | `yes` / `no` / `ask` — set by Select Cores |
 | `config.display_modes_option` | `merge` / `overwrite` / `ask` |
-| `config.patreon_email_address` | Patreon email for Coin-Op beta license |
-| `config.backup_saves_location` | Backup output directory |
-| `config.temp_directory` | Override temp extract path (default: under install path) |
-| `config.archive_cache_location` | Override archive cache directory when caching is on |
+| `config.patreon_email_address` | Patreon email for Coin-Op beta license; also settable under **Pocket Setup → Patreon Config → Set Patreon Email Address** |
+| `config.backup_saves_location` | Backup output directory; **Pocket Setup → Directory Locations → Set Backup Saves Location** |
+| `config.temp_directory` | Override temp extract path (default: OS temp); **Pocket Setup → Directory Locations → Set Temp Directory** |
+| `config.archive_cache_location` | Override archive cache directory when caching is on; **Pocket Setup → Directory Locations → Set Archive Cache Location** |
 | `config.suppress_already_installed` | Reduce “already installed” console noise |
 | `config.use_local_cores_inventory` | Use local **`cores.json`** and **`platforms.json`** (openFPGA Library **v3** format) next to the executable |
 | `config.use_local_blacklist` | Use local `blacklist.json` instead of downloading |
@@ -403,10 +419,10 @@ Jotego distributes `jtbeta.zip` via a private GitHub repo (`jotego/jtbeta`). Per
 1. Open <https://www.patreon.com> in your browser and log in.
 2. Open DevTools (F12 or ⌘⌥I) → **Application** (Chrome/Edge/Brave) or **Storage** (Firefox) → **Cookies** → `https://www.patreon.com`.
 3. Copy the **value** of the `session_id` cookie.
-4. In pupdate: **Pocket Setup > Set Patreon Session Cookie**, paste the value.
+4. In pupdate: **Pocket Setup → Patreon Config → Set Patreon Session Cookie**, paste the value.
 5. Enable **Auto-fetch Jotego jtbeta.zip from Patreon** in the Settings menu.
 
-Use **Pocket Setup > Test Patreon Session Cookie** to verify the cookie works and whether your account is currently a Jotego patron.
+Use **Pocket Setup → Patreon Config → Test Patreon Session Cookie** to verify the cookie works and whether your account is currently a Jotego patron.
 
 **Notes:**
 
@@ -424,7 +440,7 @@ Use **Pocket Setup > Test Patreon Session Cookie** to verify the cookie works an
 ## Coin-Op Collection beta cores
 
 1. Enable **Coin-Op Collection Beta Access** in Settings.
-2. On the next Update All, enter the **Patreon email** tied to your subscription (or set it under **Pocket Setup → Set Patreon Email Address**).
+2. On the next Update All, enter the **Patreon email** tied to your subscription (or set it under **Pocket Setup → Patreon Config → Set Patreon Email Address**).
 3. Later runs can refresh the license automatically.
 
 ---
@@ -435,6 +451,7 @@ Use **Pocket Setup > Test Patreon Session Cookie** to verify the cookie works an
 - **`Error in framework RS: bridge not responding`** — Run pupdate on a local disk, then copy results to the SD card.
 - **`Missing ROM ID [1]` in `_alternatives`** — Turn **off** “Skip alternative ROMs” if you need those files installed.
 - **Pinned core skipped** — Pin must match a version string present in the core’s inventory `releases` list.
+- **GitHub API rate limit** — Add a token via **Pocket Setup → Set GitHub Token** or `config.github_token` in `pupdate_settings.json`.
 
 ---
 
