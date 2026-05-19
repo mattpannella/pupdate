@@ -64,6 +64,7 @@ public static class PatreonService
         }
 
         using var client = BuildClient(sessionCookie);
+        JObject json;
 
         try
         {
@@ -88,7 +89,7 @@ public static class PatreonService
             }
 
             string body = response.Content.ReadAsStringAsync().Result;
-            JObject json = JObject.Parse(body);
+            json = JObject.Parse(body);
 
             string userName = json["data"]?["attributes"]?["full_name"]?.ToString();
 
@@ -101,64 +102,6 @@ public static class PatreonService
             diag.CookieValid = true;
             diag.PatreonUserName = userName;
             diag.Messages.Add($"Cookie valid. Logged in as: {userName}");
-
-            //if a creator vanity was supplied, look for that membership in 'included'
-            if (!string.IsNullOrWhiteSpace(creatorVanity))
-            {
-                var included = json["included"] as JArray ?? new JArray();
-                var campaignById = new Dictionary<string, JToken>();
-                var tierById = new Dictionary<string, JToken>();
-
-                foreach (var item in included)
-                {
-                    string type = item["type"]?.ToString();
-                    string id = item["id"]?.ToString();
-
-                    if (string.IsNullOrEmpty(id)) continue;
-
-                    if (type == "campaign") campaignById[id] = item;
-                    else if (type == "tier") tierById[id] = item;
-                }
-
-                foreach (var item in included)
-                {
-                    if (item["type"]?.ToString() != "member") continue;
-
-                    string memberCampaignId = item["relationships"]?["campaign"]?["data"]?["id"]?.ToString();
-
-                    if (memberCampaignId == null || !campaignById.TryGetValue(memberCampaignId, out var campaign)) continue;
-
-                    string vanity = campaign["attributes"]?["vanity"]?.ToString();
-
-                    if (!string.Equals(vanity, creatorVanity, StringComparison.OrdinalIgnoreCase)) continue;
-
-                    diag.IsPatron = true;
-                    diag.PatronStatus = item["attributes"]?["patron_status"]?.ToString();
-
-                    var tiers = item["relationships"]?["currently_entitled_tiers"]?["data"] as JArray;
-
-                    if (tiers != null && tiers.Count > 0)
-                    {
-                        var tierNames = new List<string>();
-
-                        foreach (var t in tiers)
-                        {
-                            string tid = t["id"]?.ToString();
-
-                            if (tid != null && tierById.TryGetValue(tid, out var tier))
-                            {
-                                string title = tier["attributes"]?["title"]?.ToString();
-
-                                if (!string.IsNullOrEmpty(title)) tierNames.Add(title);
-                            }
-                        }
-
-                        diag.TierName = string.Join(", ", tierNames);
-                    }
-
-                    break;
-                }
-            }
         }
         catch (Exception ex)
         {
@@ -169,16 +112,97 @@ public static class PatreonService
         if (string.IsNullOrWhiteSpace(creatorVanity))
             return diag;
 
+        // Resolve the campaign id from the public page first — used as the primary key
+        // for matching the user's membership below. The vanity attribute on the campaign
+        // object in `included` can be missing/empty for some membership shapes (e.g.
+        // grandfathered/legacy tiers), so id matching is more reliable than vanity matching.
+        bool campaignResolveOk = false;
+
         try
         {
             diag.CampaignId = ResolveCampaignId(client, creatorVanity);
             diag.Messages.Add($"Campaign id for '{creatorVanity}' resolved: {diag.CampaignId}");
+            campaignResolveOk = true;
         }
         catch (Exception ex)
         {
             diag.Messages.Add($"Campaign lookup for '{creatorVanity}' failed: " + ex.Message);
-            return diag;
         }
+
+        //walk 'included' looking for this user's membership in the resolved campaign
+        var included = json["included"] as JArray ?? new JArray();
+        var campaignById = new Dictionary<string, JToken>();
+        var tierById = new Dictionary<string, JToken>();
+        int memberCount = 0;
+
+        foreach (var item in included)
+        {
+            string type = item["type"]?.ToString();
+            string id = item["id"]?.ToString();
+
+            if (string.IsNullOrEmpty(id)) continue;
+
+            if (type == "campaign") campaignById[id] = item;
+            else if (type == "tier") tierById[id] = item;
+            else if (type == "member") memberCount++;
+        }
+
+        diag.Messages.Add(
+            $"current_user 'included' had {included.Count} items: " +
+            $"{memberCount} member, {campaignById.Count} campaign, {tierById.Count} tier.");
+
+        foreach (var item in included)
+        {
+            if (item["type"]?.ToString() != "member") continue;
+
+            string memberCampaignId = item["relationships"]?["campaign"]?["data"]?["id"]?.ToString();
+            string memberStatus = item["attributes"]?["patron_status"]?.ToString();
+            string seenVanity = null;
+
+            if (memberCampaignId != null && campaignById.TryGetValue(memberCampaignId, out var seenCampaign))
+            {
+                seenVanity = seenCampaign["attributes"]?["vanity"]?.ToString();
+            }
+
+            diag.Messages.Add(
+                $"member record: campaignId={memberCampaignId ?? "(missing)"}, " +
+                $"vanity={seenVanity ?? "(missing)"}, patron_status={memberStatus ?? "(missing)"}.");
+
+            bool idMatch = !string.IsNullOrEmpty(diag.CampaignId) && memberCampaignId == diag.CampaignId;
+            bool vanityMatch = !string.IsNullOrEmpty(seenVanity)
+                               && string.Equals(seenVanity, creatorVanity, StringComparison.OrdinalIgnoreCase);
+
+            if (!idMatch && !vanityMatch) continue;
+
+            diag.IsPatron = true;
+            diag.PatronStatus = memberStatus;
+
+            var tiers = item["relationships"]?["currently_entitled_tiers"]?["data"] as JArray;
+
+            if (tiers != null && tiers.Count > 0)
+            {
+                var tierNames = new List<string>();
+
+                foreach (var t in tiers)
+                {
+                    string tid = t["id"]?.ToString();
+
+                    if (tid != null && tierById.TryGetValue(tid, out var tier))
+                    {
+                        string title = tier["attributes"]?["title"]?.ToString();
+
+                        if (!string.IsNullOrEmpty(title)) tierNames.Add(title);
+                    }
+                }
+
+                diag.TierName = string.Join(", ", tierNames);
+            }
+
+            break;
+        }
+
+        if (!campaignResolveOk)
+            return diag;
 
         //verify the posts endpoint responds
         try
