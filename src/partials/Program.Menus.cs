@@ -624,6 +624,7 @@ internal static partial class Program
             .Add("Additional Assets     >", additionalAssetsMenu.Show)
             .Add("Combination Platforms >", combinationPlatformsMenu.Show)
             .Add("Variant Cores         >", variantCoresMenu.Show)
+            .Add("Plugins               >", DisplayPluginsMenu)
             .Add("Go Back", ConsoleMenu.Close);
 
         foreach (var pocketExtra in ServiceHelper.CoresService.PocketExtrasList)

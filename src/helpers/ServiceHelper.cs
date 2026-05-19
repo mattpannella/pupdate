@@ -9,12 +9,14 @@ public static class ServiceHelper
     public static string SettingsDirectory { get; private set; } // for retrodriven's app
     public static string TempDirectory { get; private set; }
     public static string CacheDirectory { get; private set; }
+    public static string PluginsDirectory { get; private set; }
     public static CoresService CoresService { get; private set; }
     public static SettingsService SettingsService { get; private set ;}
     public static PlatformImagePacksService PlatformImagePacksService { get; private set; }
     public static FirmwareService FirmwareService { get; private set; }
     public static ArchiveService ArchiveService { get; private set; }
     public static AssetsService AssetsService { get; private set; }
+    public static PluginService PluginService { get; private set; }
     public static EventHandler<StatusUpdatedEventArgs> StatusUpdated { get; private set; }
     public static EventHandler<UpdateProcessCompleteEventArgs> UpdateProcessComplete { get; private set; }
 
@@ -50,6 +52,10 @@ public static class ServiceHelper
             PlatformImagePacksService = new PlatformImagePacksService(path, SettingsService.Config.github_token,
                 SettingsService.Config.use_local_image_packs);
             FirmwareService = new FirmwareService();
+            PluginsDirectory = string.IsNullOrEmpty(SettingsService.Config.plugins_directory)
+                ? Path.Combine(AppContext.BaseDirectory, "plugins")
+                : SettingsService.Config.plugins_directory;
+            PluginService = new PluginService(PluginsDirectory, path);
 
             if (statusUpdated != null)
             {
@@ -57,6 +63,7 @@ public static class ServiceHelper
                 FirmwareService.StatusUpdated += statusUpdated;
                 CoresService.StatusUpdated += statusUpdated;
                 ArchiveService.StatusUpdated += statusUpdated;
+                PluginService.StatusUpdated += statusUpdated;
                 StatusUpdated = statusUpdated;
             }
 
@@ -86,5 +93,12 @@ public static class ServiceHelper
             CacheDirectory);
         CoresService = new CoresService(UpdateDirectory, SettingsService, ArchiveService, AssetsService);
         CoresService.StatusUpdated += StatusUpdated;
+
+        PluginsDirectory = string.IsNullOrEmpty(SettingsService.Config.plugins_directory)
+            ? Path.Combine(AppContext.BaseDirectory, "plugins")
+            : SettingsService.Config.plugins_directory;
+        PluginService = new PluginService(PluginsDirectory, UpdateDirectory);
+        if (StatusUpdated != null)
+            PluginService.StatusUpdated += StatusUpdated;
     }
 }
