@@ -24,7 +24,13 @@ internal static partial class Program
                 Environment.Exit(result);
                 return;
             }
-            
+
+            if (AssumeYes)
+            {
+                Console.WriteLine("A new version of pupdate is available. Continuing with the current version (--yes).");
+                return;
+            }
+
             ConsoleKey[] acceptedInputs = { ConsoleKey.I, ConsoleKey.C, ConsoleKey.Q };
             ConsoleKey response;
 

@@ -1,0 +1,230 @@
+{
+  "pocket_extras": [
+    {
+      "id": "DonkeyKong",
+      "description": "Modifies the Donkey Kong core by ericlewis to allow game selection and provides additional games and rom hacks. You will be prompted to install the necessary core if it's missing.",
+      "type": "additional_assets",
+      "core_identifiers": [
+        "ericlewis.DonkeyKong"
+      ],
+      "github_user": "dyreschlock",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "pocket-extras-dk"
+    },
+    {
+      "id": "RadarScope",
+      "description": "Modifies the Radar Scope core by ericlewis to allow game selection and provides additional games and rom hacks. You will be prompted to install the necessary core if it's missing.",
+      "type": "additional_assets",
+      "core_identifiers": [
+        "ericlewis.RadarScope"
+      ],
+      "github_user": "dyreschlock",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "pocket-extras-dk"
+    },
+    {
+      "id": "jtbubl",
+      "description": "Adds support for the Bubble Bobble Ultra rom to the jotego.jtbubl core. You will be prompted to install the necessary core if it's missing.",
+      "type": "additional_assets",
+      "core_identifiers": [
+        "jotego.jtbubl"
+      ],
+      "github_user": "dyreschlock",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "pocket-extras-jotego"
+    },
+    {
+      "id": "jtcps1",
+      "description": "Adds support for game conversions and arcade offset hacks for the jotego.jtcps1 core. You will be prompted to install the necessary core if it's missing.",
+      "type": "additional_assets",
+      "core_identifiers": [
+        "jotego.jtcps1"
+      ],
+      "github_user": "dyreschlock",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "pocket-extras-jotego"
+    },
+    {
+      "id": "jtcps15",
+      "description": "Adds support for game conversions and arcade offset hacks for the jotego.jtcps15 core. You will be prompted to install the necessary core if it's missing.",
+      "type": "additional_assets",
+      "core_identifiers": [
+        "jotego.jtcps15"
+      ],
+      "github_user": "dyreschlock",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "pocket-extras-jotego"
+    },
+    {
+      "id": "jtcps2",
+      "description": "Adds support for game conversions and arcade offset hacks for the jotego.jtcps2 core. You will be prompted to install the necessary core if it's missing.",
+      "type": "additional_assets",
+      "core_identifiers": [
+        "jotego.jtcps2"
+      ],
+      "github_user": "dyreschlock",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "pocket-extras-jotego"
+    },
+    {
+      "id": "toaplan2_c",
+      "name": "Toaplan Version 2 Hardware Combination Core",
+      "description": "Combines pram0d's & atrac17's Battle Garegga, Battle Bakraid, Sorcer Strike, Kingdom Grand Prix, Armed Police Batrider, and Snow Bros 2 cores into a single platform with multiple cores. This allows you to play them all from a single entry in your Pocket menu. You do not need to have them installed prior to using this.",
+      "type": "combination_platform",
+      "core_identifiers": [
+        "coinop.Toaplan_V2_Rotated",
+        "coinop.Toaplan_V2_Standard"
+      ],
+      "has_placeholders": true,
+      "github_user": "dyreschlock",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "pocket-extras-toaplan2_c"
+    },
+    {
+      "id": "jtcz80_c",
+      "name": "Capcom Z80 Hardware Combination Core",
+      "description": "Combines 9 of Jotego's cores into a single platform with multiple cores. It combines 1942, 1943, Black Tiger, Commando, Exed Exes, Gun.Smoke, Section Z, Trojan, and Hyper Dyne Side Arms. This allows you to play them all from a single entry in your Pocket menu. You do not need to have them installed prior to using this.",
+      "type": "combination_platform",
+      "core_identifiers": [
+        "jotego.Capcom_Z80",
+        "jotego.Capcom_Z80_256x240",
+        "jotego.Capcom_Z80_384x224"
+      ],
+      "has_placeholders": true,
+      "github_user": "dyreschlock",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "pocket-extras-jtcz80_c"
+    },
+    {
+      "id": "williams_c",
+      "name": "Williams 6809 Combination Core",
+      "description": "Combines 3 of Obsidian's cores into a single platform with multiple cores. It combines Robotron, Joust, and Defender. This allows you to play them all from a single entry in your Pocket menu. You do not need to have them installed prior to using this.",
+      "type": "combination_platform",
+      "core_identifiers": [
+        "obsidian.Williams6809"
+      ],
+      "has_placeholders": true,
+      "github_user": "dyreschlock",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "pocket-extras-williams_c"
+    },
+    {
+      "id": "vectrex",
+      "name": "Vectrex Extras",
+      "description": "Installs an additional core for the Vectrex platform that was created by obsidian. This is a collection of JSON files based on a particular rom-pack that includes Homebrew games, Hacks, and much more. It's set up as a new core implementation of Vectrex so the new JSON files do not conflict with the JSON files in the Vectrex core. You do not need to have the them installed prior to using this.",
+      "type": "variant_core",
+      "core_identifiers": [
+        "obsidian.Vectrex-Extras"
+      ],
+      "has_placeholders": true,
+      "github_user": "dyreschlock",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "pocket-extras-vectrex"
+    },
+    {
+      "id": "jts16_c",
+      "name": "Sega System 16 Combination Core",
+      "description": "Combines Jotego's SEGA System 16A & 16B cores into a single platform. This allows you to play them all from a single entry in your Pocket menu. You do not need to have them installed prior to using this.",
+      "type": "combination_platform",
+      "core_identifiers": [
+        "jotego.jts16_c"
+      ],
+      "github_user": "espiox",
+      "github_repository": "jts16_complete",
+      "github_asset_prefix": "jts16_complete"
+    },
+    {
+      "id": "digdug2",
+      "name": "Dig Dug II",
+      "description": "Installs a core based of off the obsidian.Druaga core for just the Dig Dug II game. You do not need to have the Druaga core installed prior to using this.",
+      "type": "variant_core",
+      "core_identifiers": [
+        "obsidian.DigDug2"
+      ],
+      "github_user": "hallem",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "digdug2.zip"
+    },
+    {
+      "id": "Joust",
+      "name": "Joust",
+      "description": "Installs a core based of off the obsidian.Robotron core for the Joust game. You do not need to have the Robotron core installed prior to using this.",
+      "type": "variant_core",
+      "core_identifiers": [
+        "obsidian.Joust"
+      ],
+      "github_user": "hallem",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "joust.zip"
+    },
+    {
+      "id": "sgb2",
+      "name": "Super GameBoy 2",
+      "description": "Installs a core based of off the Spiritiualized.SuperGB core for the Super GameBoy 2 rom. You do not need to have the Super GameBoy core installed prior to using this.",
+      "type": "variant_core",
+      "core_identifiers": [
+        "Spiritualized.SuperGB2"
+      ],
+      "github_user": "hallem",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "sgb2.zip"
+    },
+    {
+      "id": "sgb2vw",
+      "name": "Super GameBoy 2: Vaporwave Edition",
+      "description": "Installs a core based of off the Spiritualized.SuperGB core for the Super GameBoy 2: Vaporwave Edition rom hack. You do not need to have the Super GameBoy or Super GameBoy 2 core installed prior to using this.",
+      "type": "variant_core",
+      "core_identifiers": [
+        "Spiritualized.SuperGB2.VW"
+      ],
+      "github_user": "hallem",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "sgb2vw.zip",
+      "additional_links": [
+        "https://www.romhacking.net/hacks/6449/"
+      ]
+    },
+    {
+      "id": "sgb-dual",
+      "name": "Dual Aspect Ratio: Super GameBoy",
+      "description": "Installs two cores based of off the Spiritiualized.SuperGB core, one for each aspect ratio (4:3, 8:7). You do not need to have the Super GameBoy core installed prior to using this.",
+      "type": "variant_core",
+      "core_identifiers": [
+        "Spiritualized.SuperGB",
+        "Spiritualized.SuperGB.8x7"
+      ],
+      "github_user": "hallem",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "sgb-dual.zip"
+    },
+    {
+      "id": "sgb2-dual",
+      "name": "Dual Aspect Ratio: Super GameBoy 2",
+      "description": "Installs two cores based of off the Spiritiualized.SuperGB core for the Super GameBoy 2 rom, one for each aspect ratio (4:3, 8:7). You do not need to have the Super GameBoy core installed prior to using this.",
+      "type": "variant_core",
+      "core_identifiers": [
+        "Spiritualized.SuperGB2",
+        "Spiritualized.SuperGB2.8x7"
+      ],
+      "github_user": "hallem",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "sgb2-dual.zip"
+    },
+    {
+      "id": "sgb2vw-dual",
+      "name": "Dual Aspect Ratio: Super GameBoy 2: Vaporwave Edition",
+      "description": "Installs two cores based of off the Spiritualized.SuperGB core for the Super GameBoy 2: Vaporwave Edition rom hack, one for each aspect ratio (4:3, 8:7). You do not need to have the Super GameBoy or Super GameBoy 2 core installed prior to using this.",
+      "type": "variant_core",
+      "core_identifiers": [
+        "Spiritualized.SuperGB2.VW",
+        "Spiritualized.SuperGB2.VW.8x7"
+      ],
+      "github_user": "hallem",
+      "github_repository": "pocket-extras",
+      "github_asset_prefix": "sgb2vw-dual.zip",
+      "additional_links": [
+        "https://www.romhacking.net/hacks/6449/"
+      ]
+    }
+  ]
+}

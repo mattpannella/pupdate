@@ -10,6 +10,11 @@ internal static partial class Program
 
     private static readonly string SYSTEM_OS_PLATFORM = GetSystemPlatform();
 
+    // Set from the global --yes/-y option. When true, all interactive prompts
+    // assume their default/affirmative answer and the self-update prompt is
+    // skipped, so pupdate can run unattended (CI, cron, containers).
+    private static bool AssumeYes;
+
     private const string USER = "mattpannella";
 
     private const string REPOSITORY = "pupdate";

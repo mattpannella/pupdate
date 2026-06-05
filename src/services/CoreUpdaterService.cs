@@ -49,13 +49,15 @@ public class CoreUpdaterService : BaseProcess
     /// <summary>
     /// Run the full openFPGA core download and update process
     /// </summary>
-    public void RunUpdates(string[] ids = null, bool clean = false)
+    /// <returns>The number of cores that failed to update (0 if everything succeeded).</returns>
+    public int RunUpdates(string[] ids = null, bool clean = false)
     {
         List<Dictionary<string, string>> installed = new List<Dictionary<string, string>>();
         List<string> installedAssets = new List<string>();
         List<string> skippedAssets = new List<string>();
         List<string> missingLicenses = new List<string>();
         string firmwareDownloaded = null;
+        int errorCount = 0;
 
         if (this.settingsService.Config.backup_saves)
         {
@@ -318,6 +320,7 @@ public class CoreUpdaterService : BaseProcess
             }
             catch (Exception ex)
             {
+                errorCount++;
                 WriteMessage("Uh oh something went wrong.");
                 WriteMessage(this.settingsService.Debug.show_stack_traces
                     ? ex.ToString()
@@ -336,10 +339,13 @@ public class CoreUpdaterService : BaseProcess
             SkippedAssets = skippedAssets,
             MissingLicenses = missingLicenses,
             FirmwareUpdated = firmwareDownloaded,
+            ErrorCount = errorCount,
             SkipOutro = false
         };
 
         OnUpdateProcessComplete(args);
+
+        return errorCount;
     }
 
     private void JotegoRename(Core core)
