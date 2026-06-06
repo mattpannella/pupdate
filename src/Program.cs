@@ -85,17 +85,22 @@ internal static partial class Program
 
             bool enableMissingCores = false;
 
+            // The self-update must target the directory containing the running
+            // pupdate binary, which is not necessarily the install path (-p) when
+            // the binary lives outside the SD card. See issue #452.
+            string executableDirectory = Path.GetDirectoryName(Environment.ProcessPath) ?? ServiceHelper.UpdateDirectory;
+
             switch (parserResult.Value)
             {
                 case MenuOptions options:
                     if (!options.SkipUpdate)
-                        CheckForUpdates(ServiceHelper.UpdateDirectory, false, args, ServiceHelper.SettingsService.Config.auto_install_updates);
+                        CheckForUpdates(executableDirectory, false, args, ServiceHelper.SettingsService.Config.auto_install_updates);
                     else
                         enableMissingCores = true;
                     break;
 
                 case UpdateSelfOptions:
-                    CheckForUpdates(ServiceHelper.UpdateDirectory, true, args, false);
+                    CheckForUpdates(executableDirectory, true, args, false);
                     // CheckForUpdates will terminate execution when necessary.
                     break;
 
