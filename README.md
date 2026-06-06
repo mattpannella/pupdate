@@ -31,7 +31,7 @@ The full menu tree is documented in **[MENU.md](MENU.md)**.
 | **Firmware** | Checks for and installs Analogue Pocket firmware |
 | **Assets** | ROMs, BIOS, and other files from configured archives (archive.org, custom, core-specific) |
 | **Pocket setup** | Display modes, image packs, library images, Game Boy palettes, instance JSON (e.g. PC Engine CD), Game & Watch ROM build flow, Super GameBoy aspect ratio, Analogizer config, **Patreon Config** (email, Patreon session cookie for JT beta auto-fetch, cookie test), **Directory Locations** (backup saves path, archive cache, temp directory), GitHub token (API rate limits), debug helpers |
-| **Maintenance** | Update/install/reinstall/uninstall cores, ROM set archives, prune save states, clear archive cache, pin/unpin core versions |
+| **Maintenance** | Update/install/reinstall/uninstall cores, ROM set archives, prune save states, clear archive cache, pin/unpin core versions, **validate/repair core JSON** |
 | **Extras** | Pocket Extras (additional assets, combination platforms, variant cores) from `pocket_extras.json` |
 
 ---
@@ -372,6 +372,10 @@ Some items need login. Add to `pupdate_settings.json`:
     -p, --path
     -y, --yes                Required confirmation flag
 
+  validate-cores           Check installed cores for missing or invalid JSON
+    -p, --path
+    -f, --fix                Reinstall (clean) any cores with missing or invalid JSON
+
   update-self              Check for pupdate updates
 
   help                     Help for a verb
@@ -386,6 +390,8 @@ pupdate -p /path/to/sdcard/
 pupdate update -c boogermann.bankpanic
 pupdate assets -c jotego.jtcontra
 pupdate images -i pocket-platform-images -o dyreschlock -v home
+pupdate validate-cores
+pupdate validate-cores --fix
 ```
 
 ---
