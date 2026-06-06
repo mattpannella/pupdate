@@ -33,6 +33,12 @@ public class CoreSettings
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
     public string pinned_version { get; set; } = null;
 
+    // The inventory release version that was last installed for this core. Used to
+    // avoid re-downloading every run when a core's own reported version (core.json)
+    // differs from the inventory's version (e.g. nightly builds). See issue #444.
+    [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public string installed_version { get; set; } = null;
+
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
     public List<string> instance_json_blocklist { get; set; } = null;
 }
