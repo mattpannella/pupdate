@@ -315,6 +315,7 @@ Some items need login. Add to `pupdate_settings.json`:
     -p, --path
     -c, --core                Optional single core id
     -r, --clean               Clean reinstall cores
+    -y, --yes                 Non-interactive: assume defaults for all prompts (CI/cron)
 
   uninstall                Remove a core
     -p, --path
@@ -379,11 +380,14 @@ Some items need login. Add to `pupdate_settings.json`:
   version                  Print version
 ```
 
+**Non-interactive use (`-y` / `--yes`):** a global flag. With it, pupdate assumes the default/affirmative answer to every prompt (install new cores, display modes, etc.) and skips the self-update prompt, so it can run unattended (CI, cron, containers). pupdate also returns a **non-zero exit code** when an update fails or an unhandled error occurs, so scripts can detect failures.
+
 **Examples**
 
 ```text
 pupdate -p /path/to/sdcard/
 pupdate update -c boogermann.bankpanic
+pupdate update -p /path/to/sdcard/ --yes      # unattended; non-zero exit on failure
 pupdate assets -c jotego.jtcontra
 pupdate images -i pocket-platform-images -o dyreschlock -v home
 ```
