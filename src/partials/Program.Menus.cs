@@ -696,8 +696,12 @@ internal static partial class Program
             {
                 AskAboutNewCores(true);
                 RunCoreSelector(ServiceHelper.CoresService.Cores);
-                // Is reloading the settings file necessary?
+                // Reload settings AND re-point the core updater at the reloaded
+                // SettingsService. Without the second call the updater keeps a stale
+                // settings instance, so newly (de)selected cores aren't picked up by
+                // "Update All" until pupdate is restarted. See issue #299.
                 ServiceHelper.ReloadSettings();
+                coreUpdaterService.ReloadSettings();
             })
             .Add("Download Assets", _ =>
             {
