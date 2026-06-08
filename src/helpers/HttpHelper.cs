@@ -30,18 +30,26 @@ public class HttpHelper
         }
     }
 
+    // When true, the per-file progress bar is suppressed. Set this during
+    // concurrent downloads, where multiple progress bars would corrupt each
+    // other on the single console line.
+    public bool SuppressProgressBar { get; set; }
+
     public void DownloadFile(string uri, string outputPath, int timeout = 100)
     {
         bool console = false;
 
-        try
+        if (!this.SuppressProgressBar)
         {
-            _ = Console.WindowWidth;
-            console = true;
-        }
-        catch
-        {
-            // Ignore
+            try
+            {
+                _ = Console.WindowWidth;
+                console = true;
+            }
+            catch
+            {
+                // Ignore
+            }
         }
 
         using var cts = new CancellationTokenSource();

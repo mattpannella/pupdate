@@ -32,6 +32,11 @@ public class Config
     [Description("Use CRC check when checking ROMs and BIOS files")]
     public bool crc_check { get; set; } = true;
 
+    // Maximum number of asset files to download in parallel during 'Update All'.
+    // Set to 1 to download serially. Not a bool, so intentionally no [Description]
+    // (the settings menu only renders bool properties that have one).
+    public int concurrent_downloads { get; set; } = 4;
+
     [Description("Automatically rename Jotego cores during 'Update All'")]
     public bool fix_jt_names { get; set; } = true;
 

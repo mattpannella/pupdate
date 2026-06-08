@@ -24,6 +24,11 @@ public class ArchiveService : Base
     private readonly bool cacheArchiveFiles;
     private readonly string cacheDirectory;
 
+    // Guards Authenticate() so concurrent downloads don't race on the shared
+    // auth cookie. Authentication only needs to happen once.
+    private readonly object authLock = new();
+    private bool authenticated;
+
     public ArchiveService(List<SettingsArchive> archives, InternetArchive credentials, bool crcCheck, 
         bool useCustomArchive, bool showStackTraces, bool cacheArchiveFiles, string cacheDirectory)
     {
@@ -277,8 +282,18 @@ public class ArchiveService : Base
 
     private void Authenticate()
     {
-        if (this.credentials != null)
+        if (this.credentials == null || this.authenticated)
         {
+            return;
+        }
+
+        lock (this.authLock)
+        {
+            if (this.authenticated)
+            {
+                return;
+            }
+
             var fields = new Dictionary<string, string>
             {
                 { "login", "true" },
@@ -288,6 +303,8 @@ public class ArchiveService : Base
             };
 
             HttpHelper.Instance.GetAuthCookie(this.credentials.username, this.credentials.password, LOGIN, fields);
+
+            this.authenticated = true;
         }
     }
 

@@ -78,6 +78,96 @@ public partial class CoresService
         OnUpdateProcessComplete(args);
     }
 
+    // A single asset file to download: the archive entry, the directory it goes
+    // into, the full path it lands at, and the name shown in status messages.
+    private readonly record struct AssetDownload(
+        ArchiveFile ArchiveFile, string DestinationDirectory, string FilePath, string DisplayName);
+
+    // Downloads a batch of asset files. The network transfers run concurrently
+    // (bounded by the concurrent_downloads setting); extraction and the
+    // installed/skipped bookkeeping run serially afterwards, since extracting
+    // into a shared directory could collide and those lists are not thread-safe.
+    private bool DownloadAssetBatch(Archive archive, List<AssetDownload> batch, List<string> installed,
+        List<string> skipped, bool extractArchives)
+    {
+        bool allSucceeded = true;
+
+        if (batch.Count == 0)
+        {
+            return allSucceeded;
+        }
+
+        int maxParallel = Math.Max(1, this.settingsService.Config.concurrent_downloads);
+        bool[] results = new bool[batch.Count];
+
+        if (maxParallel > 1)
+        {
+            WriteMessage($"Downloading {batch.Count} file(s), up to {maxParallel} at a time...");
+
+            // Each task writes a distinct file and a distinct results slot, so no
+            // shared mutable state is touched. Progress bars are suppressed because
+            // concurrent bars would corrupt the single console line.
+            bool previousSuppress = HttpHelper.Instance.SuppressProgressBar;
+            HttpHelper.Instance.SuppressProgressBar = true;
+
+            try
+            {
+                Parallel.For(0, batch.Count,
+                    new ParallelOptions { MaxDegreeOfParallelism = maxParallel },
+                    i => results[i] = this.archiveService.DownloadArchiveFile(
+                        archive, batch[i].ArchiveFile, batch[i].DestinationDirectory));
+            }
+            finally
+            {
+                HttpHelper.Instance.SuppressProgressBar = previousSuppress;
+            }
+        }
+        else
+        {
+            for (int i = 0; i < batch.Count; i++)
+            {
+                WriteMessage($"Downloading: {batch[i].DisplayName}...");
+                results[i] = this.archiveService.DownloadArchiveFile(
+                    archive, batch[i].ArchiveFile, batch[i].DestinationDirectory);
+            }
+        }
+
+        for (int i = 0; i < batch.Count; i++)
+        {
+            AssetDownload item = batch[i];
+
+            if (extractArchives && results[i] && File.Exists(item.FilePath))
+            {
+                string extension = Path.GetExtension(item.FilePath);
+
+                if (extension == ".zip")
+                {
+                    ZipHelper.ExtractToDirectory(item.FilePath, Path.GetDirectoryName(item.FilePath), true);
+                    File.Delete(item.FilePath);
+                }
+                else if (extension == ".7z")
+                {
+                    SevenZipHelper.ExtractToDirectory(item.FilePath, Path.GetDirectoryName(item.FilePath));
+                    File.Delete(item.FilePath);
+                }
+            }
+
+            if (results[i])
+            {
+                WriteMessage($"Installed: {item.DisplayName}");
+                installed.Add(item.FilePath.Replace(this.installPath, string.Empty));
+            }
+            else
+            {
+                WriteMessage($"Not found: {item.DisplayName}");
+                skipped.Add(item.FilePath.Replace(this.installPath, string.Empty));
+                allSucceeded = false;
+            }
+        }
+
+        return allSucceeded;
+    }
+
     public Dictionary<string, object> DownloadAssets(Core core, bool ignoreGlobalSetting = false)
     {
         List<string> installed = new List<string>();
@@ -133,6 +223,10 @@ public partial class CoresService
 
         if (dataJson.data.data_slots.Length > 0)
         {
+            // Collect the files needing download across all data slots so the
+            // network transfers can be batched and run concurrently.
+            List<AssetDownload> batch = new List<AssetDownload>();
+
             foreach (DataSlot slot in dataJson.data.data_slots)
             {
                 if (!string.IsNullOrEmpty(slot.filename) &&
@@ -172,23 +266,13 @@ public partial class CoresService
                         }
                         else
                         {
-                            WriteMessage($"Downloading: {slot.filename}...");
-                            bool result = this.archiveService.DownloadArchiveFile(archive, archiveFile, path);
-
-                            if (result)
-                            {
-                                WriteMessage($"Installed: {slot.filename}");
-                                installed.Add(filePath.Replace(this.installPath, string.Empty));
-                            }
-                            else
-                            {
-                                WriteMessage($"Not found: {slot.filename}");
-                                skipped.Add(filePath.Replace(this.installPath, string.Empty));
-                            }
+                            batch.Add(new AssetDownload(archiveFile, path, filePath, slot.filename));
                         }
                     }
                 }
             }
+
+            DownloadAssetBatch(archive, batch, installed, skipped, extractArchives: false);
         }
         
         // grab the core specific archive, now
@@ -198,12 +282,15 @@ public partial class CoresService
             && archive.enabled && !archive.has_instance_jsons
             && ((archive.one_time && !archive.complete) || !archive.one_time))
         {
-            var files = this.archiveService.GetArchiveFiles(archive);
-            bool allSucceeded = true;
+            List<ArchiveFile> files = this.archiveService.GetArchiveFiles(archive).ToList();
 
             string commonPath = Path.Combine(platformPath, "common");
 
             Directory.CreateDirectory(commonPath);
+
+            // Work out which files actually need downloading (serial: CheckCrc reads
+            // each existing file and is cheap relative to the network transfers).
+            List<AssetDownload> batch = new List<AssetDownload>();
 
             foreach (var file in files)
             {
@@ -216,38 +303,12 @@ public partial class CoresService
                 }
                 else
                 {
-                    WriteMessage($"Downloading: {file.name}...");
-                    bool result = this.archiveService.DownloadArchiveFile(archive, file, commonPath);
-                    string destinationFileName = Path.Combine(commonPath, file.name);
-                    
-                    if (File.Exists(destinationFileName) && Path.GetExtension(destinationFileName) == ".zip")
-                    {
-                        //extract
-                        ZipHelper.ExtractToDirectory(destinationFileName, Path.GetDirectoryName(destinationFileName), true);
-                        //delete
-                        File.Delete(destinationFileName);
-                    } 
-                    else if (File.Exists(destinationFileName) && Path.GetExtension(destinationFileName) == ".7z")
-                    {
-                        //extract
-                        SevenZipHelper.ExtractToDirectory(destinationFileName, Path.GetDirectoryName(destinationFileName));
-                        //delete
-                        File.Delete(destinationFileName);
-                    }
-
-                    if (result)
-                    {
-                        WriteMessage($"Installed: {file.name}");
-                        installed.Add(filePath.Replace(this.installPath, string.Empty));
-                    }
-                    else
-                    {
-                        WriteMessage($"Not found: {file.name}");
-                        skipped.Add(filePath.Replace(this.installPath, string.Empty));
-                        allSucceeded = false;
-                    }
+                    batch.Add(new AssetDownload(file, commonPath, filePath, file.name));
                 }
             }
+
+            bool allSucceeded = DownloadAssetBatch(archive, batch, installed, skipped, extractArchives: true);
+
             if (archive.one_time && allSucceeded)
             {
                 archive.complete = true;
@@ -300,6 +361,9 @@ public partial class CoresService
         if (Directory.Exists(instancesDirectory))
         {
             string[] files = Directory.GetFiles(instancesDirectory, "*.json", SearchOption.AllDirectories);
+
+            // Collect all instance-json ROM downloads so they can run concurrently.
+            List<AssetDownload> instanceBatch = new List<AssetDownload>();
 
             foreach (string file in files)
             {
@@ -356,19 +420,7 @@ public partial class CoresService
                                 }
                                 else
                                 {
-                                    WriteMessage($"Downloading: {slot.filename}...");
-                                    bool result = this.archiveService.DownloadArchiveFile(archive, archiveFile, slotDirectory);
-
-                                    if (result)
-                                    {
-                                        WriteMessage($"Installed: {slot.filename}");
-                                        installed.Add(slotPath.Replace(this.installPath, string.Empty));
-                                    }
-                                    else
-                                    {
-                                        WriteMessage($"Not found: {slot.filename}");
-                                        skipped.Add(slotPath.Replace(this.installPath, string.Empty));
-                                    }
+                                    instanceBatch.Add(new AssetDownload(archiveFile, slotDirectory, slotPath, slot.filename));
                                 }
                             }
                         }
@@ -382,6 +434,8 @@ public partial class CoresService
                         : Util.GetExceptionMessage(ex));
                 }
             }
+
+            DownloadAssetBatch(archive, instanceBatch, installed, skipped, extractArchives: false);
         }
 
         Dictionary<string, object> results = new Dictionary<string, object>
