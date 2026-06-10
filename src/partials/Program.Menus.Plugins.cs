@@ -1,5 +1,6 @@
 using ConsoleTools;
 using Pannella.Helpers;
+using Pannella.Models.Plugins;
 
 namespace Pannella;
 
@@ -8,15 +9,6 @@ internal static partial class Program
     private static void DisplayPluginsMenu()
     {
         var plugins = ServiceHelper.PluginService.Discover();
-
-        if (plugins.Count == 0)
-        {
-            Console.WriteLine();
-            Console.WriteLine($"No plugins found in: {ServiceHelper.PluginsDirectory}");
-            Console.WriteLine("Drop *.wasm plugin files into that directory to make them available here.");
-            Pause();
-            return;
-        }
 
         var menu = new ConsoleMenu()
             .Configure(c =>
@@ -33,6 +25,12 @@ internal static partial class Program
                 c.SelectedItemForegroundColor = Console.BackgroundColor;
             });
 
+        if (plugins.Count == 0)
+        {
+            Console.WriteLine();
+            Console.WriteLine($"No plugins installed in: {ServiceHelper.PluginsDirectory}");
+        }
+
         foreach (var plugin in plugins)
         {
             var descriptor = plugin;
@@ -43,7 +41,68 @@ internal static partial class Program
             });
         }
 
+        menu.Add("Install from GitHub...", InstallPluginFromGithub);
+        menu.Add("Check for updates", CheckAllPluginsForUpdates);
         menu.Add("Back", ConsoleMenu.Close);
         menu.Show();
+    }
+
+    private static void InstallPluginFromGithub()
+    {
+        Console.WriteLine();
+        Console.WriteLine("Enter GitHub repo (owner/repo) or full URL.");
+        Console.WriteLine("Example: openfpga-library/pocket-plugin");
+        Console.Write("> ");
+        var spec = Console.ReadLine();
+
+        if (string.IsNullOrWhiteSpace(spec))
+        {
+            Console.WriteLine("Cancelled.");
+            Pause();
+            return;
+        }
+
+        ServiceHelper.PluginService.InstallFromGithub(spec.Trim());
+        Pause();
+    }
+
+    private static void CheckAllPluginsForUpdates()
+    {
+        Console.WriteLine();
+        var plugins = ServiceHelper.PluginService.Discover();
+        var managed = plugins.Where(p => !string.IsNullOrEmpty(p.Repo)).ToList();
+
+        if (managed.Count == 0)
+        {
+            Console.WriteLine("No plugins have a recorded GitHub repo to check.");
+            Pause();
+            return;
+        }
+
+        var updates = new List<(PluginDescriptor plugin, string newTag)>();
+        foreach (var plugin in managed)
+        {
+            Console.WriteLine($"Checking {plugin.DisplayName} ({plugin.Repo})...");
+            var newTag = ServiceHelper.PluginService.CheckForUpdate(plugin);
+            if (newTag != null)
+                updates.Add((plugin, newTag));
+        }
+
+        if (updates.Count == 0)
+        {
+            Console.WriteLine("All plugins up to date.");
+            Pause();
+            return;
+        }
+
+        foreach (var (plugin, newTag) in updates)
+        {
+            Console.WriteLine();
+            Console.WriteLine($"  {plugin.DisplayName}: {plugin.InstalledTag} → {newTag}");
+            if (AskYesNoQuestion("Update?"))
+                ServiceHelper.PluginService.Update(plugin);
+        }
+
+        Pause();
     }
 }

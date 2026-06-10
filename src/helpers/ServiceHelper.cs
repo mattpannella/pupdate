@@ -10,6 +10,7 @@ public static class ServiceHelper
     public static string TempDirectory { get; private set; }
     public static string CacheDirectory { get; private set; }
     public static string PluginsDirectory { get; private set; }
+    public static string PluginDataDirectory { get; private set; }
     public static CoresService CoresService { get; private set; }
     public static SettingsService SettingsService { get; private set ;}
     public static PlatformImagePacksService PlatformImagePacksService { get; private set; }
@@ -55,7 +56,11 @@ public static class ServiceHelper
             PluginsDirectory = string.IsNullOrEmpty(SettingsService.Config.plugins_directory)
                 ? Path.Combine(AppContext.BaseDirectory, "plugins")
                 : SettingsService.Config.plugins_directory;
-            PluginService = new PluginService(PluginsDirectory, path);
+            PluginDataDirectory = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "pupdate", "plugin_data");
+            PluginService = new PluginService(PluginsDirectory, path, PluginDataDirectory,
+                SettingsService.Config.github_token);
 
             if (statusUpdated != null)
             {
@@ -97,7 +102,11 @@ public static class ServiceHelper
         PluginsDirectory = string.IsNullOrEmpty(SettingsService.Config.plugins_directory)
             ? Path.Combine(AppContext.BaseDirectory, "plugins")
             : SettingsService.Config.plugins_directory;
-        PluginService = new PluginService(PluginsDirectory, UpdateDirectory);
+        PluginDataDirectory = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "pupdate", "plugin_data");
+        PluginService = new PluginService(PluginsDirectory, UpdateDirectory, PluginDataDirectory,
+            SettingsService.Config.github_token);
         if (StatusUpdated != null)
             PluginService.StatusUpdated += StatusUpdated;
     }
