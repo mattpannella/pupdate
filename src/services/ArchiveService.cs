@@ -140,7 +140,8 @@ public class ArchiveService : Base
         }
     }
 
-    public bool DownloadArchiveFile(SettingsArchive archive, ArchiveFile archiveFile, string destination)
+    public bool DownloadArchiveFile(SettingsArchive archive, ArchiveFile archiveFile, string destination,
+        string destinationFileNameOverride = null)
     {
         if (archive == null || archiveFile == null)
             return false;
@@ -160,14 +161,29 @@ public class ArchiveService : Base
             }
 
             int count = 0;
-            string destinationFileName = Path.Combine(destination, archiveFile.name);
-            string subDirectory = Path.GetDirectoryName(archiveFile.name);
+            // The archive source path (archiveFile.name) can differ from the on-device path; when an override
+            // is supplied (e.g. an instance json slot in a subdirectory) it is authoritative for placement.
+            string destinationFileName = destinationFileNameOverride ?? Path.Combine(destination, archiveFile.name);
 
-            if (!string.IsNullOrEmpty(subDirectory))
+            if (destinationFileNameOverride != null)
             {
-                string destinationDirectory = Path.Combine(destination, subDirectory);
+                string destinationDirectory = Path.GetDirectoryName(destinationFileNameOverride);
 
-                Directory.CreateDirectory(Path.Combine(destinationDirectory));
+                if (!string.IsNullOrEmpty(destinationDirectory))
+                {
+                    Directory.CreateDirectory(destinationDirectory);
+                }
+            }
+            else
+            {
+                string subDirectory = Path.GetDirectoryName(archiveFile.name);
+
+                if (!string.IsNullOrEmpty(subDirectory))
+                {
+                    string destinationDirectory = Path.Combine(destination, subDirectory);
+
+                    Directory.CreateDirectory(Path.Combine(destinationDirectory));
+                }
             }
 
             // Cache hit check
