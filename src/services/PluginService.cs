@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using ConsoleTools;
 using Extism.Sdk;
 using Extism.Sdk.Native;
 using Newtonsoft.Json;
@@ -108,8 +109,7 @@ public class PluginService : Base
         var slug = $"{owner}/{repo}";
 
         WriteMessage($"Fetching latest release of {slug}...");
-        var release = SafeCall(() => GithubApiService.GetLatestRelease(owner, repo, githubToken),
-            $"Could not fetch release info for {slug}");
+        var release = FetchLatestRelease(owner, repo, $"Could not fetch release info for {slug}");
         if (release == null)
             return false;
 
@@ -124,6 +124,7 @@ public class PluginService : Base
 
         var safeDirName = $"{owner}.{repo}";
         var targetDir = Path.Combine(pluginsDirectory, safeDirName);
+        var targetExisted = Directory.Exists(targetDir);
 
         try
         {
@@ -132,6 +133,16 @@ public class PluginService : Base
             HttpHelper.Instance.DownloadFile(wasmAsset.browser_download_url, Path.Combine(targetDir, WASM_FILE), timeout: 300);
             WriteMessage($"Downloading {jsonAsset.name}...");
             HttpHelper.Instance.DownloadFile(jsonAsset.browser_download_url, Path.Combine(targetDir, MANIFEST_FILE), timeout: 60);
+
+            var duplicate = FindDuplicateByName(targetDir);
+            if (duplicate != null)
+            {
+                if (!targetExisted)
+                    TryDelete(targetDir);
+                WriteMessage($"A plugin named '{duplicate.DisplayName}' is already installed at {duplicate.PluginDirectory}.");
+                WriteMessage("Uninstall that one first if you want to install from this repo.");
+                return false;
+            }
 
             WriteInstallInfo(targetDir, new PluginInstallInfo
             {
@@ -150,6 +161,60 @@ public class PluginService : Base
         }
     }
 
+    public bool Uninstall(PluginDescriptor descriptor)
+    {
+        if (descriptor == null || string.IsNullOrEmpty(descriptor.PluginDirectory))
+        {
+            WriteMessage("Nothing to uninstall.");
+            return false;
+        }
+
+        try
+        {
+            Directory.Delete(descriptor.PluginDirectory, recursive: true);
+            WriteMessage($"Uninstalled '{descriptor.DisplayName}' from {descriptor.PluginDirectory}.");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            WriteMessage($"Uninstall failed: {ex.Message}");
+            return false;
+        }
+    }
+
+    private PluginDescriptor FindDuplicateByName(string excludeDir)
+    {
+        var newName = TryReadManifest(excludeDir)?.Name;
+        if (string.IsNullOrEmpty(newName))
+            return null;
+
+        return Discover()
+            .FirstOrDefault(p =>
+                !string.Equals(p.PluginDirectory, excludeDir, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(p.DisplayName, newName, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static PluginManifest TryReadManifest(string dir)
+    {
+        var path = Path.Combine(dir, MANIFEST_FILE);
+        if (!File.Exists(path))
+            return null;
+        try
+        {
+            return JsonConvert.DeserializeObject<PluginManifest>(File.ReadAllText(path));
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static void TryDelete(string dir)
+    {
+        try { Directory.Delete(dir, recursive: true); }
+        catch { /* best effort */ }
+    }
+
     // Returns the new release tag if an update is available, otherwise null.
     public string CheckForUpdate(PluginDescriptor descriptor)
     {
@@ -160,8 +225,7 @@ public class PluginService : Base
         if (parts.Length != 2)
             return null;
 
-        var release = SafeCall(() => GithubApiService.GetLatestRelease(parts[0], parts[1], githubToken),
-            $"Could not check {descriptor.Repo} for updates");
+        var release = FetchLatestRelease(parts[0], parts[1], $"Could not check {descriptor.Repo} for updates");
         if (release == null)
             return null;
 
@@ -169,6 +233,33 @@ public class PluginService : Base
             return null;
 
         return release.tag_name;
+    }
+
+    private Models.Github.Release FetchLatestRelease(string owner, string repo, string errorPrefix)
+    {
+        if (!string.IsNullOrEmpty(githubToken))
+        {
+            try
+            {
+                return GithubApiService.GetLatestRelease(owner, repo, githubToken);
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                WriteMessage("Token was rejected for this repo (likely a fine-grained PAT). Retrying anonymously...");
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                WriteMessage($"{errorPrefix}: repo or 'latest' release not found (404).");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                WriteMessage($"{errorPrefix}: {ex.Message}");
+                return null;
+            }
+        }
+
+        return SafeCall(() => GithubApiService.GetLatestRelease(owner, repo, null), errorPrefix);
     }
 
     public bool Update(PluginDescriptor descriptor)
@@ -208,6 +299,16 @@ public class PluginService : Base
         try
         {
             return call();
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
+        {
+            WriteMessage($"{errorPrefix}: GitHub returned 403 (rate limited).");
+            return null;
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            WriteMessage($"{errorPrefix}: repo or 'latest' release not found (404).");
+            return null;
         }
         catch (Exception ex)
         {
@@ -334,23 +435,37 @@ public class PluginService : Base
 
     private HostMessage PromptChoice(ChoicePluginMessage choice)
     {
-        Console.WriteLine();
-        Console.WriteLine(choice.Query);
-        for (int i = 0; i < choice.Choices.Count; i++)
-            Console.WriteLine($"  {i + 1}. {choice.Choices[i]}");
-        Console.WriteLine("  0. [Cancel — kill plugin]");
-        Console.Write("Select: ");
+        string selected = null;
+        var menu = new ConsoleMenu()
+            .Configure(c =>
+            {
+                c.Selector = "=>";
+                c.EnableWriteTitle = false;
+                c.EnableAlphabet = true;
+                c.WriteHeaderAction = () => Console.WriteLine(choice.Query);
+                c.SelectedItemBackgroundColor = Console.ForegroundColor;
+                c.SelectedItemForegroundColor = Console.BackgroundColor;
+            });
 
-        var line = Console.ReadLine();
-        if (string.IsNullOrWhiteSpace(line) || !int.TryParse(line.Trim(), out var pick))
-            return new KillHostMessage();
-        if (pick <= 0 || pick > choice.Choices.Count)
+        foreach (var c in choice.Choices)
+        {
+            var captured = c;
+            menu.Add(captured, thisMenu =>
+            {
+                selected = captured;
+                thisMenu.CloseMenu();
+            });
+        }
+        menu.Add("Cancel", ConsoleMenu.Close);
+        menu.Show();
+
+        if (selected == null)
             return new KillHostMessage();
 
         return new AnswerHostMessage
         {
             Name = choice.Name,
-            Value = choice.Choices[pick - 1],
+            Value = selected,
         };
     }
 
@@ -358,7 +473,6 @@ public class PluginService : Base
     {
         Console.WriteLine();
         Console.WriteLine(text.Query);
-        Console.WriteLine("  (leave blank to cancel and kill plugin)");
         Console.Write("> ");
 
         var line = Console.ReadLine();

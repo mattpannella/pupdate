@@ -34,8 +34,7 @@ internal static partial class Program
             EnableAlphabet = true,
             WriteHeaderAction = () =>
             {
-                WriteRainbow(welcome);
-                Console.ResetColor();
+                Console.WriteLine(welcome);
                 Console.WriteLine(sponsorLinks);
                 Console.WriteLine(rateLimitMessage);
                 Console.WriteLine();
@@ -741,33 +740,6 @@ internal static partial class Program
         string value = Console.ReadLine();
 
         return value;
-    }
-
-    private static void WriteRainbow(string text)
-    {
-        ConsoleColor[] colors =
-        {
-            ConsoleColor.Red,
-            ConsoleColor.Yellow,
-            ConsoleColor.Green,
-            ConsoleColor.Cyan,
-            ConsoleColor.Blue,
-            ConsoleColor.Magenta,
-        };
-        int colorIndex = 0;
-
-        foreach (char c in text)
-        {
-            if (!char.IsWhiteSpace(c))
-            {
-                Console.ForegroundColor = colors[colorIndex % colors.Length];
-                colorIndex++;
-            }
-
-            Console.Write(c);
-        }
-
-        Console.WriteLine();
     }
 
     private static string MenuItemName(string title, bool value, bool requiresLicense = false)

@@ -43,7 +43,49 @@ internal static partial class Program
 
         menu.Add("Install from GitHub...", InstallPluginFromGithub);
         menu.Add("Check for updates", CheckAllPluginsForUpdates);
+        menu.Add("Uninstall a plugin...", UninstallPluginMenu);
         menu.Add("Back", ConsoleMenu.Close);
+        menu.Show();
+    }
+
+    private static void UninstallPluginMenu()
+    {
+        var plugins = ServiceHelper.PluginService.Discover();
+
+        if (plugins.Count == 0)
+        {
+            Console.WriteLine();
+            Console.WriteLine("No plugins to uninstall.");
+            Pause();
+            return;
+        }
+
+        var menu = new ConsoleMenu()
+            .Configure(c =>
+            {
+                c.Selector = "=>";
+                c.EnableWriteTitle = false;
+                c.EnableAlphabet = true;
+                c.WriteHeaderAction = () => Console.WriteLine("Uninstall which plugin?");
+                c.SelectedItemBackgroundColor = Console.ForegroundColor;
+                c.SelectedItemForegroundColor = Console.BackgroundColor;
+            });
+
+        foreach (var plugin in plugins)
+        {
+            var d = plugin;
+            menu.Add($"{d.DisplayName}  ({d.DirectoryName})", thisMenu =>
+            {
+                if (AskYesNoQuestion($"Uninstall '{d.DisplayName}'?"))
+                {
+                    ServiceHelper.PluginService.Uninstall(d);
+                    Pause();
+                }
+                thisMenu.CloseMenu();
+            });
+        }
+
+        menu.Add("Cancel", ConsoleMenu.Close);
         menu.Show();
     }
 
