@@ -347,7 +347,9 @@ public partial class CoresService
                                 if (!Directory.Exists(slotDirectory))
                                     Directory.CreateDirectory(slotDirectory);
                                 string slotPath = Path.Combine(slotDirectory, fileName);
-                                ArchiveFile archiveFile = this.archiveService.GetArchiveFile(fileName);
+                                // Look the file up at its subdirectory path in the archive (archive indexes use
+                                // '/' separators). Filenames without a subdirectory resolve at the root as before.
+                                ArchiveFile archiveFile = this.archiveService.GetArchiveFile(slot.filename.Replace('\\', '/'));
 
                                 if (File.Exists(slotPath) && CheckCrc(slotPath, archiveFile))
                                 {
@@ -357,7 +359,7 @@ public partial class CoresService
                                 else
                                 {
                                     WriteMessage($"Downloading: {slot.filename}...");
-                                    bool result = this.archiveService.DownloadArchiveFile(archive, archiveFile, slotDirectory);
+                                    bool result = this.archiveService.DownloadArchiveFile(archive, archiveFile, slotDirectory, slotPath);
 
                                     if (result)
                                     {
