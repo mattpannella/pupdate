@@ -33,12 +33,13 @@ The full menu tree is documented in **[MENU.md](MENU.md)**.
 | **Pocket setup** | Display modes, image packs, library images, Game Boy palettes, instance JSON (e.g. PC Engine CD), Game & Watch ROM build flow, Super GameBoy aspect ratio, Analogizer config, **Patreon Config** (email, Patreon session cookie for JT beta auto-fetch, cookie test), **Directory Locations** (backup saves path, archive cache, temp directory), GitHub token (API rate limits), debug helpers |
 | **Maintenance** | Update/install/reinstall/uninstall cores, ROM set archives, prune save states, clear archive cache, pin/unpin core versions, **validate/repair core JSON** |
 | **Extras** | Pocket Extras (additional assets, combination platforms, variant cores) from `pocket_extras.json` |
+| **Plugins** |  Plugins for custom functionality |
 
 ---
 
 ## RTFM (quick links)
 
-[Update All](#update-all) · [Update Firmware](#update-firmware) · [Select Cores](#select-cores) · [Download Assets](#download-assets) · [Backup Saves & Memories](#backup-saves--memories) · [Pocket Setup](#pocket-setup) · [Pocket Maintenance](#pocket-maintenance) · [Pocket Extras](#pocket-extras) · [Pin / unpin core version](#pin--unpin-core-version) · [Settings](#settings) · [Additional settings](#additional-settings) · [Asset archives](#asset-source-archives) · [CLI](#cli-commands-and-parameters) · [Jotego beta](#jotego-beta-cores) · [Analogizer](#analogizer-setup) · [Coin-Op beta](#coin-op-collection-beta-cores) · [Troubleshooting](#troubleshooting) · [Developers](#developers)
+[Update All](#update-all) · [Update Firmware](#update-firmware) · [Select Cores](#select-cores) · [Download Assets](#download-assets) · [Backup Saves & Memories](#backup-saves--memories) · [Pocket Setup](#pocket-setup) · [Pocket Maintenance](#pocket-maintenance) · [Pocket Extras](#pocket-extras) · [Plugins](#plugins) · [Pin / unpin core version](#pin--unpin-core-version) · [Settings](#settings) · [Additional settings](#additional-settings) · [Asset archives](#asset-source-archives) · [CLI](#cli-commands-and-parameters) · [Jotego beta](#jotego-beta-cores) · [Analogizer](#analogizer-setup) · [Coin-Op beta](#coin-op-collection-beta-cores) · [Troubleshooting](#troubleshooting) · [Developers](#developers)
 
 ### Update All
 
@@ -197,6 +198,34 @@ Third-party bundles defined in [`pocket_extras.json`](pocket_extras.json). Each 
 - **Variant Cores** — Alternate core packages alongside the original.
 
 Exact menu labels are built at runtime; see **[MENU.md](MENU.md)** for a current snapshot.
+
+---
+
+## Plugins
+
+Pupdate can install and run plugins distributed as GitHub repos. Each plugin is a small program that can drive its own interactive flow inside pupdate. To install ROM packs, configure something on your Pocket, fetch external content, etc.
+
+### Installing a plugin
+
+**Pocket Extras → Plugins → Install from GitHub...** and paste either:
+
+- a short slug like `owner/repo`, or
+- a full URL like `https://github.com/owner/repo`
+
+pupdate downloads the latest release of that repo. Example to try: `openfpga-library/pocket-plugin`.
+
+### Running a plugin
+
+After installing, the plugin appears in the same **Pocket Extras → Plugins** menu by its name. Select it and follow its prompts. Pick **Cancel** at any prompt to stop the plugin.
+
+### Updating and uninstalling
+
+- **Check for updates** - checks every installed plugin against its source repo and offers to update any that have a newer release.
+- **Uninstall a plugin...** - pick one from the list and confirm.
+
+### Creating a plugin
+
+See [openfpga-library/pocket-plugin](https://github.com/openfpga-library/pocket-plugin) for the plugin contract, sample code, and release format. Distribute your plugin as a GitHub release that includes `plugin.wasm` and `plugin.json` as release assets. The release tag becomes the version pupdate uses for update checks.
 
 ---
 
