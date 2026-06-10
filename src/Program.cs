@@ -28,8 +28,9 @@ internal static partial class Program
         typeof(PocketExtrasOptions), 
         typeof(DisplayModesOptions), 
         typeof(PruneMemoriesOptions),
-        typeof(AnalogizerSetupOptions), 
+        typeof(AnalogizerSetupOptions),
         typeof(ClearArchiveCacheOptions),
+        typeof(ValidateCoresOptions),
     };
 
     private static void Main(string[] args)
@@ -104,6 +105,12 @@ internal static partial class Program
 
                 case FundOptions options:
                     Funding(options.Core);
+                    return;
+
+                case ValidateCoresOptions options:
+                    // Run before CheckForMissingCores: that step reads every core's
+                    // JSON, so a corrupt core would throw before we could report it.
+                    ValidateCores(options.Fix);
                     return;
             }
 

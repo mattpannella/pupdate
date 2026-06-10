@@ -75,6 +75,10 @@ Usage:
     -p, --path                Absolute path to install location
     -y, --yes                 Confirm clearing (required)
 
+  validate-cores           Check installed cores for missing or invalid JSON files
+    -p, --path                Absolute path to install location
+    -f, --fix                 Reinstall (clean) any cores with missing or invalid JSON
+
   update-self              Check for updates to pupdate
 
   help                     Display more information on a specific command.

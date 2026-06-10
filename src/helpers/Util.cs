@@ -258,4 +258,21 @@ public static class Util
 
         return string.Equals(NormalizeVersionTag(a), NormalizeVersionTag(b), StringComparison.Ordinal);
     }
+
+    // Equivalent of `chmod +x` that does not depend on a shell being present.
+    // Shelling out to /bin/bash fails on systems where it does not exist (Alpine
+    // and other busybox distros, NixOS, minimal containers), which left extracted
+    // helper binaries without the execute bit. No-op on Windows.
+    public static void MakeExecutable(string path)
+    {
+        if (OperatingSystem.IsWindows() || !File.Exists(path))
+        {
+            return;
+        }
+
+        UnixFileMode mode = File.GetUnixFileMode(path);
+
+        File.SetUnixFileMode(path,
+            mode | UnixFileMode.UserExecute | UnixFileMode.GroupExecute | UnixFileMode.OtherExecute);
+    }
 }
