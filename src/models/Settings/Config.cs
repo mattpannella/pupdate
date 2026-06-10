@@ -68,6 +68,8 @@ public class Config
 
     public string temp_directory { get; set; } = null;
 
+    public string plugins_directory { get; set; } = null;
+
     public string patreon_email_address { get; set; } = null;
 
     public string patreon_session_cookie { get; set; } = null;
