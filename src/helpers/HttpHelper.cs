@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
 
@@ -92,6 +93,7 @@ public class HttpHelper
         var readSoFar = 0L;
         var buffer = new byte[4096];
         var isMoreToRead = true;
+        var stopwatch = Stopwatch.StartNew();
 
         using var stream = responseMessage.Content.ReadAsStream(token);
         using var fileStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write);
@@ -117,7 +119,10 @@ public class HttpHelper
 
                 if (console)
                 {
-                    ConsoleHelper.ShowProgressBar(readSoFar, totalSize);
+                    double seconds = stopwatch.Elapsed.TotalSeconds;
+                    double speed = seconds > 0 ? readSoFar / seconds : 0;
+
+                    ConsoleHelper.ShowProgressBar(readSoFar, totalSize, speed);
                 }
 
                 DownloadProgressEventArgs args = new()
@@ -184,6 +189,7 @@ public class HttpHelper
         long totalRead = 0;
         var progressLock = new object();
         var tasks = new List<Task>();
+        var stopwatch = Stopwatch.StartNew();
 
         for (int i = 0; i < chunkCount; i++)
         {
@@ -226,7 +232,10 @@ public class HttpHelper
                     {
                         if (console)
                         {
-                            ConsoleHelper.ShowProgressBar(soFar, totalSize);
+                            double seconds = stopwatch.Elapsed.TotalSeconds;
+                            double speed = seconds > 0 ? soFar / seconds : 0;
+
+                            ConsoleHelper.ShowProgressBar(soFar, totalSize, speed);
                         }
 
                         OnDownloadProgressUpdate(new DownloadProgressEventArgs
