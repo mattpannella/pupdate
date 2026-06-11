@@ -57,9 +57,6 @@ public class Config
     [Description("Automatically install updates to Pupdate")]
     public bool auto_install_updates { get; set; } = false;
 
-    [Description("Coin-Op Collection Beta Access")]
-    public bool coin_op_beta { get; set; } = false;
-
     [Description("Auto-fetch Jotego jtbeta.zip from GitHub (requires github_token + access to jotego/jtbeta)")]
     public bool jt_beta_github_fetch { get; set; } = false;
 
@@ -69,8 +66,6 @@ public class Config
     public string temp_directory { get; set; } = null;
 
     public string plugins_directory { get; set; } = null;
-
-    public string patreon_email_address { get; set; } = null;
 
     public string patreon_session_cookie { get; set; } = null;
 

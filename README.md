@@ -39,7 +39,7 @@ The full menu tree is documented in **[MENU.md](MENU.md)**.
 
 ## RTFM (quick links)
 
-[Update All](#update-all) · [Update Firmware](#update-firmware) · [Select Cores](#select-cores) · [Download Assets](#download-assets) · [Backup Saves & Memories](#backup-saves--memories) · [Pocket Setup](#pocket-setup) · [Pocket Maintenance](#pocket-maintenance) · [Pocket Extras](#pocket-extras) · [Plugins](#plugins) · [Pin / unpin core version](#pin--unpin-core-version) · [Settings](#settings) · [Additional settings](#additional-settings) · [Asset archives](#asset-source-archives) · [CLI](#cli-commands-and-parameters) · [Jotego beta](#jotego-beta-cores) · [Analogizer](#analogizer-setup) · [Coin-Op beta](#coin-op-collection-beta-cores) · [Troubleshooting](#troubleshooting) · [Developers](#developers)
+[Update All](#update-all) · [Update Firmware](#update-firmware) · [Select Cores](#select-cores) · [Download Assets](#download-assets) · [Backup Saves & Memories](#backup-saves--memories) · [Pocket Setup](#pocket-setup) · [Pocket Maintenance](#pocket-maintenance) · [Pocket Extras](#pocket-extras) · [Plugins](#plugins) · [Pin / unpin core version](#pin--unpin-core-version) · [Settings](#settings) · [Additional settings](#additional-settings) · [Asset archives](#asset-source-archives) · [CLI](#cli-commands-and-parameters) · [Jotego beta](#jotego-beta-cores) · [Analogizer](#analogizer-setup) · [Troubleshooting](#troubleshooting) · [Developers](#developers)
 
 ### Update All
 
@@ -143,7 +143,6 @@ Apply **8:7** to chosen `Spiritualized.SuperGB*` cores, or restore **4:3**.
 
 Submenu under **Pocket Setup**.
 
-- **Set Patreon Email Address** — Used with **Coin-Op Collection beta** license fetch; also editable here if you change Patreon email.
 - **Set Patreon Session Cookie (for JT Beta auto-fetch)** — Stores your browser `session_id` cookie for experimental Patreon-based `jtbeta.zip` auto-fetch. See [Jotego beta](#jotego-beta-cores) for full steps and caveats.
 - **Test Patreon Session Cookie** — Verifies the cookie and whether the account is a Jotego patron (diagnostic only).
 
@@ -157,7 +156,7 @@ Submenu under **Pocket Setup**.
 
 ### Set GitHub Token
 
-Stores a [personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) for GitHub API calls (higher rate limits than anonymous requests). The current value is shown when you open this item (same idea as **Patreon Config → Set Patreon Email Address**). You can also set `config.github_token` in `pupdate_settings.json`.
+Stores a [personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) for GitHub API calls (higher rate limits than anonymous requests). The current value is shown when you open this item. You can also set `config.github_token` in `pupdate_settings.json`.
 
 ### Print openFPGA Category Structure
 
@@ -250,7 +249,6 @@ Toggles exposed in the **Settings** menu (stored in `pupdate_settings.json`):
 | Use Local Pocket Extras | Use local `pocket_extras.json` |
 | Use Local Display Modes | Use local `display_modes.json` |
 | Cache downloaded archive files locally | Keep a reusable cache; optional cache path in JSON |
-| Coin-Op Collection Beta Access | Enables beta license flow (see [Coin-Op](#coin-op-collection-beta-cores)) |
 | Adds a description element to the video.json display modes | Non-breaking extra field in generated video JSON |
 | Hide and uninstall Analogizer core variants | Hides Analogizer-specific core variants |
 | Download files in concurrent chunks | Splits downloads into parallel HTTP range requests for faster transfers on bandwidth-limited servers like archive.org; falls back to a single connection when the server doesn't support ranges (default on). Tune the parallelism with `config.download_chunk_count` |
@@ -268,7 +266,6 @@ Edit `pupdate_settings.json` for keys that are not bool menu toggles:
 | `config.github_token` | Used for GitHub API calls (rate limits); also settable under **Pocket Setup → Set GitHub Token** |
 | `config.download_new_cores` | `yes` / `no` / `ask` — set by Select Cores |
 | `config.display_modes_option` | `merge` / `overwrite` / `ask` |
-| `config.patreon_email_address` | Patreon email for Coin-Op beta license; also settable under **Pocket Setup → Patreon Config → Set Patreon Email Address** |
 | `config.backup_saves_location` | Backup output directory; **Pocket Setup → Directory Locations → Set Backup Saves Location** |
 | `config.temp_directory` | Override temp extract path (default: OS temp); **Pocket Setup → Directory Locations → Set Temp Directory** |
 | `config.archive_cache_location` | Override archive cache directory when caching is on; **Pocket Setup → Directory Locations → Set Archive Cache Location** |
@@ -471,14 +468,6 @@ Use **Pocket Setup → Patreon Config → Test Patreon Session Cookie** to verif
 ## Analogizer setup
 
 **Pocket Setup → Analogizer Config** — choose **Standard** ([RndMnkIII](https://github.com/RndMnkIII)) or **Jotego** flow. For problems with generated files, ask the core author. [Supported cores](https://github.com/RndMnkIII/Analogizer/wiki/Supported-Cores-and-How-to-Configure-Them).
-
----
-
-## Coin-Op Collection beta cores
-
-1. Enable **Coin-Op Collection Beta Access** in Settings.
-2. On the next Update All, enter the **Patreon email** tied to your subscription (or set it under **Pocket Setup → Patreon Config → Set Patreon Email Address**).
-3. Later runs can refresh the license automatically.
 
 ---
 
