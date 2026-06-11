@@ -64,6 +64,11 @@ internal static partial class Program
                     Environment.Exit(1);
                 });
 
+            if (parserResult.Value is BaseOptions baseOptions)
+            {
+                AssumeYes = baseOptions.AssumeYes;
+            }
+
             string path;
 
             if (parserResult.Value is UpdateSelfOptions ||
@@ -145,7 +150,13 @@ internal static partial class Program
                         identifiers = new[] { options.CoreName };
                     }
 
-                    coreUpdaterService.RunUpdates(identifiers, options.CleanInstall);
+                    int updateErrors = coreUpdaterService.RunUpdates(identifiers, options.CleanInstall);
+
+                    if (updateErrors > 0)
+                    {
+                        Environment.ExitCode = 1;
+                    }
+
                     break;
 
                 case InstanceGeneratorOptions:
@@ -300,7 +311,7 @@ internal static partial class Program
                     break;
 
                 case ClearArchiveCacheOptions options:
-                    if (!options.Yes)
+                    if (!options.AssumeYes)
                     {
                         Console.WriteLine("Specify -y or --yes to confirm clearing the archive cache.");
                         break;
@@ -316,12 +327,26 @@ internal static partial class Program
         }
         catch (Exception ex)
         {
+            // Set the failure exit code first: anything below could itself throw,
+            // and unattended callers rely on a non-zero code to detect failure.
+            Environment.ExitCode = 1;
+
             Console.WriteLine("Well, something went wrong. Sorry about that.");
-            Console.WriteLine(ServiceHelper.SettingsService.Debug.show_stack_traces
-                ? ex
+
+            // SettingsService may be null if we failed before initialization
+            // (e.g. the install path could not be created), so guard the lookup.
+            bool showStackTraces = ServiceHelper.SettingsService?.Debug?.show_stack_traces ?? false;
+
+            Console.WriteLine(showStackTraces
+                ? ex.ToString()
                 : Util.GetExceptionMessage(ex));
 
-            Pause();
+            // Don't block waiting for a keypress in unattended runs: there's no
+            // one to press it, and Console.ReadKey throws on redirected stdin.
+            if (!AssumeYes && !Console.IsInputRedirected)
+            {
+                Pause();
+            }
         }
     }
 
@@ -386,6 +411,12 @@ internal static partial class Program
                 Console.WriteLine(core);
             }
 
+            Console.WriteLine();
+        }
+
+        if (e.ErrorCount > 0)
+        {
+            Console.WriteLine($"{e.ErrorCount} core(s) failed to update. See the log above for details.");
             Console.WriteLine();
         }
 

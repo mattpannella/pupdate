@@ -8,5 +8,6 @@ public class UpdateProcessCompleteEventArgs : EventArgs
     public List<string> SkippedAssets { get; set; }
     public string FirmwareUpdated { get; set; } = string.Empty;
     public List<string> MissingLicenses { get; set; }
+    public int ErrorCount { get; set; }
     public bool SkipOutro;
 }
