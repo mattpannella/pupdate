@@ -111,6 +111,11 @@ public class Config
     [Description("Hide and uninstall Analogizer core variants")]
     public bool no_analogizer_variants { get; set; } = false;
 
+    [Description("Download files in concurrent chunks (faster on bandwidth-limited servers)")]
+    public bool concurrent_downloads { get; set; } = true;
+
+    public int download_chunk_count { get; set; } = 4;
+
     [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
     public List<Archive> archives { get; set; } = new()
     {

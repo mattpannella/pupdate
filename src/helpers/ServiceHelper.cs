@@ -32,6 +32,8 @@ public static class ServiceHelper
             UpdateDirectory = path;
             SettingsDirectory = settingsPath;
             SettingsService = new SettingsService(settingsPath);
+            HttpHelper.Instance.ConcurrentDownloadsEnabled = SettingsService.Config.concurrent_downloads;
+            HttpHelper.Instance.DownloadChunkCount = SettingsService.Config.download_chunk_count;
             TempDirectory = SettingsService.Config.temp_directory ?? Path.GetTempPath();
             CacheDirectory = string.IsNullOrEmpty(SettingsService.Config.archive_cache_location)
                 ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "pupdate", "cache")
@@ -83,6 +85,8 @@ public static class ServiceHelper
     public static void ReloadSettings()
     {
         SettingsService = new SettingsService(SettingsDirectory, CoresService.Cores);
+        HttpHelper.Instance.ConcurrentDownloadsEnabled = SettingsService.Config.concurrent_downloads;
+        HttpHelper.Instance.DownloadChunkCount = SettingsService.Config.download_chunk_count;
         TempDirectory = SettingsService.Config.temp_directory ?? Path.GetTempPath();
         // reload the archive service, in case that setting has changed
         CacheDirectory = string.IsNullOrEmpty(SettingsService.Config.archive_cache_location)
