@@ -163,7 +163,8 @@ public partial class CoresService
                     foreach (string file in files)
                     {
                         string filePath = Path.Combine(path, file);
-                        ArchiveFile archiveFile = this.archiveService.GetArchiveFile(file);
+                        var candidates = ArchiveService.BuildAssetCandidates(file, info.metadata.platform_ids[0]);
+                        ArchiveFile archiveFile = this.archiveService.GetArchiveFile(candidates);
 
                         if (File.Exists(filePath) && CheckCrc(filePath, archiveFile))
                         {
@@ -173,7 +174,7 @@ public partial class CoresService
                         else
                         {
                             WriteMessage($"Downloading: {slot.filename}...");
-                            bool result = this.archiveService.DownloadArchiveFile(archive, archiveFile, path);
+                            bool result = this.archiveService.DownloadArchiveFile(archive, archiveFile, path, filePath);
 
                             if (result)
                             {
@@ -347,9 +348,11 @@ public partial class CoresService
                                 if (!Directory.Exists(slotDirectory))
                                     Directory.CreateDirectory(slotDirectory);
                                 string slotPath = Path.Combine(slotDirectory, fileName);
-                                // Look the file up at its subdirectory path in the archive (archive indexes use
-                                // '/' separators). Filenames without a subdirectory resolve at the root as before.
-                                ArchiveFile archiveFile = this.archiveService.GetArchiveFile(slot.filename.Replace('\\', '/'));
+                                // Resolve against the archive by priority: [platform]/[subdir]/[asset],
+                                // [subdir]/[asset], [platform]/[asset], [asset].
+                                var candidates = ArchiveService.BuildAssetCandidates(slot.filename,
+                                    info.metadata.platform_ids[0]);
+                                ArchiveFile archiveFile = this.archiveService.GetArchiveFile(candidates);
 
                                 if (File.Exists(slotPath) && CheckCrc(slotPath, archiveFile))
                                 {
