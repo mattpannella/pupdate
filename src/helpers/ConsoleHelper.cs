@@ -7,6 +7,22 @@ public static class ConsoleHelper
     // which previously produced negative string lengths and crashed the progress bar.
     private const int DEFAULT_WINDOW_WIDTH = 80;
 
+    private static string FormatSpeed(double bytesPerSecond)
+    {
+        string[] units = { "B/s", "KB/s", "MB/s", "GB/s" };
+        double value = bytesPerSecond < 0 ? 0 : bytesPerSecond;
+        int unit = 0;
+
+        while (value >= 1024 && unit < units.Length - 1)
+        {
+            value /= 1024;
+            unit++;
+        }
+
+        // Fixed-width field (e.g. " 12.34 MB/s") keeps the progress bar from shifting.
+        return $"{value,6:0.00} {units[unit],-4}";
+    }
+
     private static int GetWindowWidth()
     {
         try
@@ -22,7 +38,7 @@ public static class ConsoleHelper
         }
     }
 
-    public static void ShowProgressBar(long current, long total)
+    public static void ShowProgressBar(long current, long total, double? bytesPerSecond = null)
     {
         if (total <= 0)
         {
@@ -32,13 +48,18 @@ public static class ConsoleHelper
         int windowWidth = GetWindowWidth();
         double progress = Math.Clamp((double)current / total, 0d, 1d);
 
-        int progressWidth = Math.Max(0, windowWidth - 14);
+        // Speed is formatted to a fixed width so the bar doesn't jitter as the rate changes.
+        string suffix = bytesPerSecond.HasValue
+            ? $"] {progress * 100:0.00}% {FormatSpeed(bytesPerSecond.Value)}"
+            : $"] {progress * 100:0.00}%";
+
+        int progressWidth = Math.Max(0, windowWidth - suffix.Length - 2);
         int progressBarWidth = Math.Clamp((int)(progress * progressWidth), 0, progressWidth);
 
         var progressBar = new string('=', progressBarWidth);
         var emptyProgressBar = new string(' ', progressWidth - progressBarWidth);
 
-        Console.Write($"\r{progressBar}{emptyProgressBar}] {progress * 100:0.00}%");
+        Console.Write($"\r{progressBar}{emptyProgressBar}{suffix}");
 
         if (current == total)
         {
