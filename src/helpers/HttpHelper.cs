@@ -19,8 +19,6 @@ public class HttpHelper
     // Files smaller than this aren't worth the per-chunk request overhead.
     private const long CHUNK_MIN_SIZE = 1 * 1024 * 1024;
 
-    // Wired up from ServiceHelper based on user settings. Defaults keep the legacy
-    // sequential behavior for any code path that touches the singleton before wiring.
     public bool ConcurrentDownloadsEnabled { get; set; } = false;
     public int DownloadChunkCount { get; set; } = 4;
 
@@ -205,8 +203,6 @@ public class HttpHelper
                 using HttpResponseMessage response =
                     await this.client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token);
 
-                // The server must honor the range; a 200 would mean it's sending the whole
-                // file, which would corrupt the offset write. Bail so we fall back.
                 if (response.StatusCode != HttpStatusCode.PartialContent)
                 {
                     throw new HttpRequestException(
