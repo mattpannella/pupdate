@@ -253,6 +253,7 @@ Toggles exposed in the **Settings** menu (stored in `pupdate_settings.json`):
 | Coin-Op Collection Beta Access | Enables beta license flow (see [Coin-Op](#coin-op-collection-beta-cores)) |
 | Adds a description element to the video.json display modes | Non-breaking extra field in generated video JSON |
 | Hide and uninstall Analogizer core variants | Hides Analogizer-specific core variants |
+| Download files in concurrent chunks | Splits downloads into parallel HTTP range requests for faster transfers on bandwidth-limited servers like archive.org; falls back to a single connection when the server doesn't support ranges (default on). Tune the parallelism with `config.download_chunk_count` |
 
 Game & Watch (and other **core-specific** archives) are enabled in the `archives` array in JSON, not via a separate Settings row.
 
@@ -271,6 +272,7 @@ Edit `pupdate_settings.json` for keys that are not bool menu toggles:
 | `config.backup_saves_location` | Backup output directory; **Pocket Setup → Directory Locations → Set Backup Saves Location** |
 | `config.temp_directory` | Override temp extract path (default: OS temp); **Pocket Setup → Directory Locations → Set Temp Directory** |
 | `config.archive_cache_location` | Override archive cache directory when caching is on; **Pocket Setup → Directory Locations → Set Archive Cache Location** |
+| `config.download_chunk_count` | Number of parallel HTTP range chunks when **Download files in concurrent chunks** is on (default `4`); ignored for files under 1 MB or servers without range support |
 | `config.suppress_already_installed` | Reduce “already installed” console noise |
 | `config.use_local_cores_inventory` | Use local **`cores.json`** and **`platforms.json`** (openFPGA Library **v3** format) next to the executable |
 | `config.use_local_blacklist` | Use local `blacklist.json` instead of downloading |
