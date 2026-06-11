@@ -62,6 +62,52 @@ public class ArchiveService : Base
         return files.FirstOrDefault(x => x.name == fileName);
     }
 
+    // Resolves an asset against the archive index by trying each candidate name in order; the first one that
+    // matches a file in the archive wins. Use BuildAssetCandidates to produce the priority-ordered list.
+    public ArchiveFile GetArchiveFile(IEnumerable<string> candidateNames, string coreIdentifier = null)
+    {
+        var files = this.GetArchiveFiles(coreIdentifier).ToList();
+
+        foreach (string candidate in candidateNames)
+        {
+            var match = files.FirstOrDefault(x => x.name == candidate);
+
+            if (match != null)
+                return match;
+        }
+
+        return null;
+    }
+
+    // Builds archive-index lookup candidates in priority order
+    //   [platform]/[subdirectory(s)]/[asset], [subdirectory(s)]/[asset], [platform]/[asset], [asset]
+    public static IEnumerable<string> BuildAssetCandidates(string relativeName, string platform)
+    {
+        string normalized = (relativeName ?? string.Empty).Replace('\\', '/').TrimStart('/');
+        int slash = normalized.LastIndexOf('/');
+        string subDirectory = slash >= 0 ? normalized.Substring(0, slash) : string.Empty;
+        string asset = slash >= 0 ? normalized.Substring(slash + 1) : normalized;
+
+        platform = platform?.Replace('\\', '/').Trim('/');
+
+        var candidates = new List<string>();
+
+        if (!string.IsNullOrEmpty(subDirectory))
+        {
+            if (!string.IsNullOrEmpty(platform))
+                candidates.Add($"{platform}/{subDirectory}/{asset}");
+
+            candidates.Add($"{subDirectory}/{asset}");
+        }
+
+        if (!string.IsNullOrEmpty(platform))
+            candidates.Add($"{platform}/{asset}");
+
+        candidates.Add(asset);
+
+        return candidates;
+    }
+
     // ReSharper disable once MemberCanBePrivate.Global
     public IEnumerable<ArchiveFile> GetArchiveFiles(string coreIdentifier)
     {
