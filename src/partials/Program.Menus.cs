@@ -255,44 +255,6 @@ internal static partial class Program
 
         var patreonConfigMenu = new ConsoleMenu()
             .Configure(menuConfig)
-            .Add("Set Patreon Email Address", () =>
-            {
-                var config = ServiceHelper.SettingsService.Config;
-
-                Console.WriteLine($"Current email address: {config.patreon_email_address}");
-
-                var result = AskYesNoQuestion("Would you like to change your email address?");
-
-                if (!result)
-                    return;
-
-                string input = PromptForInput();
-                string newEmail = string.IsNullOrWhiteSpace(input) ? null : input.Trim();
-
-                string previousComparable = string.IsNullOrWhiteSpace(config.patreon_email_address)
-                    ? string.Empty
-                    : config.patreon_email_address.Trim();
-                string newComparable = newEmail ?? string.Empty;
-
-                if (string.Equals(previousComparable, newComparable, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    Pause();
-                    return;
-                }
-
-                if (!config.coin_op_beta && newEmail != null)
-                {
-                    if (AskYesNoQuestion("Would you like to enable Coin-Op Collection beta access?"))
-                    {
-                        config.coin_op_beta = true;
-                    }
-                }
-
-                config.patreon_email_address = newEmail;
-                ServiceHelper.SettingsService.Save();
-
-                Pause();
-            })
             .Add("Set Patreon Session Cookie (for JT Beta auto-fetch)", () =>
             {
                 var config = ServiceHelper.SettingsService.Config;
