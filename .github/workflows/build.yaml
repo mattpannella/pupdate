@@ -96,6 +96,10 @@ jobs:
                 arm)   zip_name="pupdate_linux_container_arm32.zip" ;;
               esac
               cd "$portable_dir"
+              # Drop debug symbols and the bundled JSON data files (those are
+              # fetched from GitHub at runtime; the regular single-file zip
+              # also ships without them).
+              rm -f *.pdb *.json
               zip -r "../$zip_name" .
               cd ..
               rm -r "$portable_dir"
