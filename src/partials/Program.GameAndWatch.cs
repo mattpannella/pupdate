@@ -47,13 +47,13 @@ internal static partial class Program
             case "mac":
                 execLocation = Path.Combine(execLocation, "mac", execName);
                 manifestPath = Path.Combine(manifestPath, "mac", "manifest.json");
-                Exec($"chmod +x {execLocation}");
+                Util.MakeExecutable(execLocation);
                 break;
 
             default:
                 execLocation = Path.Combine(execLocation, "linux", execName);
                 manifestPath = Path.Combine(manifestPath, "linux", "manifest.json");
-                Exec($"chmod +x {execLocation}");
+                Util.MakeExecutable(execLocation);
                 break;
         }
 
@@ -79,25 +79,5 @@ internal static partial class Program
         {
             Console.Error.WriteLine($"An error occurred: {ex.GetType().Name} : {ex}");
         }
-    }
-
-    private static void Exec(string cmd)
-    {
-        var escapedArgs = cmd.Replace("\"", "\\\"");
-
-        using var process = new Process();
-
-        process.StartInfo = new ProcessStartInfo
-        {
-            RedirectStandardOutput = true,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            WindowStyle = ProcessWindowStyle.Hidden,
-            FileName = "/bin/bash",
-            Arguments = $"-c \"{escapedArgs}\""
-        };
-
-        process.Start();
-        process.WaitForExit();
     }
 }

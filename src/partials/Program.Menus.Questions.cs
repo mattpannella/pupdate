@@ -10,6 +10,12 @@ internal static partial class Program
         {
             force = false;
 
+            if (AssumeYes)
+            {
+                ServiceHelper.SettingsService.Config.download_new_cores = "yes";
+                break;
+            }
+
             Console.WriteLine("Would you like to, by default, install new cores? [Y]es, [N]o, [A]sk for each:");
 
             ConsoleKey response = Console.ReadKey(true).Key;
@@ -29,6 +35,12 @@ internal static partial class Program
         while (ServiceHelper.SettingsService.Config.display_modes_option == null || force)
         {
             force = false;
+
+            if (AssumeYes)
+            {
+                ServiceHelper.SettingsService.Config.display_modes_option = "merge";
+                break;
+            }
 
             Console.WriteLine("Would you like to, by default, merge or overwrite the display modes? [M]erge, [O]verwrite, [A]sk each time:");
 

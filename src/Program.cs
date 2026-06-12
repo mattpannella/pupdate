@@ -28,8 +28,9 @@ internal static partial class Program
         typeof(PocketExtrasOptions), 
         typeof(DisplayModesOptions), 
         typeof(PruneMemoriesOptions),
-        typeof(AnalogizerSetupOptions), 
+        typeof(AnalogizerSetupOptions),
         typeof(ClearArchiveCacheOptions),
+        typeof(ValidateCoresOptions),
     };
 
     private static void Main(string[] args)
@@ -63,6 +64,11 @@ internal static partial class Program
                     Environment.Exit(1);
                 });
 
+            if (parserResult.Value is BaseOptions baseOptions)
+            {
+                AssumeYes = baseOptions.AssumeYes;
+            }
+
             string path;
 
             if (parserResult.Value is UpdateSelfOptions ||
@@ -84,17 +90,22 @@ internal static partial class Program
 
             bool enableMissingCores = false;
 
+            // The self-update must target the directory containing the running
+            // pupdate binary, which is not necessarily the install path (-p) when
+            // the binary lives outside the SD card. See issue #452.
+            string executableDirectory = Path.GetDirectoryName(Environment.ProcessPath) ?? ServiceHelper.UpdateDirectory;
+
             switch (parserResult.Value)
             {
                 case MenuOptions options:
                     if (!options.SkipUpdate)
-                        CheckForUpdates(ServiceHelper.UpdateDirectory, false, args, ServiceHelper.SettingsService.Config.auto_install_updates);
+                        CheckForUpdates(executableDirectory, false, args, ServiceHelper.SettingsService.Config.auto_install_updates);
                     else
                         enableMissingCores = true;
                     break;
 
                 case UpdateSelfOptions:
-                    CheckForUpdates(ServiceHelper.UpdateDirectory, true, args, false);
+                    CheckForUpdates(executableDirectory, true, args, false);
                     // CheckForUpdates will terminate execution when necessary.
                     break;
 
@@ -104,6 +115,12 @@ internal static partial class Program
 
                 case FundOptions options:
                     Funding(options.Core);
+                    return;
+
+                case ValidateCoresOptions options:
+                    // Run before CheckForMissingCores: that step reads every core's
+                    // JSON, so a corrupt core would throw before we could report it.
+                    ValidateCores(options.Fix);
                     return;
             }
 
@@ -133,7 +150,13 @@ internal static partial class Program
                         identifiers = new[] { options.CoreName };
                     }
 
-                    coreUpdaterService.RunUpdates(identifiers, options.CleanInstall);
+                    int updateErrors = coreUpdaterService.RunUpdates(identifiers, options.CleanInstall);
+
+                    if (updateErrors > 0)
+                    {
+                        Environment.ExitCode = 1;
+                    }
+
                     break;
 
                 case InstanceGeneratorOptions:
@@ -288,7 +311,7 @@ internal static partial class Program
                     break;
 
                 case ClearArchiveCacheOptions options:
-                    if (!options.Yes)
+                    if (!options.AssumeYes)
                     {
                         Console.WriteLine("Specify -y or --yes to confirm clearing the archive cache.");
                         break;
@@ -304,12 +327,26 @@ internal static partial class Program
         }
         catch (Exception ex)
         {
+            // Set the failure exit code first: anything below could itself throw,
+            // and unattended callers rely on a non-zero code to detect failure.
+            Environment.ExitCode = 1;
+
             Console.WriteLine("Well, something went wrong. Sorry about that.");
-            Console.WriteLine(ServiceHelper.SettingsService.Debug.show_stack_traces
-                ? ex
+
+            // SettingsService may be null if we failed before initialization
+            // (e.g. the install path could not be created), so guard the lookup.
+            bool showStackTraces = ServiceHelper.SettingsService?.Debug?.show_stack_traces ?? false;
+
+            Console.WriteLine(showStackTraces
+                ? ex.ToString()
                 : Util.GetExceptionMessage(ex));
 
-            Pause();
+            // Don't block waiting for a keypress in unattended runs: there's no
+            // one to press it, and Console.ReadKey throws on redirected stdin.
+            if (!AssumeYes && !Console.IsInputRedirected)
+            {
+                Pause();
+            }
         }
     }
 
@@ -374,6 +411,12 @@ internal static partial class Program
                 Console.WriteLine(core);
             }
 
+            Console.WriteLine();
+        }
+
+        if (e.ErrorCount > 0)
+        {
+            Console.WriteLine($"{e.ErrorCount} core(s) failed to update. See the log above for details.");
             Console.WriteLine();
         }
 

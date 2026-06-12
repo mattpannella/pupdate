@@ -2,7 +2,7 @@
   "pocket_library_images": [
     {
       "id": "codewario",
-      "menu_title": "CodeWario (GB, GBC, GBA, GG)",
+      "menu_title": "CodeWario         >",
       "entries": [
         {
           "id": "codewario_boxarts",
@@ -44,7 +44,7 @@
     },
     {
       "id": "neogeo",
-      "menu_title": "Neo Geo",
+      "menu_title": "Neo Geo           >",
       "entries": [
         {
           "id": "neogeo_box_eu",
@@ -127,7 +127,7 @@
     },
     {
       "id": "lynx",
-      "menu_title": "Lynx",
+      "menu_title": "Lynx              >",
       "entries": [
         {
           "id": "lynx_boxart",
@@ -163,7 +163,7 @@
     },
     {
       "id": "pce",
-      "menu_title": "PC Engine",
+      "menu_title": "PC Engine         >",
       "entries": [
         {
           "id": "pce_boxart",

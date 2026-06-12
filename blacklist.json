@@ -1,4 +1,5 @@
 [
+    "*.cfg",
     "AmigaVision-Saves.hdf",
     "AmigaVision.hdf",
     "HDD-3.hdf",

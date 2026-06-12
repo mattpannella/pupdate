@@ -9,12 +9,15 @@ public static class ServiceHelper
     public static string SettingsDirectory { get; private set; } // for retrodriven's app
     public static string TempDirectory { get; private set; }
     public static string CacheDirectory { get; private set; }
+    public static string PluginsDirectory { get; private set; }
+    public static string PluginDataDirectory { get; private set; }
     public static CoresService CoresService { get; private set; }
     public static SettingsService SettingsService { get; private set ;}
     public static PlatformImagePacksService PlatformImagePacksService { get; private set; }
     public static FirmwareService FirmwareService { get; private set; }
     public static ArchiveService ArchiveService { get; private set; }
     public static AssetsService AssetsService { get; private set; }
+    public static PluginService PluginService { get; private set; }
     public static EventHandler<StatusUpdatedEventArgs> StatusUpdated { get; private set; }
     public static EventHandler<UpdateProcessCompleteEventArgs> UpdateProcessComplete { get; private set; }
 
@@ -27,12 +30,15 @@ public static class ServiceHelper
         SettingsDirectory = null;
         TempDirectory = null;
         CacheDirectory = null;
+        PluginsDirectory = null;
+        PluginDataDirectory = null;
         CoresService = null;
         SettingsService = null;
         PlatformImagePacksService = null;
         FirmwareService = null;
         ArchiveService = null;
         AssetsService = null;
+        PluginService = null;
         StatusUpdated = null;
         UpdateProcessComplete = null;
         // The Services. qualifier disambiguates from the static properties on this class
@@ -51,6 +57,8 @@ public static class ServiceHelper
             UpdateDirectory = path;
             SettingsDirectory = settingsPath;
             SettingsService = new SettingsService(settingsPath);
+            HttpHelper.Instance.ConcurrentDownloadsEnabled = SettingsService.Config.concurrent_downloads;
+            HttpHelper.Instance.DownloadChunkCount = SettingsService.Config.download_chunk_count;
             TempDirectory = SettingsService.Config.temp_directory ?? Path.GetTempPath();
             CacheDirectory = string.IsNullOrEmpty(SettingsService.Config.archive_cache_location)
                 ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "pupdate", "cache")
@@ -72,6 +80,14 @@ public static class ServiceHelper
             PlatformImagePacksService = new PlatformImagePacksService(path, SettingsService.Config.github_token,
                 SettingsService.Config.use_local_image_packs);
             FirmwareService = new FirmwareService();
+            PluginsDirectory = string.IsNullOrEmpty(SettingsService.Config.plugins_directory)
+                ? Path.Combine(AppContext.BaseDirectory, "plugins")
+                : SettingsService.Config.plugins_directory;
+            PluginDataDirectory = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "pupdate", "plugin_data");
+            PluginService = new PluginService(PluginsDirectory, path, PluginDataDirectory,
+                SettingsService.Config.github_token);
 
             if (statusUpdated != null)
             {
@@ -79,6 +95,7 @@ public static class ServiceHelper
                 FirmwareService.StatusUpdated += statusUpdated;
                 CoresService.StatusUpdated += statusUpdated;
                 ArchiveService.StatusUpdated += statusUpdated;
+                PluginService.StatusUpdated += statusUpdated;
                 StatusUpdated = statusUpdated;
             }
 
@@ -93,6 +110,9 @@ public static class ServiceHelper
     public static void ReloadSettings()
     {
         SettingsService = new SettingsService(SettingsDirectory, CoresService.Cores);
+        HttpHelper.Instance.ConcurrentDownloadsEnabled = SettingsService.Config.concurrent_downloads;
+        HttpHelper.Instance.DownloadChunkCount = SettingsService.Config.download_chunk_count;
+        TempDirectory = SettingsService.Config.temp_directory ?? Path.GetTempPath();
         // reload the archive service, in case that setting has changed
         CacheDirectory = string.IsNullOrEmpty(SettingsService.Config.archive_cache_location)
             ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "pupdate", "cache")
@@ -107,5 +127,16 @@ public static class ServiceHelper
             CacheDirectory);
         CoresService = new CoresService(UpdateDirectory, SettingsService, ArchiveService, AssetsService);
         CoresService.StatusUpdated += StatusUpdated;
+
+        PluginsDirectory = string.IsNullOrEmpty(SettingsService.Config.plugins_directory)
+            ? Path.Combine(AppContext.BaseDirectory, "plugins")
+            : SettingsService.Config.plugins_directory;
+        PluginDataDirectory = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "pupdate", "plugin_data");
+        PluginService = new PluginService(PluginsDirectory, UpdateDirectory, PluginDataDirectory,
+            SettingsService.Config.github_token);
+        if (StatusUpdated != null)
+            PluginService.StatusUpdated += StatusUpdated;
     }
 }

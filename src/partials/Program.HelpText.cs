@@ -18,6 +18,7 @@ Usage:
     -p, --path                Absolute path to install location
     -c, --core                The core you want to update. Runs for all otherwise
     -r, --clean               Clean install. Remove all existing core files, and force a fresh re-install
+    -y, --yes                 Non-interactive: assume defaults for all prompts (for CI/cron). Exits non-zero on failure
   
   uninstall                Delete a core
     -p, --path                Absolute path to install location
@@ -74,6 +75,10 @@ Usage:
   clear-archive-cache      Delete cached archive downloads (requires cache archive files enabled in settings)
     -p, --path                Absolute path to install location
     -y, --yes                 Confirm clearing (required)
+
+  validate-cores           Check installed cores for missing or invalid JSON files
+    -p, --path                Absolute path to install location
+    -f, --fix                 Reinstall (clean) any cores with missing or invalid JSON
 
   update-self              Check for updates to pupdate
 

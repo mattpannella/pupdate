@@ -12,12 +12,53 @@
       5. Reset Selected Customized Display Modes
       6. Change Display Modes Option Setting
    2. Download Images and Palettes
-      1. Download Platform Image Packs
-      2. Download Pocket Library Images
-         1. Spiritualized1997 (GB, GBC, GBA, GG)
-         2. … <submenus from pocket_library_images.json> …
-         3. Go Back
+      1. Download Platform Image Packs  >
+          1. spiritualized1997: openFPGA-Platform-Art-Set
+          2. dyreschlock: pocket-platform-images (arcade)
+          3. dyreschlock: pocket-platform-images (home)
+          4. dyreschlock: pocket-platform-images (home_jp_alts)
+          5. dyreschlock: pocket-platform-images (home_pal_alts)
+          6. terminator2k2: Analogue-Pocket-Core-Art
+          7. MegaZXretro: Analogue-Pocket-Custom-Platform-Art (JAPAN)
+          8. MegaZXretro: Analogue-Pocket-Custom-Platform-Art (PAL-EU)
+          9. MegaZXretro: Analogue-Pocket-Custom-Platform-Art (USA)
+          10. Skyyblaze: Hyperdimension-Pocket-Core-Art
+          11. Shissa43: Analogue-Pocket-Platform-Art (Arcade_Multi)
+          12. Shissa43: Analogue-Pocket-Platform-Art (Arcade_Single)
+          13. Shissa43: Analogue-Pocket-Platform-Art (Home_USA)
+          14. Shissa43: Analogue-Pocket-Platform-Art (Home_JP)
+          15. Shissa43: Analogue-Pocket-Platform-Art (Simple_USA)
+          16. Shissa43: Analogue-Pocket-Platform-Art (Simple_JP)
+          17. Go Back
+      2. Download Pocket Library Images >
+          1. Spiritualized1997 >
+          2. CodeWario         >
+              1. Box Art
+              2. Title Images
+              3. Gameplay Images (snaps)
+              4. Go Back
+          3. Neo Geo           >
+              1. Box Art (EU)
+              2. Box Art (JP)
+              3. Box Art (US)
+              4. Title Images (EU)
+              5. Title Images (JP)
+              6. Gameplay Images (EU)
+              7. Gameplay Images (JP)
+              8. Go Back
+          4. Lynx              >
+              1. Box Art
+              2. Title Images
+              3. Gameplay Images (snaps)
+              4. Go Back
+          5. PC Engine         >
+              1. Box Art
+              2. Title Images
+              3. Gameplay Images (snaps)
+              4. Go Back
+          6. Go Back
       3. Download GameBoy Palettes
+      4. Go Back
    3. Generate ROMs & JSON Files
       1. Generate Instance JSON Files (PC Engine CD)
       2. Generate Game & Watch ROMs
@@ -27,9 +68,17 @@
    5. Analogizer Config
       1. Jotego Analogizer Config
       2. Standard Analogizer Config
-   6. Set Patreon Email Address
-   7. Print openFPGA Category Structure
-   8. Go Back
+   6. Patreon Config
+      1. Set Patreon Email Address
+      2. Set Patreon Session Cookie (for JT Beta auto-fetch)
+      3. Test Patreon Session Cookie
+   7. Directory Locations
+      1. Set Backup Saves Location
+      2. Set Archive Cache Location
+      3. Set Temp Directory
+   8. Set GitHub Token
+   9. Print openFPGA Category Structure
+   10. Go Back
 7. Pocket Maintenance
    1. Update Selected
    2. Install Selected

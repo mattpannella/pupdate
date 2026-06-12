@@ -47,7 +47,7 @@ public class OrchestrationFixture : IDisposable
 
     /// <summary>
     /// Writes pupdate_settings.json with safe defaults for orchestration tests:
-    /// no firmware, no asset downloads, no backups, no JT/CoinOp fetches, all use_local_* on.
+    /// no firmware, no asset downloads, no backups, no JT fetches, all use_local_* on.
     /// Caller can pre-populate per-core settings via <paramref name="coreSettings"/>.
     /// </summary>
     public void WriteSettings(IDictionary<string, CoreSettings> coreSettings = null)
@@ -57,7 +57,6 @@ public class OrchestrationFixture : IDisposable
         settings.config.download_assets = false;
         settings.config.backup_saves = false;
         settings.config.crc_check = false;
-        settings.config.coin_op_beta = false;
         settings.config.jt_beta_github_fetch = false;
         settings.config.jt_beta_patreon_fetch = false;
         settings.config.use_local_cores_inventory = true;

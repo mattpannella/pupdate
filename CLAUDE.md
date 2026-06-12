@@ -79,7 +79,7 @@ There is also `pupdate_legacy.csproj` targeting .NET Framework — keep changes 
 The settings menu (`src/partials/Program.Menus.Settings.cs`) auto-discovers settings by reflecting over `Config` properties. **It casts every property that has a `[Description]` attribute directly to `bool`.** This means:
 - Add `[Description("...")]` only to `bool` properties — they appear as toggles in the menu automatically
 - String/other-type settings must NOT have `[Description]` or they will throw `InvalidCastException` at runtime
-- See `temp_directory`, `backup_saves_location`, `patreon_email_address` as examples of string settings with no description
+- See `temp_directory`, `backup_saves_location`, `archive_cache_location`, `github_token`, `patreon_email_address` as examples of string settings with no description
 
 Use `[JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]` to hide internal/debug settings from the JSON file.
 

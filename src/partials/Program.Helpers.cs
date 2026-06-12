@@ -152,6 +152,15 @@ internal static partial class Program
     private static void Pause()
     {
         Console.WriteLine("Press any key to continue.");
+
+        // ReadKey throws an InvalidOperationException when stdin is redirected
+        // (headless / piped / no console). There is no key to wait for in that
+        // case, so just return instead of crashing.
+        if (Console.IsInputRedirected)
+        {
+            return;
+        }
+
         Console.ReadKey(true);
     }
 }

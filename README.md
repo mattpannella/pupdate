@@ -30,15 +30,16 @@ The full menu tree is documented in **[MENU.md](MENU.md)**.
 | **Cores** | Downloads and updates openFPGA cores from the library inventory; optional local inventory files; per-core skip, assets, rename, display modes, extras, and **version pinning** |
 | **Firmware** | Checks for and installs Analogue Pocket firmware |
 | **Assets** | ROMs, BIOS, and other files from configured archives (archive.org, custom, core-specific) |
-| **Pocket setup** | Display modes, image packs, library images, Game Boy palettes, instance JSON (e.g. PC Engine CD), Game & Watch ROM build flow, Super GameBoy aspect ratio, Analogizer config, Patreon email, debug helpers |
-| **Maintenance** | Update/install/reinstall/uninstall cores, ROM set archives, prune save states, clear archive cache, pin/unpin core versions |
+| **Pocket setup** | Display modes, image packs, library images, Game Boy palettes, instance JSON (e.g. PC Engine CD), Game & Watch ROM build flow, Super GameBoy aspect ratio, Analogizer config, **Patreon Config** (email, Patreon session cookie for JT beta auto-fetch, cookie test), **Directory Locations** (backup saves path, archive cache, temp directory), GitHub token (API rate limits), debug helpers |
+| **Maintenance** | Update/install/reinstall/uninstall cores, ROM set archives, prune save states, clear archive cache, pin/unpin core versions, **validate/repair core JSON** |
 | **Extras** | Pocket Extras (additional assets, combination platforms, variant cores) from `pocket_extras.json` |
+| **Plugins** |  Plugins for custom functionality |
 
 ---
 
 ## RTFM (quick links)
 
-[Update All](#update-all) · [Update Firmware](#update-firmware) · [Select Cores](#select-cores) · [Download Assets](#download-assets) · [Backup Saves & Memories](#backup-saves--memories) · [Pocket Setup](#pocket-setup) · [Pocket Maintenance](#pocket-maintenance) · [Pocket Extras](#pocket-extras) · [Pin / unpin core version](#pin--unpin-core-version) · [Settings](#settings) · [Additional settings](#additional-settings) · [Asset archives](#asset-source-archives) · [CLI](#cli-commands-and-parameters) · [Jotego beta](#jotego-beta-cores) · [Analogizer](#analogizer-setup) · [Coin-Op beta](#coin-op-collection-beta-cores) · [Troubleshooting](#troubleshooting) · [Developers](#developers)
+[Update All](#update-all) · [Update Firmware](#update-firmware) · [Select Cores](#select-cores) · [Download Assets](#download-assets) · [Backup Saves & Memories](#backup-saves--memories) · [Pocket Setup](#pocket-setup) · [Pocket Maintenance](#pocket-maintenance) · [Pocket Extras](#pocket-extras) · [Plugins](#plugins) · [Pin / unpin core version](#pin--unpin-core-version) · [Settings](#settings) · [Additional settings](#additional-settings) · [Asset archives](#asset-source-archives) · [CLI](#cli-commands-and-parameters) · [Jotego beta](#jotego-beta-cores) · [Analogizer](#analogizer-setup) · [Troubleshooting](#troubleshooting) · [Developers](#developers)
 
 ### Update All
 
@@ -138,9 +139,24 @@ Apply **8:7** to chosen `Spiritualized.SuperGB*` cores, or restore **4:3**.
 
 **Jotego** vs **Standard** wizards for Analogizer JSON. See [Analogizer setup](#analogizer-setup).
 
-### Set Patreon Email Address
+### Patreon Config
 
-Used with **Coin-Op Collection beta** license fetch; also editable here if you change Patreon email.
+Submenu under **Pocket Setup**.
+
+- **Set Patreon Session Cookie (for JT Beta auto-fetch)** — Stores your browser `session_id` cookie for experimental Patreon-based `jtbeta.zip` auto-fetch. See [Jotego beta](#jotego-beta-cores) for full steps and caveats.
+- **Test Patreon Session Cookie** — Verifies the cookie and whether the account is a Jotego patron (diagnostic only).
+
+### Directory Locations
+
+Submenu under **Pocket Setup**.
+
+- **Set Backup Saves Location** — Folder where **Backup Saves & Memories** writes zip files. Default `Backups` is a relative path (resolved from the process **current directory** when the tool runs; use an absolute path if you need a fixed location). Clearing the value when prompted resets to `Backups`. Same as `config.backup_saves_location` in JSON.
+- **Set Archive Cache Location** — When **Cache downloaded archive files locally** is enabled, this overrides the default cache folder under your user **LocalApplicationData** `pupdate\cache` (Windows) / equivalent. Leave empty (or save an empty line) to use that default. Same as `config.archive_cache_location`.
+- **Set Temp Directory** — Where pupdate extracts downloads and temporary files. Empty means the OS temp folder (`Path.GetTempPath()`). Same as `config.temp_directory`.
+
+### Set GitHub Token
+
+Stores a [personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) for GitHub API calls (higher rate limits than anonymous requests). The current value is shown when you open this item. You can also set `config.github_token` in `pupdate_settings.json`.
 
 ### Print openFPGA Category Structure
 
@@ -184,6 +200,34 @@ Exact menu labels are built at runtime; see **[MENU.md](MENU.md)** for a current
 
 ---
 
+## Plugins
+
+Pupdate can install and run plugins distributed as GitHub repos. Each plugin is a small program that can drive its own interactive flow inside pupdate. To install ROM packs, configure something on your Pocket, fetch external content, etc.
+
+### Installing a plugin
+
+**Pocket Extras → Plugins → Install from GitHub...** and paste either:
+
+- a short slug like `owner/repo`, or
+- a full URL like `https://github.com/owner/repo`
+
+pupdate downloads the latest release of that repo. Example to try: `openfpga-library/pocket-plugin`.
+
+### Running a plugin
+
+After installing, the plugin appears in the same **Pocket Extras → Plugins** menu by its name. Select it and follow its prompts. Pick **Cancel** at any prompt to stop the plugin.
+
+### Updating and uninstalling
+
+- **Check for updates** - checks every installed plugin against its source repo and offers to update any that have a newer release.
+- **Uninstall a plugin...** - pick one from the list and confirm.
+
+### Creating a plugin
+
+See [openfpga-library/pocket-plugin](https://github.com/openfpga-library/pocket-plugin) for the plugin contract, sample code, and release format. Distribute your plugin as a GitHub release that includes `plugin.wasm` and `plugin.json` as release assets. The release tag becomes the version pupdate uses for update checks.
+
+---
+
 ## Settings
 
 Toggles exposed in the **Settings** menu (stored in `pupdate_settings.json`):
@@ -205,9 +249,9 @@ Toggles exposed in the **Settings** menu (stored in `pupdate_settings.json`):
 | Use Local Pocket Extras | Use local `pocket_extras.json` |
 | Use Local Display Modes | Use local `display_modes.json` |
 | Cache downloaded archive files locally | Keep a reusable cache; optional cache path in JSON |
-| Coin-Op Collection Beta Access | Enables beta license flow (see [Coin-Op](#coin-op-collection-beta-cores)) |
 | Adds a description element to the video.json display modes | Non-breaking extra field in generated video JSON |
 | Hide and uninstall Analogizer core variants | Hides Analogizer-specific core variants |
+| Download files in concurrent chunks | Splits downloads into parallel HTTP range requests for faster transfers on bandwidth-limited servers like archive.org; falls back to a single connection when the server doesn't support ranges (default on). Tune the parallelism with `config.download_chunk_count` |
 
 Game & Watch (and other **core-specific** archives) are enabled in the `archives` array in JSON, not via a separate Settings row.
 
@@ -219,13 +263,13 @@ Edit `pupdate_settings.json` for keys that are not bool menu toggles:
 
 | Name | Description |
 |------|-------------|
-| `config.github_token` | Used for GitHub API calls (rate limits) |
+| `config.github_token` | Used for GitHub API calls (rate limits); also settable under **Pocket Setup → Set GitHub Token** |
 | `config.download_new_cores` | `yes` / `no` / `ask` — set by Select Cores |
 | `config.display_modes_option` | `merge` / `overwrite` / `ask` |
-| `config.patreon_email_address` | Patreon email for Coin-Op beta license |
-| `config.backup_saves_location` | Backup output directory |
-| `config.temp_directory` | Override temp extract path (default: under install path) |
-| `config.archive_cache_location` | Override archive cache directory when caching is on |
+| `config.backup_saves_location` | Backup output directory; **Pocket Setup → Directory Locations → Set Backup Saves Location** |
+| `config.temp_directory` | Override temp extract path (default: OS temp); **Pocket Setup → Directory Locations → Set Temp Directory** |
+| `config.archive_cache_location` | Override archive cache directory when caching is on; **Pocket Setup → Directory Locations → Set Archive Cache Location** |
+| `config.download_chunk_count` | Number of parallel HTTP range chunks when **Download files in concurrent chunks** is on (default `4`); ignored for files under 1 MB or servers without range support |
 | `config.suppress_already_installed` | Reduce “already installed” console noise |
 | `config.use_local_cores_inventory` | Use local **`cores.json`** and **`platforms.json`** (openFPGA Library **v3** format) next to the executable |
 | `config.use_local_blacklist` | Use local `blacklist.json` instead of downloading |
@@ -299,6 +343,7 @@ Some items need login. Add to `pupdate_settings.json`:
     -p, --path
     -c, --core                Optional single core id
     -r, --clean               Clean reinstall cores
+    -y, --yes                 Non-interactive: assume defaults for all prompts (CI/cron)
 
   uninstall                Remove a core
     -p, --path
@@ -356,6 +401,10 @@ Some items need login. Add to `pupdate_settings.json`:
     -p, --path
     -y, --yes                Required confirmation flag
 
+  validate-cores           Check installed cores for missing or invalid JSON
+    -p, --path
+    -f, --fix                Reinstall (clean) any cores with missing or invalid JSON
+
   update-self              Check for pupdate updates
 
   help                     Help for a verb
@@ -363,13 +412,18 @@ Some items need login. Add to `pupdate_settings.json`:
   version                  Print version
 ```
 
+**Non-interactive use (`-y` / `--yes`):** a global flag. With it, pupdate assumes the default/affirmative answer to every prompt (install new cores, display modes, etc.) and skips the self-update prompt, so it can run unattended (CI, cron, containers). pupdate also returns a **non-zero exit code** when an update fails or an unhandled error occurs, so scripts can detect failures.
+
 **Examples**
 
 ```text
 pupdate -p /path/to/sdcard/
 pupdate update -c boogermann.bankpanic
+pupdate update -p /path/to/sdcard/ --yes      # unattended; non-zero exit on failure
 pupdate assets -c jotego.jtcontra
 pupdate images -i pocket-platform-images -o dyreschlock -v home
+pupdate validate-cores
+pupdate validate-cores --fix
 ```
 
 ---
@@ -403,10 +457,10 @@ Jotego distributes `jtbeta.zip` via a private GitHub repo (`jotego/jtbeta`). Per
 1. Open <https://www.patreon.com> in your browser and log in.
 2. Open DevTools (F12 or ⌘⌥I) → **Application** (Chrome/Edge/Brave) or **Storage** (Firefox) → **Cookies** → `https://www.patreon.com`.
 3. Copy the **value** of the `session_id` cookie.
-4. In pupdate: **Pocket Setup > Set Patreon Session Cookie**, paste the value.
+4. In pupdate: **Pocket Setup → Patreon Config → Set Patreon Session Cookie**, paste the value.
 5. Enable **Auto-fetch Jotego jtbeta.zip from Patreon** in the Settings menu.
 
-Use **Pocket Setup > Test Patreon Session Cookie** to verify the cookie works and whether your account is currently a Jotego patron.
+Use **Pocket Setup → Patreon Config → Test Patreon Session Cookie** to verify the cookie works and whether your account is currently a Jotego patron.
 
 **Notes:**
 
@@ -421,20 +475,14 @@ Use **Pocket Setup > Test Patreon Session Cookie** to verify the cookie works an
 
 ---
 
-## Coin-Op Collection beta cores
-
-1. Enable **Coin-Op Collection Beta Access** in Settings.
-2. On the next Update All, enter the **Patreon email** tied to your subscription (or set it under **Pocket Setup → Set Patreon Email Address**).
-3. Later runs can refresh the license automatically.
-
----
-
 ## Troubleshooting
 
 - **Slow assets** — Try **Use custom archive** or another archive entry in `archives`.
 - **`Error in framework RS: bridge not responding`** — Run pupdate on a local disk, then copy results to the SD card.
 - **`Missing ROM ID [1]` in `_alternatives`** — Turn **off** “Skip alternative ROMs” if you need those files installed.
 - **Pinned core skipped** — Pin must match a version string present in the core’s inventory `releases` list.
+- **GitHub API rate limit** — Add a token via **Pocket Setup → Set GitHub Token** or `config.github_token` in `pupdate_settings.json`.
+- **`Failure processing application bundle` / `Default extraction directory ... is not accessible`** — Happens when running in a container (or any environment) where `$HOME` points to a directory that does not exist or is not writable. Either set `DOTNET_BUNDLE_EXTRACT_BASE_DIR` (or `HOME`) to a writable path, or download `pupdate_linux_container*.zip` from the release instead of `pupdate_linux*.zip`. The container variant places the native libs next to the binary so no runtime extraction is needed. Extract the whole archive and run `pupdate` from there.
 
 ---
 
