@@ -482,6 +482,7 @@ Use **Pocket Setup → Patreon Config → Test Patreon Session Cookie** to verif
 - **`Missing ROM ID [1]` in `_alternatives`** — Turn **off** “Skip alternative ROMs” if you need those files installed.
 - **Pinned core skipped** — Pin must match a version string present in the core’s inventory `releases` list.
 - **GitHub API rate limit** — Add a token via **Pocket Setup → Set GitHub Token** or `config.github_token` in `pupdate_settings.json`.
+- **`Failure processing application bundle` / `Default extraction directory ... is not accessible`** — Happens when running in a container (or any environment) where `$HOME` points to a directory that does not exist or is not writable. Either set `DOTNET_BUNDLE_EXTRACT_BASE_DIR` (or `HOME`) to a writable path, or download `pupdate_linux_container*.zip` from the release instead of `pupdate_linux*.zip`. The container variant places the native libs next to the binary so no runtime extraction is needed. Extract the whole archive and run `pupdate` from there.
 
 ---
 
