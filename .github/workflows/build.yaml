@@ -84,6 +84,22 @@ jobs:
             zip "../pupdate_linux_arm64.zip" "pupdate_arm64"
             zip "../pupdate_linux_arm32.zip" "pupdate_arm32"
             cd ..
+
+            # Container-friendly variant
+            # startup does not require a writable $HOME for bundle extraction.
+            for arch in x64 arm64 arm; do
+              portable_dir="${release_name}-portable-${arch}"
+              dotnet publish pupdate.csproj -r linux-${arch} --self-contained true -c Release -o "$portable_dir" --consoleloggerparameters:ErrorsOnly -p:PublishTrimmed=$trim -p:TrimMode=partial -p:IncludeNativeLibrariesForSelfExtract=false
+              case $arch in
+                x64)   zip_name="pupdate_linux_container.zip" ;;
+                arm64) zip_name="pupdate_linux_container_arm64.zip" ;;
+                arm)   zip_name="pupdate_linux_container_arm32.zip" ;;
+              esac
+              cd "$portable_dir"
+              zip -r "../$zip_name" .
+              cd ..
+              rm -r "$portable_dir"
+            done
           fi
 
           # Delete output directory
