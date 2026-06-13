@@ -7,8 +7,15 @@ namespace Pannella.Services;
 
 public partial class CoresService : BaseProcess
 {
-    private const string CORES_END_POINT = "https://openfpga-library.github.io/analogue-pocket/api/v3/cores.json";
-    private const string PLATFORMS_END_POINT = "https://openfpga-library.github.io/analogue-pocket/api/v3/platforms.json";
+    internal static string CORES_END_POINT = "https://openfpga-library.github.io/analogue-pocket/api/v3/cores.json";
+    internal static string PLATFORMS_END_POINT = "https://openfpga-library.github.io/analogue-pocket/api/v3/platforms.json";
+
+    // Set PUPDATE_LOCAL_FILES=true to force GetServerJsonFile to load local copies (e.g. dev mode via
+    // launchSettings.json), overriding the use_local_* settings for pocket_extras / ignore_instance /
+    // display_modes / pocket_library_images.
+    private static bool FORCE_LOCAL_FILES => string.Equals(
+        Environment.GetEnvironmentVariable("PUPDATE_LOCAL_FILES"), "true",
+        StringComparison.OrdinalIgnoreCase);
     private const string CORES_FILE = "cores.json";
     private const string PLATFORMS_FILE = "platforms.json";
 
@@ -192,6 +199,18 @@ public partial class CoresService : BaseProcess
         }
     }
 
+    // Test-only seam: clears the static caches that back the public Cores / InstalledCores /
+    // CoresNotInstalled / InstalledCoresWithSponsors / InstalledCoresWithCustomDisplayModes
+    // properties so each test gets a fresh inventory load.
+    internal static void ResetCachesForTests()
+    {
+        CORES = null;
+        INSTALLED_CORES = null;
+        INSTALLED_CORES_WITH_SPONSORS = null;
+        INSTALLED_CORES_WITH_CUSTOM_DISPLAY_MODES = null;
+        CORES_NOT_INSTALLED = null;
+    }
+
     public CoresService(string path, SettingsService settingsService, ArchiveService archiveService,
         AssetsService assetsService)
     {
@@ -368,10 +387,8 @@ public partial class CoresService : BaseProcess
     private string GetServerJsonFile(bool useLocalFile, string fileName, string uri)
     {
         string json = null;
-#if !DEBUG
-        if (useLocalFile)
+        if (useLocalFile || FORCE_LOCAL_FILES)
         {
-#endif
             if (File.Exists(fileName))
             {
                 json = File.ReadAllText(fileName);
@@ -380,7 +397,6 @@ public partial class CoresService : BaseProcess
             {
                 WriteMessage($"Local file not found: {fileName}");
             }
-#if !DEBUG
         }
         else
         {
@@ -394,7 +410,6 @@ public partial class CoresService : BaseProcess
                 WriteMessage(ex.Message);
             }
         }
-#endif
         return json;
     }
 

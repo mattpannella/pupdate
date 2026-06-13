@@ -11,9 +11,9 @@ namespace Pannella.Services;
 
 public class ArchiveService : Base
 {
-    private const string METADATA = "https://archive.org/metadata/{0}";
-    private const string DOWNLOAD = "https://archive.org/download/{0}/{1}";
-    private const string LOGIN = "https://archive.org/services/account/login/";
+    internal static string METADATA = "https://archive.org/metadata/{0}";
+    internal static string DOWNLOAD = "https://archive.org/download/{0}/{1}";
+    internal static string LOGIN = "https://archive.org/services/account/login/";
 
     private readonly bool crcCheck;
     private readonly Dictionary<string, Archive> archiveFiles;

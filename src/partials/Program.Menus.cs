@@ -324,8 +324,10 @@ internal static partial class Program
                 }
                 else
                 {
-                    Console.WriteLine("RESULT: Cookie works, but this account is NOT currently a Jotego patron.");
-                    Console.WriteLine("Auto-fetch will still attempt to find jtbeta.zip but will fail on the tier-gate check.");
+                    Console.WriteLine("RESULT: Cookie works, but the /api/current_user response did not include an active Jotego membership.");
+                    Console.WriteLine("This can happen for grandfathered/legacy tiers where Patreon's API shape differs.");
+                    Console.WriteLine("Auto-fetch is decided per-post (current_user_can_view), so it may still succeed — try it.");
+                    Console.WriteLine("If it fails, please share the diagnostic lines above.");
                 }
 
                 Pause();

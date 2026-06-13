@@ -30,6 +30,9 @@
     <Compile Remove="tests/**" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="tests/**" />
+  </ItemGroup>
+  <ItemGroup>
     <EditorConfigFiles Remove=".editorconfig" />
   </ItemGroup>
   <ItemGroup>

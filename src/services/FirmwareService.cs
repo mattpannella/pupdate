@@ -7,11 +7,13 @@ namespace Pannella.Services;
 
 public class FirmwareService : Base
 {
-    private const string BASE_URL = "https://www.analogue.co/";
+    internal static string BASE_URL = "https://www.analogue.co/";
     private const string DETAILS = "support/pocket/firmware/{0}/details";
     private const string FILENAME_PATTERN = "pocket_firmware_*.bin";
 
     private static ReleaseDetails LATEST;
+
+    internal static void ResetLatest() => LATEST = null;
 
     private static ReleaseDetails GetDetails(string version = "latest")
     {

@@ -7,8 +7,8 @@ namespace Pannella.Services;
 
 public static class GithubApiService
 {
-    private const string RELEASES = "https://api.github.com/repos/{0}/{1}/releases";
-    private const string CONTENTS = "https://api.github.com/repos/{0}/{1}/contents/{2}";
+    internal static string RELEASES = "https://api.github.com/repos/{0}/{1}/releases";
+    internal static string CONTENTS = "https://api.github.com/repos/{0}/{1}/contents/{2}";
 
     public static int RemainingCalls { get; private set; } = 60; // default without a token
 
