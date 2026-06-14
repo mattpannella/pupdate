@@ -17,13 +17,17 @@
     "config.cfg",
     "crtcfg.bin",
     "default.cfg",
-    "doomsav*.dsg",
+    "diablo.ini",
     "doom_sav*.dsg",
+    "doomsav*.dsg",
     "fasthd1.img",
     "fasthd2.img",
+    "hellfire.ini",
     "mpu.bin",
     "palram.bin",
     "savestate.ss",
+    "single_*.hsv",
+    "single_*.sv",
     "slowhd1.img",
     "slowhd2.img"
 ]
