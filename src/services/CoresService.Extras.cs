@@ -170,7 +170,14 @@ public partial class CoresService
                 Directory.Delete(destinationAssetsMra, true);
 
             WriteMessage("Installing...");
+
+            // Combination platforms / variant cores can ship platform JSON files; snapshot
+            // what's archived so we can keep those platforms archived after the copy.
+            List<string> archivedBefore = this.GetArchivedPlatformIds();
+
             Util.CopyDirectory(extractPath, path, true, true);
+            this.ReArchivePlatforms(archivedBefore);
+
             WriteMessage("Refreshing installed cores...");
             ServiceHelper.CoresService.RefreshLocalCores();
 

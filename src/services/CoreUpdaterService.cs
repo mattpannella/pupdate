@@ -365,7 +365,15 @@ public class CoreUpdaterService : BaseProcess
         {
             core.platform_id = core.id.Split('.')[1];
 
-            string path = Path.Combine(this.installPath, "Platforms", core.platform_id + ".json");
+            // resolve the platform file wherever it lives (Platforms/ or Platforms/_archive/)
+            // so a rename writes back to the same place and an archived platform stays archived
+            string path = this.coresService.GetPlatformFilePath(core.platform_id);
+
+            if (!File.Exists(path))
+            {
+                return;
+            }
+
             string json = File.ReadAllText(path);
             Dictionary<string, Platform> data = JsonConvert.DeserializeObject<Dictionary<string, Platform>>(json);
             Platform platform = data["platform"];

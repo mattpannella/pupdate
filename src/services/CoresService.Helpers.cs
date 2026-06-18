@@ -67,10 +67,17 @@ public partial class CoresService
         // Clean problematic directories and files.
         Util.CleanDir(tempDir, this.installPath, this.settingsService.Config.preserve_platforms_folder, platformId);
 
+        // The incoming zip can re-create an archived platform's JSON in the top-level
+        // Platforms folder (un-archiving it). Snapshot what's archived before the copy so
+        // we can move any re-created files back into Platforms/_archive afterward.
+        List<string> archivedBefore = this.GetArchivedPlatformIds();
+
         // Move the files into place and delete our core's temp directory.
         WriteMessage("Installing...");
         Util.CopyDirectory(tempDir, this.installPath, true, true);
         Directory.Delete(tempDir, true);
+
+        this.ReArchivePlatforms(archivedBefore);
 
         // See if the temp directory itself can be removed.
         // Probably not needed if we aren't going to multi-thread this, but this is an async function so let's future proof.

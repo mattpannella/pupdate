@@ -131,19 +131,50 @@ public class CoresServiceJsonTests : IClassFixture<TempDirectoryFixture>
     }
 
     [Fact]
-    public void ReadPlatformJson_CoreJsonExistsButPlatformsJsonMissing_Throws()
+    public void ReadPlatformJson_CoreJsonExistsButPlatformsJsonMissing_ReturnsNull()
     {
-        // Pin current behavior: File.ReadAllText on missing platforms file throws — exact type
-        // depends on whether the parent dir exists (DirectoryNotFoundException vs FileNotFoundException),
-        // both of which inherit from IOException.
+        // The platform file is resolved via Util.GetPlatformFilePath, which now checks both
+        // Platforms/ and Platforms/_archive/. When neither exists, the read returns null
+        // instead of throwing.
         var (install, svc) = NewSvc();
         WriteFile(Path.Combine(install, "Cores", "agg23.NES", "core.json"),
             """
             { "core": { "magic": "x", "metadata": { "platform_ids": ["nes"] }, "framework": { "name":"0","version":"0" } } }
             """);
 
-        var act = () => svc.ReadPlatformJson("agg23.NES");
-        act.Should().Throw<IOException>();
+        svc.ReadPlatformJson("agg23.NES").Should().BeNull();
+    }
+
+    [Fact]
+    public void ReadPlatformJson_PlatformArchived_ReadsFromArchiveFolder()
+    {
+        // An archived platform JSON lives in Platforms/_archive/ but must still be readable
+        // by pupdate so cores with archived platforms keep working.
+        var (install, svc) = NewSvc();
+
+        WriteFile(Path.Combine(install, "Cores", "agg23.NES", "core.json"),
+            """
+            { "core": { "magic": "x", "metadata": { "platform_ids": ["nes"] }, "framework": { "name":"0","version":"0" } } }
+            """);
+
+        WriteFile(Path.Combine(install, "Platforms", "_archive", "nes.json"),
+            """
+            {
+              "platform": {
+                "id": "nes",
+                "category": "Console",
+                "name": "Nintendo Entertainment System",
+                "manufacturer": "Nintendo",
+                "year": 1983
+              }
+            }
+            """);
+
+        var platform = svc.ReadPlatformJson("agg23.NES");
+
+        platform.Should().NotBeNull();
+        platform!.id.Should().Be("nes");
+        platform.name.Should().Be("Nintendo Entertainment System");
     }
 
     // -------- ReadDataJson --------
