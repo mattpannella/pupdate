@@ -573,6 +573,10 @@ internal static partial class Program
             {
                 PinCoreVersionMenu();
             })
+            .Add("Archive/Unarchive Platforms", () =>
+            {
+                ArchivePlatformsMenu();
+            })
             .Add("Go Back", ConsoleMenu.Close);
 
         #endregion
@@ -964,6 +968,103 @@ internal static partial class Program
                 {
                     offset += pageSize;
                     thisMenu.CloseMenu();
+                });
+            }
+
+            if (offset != 0)
+            {
+                menu.Add("Prev Page", thisMenu =>
+                {
+                    offset -= pageSize;
+                    thisMenu.CloseMenu();
+                });
+            }
+
+            menu.Add("Go Back", thisMenu =>
+            {
+                more = false;
+                thisMenu.CloseMenu();
+            });
+
+            menu.Show();
+        }
+    }
+
+    private static void ArchivePlatformsMenu()
+    {
+        const int pageSize = 12;
+        var offset = 0;
+        bool more = true;
+
+        while (more)
+        {
+            var platforms = ServiceHelper.CoresService.GetPlatforms();
+            var activeCount = platforms.Count(p => !p.Archived);
+            var unusedCount = platforms.Count(p => !p.Archived && !p.HasInstalledCore);
+
+            if (offset >= platforms.Count)
+            {
+                offset = 0;
+            }
+
+            var menu = new ConsoleMenu()
+                .Configure(config =>
+                {
+                    config.Selector = "=>";
+                    config.EnableWriteTitle = false;
+                    config.WriteHeaderAction = () => Console.WriteLine(
+                        $"Active platforms: {activeCount} / {Services.CoresService.PLATFORM_LIMIT}\n" +
+                        "Select a platform to archive/unarchive:");
+                    config.SelectedItemBackgroundColor = Console.ForegroundColor;
+                    config.SelectedItemForegroundColor = Console.BackgroundColor;
+                    config.WriteItemAction = item => Console.Write("{0}", item.Name);
+                });
+
+            if (unusedCount > 0)
+            {
+                menu.Add($"Archive unused platforms ({unusedCount})", thisMenu =>
+                {
+                    thisMenu.CloseMenu();
+                    int archived = ServiceHelper.CoresService.ArchiveUnusedPlatforms();
+                    Console.WriteLine($"Archived {archived} unused platform(s).");
+                    Pause();
+                });
+            }
+
+            if (offset + pageSize < platforms.Count)
+            {
+                menu.Add("Next Page", thisMenu =>
+                {
+                    offset += pageSize;
+                    thisMenu.CloseMenu();
+                });
+            }
+
+            var current = -1;
+
+            foreach (var platform in platforms)
+            {
+                current++;
+
+                if (current < offset || current >= offset + pageSize)
+                    continue;
+
+                var captured = platform;
+                string label = $"{captured.Id} - {captured.Name}";
+
+                if (captured.Archived)
+                    label += " [archived]";
+                else if (!captured.HasInstalledCore)
+                    label += " [unused]";
+
+                menu.Add(label, thisMenu =>
+                {
+                    thisMenu.CloseMenu();
+
+                    if (captured.Archived)
+                        ServiceHelper.CoresService.UnarchivePlatform(captured.Id);
+                    else
+                        ServiceHelper.CoresService.ArchivePlatform(captured.Id);
                 });
             }
 

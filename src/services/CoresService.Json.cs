@@ -19,8 +19,14 @@ public partial class CoresService
         }
 
         // cores with multiple platforms won't work...not sure any exist right now?
-        string platformsFolder = Path.Combine(this.installPath, "Platforms");
-        string dataFile = Path.Combine(platformsFolder, info.metadata.platform_ids[0] + ".json");
+        // resolves the platform file whether it lives in Platforms/ or Platforms/_archive/
+        string dataFile = this.GetPlatformFilePath(info.metadata.platform_ids[0]);
+
+        if (!File.Exists(dataFile))
+        {
+            return null;
+        }
+
         var platforms = JsonConvert.DeserializeObject<Dictionary<string, Platform>>(File.ReadAllText(dataFile));
 
         return platforms["platform"];

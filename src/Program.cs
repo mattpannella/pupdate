@@ -31,6 +31,7 @@ internal static partial class Program
         typeof(AnalogizerSetupOptions),
         typeof(ClearArchiveCacheOptions),
         typeof(ValidateCoresOptions),
+        typeof(PlatformsOptions),
     };
 
     private static void Main(string[] args)
@@ -121,6 +122,10 @@ internal static partial class Program
                     // Run before CheckForMissingCores: that step reads every core's
                     // JSON, so a corrupt core would throw before we could report it.
                     ValidateCores(options.Fix);
+                    return;
+
+                case PlatformsOptions options:
+                    RunPlatforms(options);
                     return;
             }
 

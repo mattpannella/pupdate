@@ -80,6 +80,13 @@ Usage:
     -p, --path                Absolute path to install location
     -f, --fix                 Reinstall (clean) any cores with missing or invalid JSON
 
+  platforms                Archive or unarchive Pocket platform files
+    -p, --path                Absolute path to install location
+    -l, --list                List platforms and their archive status
+    -a, --archive             Comma-separated platform ids to archive
+    -u, --unarchive           Comma-separated platform ids to unarchive
+        --archive-unused      Archive all platforms with no installed core
+
   update-self              Check for updates to pupdate
 
   help                     Display more information on a specific command.
