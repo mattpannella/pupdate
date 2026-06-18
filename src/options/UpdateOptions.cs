@@ -10,4 +10,7 @@ public class UpdateOptions : BaseOptions
 
     [Option('r', "clean", Required = false, HelpText = "Clean install. Remove all existing core files, before updating")]
     public bool CleanInstall { get; set; }
+
+    [Option('u', "updated-assets-only", Required = false, HelpText = "Only check/download assets for cores that are updated during this run.")]
+    public bool UpdatedAssetsOnly { get; set; }
 }

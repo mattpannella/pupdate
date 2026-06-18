@@ -236,6 +236,7 @@ Toggles exposed in the **Settings** menu (stored in `pupdate_settings.json`):
 |------|-------------|
 | Download Firmware Updates | Firmware check during Update All |
 | Download Missing Assets | Asset check during Update All |
+| Only check assets for cores updated during 'Update All' | Skip the asset check for cores that are already up to date; only updated/installed cores get their assets checked |
 | Build game JSON Files | Instance JSON builder during Update All |
 | Delete cores, not managed by pupdate | Remove unmanaged cores from SD when enabled |
 | Automatically rename Jotego cores | Friendly platform names after install |
@@ -343,6 +344,7 @@ Some items need login. Add to `pupdate_settings.json`:
     -p, --path
     -c, --core                Optional single core id
     -r, --clean               Clean reinstall cores
+    -u, --updated-assets-only Only check/download assets for cores updated this run
     -y, --yes                 Non-interactive: assume defaults for all prompts (CI/cron)
 
   uninstall                Remove a core
