@@ -50,7 +50,7 @@ public class CoreUpdaterService : BaseProcess
     /// Run the full openFPGA core download and update process
     /// </summary>
     /// <returns>The number of cores that failed to update (0 if everything succeeded).</returns>
-    public int RunUpdates(string[] ids = null, bool clean = false)
+    public int RunUpdates(string[] ids = null, bool clean = false, bool onlyUpdatedAssets = false)
     {
         List<Dictionary<string, string>> installed = new List<Dictionary<string, string>>();
         List<string> installedAssets = new List<string>();
@@ -58,6 +58,10 @@ public class CoreUpdaterService : BaseProcess
         List<string> missingLicenses = new List<string>();
         string firmwareDownloaded = null;
         int errorCount = 0;
+
+
+        bool skipUnchangedAssets = onlyUpdatedAssets ||
+            this.settingsService.Config.only_check_updated_core_assets;
 
         if (this.settingsService.Config.backup_saves)
         {
@@ -149,13 +153,16 @@ public class CoreUpdaterService : BaseProcess
                         this.coresService.CopyLicense(core);
                     }
 
-                    results = this.coresService.DownloadAssets(core);
-                    installedAssets.AddRange(results["installed"] as List<string>);
-                    skippedAssets.AddRange(results["skipped"] as List<string>);
-
-                    if ((bool)results["missingLicense"])
+                    if (!skipUnchangedAssets)
                     {
-                        missingLicenses.Add(core.id);
+                        results = this.coresService.DownloadAssets(core);
+                        installedAssets.AddRange(results["installed"] as List<string>);
+                        skippedAssets.AddRange(results["skipped"] as List<string>);
+
+                        if ((bool)results["missingLicense"])
+                        {
+                            missingLicenses.Add(core.id);
+                        }
                     }
 
                     JotegoRename(core);
@@ -207,19 +214,21 @@ public class CoreUpdaterService : BaseProcess
                             }
                         }
 
-                        results = this.coresService.DownloadAssets(core);
-
                         if (!coreSettings.pocket_extras)
                         {
                             JotegoRename(core);
                         }
 
-                        installedAssets.AddRange(results["installed"] as List<string>);
-                        skippedAssets.AddRange(results["skipped"] as List<string>);
-
-                        if ((bool)results["missingLicense"])
+                        if (!skipUnchangedAssets)
                         {
-                            missingLicenses.Add(core.id);
+                            results = this.coresService.DownloadAssets(core);
+                            installedAssets.AddRange(results["installed"] as List<string>);
+                            skippedAssets.AddRange(results["skipped"] as List<string>);
+
+                            if ((bool)results["missingLicense"])
+                            {
+                                missingLicenses.Add(core.id);
+                            }
                         }
 
                         WriteMessage("Up to date. Skipping core.");

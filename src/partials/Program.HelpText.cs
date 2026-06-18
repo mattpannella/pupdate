@@ -18,6 +18,7 @@ Usage:
     -p, --path                Absolute path to install location
     -c, --core                The core you want to update. Runs for all otherwise
     -r, --clean               Clean install. Remove all existing core files, and force a fresh re-install
+    -u, --updated-assets-only Only check/download assets for cores that are updated during this run
     -y, --yes                 Non-interactive: assume defaults for all prompts (for CI/cron). Exits non-zero on failure
   
   uninstall                Delete a core

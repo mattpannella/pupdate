@@ -13,6 +13,7 @@ update                   Run update all. (Can be configured via the settings men
   -p, --path                Absolute path to install location
   -c, --core                The core you want to update. Runs for all otherwise
   -r, --clean               Clean install. Remove all existing core files, and force a fresh re-install
+  -u, --updated-assets-only Only check/download assets for cores that are updated during this run
 
 uninstall                Delete a core
   -p, --path                Absolute path to install location

@@ -150,7 +150,8 @@ internal static partial class Program
                         identifiers = new[] { options.CoreName };
                     }
 
-                    int updateErrors = coreUpdaterService.RunUpdates(identifiers, options.CleanInstall);
+                    int updateErrors = coreUpdaterService.RunUpdates(identifiers, options.CleanInstall,
+                        options.UpdatedAssetsOnly);
 
                     if (updateErrors > 0)
                     {

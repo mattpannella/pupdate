@@ -11,6 +11,9 @@ public class Config
     [Description("Download Missing Assets (ROMs and BIOS Files) during 'Update All'")]
     public bool download_assets { get; set; } = true;
 
+    [Description("Only check assets for cores updated during 'Update All'")]
+    public bool only_check_updated_core_assets { get; set; } = false;
+
     public string github_token { get; set; } = string.Empty;
 
     [Description("Download Firmware Updates during 'Update All'")]
