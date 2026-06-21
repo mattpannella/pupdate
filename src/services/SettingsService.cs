@@ -135,6 +135,13 @@ public class SettingsService
         settings.core_settings[name] = coreSettings;
     }
 
+    public void SetInstalledVersion(string name, string version)
+    {
+        var coreSettings = GetCoreSettings(name);
+        coreSettings.installed_version = version;
+        settings.core_settings[name] = coreSettings;
+    }
+
     public void DisablePocketExtras(string name)
     {
         if (settings.core_settings.TryGetValue(name, out CoreSettings value))

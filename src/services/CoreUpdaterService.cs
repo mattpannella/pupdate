@@ -184,7 +184,13 @@ public class CoreUpdaterService : BaseProcess
                         WriteMessage("Local core found: " + localVersion);
                     }
 
-                    if (mostRecentRelease != localVersion || clean)
+                    // Update when forced (clean), or when the inventory's version differs
+                    // from BOTH the core's own reported version AND the inventory version we
+                    // last installed. The second check stops cores whose core.json version
+                    // never matches the inventory (e.g. nightly builds) from re-downloading
+                    // every run. See issue #444.
+                    if (clean ||
+                        (mostRecentRelease != localVersion && mostRecentRelease != coreSettings.installed_version))
                     {
                         WriteMessage("Updating core...");
                     }
@@ -283,6 +289,12 @@ public class CoreUpdaterService : BaseProcess
                     };
 
                     installed.Add(summary);
+
+                    // Remember which inventory version we just installed so we don't
+                    // re-download it next run if the core reports a different version
+                    // in its own core.json (issue #444).
+                    this.settingsService.SetInstalledVersion(core.id, mostRecentRelease);
+                    this.settingsService.Save();
                 }
                 else if (coreSettings.pocket_extras &&
                          pocketExtra != null &&
