@@ -20,7 +20,7 @@
     <PackageReference Include="ConsoleMenu-simple" Version="2.7.0" />
     <PackageReference Include="Crc32.NET" Version="1.2.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="Aspose.Zip" Version="26.3.0" />
+    <PackageReference Include="Aspose.Zip" Version="26.6.0" />
     <PackageReference Include="Extism.Sdk" Version="1.10.*" />
     <PackageReference Include="Extism.runtime.all" Version="1.13.*" />
   </ItemGroup>
