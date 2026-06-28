@@ -12,9 +12,9 @@ namespace Pannella.TUI;
 
 /// <summary>
 /// Settings tab. Every bool Config property carrying a [Description] becomes a checkable row
-/// (reusing the classic SettingsMenu reflection). Space toggles a row; Enter saves all changes
-/// (SettingsService.Save + reload both services). Consistent with the other list-based tabs —
-/// no loose buttons.
+/// (reusing the classic SettingsMenu reflection). Space toggles a row; changes are committed by the
+/// Save button (click or Tab+Enter) or by pressing Enter on the list (SettingsService.Save + reload
+/// both services).
 /// </summary>
 public sealed class SettingsTab : FrameView
 {
@@ -32,7 +32,7 @@ public sealed class SettingsTab : FrameView
             X = 0,
             Y = 0,
             Width = Dim.Fill(),
-            Text = "↑/↓ move · Space toggles · Enter saves"
+            Text = "↑/↓ move · Space toggles · Enter or the Save button commits"
         };
 
         list = new MenuListView
@@ -40,9 +40,22 @@ public sealed class SettingsTab : FrameView
             X = 0,
             Y = 1,
             Width = Dim.Fill(),
-            Height = Dim.Fill(),
+            Height = Dim.Fill(1), // leave the bottom row for the Save button
             ShowMarks = true,
             MarkMultiple = true
+        };
+
+        var saveButton = new Button
+        {
+            X = Pos.Center(),
+            Y = Pos.AnchorEnd(1),
+            Text = "_Save"
+        };
+
+        saveButton.Accepting += (_, e) =>
+        {
+            e.Handled = true;
+            SaveSettings();
         };
 
         var config = ServiceHelper.SettingsService.Config;
@@ -76,6 +89,7 @@ public sealed class SettingsTab : FrameView
 
         Add(hint);
         Add(list);
+        Add(saveButton);
     }
 
     private void SaveSettings()
