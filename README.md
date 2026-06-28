@@ -491,8 +491,7 @@ Use **Pocket Setup → Patreon Config → Test Patreon Session Cookie** to verif
 ## Developers
 
 - **.NET** — `dotnet restore`, `dotnet build`, `dotnet run --project pupdate.csproj -- [verb] [options]`.
-- **Layout** — `src/Program.cs`, `src/partials/`, `src/services/`, `src/models/`, `src/options/`.
-- **Legacy** — `pupdate_legacy.csproj` targets .NET Framework where applicable.
+- **Layout** — `src/Program.cs`, `src/partials/`, `src/services/`, `src/models/`, `src/options/`, `src/tui/` (the `--tui` interface).
 
 ---
 
