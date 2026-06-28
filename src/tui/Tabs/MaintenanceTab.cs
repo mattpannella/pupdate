@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Pannella.Helpers;
+using Pannella.Services;
 
 namespace Pannella.TUI;
 
@@ -20,7 +21,33 @@ public sealed class MaintenanceTab : ActionMenuTab
         AddAction("Install Selected", InstallSelected);
         AddAction("Reinstall Selected", ReinstallSelected);
         AddAction("Uninstall Selected", UninstallSelected);
+        AddAction("Backup Saves & Memories", BackupSavesAndMemories);
+        AddAction("Prune Save States", PruneSaveStates);
         AddAction("Clear Archive Cache", ClearCache);
+    }
+
+    private void BackupSavesAndMemories()
+    {
+        string location = ServiceHelper.SettingsService.Config.backup_saves_location;
+
+        Context.RunBackground(null, () =>
+        {
+            AssetsService.BackupSaves(ServiceHelper.UpdateDirectory, location, TuiApp.PostStatus);
+            AssetsService.BackupMemories(ServiceHelper.UpdateDirectory, location, TuiApp.PostStatus);
+            TuiApp.PostStatus("Backup complete.");
+        });
+    }
+
+    private void PruneSaveStates()
+    {
+        if (!TuiPrompts.Confirm(App, "Prune Save States",
+                "Back up Memories, then delete all but the most recent save state per game?"))
+        {
+            return;
+        }
+
+        Context.RunBackground(null, () =>
+            AssetsService.PruneSaveStates(ServiceHelper.UpdateDirectory, null, TuiApp.PostStatus));
     }
 
     private void ReinstallAll()

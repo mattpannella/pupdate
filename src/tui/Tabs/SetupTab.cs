@@ -22,6 +22,46 @@ public sealed class SetupTab : ActionMenuTab
         AddAction("Set Temp Directory", SetTempDirectory);
         AddAction("Set Patreon Session Cookie", SetPatreonCookie);
         AddAction("Test Patreon Session Cookie", TestPatreonCookie);
+        AddAction("Super GameBoy: Apply 8:7 Aspect Ratio", () => ChangeSgbAspectRatio("8:7", 4, 3, 8, 7));
+        AddAction("Super GameBoy: Restore 4:3 Aspect Ratio", () => ChangeSgbAspectRatio("4:3", 8, 7, 4, 3));
+    }
+
+    private void ChangeSgbAspectRatio(string label, int fromW, int fromH, int toW, int toH)
+    {
+        var sgbCores = ServiceHelper.CoresService.InstalledCores
+            .Where(core => core.id.StartsWith("Spiritualized.SuperGB"))
+            .ToList();
+
+        if (sgbCores.Count == 0)
+        {
+            TuiApp.PostStatus("No Super GameBoy cores are installed.");
+            return;
+        }
+
+        var ids = CoreSelectorDialog.SelectSubset(sgbCores, $"Which Super GameBoy cores → {label} aspect ratio?");
+
+        if (ids == null)
+        {
+            TuiApp.PostStatus("Cancelled.");
+            return;
+        }
+
+        if (ids.Count == 0)
+        {
+            TuiApp.PostStatus("No cores selected.");
+            return;
+        }
+
+        Context.RunBackground(null, () =>
+        {
+            foreach (var id in ids)
+            {
+                TuiApp.PostStatus($"Updating {id} to {label}...");
+                ServiceHelper.CoresService.ChangeAspectRatio(id, fromW, fromH, toW, toH);
+            }
+
+            TuiApp.PostStatus($"Aspect ratio updated for {ids.Count} core(s).");
+        });
     }
 
     private void ManageDisplayModes()

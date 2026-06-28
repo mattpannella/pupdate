@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using Pannella.Helpers;
 using Pannella.Models.Events;
 using Pannella.Services;
+using Terminal.Gui.Drawing;
 
 namespace Pannella.TUI;
 
@@ -73,6 +75,14 @@ public static class TuiApp
     public static void Run(CoreUpdaterService coreUpdaterService)
     {
         TuiHost.Init();
+
+        // Marking lists render the checked/unchecked state with the CheckState glyphs (default
+        // ☑/☐). Swap to a high-contrast filled/empty square pair everywhere. (Selected/UnSelected
+        // are set too in case any list uses those instead.)
+        Glyphs.CheckStateChecked = new Rune('■');
+        Glyphs.CheckStateUnChecked = new Rune('□');
+        Glyphs.Selected = new Rune('■');
+        Glyphs.UnSelected = new Rune('□');
 
         EventHandler<DownloadProgressEventArgs> progressHandler = (_, e) => PostProgress(e.Progress, e.BytesPerSecond);
         HttpHelper.Instance.DownloadProgressUpdate += progressHandler;
