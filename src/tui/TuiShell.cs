@@ -38,7 +38,7 @@ public sealed class TuiShell : Window
         tabs.InsertTab(0, new UpdateTab(context));
         tabs.InsertTab(1, new CoresTab(context));
         tabs.InsertTab(2, new SetupTab(context));
-        tabs.InsertTab(3, Placeholder("Maintenance"));
+        tabs.InsertTab(3, new MaintenanceTab(context));
         tabs.InsertTab(4, Placeholder("Extras"));
         tabs.InsertTab(5, new SettingsTab(context));
 
