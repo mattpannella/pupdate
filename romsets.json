@@ -196,5 +196,21 @@
         "enabled": false,
         "one_time": true,
         "complete": false
+    },
+    {
+        "name": "ThinkElastic.ScummVM",
+        "type": "core_specific_archive",
+        "archive_name": "openFPGA-Files",
+        "files": [
+          "monkey1.iso",
+          "monkey2.iso",
+          "samnmax.iso",
+          "atlantis.iso",
+          "dott.iso",
+          "loom.iso"
+        ],
+        "enabled": false,
+        "one_time": true,
+        "complete": false
     }
 ]
