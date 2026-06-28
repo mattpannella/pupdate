@@ -97,21 +97,32 @@ public static class ServiceHelper
             PluginService = new PluginService(PluginsDirectory, path, PluginDataDirectory,
                 SettingsService.Config.github_token);
 
-            if (statusUpdated != null)
-            {
-                PlatformImagePacksService.StatusUpdated += statusUpdated;
-                FirmwareService.StatusUpdated += statusUpdated;
-                CoresService.StatusUpdated += statusUpdated;
-                ArchiveService.StatusUpdated += statusUpdated;
-                PluginService.StatusUpdated += statusUpdated;
-                StatusUpdated = statusUpdated;
-            }
+            AttachSinks(statusUpdated, updateProcessComplete);
+        }
+    }
 
-            if (updateProcessComplete != null)
-            {
-                CoresService.UpdateProcessComplete += updateProcessComplete;
-                UpdateProcessComplete = updateProcessComplete;
-            }
+    /// <summary>
+    /// Subscribes the status/complete sinks to every service. Split out of <see cref="Initialize"/>
+    /// so callers can initialize first, decide which UI is launching (and thus which sinks to use),
+    /// then attach — see Program.Main's interactive-UI resolution.
+    /// </summary>
+    public static void AttachSinks(EventHandler<StatusUpdatedEventArgs> statusUpdated,
+        EventHandler<UpdateProcessCompleteEventArgs> updateProcessComplete)
+    {
+        if (statusUpdated != null)
+        {
+            PlatformImagePacksService.StatusUpdated += statusUpdated;
+            FirmwareService.StatusUpdated += statusUpdated;
+            CoresService.StatusUpdated += statusUpdated;
+            ArchiveService.StatusUpdated += statusUpdated;
+            PluginService.StatusUpdated += statusUpdated;
+            StatusUpdated = statusUpdated;
+        }
+
+        if (updateProcessComplete != null)
+        {
+            CoresService.UpdateProcessComplete += updateProcessComplete;
+            UpdateProcessComplete = updateProcessComplete;
         }
     }
 

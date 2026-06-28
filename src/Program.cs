@@ -88,31 +88,24 @@ internal static partial class Program
                 Directory.CreateDirectory(path);
             }
 
-            // The TUI only ever launches from interactive (menu) mode. When it will, route the
-            // status/complete streams to the TUI sinks BEFORE Initialize, so they are the ones
-            // ServiceHelper stores and re-attaches on ReloadSettings (issue #299). Verb mode is
-            // untouched: it keeps the console sinks and the \r progress bar.
-            bool useTui = parserResult.Value is MenuOptions { UseTui: true }
-                || (parserResult.Value is MenuOptions
-                    && string.Equals(Environment.GetEnvironmentVariable("PUPDATE_TUI"), "1", StringComparison.Ordinal));
+            // Initialize WITHOUT sinks first so the saved UI preference can be read before we decide
+            // which sinks to wire. ResolveInteractiveUi picks classic vs TUI (flag > env > saved
+            // setting > one-time startup prompt); the chosen status/complete sinks are then attached
+            // and reused for the CoreUpdaterService below. Verb mode keeps the console sinks and the
+            // \r progress bar. (Sinks are what ReloadSettings re-attaches — issue #299.)
+            ServiceHelper.Initialize(path, path);
 
+            bool useTui = ResolveInteractiveUi(parserResult.Value);
             ServiceHelper.InteractiveTui = useTui;
 
-            EventHandler<StatusUpdatedEventArgs> statusSink;
-            EventHandler<UpdateProcessCompleteEventArgs> completeSink;
+            EventHandler<StatusUpdatedEventArgs> statusSink = useTui
+                ? TuiApp.StatusSink
+                : coreUpdater_StatusUpdated;
+            EventHandler<UpdateProcessCompleteEventArgs> completeSink = useTui
+                ? TuiApp.CompleteSink
+                : coreUpdater_UpdateProcessComplete;
 
-            if (useTui)
-            {
-                statusSink = TuiApp.StatusSink;
-                completeSink = TuiApp.CompleteSink;
-            }
-            else
-            {
-                statusSink = coreUpdater_StatusUpdated;
-                completeSink = coreUpdater_UpdateProcessComplete;
-            }
-
-            ServiceHelper.Initialize(path, path, statusSink, completeSink);
+            ServiceHelper.AttachSinks(statusSink, completeSink);
 
             bool enableMissingCores = false;
 

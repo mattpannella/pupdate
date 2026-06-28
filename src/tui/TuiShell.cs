@@ -24,7 +24,7 @@ public sealed class TuiShell : Window
 
     public TuiShell(TuiContext context)
     {
-        Title = "pupdate  ·  Esc: quit  ·  F6: status pane  ·  F9: theme";
+        Title = "pupdate (Beta)  ·  Esc: quit  ·  F6: status pane  ·  F9: theme";
 
         // Pinned welcome banner — the ASCII art the classic menu prints across the top.
         string banner = Program.RandomWelcomeBanner();

@@ -57,11 +57,11 @@ The project targets **net10.0**. (The former `pupdate_legacy.csproj` / .NET Fram
 
 - `src/helpers/` — Utilities: `HttpHelper` (singleton HTTP client with caching), `ZipHelper`/`SevenZipHelper`, `SemverUtil`, `ConsoleHelper`, `Util`
 
-**Status updates** use an event pattern: services fire `StatusUpdatedEventArgs` events. The sink is chosen at `ServiceHelper.Initialize` time (so it survives `ReloadSettings`): the classic console writer, or `TuiApp.StatusSink` which streams into the TUI status pane. Likewise `HttpHelper.Instance.DownloadProgressUpdate` drives either the console `\r` bar or the TUI progress bar, gated by `ServiceHelper.InteractiveTui`.
+**Status updates** use an event pattern: services fire `StatusUpdatedEventArgs` events. `Program.Main` initializes services first (`ServiceHelper.Initialize` with no sinks), resolves which interactive UI is launching (`ResolveInteractiveUi`: `--tui`/`--classic`/`PUPDATE_TUI` flag → saved `use_tui` setting → one-time startup prompt), then attaches the matching sinks via `ServiceHelper.AttachSinks` — the classic console writer, or `TuiApp.StatusSink`/`CompleteSink` which stream into the TUI status pane. The attached sink is what `ReloadSettings` re-attaches (issue #299). Likewise `HttpHelper.Instance.DownloadProgressUpdate` drives either the console `\r` bar or the TUI progress bar, gated by `ServiceHelper.InteractiveTui`.
 
 ## Interactive TUI (`src/tui/`)
 
-A full-screen Terminal.Gui v2 (`Terminal.Gui` 2.4.x, net10-only) interface, launched with `--tui` (opt-in; the classic menu remains the default). It calls the **same services** as the classic menu — only the presentation differs. Every service-layer change must stay backward-compatible so the classic console UI keeps working.
+A full-screen Terminal.Gui v2 (`Terminal.Gui` 2.4.x, net10-only) interface, marked **Beta**. It's opt-in: the classic menu is the default, and users reach the TUI via a one-time startup prompt (remembered in the `use_tui` setting, also a toggle in the settings menu / Settings tab), the `--tui` flag, or `PUPDATE_TUI=1`; `--classic` forces the classic menu and skips the prompt. It calls the **same services** as the classic menu — only the presentation differs. Every service-layer change must stay backward-compatible so the classic console UI keeps working.
 
 - **`TuiApp.Run`** — entry point: applies the theme + checkbox glyphs, wires the plugin output/prompt handlers, runs the shell, and restores the terminal in a `finally`.
 - **`TuiHost`** — the single seam over Terminal.Gui's obsolete static `Application` API (one `#pragma warning disable CS0618`). Use `TuiHost.Init/Run/Shutdown/Invoke/RequestStop/Refresh` rather than touching `Application` directly.
