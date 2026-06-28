@@ -140,6 +140,10 @@ public static class TuiApp
                 preInitBuffer.Clear();
             }
 
+            // Show the support/donation message once, on top of the shell. Queued now so it fires
+            // as soon as the main loop starts (a modal can't run before the loop exists).
+            TuiHost.Invoke(SupportModal.Show);
+
             TuiHost.Run(shell);
         }
         finally

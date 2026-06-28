@@ -6,7 +6,7 @@ namespace Pannella;
 
 internal static partial class Program
 {
-    private static string GetRandomSponsorLinks()
+    internal static string GetRandomSponsorLinks()
     {
         var output = new StringBuilder();
 
