@@ -18,7 +18,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 9.0.100
+          dotnet-version: 10.0.301
       - name: Restore
         run: dotnet restore tests/pupdate.Tests/pupdate.Tests.csproj
       - name: Test
@@ -51,17 +51,3 @@ jobs:
           if [ -f TestResults/coverage-report/SummaryGithub.md ]; then
             cat TestResults/coverage-report/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
           fi
-
-  build-legacy:
-    name: Build (legacy net7)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 9.0.100
-      - name: Restore
-        run: dotnet restore pupdate_legacy.csproj
-      - name: Build
-        run: dotnet build pupdate_legacy.csproj --no-restore --configuration Release

@@ -51,7 +51,10 @@ public class HttpHelper
 
     public void DownloadFile(string uri, string outputPath, int timeout = 100)
     {
-        bool console = ConsoleIsAvailable();
+        // The raw \r progress bar would scribble over the TUI canvas, so suppress it while
+        // the interactive TUI owns the screen. The DownloadProgressUpdate event still fires,
+        // so the TUI's own progress bar is unaffected.
+        bool console = ConsoleIsAvailable() && !ServiceHelper.InteractiveTui;
 
         using var cts = new CancellationTokenSource();
 

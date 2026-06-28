@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <PublishSingleFile>true</PublishSingleFile>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <Version>4.14.1</Version>
@@ -23,6 +23,7 @@
     <PackageReference Include="Aspose.Zip" Version="26.3.0" />
     <PackageReference Include="Extism.Sdk" Version="1.10.*" />
     <PackageReference Include="Extism.runtime.all" Version="1.13.*" />
+    <PackageReference Include="Terminal.Gui" Version="2.4.12" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="tests/**" />

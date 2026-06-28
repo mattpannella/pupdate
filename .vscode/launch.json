@@ -10,8 +10,8 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/bin/Debug/net9.0/pupdate.dll",
-            "args": ["-p", "/Users/mattpannella/pocket-test"],
+            "program": "${workspaceFolder}/bin/Debug/net10.0/pupdate.dll",
+            "args": ["--tui", "--skip-update", "-p", "/Users/mattpannella/pocket-test"],
             "cwd": "${workspaceFolder}",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "integratedTerminal",
