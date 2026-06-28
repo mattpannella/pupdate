@@ -40,7 +40,7 @@ public sealed class TuiShell : Window
         tabs.InsertTab(2, Placeholder("Setup"));
         tabs.InsertTab(3, Placeholder("Maintenance"));
         tabs.InsertTab(4, Placeholder("Extras"));
-        tabs.InsertTab(5, Placeholder("Settings"));
+        tabs.InsertTab(5, new SettingsTab(context));
 
         StatusPane = new StatusPane
         {
