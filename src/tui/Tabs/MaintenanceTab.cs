@@ -21,6 +21,7 @@ public sealed class MaintenanceTab : ActionMenuTab
         AddAction("Install Selected", InstallSelected);
         AddAction("Reinstall Selected", ReinstallSelected);
         AddAction("Uninstall Selected", UninstallSelected);
+        AddAction("Pin / Unpin Core Version", PinCoreVersion);
         AddAction("Backup Saves & Memories", BackupSavesAndMemories);
         AddAction("Prune Save States", PruneSaveStates);
         AddAction("Clear Archive Cache", ClearCache);
@@ -155,6 +156,74 @@ public sealed class MaintenanceTab : ActionMenuTab
 
             TuiApp.PostStatus($"Uninstalled {list.Length} core(s).");
         });
+    }
+
+    private void PinCoreVersion()
+    {
+        var settings = ServiceHelper.SettingsService;
+        var cores = ServiceHelper.CoresService.InstalledCores.Where(c => c.repository != null).ToList();
+
+        if (cores.Count == 0)
+        {
+            TuiApp.PostStatus("No pinnable cores installed.");
+            return;
+        }
+
+        int? coreIndex = SelectDialog.Show("Pin / Unpin Core Version", "Select a core:",
+            cores.Select(c =>
+            {
+                var pin = settings.GetCoreSettings(c.id).pinned_version;
+                return pin == null ? c.id : $"{c.id}  (pinned: {pin})";
+            }).ToList());
+
+        if (coreIndex == null)
+        {
+            return;
+        }
+
+        var core = cores[coreIndex.Value];
+
+        // Releases are already on the core object — no fetch needed. Build label/version pairs.
+        var releases = new List<(string label, string version)>();
+
+        if (core.releases != null)
+        {
+            foreach (var release in core.releases
+                         .Where(r => r.core?.metadata != null)
+                         .OrderByDescending(r => r.core.metadata.date_release ?? ""))
+            {
+                string version = release.core.metadata.version ?? "?";
+                string date = release.core.metadata.date_release ?? "";
+                releases.Add((string.IsNullOrEmpty(date) ? version : $"{version} ({date})", version));
+            }
+        }
+
+        var options = new List<string> { "(Unpin — track latest)" };
+        options.AddRange(releases.Select(r => r.label));
+
+        string current = settings.GetCoreSettings(core.id).pinned_version;
+
+        int? choice = SelectDialog.Show($"Pin {core.id}",
+            $"Currently {(current == null ? "not pinned" : "pinned to " + current)}. Pick a version:", options);
+
+        if (choice == null)
+        {
+            return;
+        }
+
+        if (choice.Value == 0)
+        {
+            settings.UnpinCoreVersion(core.id);
+            settings.Save();
+            TuiApp.PostStatus($"{core.id}: version pin removed.");
+        }
+        else
+        {
+            string version = releases[choice.Value - 1].version;
+            settings.PinCoreVersion(core.id, version);
+            settings.Save();
+            TuiApp.PostStatus($"{core.id}: pinned to {version}.");
+        }
     }
 
     private void ClearCache()

@@ -84,6 +84,12 @@ public static class TuiApp
         Glyphs.Selected = new Rune('■');
         Glyphs.UnSelected = new Rune('□');
 
+        // Route plugin output to the Status pane and plugin prompts to TUI modals (the classic
+        // menu leaves these at their Console defaults).
+        PluginService.OutputHandler = message => PostStatus(message?.TrimEnd());
+        PluginService.ChoiceHandler = TuiPluginPrompts.Choice;
+        PluginService.TextHandler = TuiPluginPrompts.Text;
+
         EventHandler<DownloadProgressEventArgs> progressHandler = (_, e) => PostProgress(e.Progress, e.BytesPerSecond);
         HttpHelper.Instance.DownloadProgressUpdate += progressHandler;
 

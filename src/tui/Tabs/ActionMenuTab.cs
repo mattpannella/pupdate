@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 
@@ -45,42 +44,18 @@ public abstract class ActionMenuTab : FrameView
 
         list.SetSource(labels);
 
-        // Activation (hover + scrollbar come from MenuListView): single click runs the item
-        // (deferred so the click first moves the selection to the clicked row), Enter runs the
-        // highlighted item from the keyboard.
-        list.MouseEvent += (_, mouse) =>
-        {
-            if (mouse.IsSingleClicked && mouse.Position is { } position)
-            {
-                // Only activate when the click lands on an actual item row — not the empty space
-                // below the list, where the selection still points at the last-hovered item.
-                int row = list.Viewport.Y + position.Y;
-
-                if (row >= 0 && row < labels.Count)
-                {
-                    TuiHost.Invoke(() => Run(row));
-                }
-            }
-        };
-
-        list.KeyDown += (_, key) =>
-        {
-            if (key == Key.Enter)
-            {
-                Run(list.SelectedItem);
-                key.Handled = true;
-            }
-        };
+        // Hover + scrollbar come from MenuListView; single click / Enter runs the item.
+        list.OnActivate(Run);
 
         Add(hint);
         Add(list);
     }
 
-    private void Run(int? index)
+    private void Run(int index)
     {
-        if (index.HasValue && index.Value >= 0 && index.Value < actions.Count)
+        if (index >= 0 && index < actions.Count)
         {
-            actions[index.Value]();
+            actions[index]();
         }
     }
 
@@ -90,5 +65,12 @@ public abstract class ActionMenuTab : FrameView
         // Leading marker so rows read as actionable menu items rather than plain text.
         labels.Add($"▸ {label}");
         actions.Add(action);
+    }
+
+    /// <summary>Clears all entries — for tabs (e.g. Plugins) that rebuild their list dynamically.</summary>
+    protected void ClearActions()
+    {
+        labels.Clear();
+        actions.Clear();
     }
 }

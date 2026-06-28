@@ -317,6 +317,12 @@ public class PluginService : Base
         }
     }
 
+    // Host I/O hooks: let a front-end (e.g. the TUI) redirect plugin output and interactive
+    // prompts away from the Console. Default to the Console behavior the classic menu relies on.
+    public static Action<string> OutputHandler = Console.Write;
+    public static Func<ChoicePluginMessage, HostMessage> ChoiceHandler;
+    public static Func<TextPluginMessage, HostMessage> TextHandler;
+
     public void Run(PluginDescriptor descriptor)
     {
         if (descriptor == null || !File.Exists(descriptor.WasmPath))
@@ -435,6 +441,11 @@ public class PluginService : Base
 
     private HostMessage PromptChoice(ChoicePluginMessage choice)
     {
+        if (ChoiceHandler != null)
+        {
+            return ChoiceHandler(choice);
+        }
+
         string selected = null;
         var menu = new ConsoleMenu()
             .Configure(c =>
@@ -471,6 +482,11 @@ public class PluginService : Base
 
     private HostMessage PromptText(TextPluginMessage text)
     {
+        if (TextHandler != null)
+        {
+            return TextHandler(text);
+        }
+
         Console.WriteLine();
         Console.WriteLine(text.Query);
         Console.Write("> ");
@@ -516,7 +532,7 @@ public class PluginService : Base
         {
             var msg = plugin.ReadString(new nint(inputs[0].v.ptr));
             if (!string.IsNullOrEmpty(msg))
-                Console.Write(msg);
+                OutputHandler(msg);
         }
         catch (Exception ex)
         {

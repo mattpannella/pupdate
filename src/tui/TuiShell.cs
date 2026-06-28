@@ -35,12 +35,24 @@ public sealed class TuiShell : Window
         };
 
         // Tab labels come from each child view's Title.
-        tabs.InsertTab(0, new UpdateTab(context));
-        tabs.InsertTab(1, new CoresTab(context));
-        tabs.InsertTab(2, new SetupTab(context));
-        tabs.InsertTab(3, new MaintenanceTab(context));
-        tabs.InsertTab(4, new ExtrasTab(context));
+        var pluginsTab = new PluginsTab(context);
+
+        tabs.InsertTab(0, new MainTab(context));
+        tabs.InsertTab(1, new SetupTab(context));
+        tabs.InsertTab(2, new MaintenanceTab(context));
+        tabs.InsertTab(3, new ExtrasTab(context));
+        tabs.InsertTab(4, pluginsTab);
         tabs.InsertTab(5, new SettingsTab(context));
+
+        // Re-discover plugins each time the Plugins tab is opened (catches plugins added or
+        // removed outside this session).
+        tabs.ValueChanged += (_, _) =>
+        {
+            if (tabs.Value == pluginsTab)
+            {
+                pluginsTab.Refresh();
+            }
+        };
 
         StatusPane = new StatusPane
         {
