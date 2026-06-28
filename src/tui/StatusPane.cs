@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using Pannella.Helpers;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 
@@ -16,6 +17,7 @@ public sealed class StatusPane : FrameView
     private const int MaxLines = 2000;
 
     private readonly ProgressBar progress;
+    private readonly Label info;
     private readonly ListView log;
     private readonly ObservableCollection<string> lines = new();
 
@@ -27,9 +29,20 @@ public sealed class StatusPane : FrameView
         {
             X = 0,
             Y = 0,
-            Width = Dim.Fill(),
+            Width = Dim.Fill(22),
             Height = 1,
             Fraction = 0f
+        };
+
+        // The ProgressBar widget shows neither percentage nor speed, so surface both in a
+        // right-aligned label next to the bar (matching what the old console bar reported).
+        info = new Label
+        {
+            X = Pos.Right(progress) + 1,
+            Y = 0,
+            Width = 20,
+            Height = 1,
+            Text = string.Empty
         };
 
         log = new ListView
@@ -42,8 +55,10 @@ public sealed class StatusPane : FrameView
         };
 
         log.SetSource(lines);
+        log.VerticalScrollBar.Visible = true;
 
         Add(progress);
+        Add(info);
         Add(log);
     }
 
@@ -61,8 +76,13 @@ public sealed class StatusPane : FrameView
         log.MoveEnd(false);
     }
 
-    public void SetProgress(double fraction)
+    public void SetProgress(double fraction, double bytesPerSecond)
     {
-        progress.Fraction = (float)Math.Clamp(fraction, 0d, 1d);
+        double clamped = Math.Clamp(fraction, 0d, 1d);
+
+        progress.Fraction = (float)clamped;
+        info.Text = bytesPerSecond > 0
+            ? $"{clamped * 100,3:0}%  {ConsoleHelper.FormatSpeed(bytesPerSecond)}"
+            : $"{clamped * 100,3:0}%";
     }
 }

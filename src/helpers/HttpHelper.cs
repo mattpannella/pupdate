@@ -128,21 +128,19 @@ public class HttpHelper
                 readSoFar += read;
 
                 var progress = (double)readSoFar / totalSize;
+                double seconds = stopwatch.Elapsed.TotalSeconds;
+                double speed = seconds > 0 ? readSoFar / seconds : 0;
 
                 if (console)
                 {
-                    double seconds = stopwatch.Elapsed.TotalSeconds;
-                    double speed = seconds > 0 ? readSoFar / seconds : 0;
-
                     ConsoleHelper.ShowProgressBar(readSoFar, totalSize, speed);
                 }
 
-                DownloadProgressEventArgs args = new()
+                OnDownloadProgressUpdate(new DownloadProgressEventArgs
                 {
-                    Progress = progress
-                };
-
-                OnDownloadProgressUpdate(args);
+                    Progress = progress,
+                    BytesPerSecond = speed
+                });
 
                 fileStream.Write(buffer, 0, read);
             }
@@ -240,17 +238,18 @@ public class HttpHelper
 
                     lock (progressLock)
                     {
+                        double seconds = stopwatch.Elapsed.TotalSeconds;
+                        double speed = seconds > 0 ? soFar / seconds : 0;
+
                         if (console)
                         {
-                            double seconds = stopwatch.Elapsed.TotalSeconds;
-                            double speed = seconds > 0 ? soFar / seconds : 0;
-
                             ConsoleHelper.ShowProgressBar(soFar, totalSize, speed);
                         }
 
                         OnDownloadProgressUpdate(new DownloadProgressEventArgs
                         {
-                            Progress = (double)soFar / totalSize
+                            Progress = (double)soFar / totalSize,
+                            BytesPerSecond = speed
                         });
                     }
                 }
@@ -401,4 +400,5 @@ public class HttpHelper
 public class DownloadProgressEventArgs : EventArgs
 {
     public double Progress;
+    public double BytesPerSecond;
 }

@@ -11,18 +11,27 @@ namespace Pannella.TUI;
 /// </summary>
 public sealed class TuiShell : Window
 {
+    // Collapsed: tabs own most of the screen (status is a small log strip). Expanded: the status
+    // pane takes over so a long log / completion summary is easy to read. An operation auto-expands
+    // the pane; it then STAYS expanded (so the summary isn't lost) until the user toggles it (F6).
+    private const int TabsHeightCollapsed = 70;
+    private const int TabsHeightExpanded = 30;
+
     public StatusPane StatusPane { get; }
+
+    private readonly Tabs tabs;
+    private bool statusExpanded;
 
     public TuiShell(TuiContext context)
     {
-        Title = "Pupdate — openFPGA updater (Esc to quit)";
+        Title = "pupdate - (Esc: quit · F6: resize log)";
 
-        var tabs = new Tabs
+        tabs = new Tabs
         {
             X = 0,
             Y = 0,
             Width = Dim.Fill(),
-            Height = Dim.Percent(70)
+            Height = Dim.Percent(TabsHeightCollapsed)
         };
 
         // Tab labels come from each child view's Title.
@@ -44,15 +53,43 @@ public sealed class TuiShell : Window
         Add(tabs);
         Add(StatusPane);
 
-        // Esc requests a clean stop; Application.Shutdown runs in TuiApp.Run's finally.
+        // Auto-expand the status pane when an operation starts so the live log/summary is easy to
+        // follow. We deliberately do NOT collapse on completion — that would scroll the summary out
+        // of view — so it stays expanded until the user presses F6. StatusPane is anchored to
+        // Pos.Bottom(tabs) with Dim.Fill(), so resizing tabs re-flows it for free.
+        context.BusyChanged += OnBusyChanged;
+
         KeyDown += (_, key) =>
         {
             if (key == Key.Esc)
             {
+                // Esc requests a clean stop; Application.Shutdown runs in TuiApp.Run's finally.
                 TuiHost.RequestStop();
                 key.Handled = true;
             }
+            else if (key == Key.F6)
+            {
+                statusExpanded = !statusExpanded;
+                ApplyLayout();
+                key.Handled = true;
+            }
         };
+    }
+
+    private void OnBusyChanged(bool busy)
+    {
+        // Expand on start; leave the layout untouched on completion so the summary stays visible.
+        if (busy && !statusExpanded)
+        {
+            statusExpanded = true;
+            ApplyLayout();
+        }
+    }
+
+    private void ApplyLayout()
+    {
+        tabs.Height = Dim.Percent(statusExpanded ? TabsHeightExpanded : TabsHeightCollapsed);
+        SetNeedsLayout();
     }
 
     private static View Placeholder(string title)

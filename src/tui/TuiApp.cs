@@ -53,7 +53,7 @@ public static class TuiApp
         TuiHost.Invoke(() => statusPane.AppendLine(message));
     }
 
-    public static void PostProgress(double fraction)
+    public static void PostProgress(double fraction, double bytesPerSecond)
     {
         StatusPane pane;
 
@@ -67,14 +67,14 @@ public static class TuiApp
             pane = statusPane;
         }
 
-        TuiHost.Invoke(() => pane.SetProgress(fraction));
+        TuiHost.Invoke(() => pane.SetProgress(fraction, bytesPerSecond));
     }
 
     public static void Run(CoreUpdaterService coreUpdaterService)
     {
         TuiHost.Init();
 
-        EventHandler<DownloadProgressEventArgs> progressHandler = (_, e) => PostProgress(e.Progress);
+        EventHandler<DownloadProgressEventArgs> progressHandler = (_, e) => PostProgress(e.Progress, e.BytesPerSecond);
         HttpHelper.Instance.DownloadProgressUpdate += progressHandler;
 
         try

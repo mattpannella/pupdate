@@ -7,7 +7,7 @@ public static class ConsoleHelper
     // which previously produced negative string lengths and crashed the progress bar.
     private const int DEFAULT_WINDOW_WIDTH = 80;
 
-    private static string FormatSpeed(double bytesPerSecond)
+    internal static string FormatSpeed(double bytesPerSecond)
     {
         string[] units = { "B/s", "KB/s", "MB/s", "GB/s" };
         double value = bytesPerSecond < 0 ? 0 : bytesPerSecond;
@@ -40,6 +40,14 @@ public static class ConsoleHelper
 
     public static void ShowProgressBar(long current, long total, double? bytesPerSecond = null)
     {
+        // The full-screen TUI owns the console; this raw \r bar would scribble over its canvas.
+        // Gate at the source so every caller (downloads, zip extraction, checksum counting) is
+        // suppressed at once. The TUI surfaces progress via its own ProgressBar widget instead.
+        if (ServiceHelper.InteractiveTui)
+        {
+            return;
+        }
+
         if (total <= 0)
         {
             return;
