@@ -1,16 +1,19 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Pannella.Helpers;
+using Pannella.Models;
+using Pannella.Models.Settings;
 using Pannella.Services;
 
 namespace Pannella.TUI;
 
 /// <summary>
 /// Maintenance tab: bulk core operations (update/install/reinstall/uninstall selected, reinstall
-/// all) plus clearing the archive cache. Select-and-act items reuse CoreSelectorDialog's subset
-/// mode; the heavy work runs on a background task. (Prune save states, backups, pin-version and
-/// platform archiving land in later batches.)
+/// all), backups, save-state pruning, version pinning, archive cache, and the ROM-set / platform
+/// archive managers. Select-and-act items reuse CoreSelectorDialog's subset mode; the heavy work
+/// runs on a background task.
 /// </summary>
 public sealed class MaintenanceTab : ActionMenuTab
 {
@@ -25,6 +28,202 @@ public sealed class MaintenanceTab : ActionMenuTab
         AddAction("Backup Saves & Memories", BackupSavesAndMemories);
         AddAction("Prune Save States", PruneSaveStates);
         AddAction("Clear Archive Cache", ClearCache);
+        AddAction("Manage ROM Set Archives…", ManageRomSetArchives);
+        AddAction("Archive / Unarchive Platforms…", ArchivePlatforms);
+        AddAction("Archive Unused Platforms", ArchiveUnusedPlatforms);
+    }
+
+    // ── ROM Set Archives ─────────────────────────────────────────────────────────────────────
+
+    private void ManageRomSetArchives()
+    {
+        SubMenuDialog.Show("ROM Set Archives", new (string, Action)[]
+        {
+            ("Sync with latest definitions", () => Context.RunBackground(null, () =>
+            {
+                TuiApp.PostStatus("Syncing archives...");
+                ServiceHelper.SettingsService.SyncRomsets();
+                TuiApp.PostStatus("Archives synced.");
+            })),
+            ("Enable / Disable archives…", EnableDisableArchives),
+            ("Mark an archive incomplete…", MarkArchiveIncomplete),
+        });
+    }
+
+    private static List<Archive> CoreSpecificArchives() =>
+        ServiceHelper.SettingsService.Config.archives
+            .Where(a => a.type == ArchiveType.core_specific_archive)
+            .ToList();
+
+    // Bulk enable/disable in one checklist (checked = enabled), replacing the old per-archive menus.
+    private void EnableDisableArchives()
+    {
+        var archives = CoreSpecificArchives();
+
+        if (archives.Count == 0)
+        {
+            TuiApp.PostStatus("No ROM set archives found. Sync definitions first.");
+            return;
+        }
+
+        var labels = archives.Select(a => a.complete ? a.name : $"{a.name}  (incomplete)").ToList();
+
+        var marked = ChecklistDialog.Show("ROM Set Archives",
+            "Checked = enabled. Toggle archives on/off:",
+            labels, i => archives[i].enabled, "Save");
+
+        if (marked == null)
+        {
+            TuiApp.PostStatus("Cancelled.");
+            return;
+        }
+
+        int changed = 0;
+
+        for (int i = 0; i < archives.Count; i++)
+        {
+            bool wantEnabled = marked.Contains(i);
+
+            if (wantEnabled != archives[i].enabled)
+            {
+                archives[i].enabled = wantEnabled;
+                changed++;
+            }
+        }
+
+        if (changed == 0)
+        {
+            TuiApp.PostStatus("No archive changes.");
+            return;
+        }
+
+        ServiceHelper.SettingsService.Save();
+        TuiApp.PostStatus($"Updated {changed} archive(s).");
+    }
+
+    // "Mark incomplete" is rare and one-way (forces a re-check next run), so it's a simple picker.
+    private void MarkArchiveIncomplete()
+    {
+        var archives = CoreSpecificArchives().Where(a => a.complete).ToList();
+
+        if (archives.Count == 0)
+        {
+            TuiApp.PostStatus("No complete archives to mark incomplete.");
+            return;
+        }
+
+        int? choice = SelectDialog.Show("Mark Archive Incomplete",
+            "Select an archive to mark incomplete (forces a re-check on next run):",
+            archives.Select(a => a.name).ToList());
+
+        if (choice == null)
+        {
+            return;
+        }
+
+        archives[choice.Value].complete = false;
+        ServiceHelper.SettingsService.Save();
+        TuiApp.PostStatus($"'{archives[choice.Value].name}' marked as incomplete.");
+    }
+
+    // ── Platform Archiving ───────────────────────────────────────────────────────────────────
+
+    // Opens the platform checklist directly (checked = archived); no wrapper menu.
+    private void ArchivePlatforms()
+    {
+        var platforms = ServiceHelper.CoresService.GetPlatforms();
+
+        if (platforms.Count == 0)
+        {
+            TuiApp.PostStatus("No platforms found.");
+            return;
+        }
+
+        int active = platforms.Count(p => !p.Archived);
+
+        var labels = platforms.Select(p =>
+        {
+            string label = $"{p.Id} - {p.Name}";
+
+            if (!p.Archived && !p.HasInstalledCore)
+            {
+                label += " [unused]";
+            }
+
+            return label;
+        }).ToList();
+
+        // Checked = archived. The checklist's type-ahead filter makes the long platform list quick
+        // to navigate (e.g. type "unused" to find archivable ones).
+        var marked = ChecklistDialog.Show("Archive Platforms",
+            $"Active {active}/{CoresService.PLATFORM_LIMIT}. Checked = archived:",
+            labels, i => platforms[i].Archived, "Apply");
+
+        if (marked == null)
+        {
+            TuiApp.PostStatus("Cancelled.");
+            return;
+        }
+
+        var changes = new List<(string id, bool archive)>();
+
+        for (int i = 0; i < platforms.Count; i++)
+        {
+            bool wantArchived = marked.Contains(i);
+
+            if (wantArchived != platforms[i].Archived)
+            {
+                changes.Add((platforms[i].Id, wantArchived));
+            }
+        }
+
+        if (changes.Count == 0)
+        {
+            TuiApp.PostStatus("No platform changes.");
+            return;
+        }
+
+        Context.RunBackground(null, () =>
+        {
+            foreach (var (id, archive) in changes)
+            {
+                if (archive)
+                {
+                    ServiceHelper.CoresService.ArchivePlatform(id);
+                }
+                else
+                {
+                    ServiceHelper.CoresService.UnarchivePlatform(id);
+                }
+            }
+
+            TuiApp.PostStatus($"Applied {changes.Count} platform change(s).");
+        });
+    }
+
+    // Quick path to get under the platform limit: archive every platform with no installed core.
+    private void ArchiveUnusedPlatforms()
+    {
+        int unused = ServiceHelper.CoresService.GetPlatforms()
+            .Count(p => !p.Archived && !p.HasInstalledCore);
+
+        if (unused == 0)
+        {
+            TuiApp.PostStatus("No unused platforms to archive.");
+            return;
+        }
+
+        if (!TuiPrompts.Confirm(App, "Archive Unused Platforms",
+                $"Archive {unused} platform(s) that have no installed core?"))
+        {
+            return;
+        }
+
+        Context.RunBackground(null, () =>
+        {
+            int archived = ServiceHelper.CoresService.ArchiveUnusedPlatforms();
+            TuiApp.PostStatus($"Archived {archived} unused platform(s).");
+        });
     }
 
     private void BackupSavesAndMemories()
