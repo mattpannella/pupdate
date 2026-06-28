@@ -19,8 +19,13 @@ internal static partial class Program
             var coreIndex = random.Next(authorCores.Count);
             var randomCore = authorCores[coreIndex];
 
-            output.AppendLine($"Please consider supporting {author} for their work on the {randomCore} core:");
-            output.Append(randomCore.repository?.funding);
+            var funding = randomCore.repository?.funding?.ToString();
+
+            if (!string.IsNullOrWhiteSpace(funding))
+            {
+                output.AppendLine($"Please consider supporting {author} for their work on the {randomCore} core:");
+                output.Append(funding);
+            }
         }
 
         return output.ToString();
