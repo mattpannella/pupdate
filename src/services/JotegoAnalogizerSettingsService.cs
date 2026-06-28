@@ -27,7 +27,6 @@ public class AnalogizerOptionType
         Console.WriteLine(Options);
 
         string input = Console.ReadLine()!.ToLower();
-        string notFound = "";
 
         if (Expect1 && input.Length > 1)
         {
@@ -35,6 +34,24 @@ public class AnalogizerOptionType
 
             return GetInput();
         }
+
+        string notFound = ApplyInput(input);
+
+        if (!string.IsNullOrEmpty(notFound))
+        {
+            Console.WriteLine($"Sorry, could not find following options: '{notFound.ToUpper()}'. Inputs ignored\n");
+        }
+
+        return input;
+    }
+
+    // Applies the chosen letter(s) to this record: expands via Replace, then bumps the Dict counters
+    // for recognized letters. Returns any unrecognized letters. Shared by the console GetInput and by
+    // the TUI, which supplies the letter from a dialog instead of Console.ReadLine.
+    internal string ApplyInput(string input)
+    {
+        input = input.ToLower();
+        string notFound = "";
 
         if (Replace != null)
         {
@@ -56,18 +73,17 @@ public class AnalogizerOptionType
             }
         }
 
-        if (!string.IsNullOrEmpty(notFound))
-        {
-            Console.WriteLine($"Sorry, could not find following options: '{notFound.ToUpper()}'. Inputs ignored\n");
-        }
-
-        return input;
+        return notFound;
     }
 }
 
 public static class UserOptions
 {
-    public static void GenerateUserOptions(AnalogizerOptionType[] records, int wLen = 32, string filename = "test.bin", string filename2 = null)
+    // inputProvider lets the caller supply each record's selection (the TUI passes the letter chosen
+    // in a dialog); when null, the classic console GetInput is used. Returns false if cancelled.
+    public static bool GenerateUserOptions(AnalogizerOptionType[] records, int wLen = 32,
+        string filename = "test.bin", string filename2 = null,
+        Func<AnalogizerOptionType, string> inputProvider = null)
     {
         string finalNum = "";
         string[] files = { filename, filename2 };
@@ -79,9 +95,25 @@ public static class UserOptions
 
         foreach (var sel in records)
         {
-            // ReSharper disable once UnusedVariable
-            string selInput = sel.GetInput();
+            if (inputProvider == null)
+            {
+                sel.GetInput(); // classic: reads from the console and applies
+            }
+            else
+            {
+                string input = inputProvider(sel);
 
+                if (input == null)
+                {
+                    return false; // cancelled
+                }
+
+                sel.ApplyInput(input);
+            }
+        }
+
+        foreach (var sel in records)
+        {
             foreach (var item in sel.Dict)
             {
                 finalNum += string.Join("", item.Value);
@@ -105,12 +137,16 @@ public static class UserOptions
                 .Select(x => Convert.ToByte(hexStr.Substring(x, 2), 16))
                 .ToArray());
         }
+
+        return true;
     }
 }
 
 public class JotegoAnalogizerSettingsService
 {
-    public void RunAnalogizerSettings()
+    // inputProvider supplies each option's letter (the TUI passes a dialog picker); null = classic
+    // console prompts. Returns false if the user cancelled.
+    public bool RunAnalogizerSettings(Func<AnalogizerOptionType, string> inputProvider = null)
     {
         var crt = new AnalogizerOptionType();
 
@@ -206,7 +242,11 @@ Your selection:    ";
         const string filename = "crtcfg.bin";
         string filepath = Path.Combine(ServiceHelper.UpdateDirectory, filename);
 
-        UserOptions.GenerateUserOptions(new[] { crt, snac }, filename: filepath, filename2: filepath);
+        if (!UserOptions.GenerateUserOptions(new[] { crt, snac }, filename: filepath, filename2: filepath,
+                inputProvider: inputProvider))
+        {
+            return false; // cancelled
+        }
 
         if (File.Exists(filepath))
         {
@@ -221,5 +261,7 @@ Your selection:    ";
 
             File.Move(filepath, destPath, true);
         }
+
+        return true;
     }
 }

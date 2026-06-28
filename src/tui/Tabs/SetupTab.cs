@@ -25,6 +25,11 @@ public sealed class SetupTab : ActionMenuTab
         AddAction("Generate Files…", GenerateMenu);
         AddAction("Print openFPGA Categories", () =>
             Context.RunBackground(null, () => Program.PrintOpenFpgaCategories(TuiApp.PostStatus)));
+        AddAction("Analogizer Config…", () => SubMenuDialog.Show("Analogizer Config", new (string, Action)[]
+        {
+            ("Standard Analogizer Config", AnalogizerWizard.RunStandard),
+            ("Jotego Analogizer Config", AnalogizerWizard.RunJotego),
+        }));
         AddAction("Set GitHub Token", SetGitHubToken);
         AddAction("Set Backup Saves Location", SetBackupLocation);
         AddAction("Set Archive Cache Location", SetArchiveCacheLocation);
