@@ -27,12 +27,7 @@ public sealed class PluginsTab : ActionMenuTab
         {
             var descriptor = plugin;
             AddAction($"Run: {descriptor.DisplayName}", () =>
-                Context.RunBackground(null, () =>
-                {
-                    TuiApp.PostStatus($"Running {descriptor.DisplayName}...");
-                    ServiceHelper.PluginService.Run(descriptor);
-                    TuiApp.PostStatus($"{descriptor.DisplayName} finished.");
-                }));
+                PluginRunModal.Run(descriptor.DisplayName, () => ServiceHelper.PluginService.Run(descriptor)));
         }
 
         if (plugins.Count == 0)

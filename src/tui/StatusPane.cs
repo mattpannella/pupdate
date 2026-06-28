@@ -1,5 +1,4 @@
 using System;
-using System.Collections.ObjectModel;
 using Pannella.Helpers;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
@@ -14,13 +13,10 @@ namespace Pannella.TUI;
 /// </summary>
 public sealed class StatusPane : FrameView
 {
-    private const int MaxLines = 2000;
-
     private readonly ProgressBar progress;
     private readonly Label info;
     private readonly Button toggleButton;
-    private readonly ListView log;
-    private readonly ObservableCollection<string> lines = new();
+    private readonly LogView log;
 
     /// <summary>Raised when the user clicks the expand/collapse (+/-) button.</summary>
     public event Action ToggleRequested;
@@ -67,20 +63,14 @@ public sealed class StatusPane : FrameView
             ToggleRequested?.Invoke();
         };
 
-        log = new ListView
+        // Reusable scrollable log (auto-scrollbar, bounded history, \r/\n handling).
+        log = new LogView
         {
             X = 0,
             Y = 1,
             Width = Dim.Fill(),
-            Height = Dim.Fill(),
-            CanFocus = true
+            Height = Dim.Fill()
         };
-
-        log.SetSource(lines);
-
-        // Show a vertical scrollbar whenever the log overflows the visible area. (The plain
-        // .Visible flag isn't enough for ListView; VisibilityMode is the supported toggle.)
-        log.VerticalScrollBar.VisibilityMode = ScrollBarVisibilityMode.Auto;
 
         Add(progress);
         Add(info);
@@ -94,26 +84,17 @@ public sealed class StatusPane : FrameView
         toggleButton.Text = expanded ? "−" : "+";
     }
 
-    public void AppendLine(string message)
-    {
-        lines.Add(message ?? string.Empty);
-
-        // Bound memory on long-running sessions; drop the oldest lines.
-        while (lines.Count > MaxLines)
-        {
-            lines.RemoveAt(0);
-        }
-
-        // Keep the newest line in view.
-        log.MoveEnd(false);
-    }
+    public void AppendLine(string message) => log.AppendLine(message);
 
     public void SetProgress(double fraction, double bytesPerSecond)
     {
         double clamped = Math.Clamp(fraction, 0d, 1d);
 
         progress.Fraction = (float)clamped;
-        info.Text = bytesPerSecond > 0
+
+        // While downloading, show "% + speed". Once complete the speed is meaningless, so drop it
+        // (otherwise the last reading sits frozen next to a full bar after the transfer ends).
+        info.Text = bytesPerSecond > 0 && clamped < 1d
             ? $"{clamped * 100,3:0}%  {ConsoleHelper.FormatSpeed(bytesPerSecond)}"
             : $"{clamped * 100,3:0}%";
     }

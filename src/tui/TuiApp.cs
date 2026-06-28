@@ -24,6 +24,22 @@ public static class TuiApp
     private static StatusPane statusPane;
     private static bool running;
 
+    // When set, status messages are routed here instead of the main pane (e.g. a plugin-run modal
+    // captures the plugin's output for the duration of the run so it doesn't clog the pane).
+    private static Action<string> statusRedirect;
+
+    /// <summary>
+    /// Temporarily route status messages somewhere other than the main pane (pass null to restore).
+    /// The target is responsible for marshaling onto the UI thread.
+    /// </summary>
+    public static void SetStatusRedirect(Action<string> redirect)
+    {
+        lock (SYNC)
+        {
+            statusRedirect = redirect;
+        }
+    }
+
     /// <summary>Status sink wired into ServiceHelper.Initialize so it survives ReloadSettings.</summary>
     public static void StatusSink(object sender, StatusUpdatedEventArgs e) => PostStatus(e.Message);
 
@@ -43,13 +59,23 @@ public static class TuiApp
             return;
         }
 
+        Action<string> redirect;
+
         lock (SYNC)
         {
-            if (statusPane == null || !running)
+            redirect = statusRedirect;
+
+            if (redirect == null && (statusPane == null || !running))
             {
                 preInitBuffer.Add(message);
                 return;
             }
+        }
+
+        if (redirect != null)
+        {
+            redirect(message);
+            return;
         }
 
         TuiHost.Invoke(() => statusPane.AppendLine(message));
@@ -84,8 +110,9 @@ public static class TuiApp
         Glyphs.Selected = new Rune('■');
         Glyphs.UnSelected = new Rune('□');
 
-        // Route plugin output to the Status pane and plugin prompts to TUI modals (the classic
-        // menu leaves these at their Console defaults).
+        // Route plugin prompts to TUI modals (the classic menu leaves these at their Console
+        // defaults). Plugin output is captured per-run by PluginRunModal, which overrides
+        // OutputHandler while a plugin runs; this is the fallback when none is active.
         PluginService.OutputHandler = message => PostStatus(message?.TrimEnd());
         PluginService.ChoiceHandler = TuiPluginPrompts.Choice;
         PluginService.TextHandler = TuiPluginPrompts.Text;
