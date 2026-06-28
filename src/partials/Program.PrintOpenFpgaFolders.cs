@@ -4,8 +4,10 @@ namespace Pannella;
 
 internal static partial class Program
 {
-    private static void PrintOpenFpgaCategories()
+    internal static void PrintOpenFpgaCategories(Action<string> log = null)
     {
+        log ??= Console.WriteLine;
+
         var openFpgaFolders = new SortedDictionary<string, List<string>>();
 
         foreach (var core in ServiceHelper.CoresService.InstalledCores)
@@ -22,18 +24,18 @@ internal static partial class Program
             }
         }
 
-        Console.WriteLine("Open FPGA Categories:");
+        log("Open FPGA Categories:");
 
         foreach (var kvp in openFpgaFolders)
         {
-            Console.WriteLine($"  {kvp.Key}");
+            log($"  {kvp.Key}");
 
             foreach (var item in kvp.Value.Order())
             {
-                Console.WriteLine($"    {item}");
+                log($"    {item}");
             }
 
-            Console.WriteLine();
+            log(string.Empty);
         }
     }
 }
