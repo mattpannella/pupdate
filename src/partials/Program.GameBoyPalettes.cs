@@ -8,8 +8,12 @@ namespace Pannella;
 
 internal static partial class Program
 {
-    private static void DownloadGameBoyPalettes()
+    // log defaults to Console.WriteLine for the classic menu; the TUI passes its status sink so
+    // output streams into the status pane instead of corrupting the canvas.
+    internal static void DownloadGameBoyPalettes(Action<string> log = null)
     {
+        log ??= Console.WriteLine;
+
         Release release = GithubApiService.GetLatestRelease("davewongillies", "openfpga-palettes",
             ServiceHelper.SettingsService.Config.github_token);
         Asset asset = release.assets.FirstOrDefault(a => a.name.EndsWith(".zip"));
@@ -21,10 +25,10 @@ internal static partial class Program
 
             try
             {
-                Console.WriteLine($"Downloading asset '{asset.name}'...");
+                log($"Downloading asset '{asset.name}'...");
                 HttpHelper.Instance.DownloadFile(asset.browser_download_url, localFile);
-                Console.WriteLine("Download complete.");
-                Console.WriteLine("Installing...");
+                log("Download complete.");
+                log("Installing...");
 
                 if (Directory.Exists(extractPath))
                     Directory.Delete(extractPath, true);
@@ -34,13 +38,13 @@ internal static partial class Program
                 Util.CopyDirectory(extractPath, ServiceHelper.UpdateDirectory, true, true);
 
                 Directory.Delete(extractPath, true);
-                Console.WriteLine("Complete.");
+                log("Complete.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Something happened while trying to install the asset files...");
-                Console.WriteLine(ServiceHelper.SettingsService.Debug.show_stack_traces
-                    ? ex
+                log("Something happened while trying to install the asset files...");
+                log(ServiceHelper.SettingsService.Debug.show_stack_traces
+                    ? ex.ToString()
                     : Util.GetExceptionMessage(ex));
             }
         }

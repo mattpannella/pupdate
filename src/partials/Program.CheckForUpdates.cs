@@ -9,15 +9,6 @@ internal static partial class Program
 
         if (CheckVersion(path) && !selfUpdate)
         {
-#if NET7_0
-            Console.WriteLine("You are using a legacy version of Pupdate that is running on .NET 7.0");
-            Console.WriteLine("Auto/Self updates are not supported in this mode.");
-            Console.WriteLine("Please download the latest version of Pupdate from GitHub directly.");
-            Console.ReadKey(false);
-            Console.WriteLine();          
-
-            return;
-#endif
             if (forceUpdate)
             {
                 int result = UpdateSelfAndRun(path, args);

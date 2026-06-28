@@ -108,17 +108,18 @@ public class AssetsService
         });
     }
 
-    public static void BackupSaves(string directory, string backupLocation)
+    public static void BackupSaves(string directory, string backupLocation, Action<string> log = null)
     {
-        BackupDirectory(directory, "Saves", backupLocation);
+        BackupDirectory(directory, "Saves", backupLocation, log ?? Console.WriteLine);
     }
 
-    public static void BackupMemories(string directory, string backupLocation)
+    public static void BackupMemories(string directory, string backupLocation, Action<string> log = null)
     {
-        BackupDirectory(directory, "Memories", backupLocation);
+        BackupDirectory(directory, "Memories", backupLocation, log ?? Console.WriteLine);
     }
 
-    private static void BackupDirectory(string rootDirectory, string folderName, string backupLocation)
+    // log lets callers (e.g. the TUI) redirect output away from Console; defaults to Console.WriteLine.
+    private static void BackupDirectory(string rootDirectory, string folderName, string backupLocation, Action<string> log)
     {
         if (string.IsNullOrEmpty(rootDirectory))
         {
@@ -130,7 +131,7 @@ public class AssetsService
             throw new ArgumentNullException(nameof(backupLocation));
         }
 
-        Console.WriteLine($"Compressing and backing up {folderName} directory...");
+        log($"Compressing and backing up {folderName} directory...");
 
         string savesPath = Path.Combine(rootDirectory, folderName);
 
@@ -154,16 +155,16 @@ public class AssetsService
             if (!isDuplicateBackup)
             {
                 ZipFile.CreateFromDirectory(savesPath, archiveName);
-                Console.WriteLine("Complete.");
+                log("Complete.");
             }
             else
             {
-                Console.WriteLine("Backup with the same contents already exists, skipping...");
+                log("Backup with the same contents already exists, skipping...");
             }
         }
         else
         {
-            Console.WriteLine($"No {folderName} directory found, skipping backup...");
+            log($"No {folderName} directory found, skipping backup...");
         }
     }
 
@@ -191,9 +192,10 @@ public class AssetsService
         return BitConverter.ToString(finalHashBytes).Replace("-", "").ToLowerInvariant();
     }
 
-    public static void PruneSaveStates(string rootDirectory, string coreName = null)
+    public static void PruneSaveStates(string rootDirectory, string coreName = null, Action<string> log = null)
     {
-        BackupMemories(ServiceHelper.UpdateDirectory, ServiceHelper.SettingsService.Config.backup_saves_location);
+        log ??= Console.WriteLine;
+        BackupMemories(ServiceHelper.UpdateDirectory, ServiceHelper.SettingsService.Config.backup_saves_location, log);
         string savesPath = Path.Combine(rootDirectory, "Memories", "Save States");
 
         //YYYYMMDD_HHMMSS_SOMETHING_SOMETHING_GAMETITLE.STA
@@ -254,12 +256,12 @@ public class AssetsService
                     {
                         // If it's not the most recent file for this game, delete it
                         File.Delete(file);
-                        Console.WriteLine($"Deleted file: {fileName}");
+                        log($"Deleted file: {fileName}");
                     }
                 }
             }
         }
 
-        Console.WriteLine("Pruning completed. Most recent save state for each game retained.");
+        log("Pruning completed. Most recent save state for each game retained.");
     }
 }

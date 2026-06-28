@@ -9,8 +9,13 @@ namespace Pannella;
 
 internal static partial class Program
 {
-    private static void BuildGameAndWatchRoms()
+    // log defaults to Console.WriteLine for the classic menu; the TUI passes its status sink. The
+    // generator child process also has its stdout/stderr redirected through log so it streams to the
+    // status pane instead of writing straight to the terminal (which would corrupt the TUI canvas).
+    internal static void BuildGameAndWatchRoms(Action<string> log = null)
     {
+        log ??= Console.WriteLine;
+
         Release release = GithubApiService.GetLatestRelease("agg23", "fpga-gameandwatch",
             ServiceHelper.SettingsService.Config.github_token);
 
@@ -63,21 +68,30 @@ internal static partial class Program
         try
         {
             // Execute
-            Console.WriteLine($"Executing {execLocation}");
+            log($"Executing {execLocation}");
 
             ProcessStartInfo pInfo = new ProcessStartInfo(execLocation)
             {
                 Arguments = $"--mame-path \"{romLocation}\" --output-path \"{outputLocation}\" --manifest-path \"{manifestPath}\" supported",
-                UseShellExecute = false
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
             };
 
             Process p = Process.Start(pInfo);
 
-            p!.WaitForExit();
+            // Stream the generator's output through log rather than letting it write to the terminal
+            // directly (which would corrupt the TUI canvas).
+            p!.OutputDataReceived += (_, e) => { if (e.Data != null) log(e.Data); };
+            p.ErrorDataReceived += (_, e) => { if (e.Data != null) log(e.Data); };
+            p.BeginOutputReadLine();
+            p.BeginErrorReadLine();
+
+            p.WaitForExit();
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"An error occurred: {ex.GetType().Name} : {ex}");
+            log($"An error occurred: {ex.GetType().Name} : {ex}");
         }
     }
 }

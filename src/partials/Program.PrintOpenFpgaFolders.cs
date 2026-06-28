@@ -4,36 +4,47 @@ namespace Pannella;
 
 internal static partial class Program
 {
-    private static void PrintOpenFpgaCategories()
+    internal static void PrintOpenFpgaCategories(Action<string> log = null)
     {
+        log ??= Console.WriteLine;
+
         var openFpgaFolders = new SortedDictionary<string, List<string>>();
 
         foreach (var core in ServiceHelper.CoresService.InstalledCores)
         {
             var platform = ServiceHelper.CoresService.ReadPlatformJson(core.id);
-            var item = platform.name;
 
-            if (!openFpgaFolders.TryAdd(platform.category, new List<string> { item }))
+            // ReadPlatformJson returns null when a core's core.json or platform file is missing;
+            // fall back for a missing name/category so one bad core can't abort the whole listing.
+            if (platform == null)
             {
-                if (!openFpgaFolders[platform.category].Contains(item))
+                continue;
+            }
+
+            var item = platform.name ?? core.id;
+            var category = platform.category ?? "(uncategorized)";
+
+            if (!openFpgaFolders.TryAdd(category, new List<string> { item }))
+            {
+                if (!openFpgaFolders[category].Contains(item))
                 {
-                    openFpgaFolders[platform.category].Add(item);
+                    openFpgaFolders[category].Add(item);
                 }
             }
         }
 
-        Console.WriteLine("Open FPGA Categories:");
+        log("Open FPGA Categories:");
 
         foreach (var kvp in openFpgaFolders)
         {
-            Console.WriteLine($"  {kvp.Key}");
+            log($"  {kvp.Key}");
 
             foreach (var item in kvp.Value.Order())
             {
-                Console.WriteLine($"    {item}");
+                log($"    {item}");
             }
 
-            Console.WriteLine();
+            log(string.Empty);
         }
     }
 }

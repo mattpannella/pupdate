@@ -44,7 +44,7 @@ class AnalogizerSettingsService
  #.    #.#.    #.#.    #.#######   ####.   #######.  #### ####### ####### #.  #
 ===================== C O N F I G U R A T O R   V 0.4 =========================";
 
-    static readonly Dictionary<int, string> VideoOutputOptions = new Dictionary<int, string>
+    internal static readonly Dictionary<int, string> VideoOutputOptions = new Dictionary<int, string>
     {
         {0, "RGBS"},
         {1, "RGsB"},
@@ -64,7 +64,7 @@ class AnalogizerSettingsService
     //    {0, "Off"}
     //};
 
-    static readonly Dictionary<int, string> SNACassigmentsOptions = new Dictionary<int, string>
+    internal static readonly Dictionary<int, string> SNACassigmentsOptions = new Dictionary<int, string>
     {
         {0, "SNAC P1 -> Pocket P1"},        //0x00
         {1, "SNAC P1 -> Pocket P2"},        //0x40
@@ -74,7 +74,7 @@ class AnalogizerSettingsService
         {5, "SNAC P1-P4 -> Pocket P1-P4"},  //0x200
     };
 
-    static readonly Dictionary<int, string> SNACSelectionOptions = new Dictionary<int, string>
+    internal static readonly Dictionary<int, string> SNACSelectionOptions = new Dictionary<int, string>
     {
         {0, "None - No SNAC gamepad, use Pocket and/or Dock controls"},
         {1, "DB15 Normal - Neogeo/Arcade using DB15 connector (normal polling speed)"},
@@ -90,19 +90,19 @@ class AnalogizerSettingsService
     };
 
 
-    static readonly Dictionary<int, string> PocketBlankScreenOptions = new Dictionary<int, string>
+    internal static readonly Dictionary<int, string> PocketBlankScreenOptions = new Dictionary<int, string>
     {
         {0, "Video is show on the Pocket screen"},
         {1, "No video output on the Pocket screen"}
     };
 
-    static readonly Dictionary<int, string> AnalogizerOSDOptions = new Dictionary<int, string>
+    internal static readonly Dictionary<int, string> AnalogizerOSDOptions = new Dictionary<int, string>
     {
         {1, "OSD is show on Analogizer video output (when avalaible)"},
         {0, "OSD is show on Pocket screen (when avalaible)"}
     };
 
-    static readonly Dictionary<int, string> AnalogizerRegionalSettingsOptions = new Dictionary<int, string>
+    internal static readonly Dictionary<int, string> AnalogizerRegionalSettingsOptions = new Dictionary<int, string>
     {
         {0, "Auto > NTSC    (auto detect and disambiguates to NTSC)"},
         {1, "Auto > PAL     (auto detect and disambiguates to PAL)"},
@@ -355,14 +355,23 @@ class AnalogizerSettingsService
             }
         }
 
-        // Almacenar la selección en un archivo binario de 32 bits con big-endian
-        uint data = (uint)((analogizerRegionalSettings << 16) | (analogizerOsdOutSelection << 15) | (pocketBlankScreenSelection << 14) | (videoSelection << 10) | (snacAssigmentSelection << 6) | (analogizerEnaSelection << 5) | snacSelection); // Usamos uint para 32 bits
+        WriteConfig(analogizerRegionalSettings, analogizerOsdOutSelection, pocketBlankScreenSelection,
+            videoSelection, snacAssigmentSelection, snacSelection);
+    }
+
+    // Packs the six selections into the 32-bit analogizer config word and writes analogizer.bin.
+    // Shared by the classic console wizard and the TUI wizard; log defaults to Console.WriteLine.
+    internal static void WriteConfig(int regional, int osd, int blank, int video, int snacAssign, int snac,
+        Action<string> log = null)
+    {
+        log ??= Console.WriteLine;
+
+        uint data = (uint)((regional << 16) | (osd << 15) | (blank << 14) | (video << 10) |
+                           (snacAssign << 6) | (analogizerEnaSelection << 5) | snac);
         byte[] buffer = BitConverter.GetBytes(data);
-        //Array.Reverse(buffer); // Invertimos el arreglo para big-endian
         string filename = "analogizer.bin";
         string filepath = Path.Combine(ServiceHelper.UpdateDirectory, filename);
 
-        //Assets/Analogizer/common
         File.WriteAllBytes(filepath, buffer);
 
         if (File.Exists(filepath))
@@ -377,7 +386,7 @@ class AnalogizerSettingsService
             string destPath = Path.Combine(destination, filename);
 
             File.Move(filepath, destPath, true);
-            Console.WriteLine($"Analogizer configuration saved to '{destPath}");
+            log($"Analogizer configuration saved to '{destPath}'");
         }
     }
 }

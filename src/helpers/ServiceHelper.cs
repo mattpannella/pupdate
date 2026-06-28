@@ -21,6 +21,14 @@ public static class ServiceHelper
     public static EventHandler<StatusUpdatedEventArgs> StatusUpdated { get; private set; }
     public static EventHandler<UpdateProcessCompleteEventArgs> UpdateProcessComplete { get; private set; }
 
+    /// <summary>
+    /// True when the interactive full-screen TUI owns the console. Helpers that write raw
+    /// escape sequences (e.g. the \r download progress bar in <see cref="HttpHelper"/>) must
+    /// suppress that output to avoid corrupting the TUI canvas. Defaults to false so CLI/verb
+    /// mode is unaffected.
+    /// </summary>
+    public static bool InteractiveTui { get; set; }
+
     private static bool IS_INITIALIZED;
 
     internal static void ResetForTests()

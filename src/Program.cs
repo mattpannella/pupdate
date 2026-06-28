@@ -6,6 +6,7 @@ using Pannella.Models.Events;
 using Pannella.Models.PocketLibraryImages;
 using Pannella.Options;
 using Pannella.Services;
+using Pannella.TUI;
 
 namespace Pannella;
 
@@ -87,7 +88,31 @@ internal static partial class Program
                 Directory.CreateDirectory(path);
             }
 
-            ServiceHelper.Initialize(path, path, coreUpdater_StatusUpdated, coreUpdater_UpdateProcessComplete);
+            // The TUI only ever launches from interactive (menu) mode. When it will, route the
+            // status/complete streams to the TUI sinks BEFORE Initialize, so they are the ones
+            // ServiceHelper stores and re-attaches on ReloadSettings (issue #299). Verb mode is
+            // untouched: it keeps the console sinks and the \r progress bar.
+            bool useTui = parserResult.Value is MenuOptions { UseTui: true }
+                || (parserResult.Value is MenuOptions
+                    && string.Equals(Environment.GetEnvironmentVariable("PUPDATE_TUI"), "1", StringComparison.Ordinal));
+
+            ServiceHelper.InteractiveTui = useTui;
+
+            EventHandler<StatusUpdatedEventArgs> statusSink;
+            EventHandler<UpdateProcessCompleteEventArgs> completeSink;
+
+            if (useTui)
+            {
+                statusSink = TuiApp.StatusSink;
+                completeSink = TuiApp.CompleteSink;
+            }
+            else
+            {
+                statusSink = coreUpdater_StatusUpdated;
+                completeSink = coreUpdater_UpdateProcessComplete;
+            }
+
+            ServiceHelper.Initialize(path, path, statusSink, completeSink);
 
             bool enableMissingCores = false;
 
@@ -141,8 +166,8 @@ internal static partial class Program
                 ServiceHelper.SettingsService,
                 ServiceHelper.CoresService);
 
-            coreUpdaterService.StatusUpdated += coreUpdater_StatusUpdated;
-            coreUpdaterService.UpdateProcessComplete += coreUpdater_UpdateProcessComplete;
+            coreUpdaterService.StatusUpdated += statusSink;
+            coreUpdaterService.UpdateProcessComplete += completeSink;
 
             switch (parserResult.Value)
             {
@@ -327,7 +352,10 @@ internal static partial class Program
                     break;
 
                 default:
-                    DisplayMenu(coreUpdaterService);
+                    if (useTui)
+                        TuiApp.Run(coreUpdaterService);
+                    else
+                        DisplayMenu(coreUpdaterService);
                     break;
             }
         }

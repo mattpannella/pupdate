@@ -10,4 +10,7 @@ public class MenuOptions : BaseOptions
 
     [Option('s', "skip-update", HelpText = "Skip the self update check", Required = false)]
     public bool SkipUpdate { get; set; }
+
+    [Option('t', "tui", HelpText = "Launch the experimental full-screen TUI", Required = false)]
+    public bool UseTui { get; set; }
 }
