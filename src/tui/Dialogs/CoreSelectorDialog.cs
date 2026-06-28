@@ -16,7 +16,8 @@ public static class CoreSelectorDialog
     public static Dictionary<string, bool> Show(IReadOnlyList<Core> cores, string message)
     {
         var marked = ChecklistDialog.Show("Select Cores", message, Labels(cores),
-            i => !ServiceHelper.SettingsService.GetCoreSettings(cores[i].id).skip, "Save");
+            i => !ServiceHelper.SettingsService.GetCoreSettings(cores[i].id).skip, "Save",
+            categories: PlatformKeys(cores), categoryDisplay: PlatformDisplay(cores), categoryLabel: "Platform");
 
         if (marked == null)
         {
@@ -35,11 +36,27 @@ public static class CoreSelectorDialog
 
     public static List<string> SelectSubset(IReadOnlyList<Core> cores, string message)
     {
-        var marked = ChecklistDialog.Show("Select Cores", message, Labels(cores), _ => false, "OK");
+        var marked = ChecklistDialog.Show("Select Cores", message, Labels(cores), _ => false, "OK",
+            categories: PlatformKeys(cores), categoryDisplay: PlatformDisplay(cores), categoryLabel: "Platform");
 
         return marked?.Select(i => cores[i].id).ToList();
     }
 
     private static List<string> Labels(IReadOnlyList<Core> cores) =>
         cores.Select(c => c.requires_license ? $"{c.id}  (license required)" : c.id).ToList();
+
+    // Filter key per core: the platform_id (precise). "(none)" for cores without one.
+    private static List<string> PlatformKeys(IReadOnlyList<Core> cores) =>
+        cores.Select(c => string.IsNullOrEmpty(c.platform_id) ? "(none)" : c.platform_id).ToList();
+
+    // Maps a platform_id to its friendly platform name for the dropdown (falls back to the id).
+    private static Func<string, string> PlatformDisplay(IReadOnlyList<Core> cores)
+    {
+        var names = cores
+            .Where(c => !string.IsNullOrEmpty(c.platform_id) && !string.IsNullOrWhiteSpace(c.platform?.name))
+            .GroupBy(c => c.platform_id)
+            .ToDictionary(g => g.Key, g => g.First().platform.name);
+
+        return id => names.TryGetValue(id, out var name) ? name : id;
+    }
 }

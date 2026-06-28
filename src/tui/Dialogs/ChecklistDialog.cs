@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
@@ -16,6 +17,11 @@ namespace Pannella.TUI;
 /// Long lists support type-ahead filtering: with the list focused, typing letters narrows it to
 /// matching rows (Backspace deletes, Esc clears the filter). Check state is tracked by original
 /// index, so it survives filtering — toggle, filter to something else, toggle more, then OK.
+///
+/// Optionally a category filter (a dropdown-style button) narrows by a per-item key: pass
+/// <paramref name="categories"/> (one key per label, e.g. a platform_id), an optional
+/// <paramref name="categoryDisplay"/> to map keys to friendly names, and a
+/// <paramref name="categoryLabel"/> (e.g. "Platform"). The text and category filters compose.
 /// </summary>
 public static class ChecklistDialog
 {
@@ -25,7 +31,10 @@ public static class ChecklistDialog
         IReadOnlyList<string> labels,
         Func<int, bool> initialChecked,
         string okText = "OK",
-        int? maxSelected = null)
+        int? maxSelected = null,
+        IReadOnlyList<string> categories = null,
+        Func<string, string> categoryDisplay = null,
+        string categoryLabel = "Filter")
     {
         var dialog = new Dialog
         {
@@ -45,12 +54,36 @@ public static class ChecklistDialog
             }
         }
 
+        // Distinct category choices (key + display name), only if there's more than one to filter by.
+        categoryDisplay ??= k => k;
+        var categoryChoices = categories?
+            .Where(c => !string.IsNullOrEmpty(c))
+            .Distinct()
+            .Select(k => (Key: k, Display: categoryDisplay(k)))
+            .OrderBy(x => x.Display, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        bool hasCategoryFilter = categoryChoices is { Count: > 1 };
+
         var hintLabel = new Label
         {
             X = 0,
             Y = 0,
             Width = Dim.Fill()
         };
+
+        // Dropdown-style category filter button (opens a picker). null selection = all categories.
+        string selectedCategory = null;
+        Button filterButton = null;
+
+        if (hasCategoryFilter)
+        {
+            filterButton = new Button
+            {
+                X = 0,
+                Y = 1,
+                Text = $"{categoryLabel}: All ▾"
+            };
+        }
 
         var list = new MenuListView
         {
@@ -100,7 +133,12 @@ public static class ChecklistDialog
 
             for (int i = 0; i < labels.Count; i++)
             {
-                if (query.Length == 0 || labels[i].Contains(query, StringComparison.OrdinalIgnoreCase))
+                bool matchText = query.Length == 0 || labels[i].Contains(query, StringComparison.OrdinalIgnoreCase);
+                bool matchCategory = selectedCategory == null
+                    || (categories != null && i < categories.Count
+                        && string.Equals(categories[i], selectedCategory, StringComparison.Ordinal));
+
+                if (matchText && matchCategory)
                 {
                     visibleToOriginal.Add(i);
                     source.Add(labels[i]);
@@ -119,6 +157,29 @@ public static class ChecklistDialog
                 : $"filter: \"{query}\"  ({visibleToOriginal.Count}/{labels.Count}) · Backspace edits · Esc clears";
 
             hintLabel.Text = $"{hint}   ({filterNote})";
+        }
+
+        if (filterButton != null)
+        {
+            filterButton.Accepting += (_, e) =>
+            {
+                e.Handled = true;
+
+                var pickerLabels = new List<string> { "(All)" };
+                pickerLabels.AddRange(categoryChoices.Select(c => c.Display));
+
+                int? pick = SelectDialog.Show(categoryLabel, $"Filter by {categoryLabel.ToLower()}:", pickerLabels);
+
+                if (pick == null)
+                {
+                    return;
+                }
+
+                selectedCategory = pick.Value == 0 ? null : categoryChoices[pick.Value - 1].Key;
+                string display = pick.Value == 0 ? "All" : categoryChoices[pick.Value - 1].Display;
+                filterButton.Text = $"{categoryLabel}: {display} ▾";
+                Rebuild();
+            };
         }
 
         HashSet<int> result = null;
@@ -189,7 +250,17 @@ public static class ChecklistDialog
         dialog.AddButton(ok);
         dialog.AddButton(cancel);
         dialog.Add(hintLabel);
+
+        if (filterButton != null)
+        {
+            dialog.Add(filterButton);
+        }
+
         dialog.Add(list);
+
+        // Focus the list initially so Space/type-ahead work immediately (the filter button and the
+        // OK/Cancel bar are otherwise reachable by Tab or mouse).
+        dialog.Initialized += (_, _) => TuiHost.Invoke(() => list.SetFocus());
 
         TuiHost.Run(dialog);
 
