@@ -36,7 +36,7 @@ public sealed class TuiShell : Window
 
         // Tab labels come from each child view's Title.
         tabs.InsertTab(0, new UpdateTab(context));
-        tabs.InsertTab(1, Placeholder("Cores"));
+        tabs.InsertTab(1, new CoresTab(context));
         tabs.InsertTab(2, Placeholder("Setup"));
         tabs.InsertTab(3, Placeholder("Maintenance"));
         tabs.InsertTab(4, Placeholder("Extras"));
