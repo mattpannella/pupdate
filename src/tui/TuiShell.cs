@@ -26,10 +26,24 @@ public sealed class TuiShell : Window
     {
         Title = "pupdate  ·  Esc: quit  ·  F6: status pane  ·  F9: theme";
 
-        tabs = new Tabs
+        // Pinned welcome banner — the ASCII art the classic menu prints across the top.
+        string banner = Program.RandomWelcomeBanner();
+        var header = new Label
         {
             X = 0,
             Y = 0,
+            Width = Dim.Fill(),
+            Height = banner.Split('\n').Length,
+            Text = banner,
+            CanFocus = false
+        };
+
+        // Tabs + status stay direct children of the window (so the Tabs control keeps focus and
+        // arrow/click navigation), anchored just below the banner.
+        tabs = new Tabs
+        {
+            X = 0,
+            Y = Pos.Bottom(header),
             Width = Dim.Fill(),
             Height = Dim.Percent(TabsHeightCollapsed)
         };
@@ -62,6 +76,7 @@ public sealed class TuiShell : Window
             Height = Dim.Fill()
         };
 
+        Add(header);
         Add(tabs);
         Add(StatusPane);
 

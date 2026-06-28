@@ -6,6 +6,24 @@ namespace Pannella;
 
 internal static partial class Program
 {
+    // A randomly-chosen welcome banner (the ASCII art the classic menu prints at the top), with
+    // blank leading/trailing lines trimmed so it can be pinned as a fixed-height TUI header.
+    internal static string RandomWelcomeBanner()
+    {
+        var lines = WELCOME_MESSAGES[new Random().Next(WELCOME_MESSAGES.Length)]
+            .Split('\n')
+            .Select(line => line.TrimEnd('\r'))
+            .ToList();
+
+        while (lines.Count > 0 && string.IsNullOrWhiteSpace(lines[0]))
+            lines.RemoveAt(0);
+
+        while (lines.Count > 0 && string.IsNullOrWhiteSpace(lines[^1]))
+            lines.RemoveAt(lines.Count - 1);
+
+        return string.Join("\n", lines);
+    }
+
     internal static string GetRandomSponsorLinks()
     {
         var output = new StringBuilder();
