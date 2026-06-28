@@ -24,7 +24,7 @@ public sealed class TuiShell : Window
 
     public TuiShell(TuiContext context)
     {
-        Title = "pupdate - (Esc: quit · F6: resize log)";
+        Title = "pupdate - (Esc: quit)";
 
         tabs = new Tabs
         {
@@ -58,6 +58,11 @@ public sealed class TuiShell : Window
         // of view — so it stays expanded until the user presses F6. StatusPane is anchored to
         // Pos.Bottom(tabs) with Dim.Fill(), so resizing tabs re-flows it for free.
         context.BusyChanged += OnBusyChanged;
+        StatusPane.ToggleRequested += () =>
+        {
+            statusExpanded = !statusExpanded;
+            ApplyLayout();
+        };
 
         KeyDown += (_, key) =>
         {
@@ -89,6 +94,7 @@ public sealed class TuiShell : Window
     private void ApplyLayout()
     {
         tabs.Height = Dim.Percent(statusExpanded ? TabsHeightExpanded : TabsHeightCollapsed);
+        StatusPane.SetExpanded(statusExpanded);
         SetNeedsLayout();
     }
 
