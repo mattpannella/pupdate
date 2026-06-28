@@ -10,77 +10,75 @@ namespace Pannella.TUI;
 
 /// <summary>
 /// Extras tab. Lists the available Pocket Extras (additional assets / combination platforms /
-/// variant cores) and installs the selected one via CoresService.GetPocketExtra on a background
-/// task — the same install path the classic menu used.
+/// variant cores); Enter installs the highlighted one via CoresService.GetPocketExtra on a
+/// background task. Consistent with the other list tabs — no loose button.
 /// </summary>
 public sealed class ExtrasTab : FrameView
 {
+    private readonly TuiContext context;
+    private readonly List<PocketExtra> extras;
+    private readonly ListView list;
+
     public ExtrasTab(TuiContext context)
     {
+        this.context = context;
         Title = "Extras";
 
-        var extras = ServiceHelper.CoresService.PocketExtrasList ?? new List<PocketExtra>();
+        extras = ServiceHelper.CoresService.PocketExtrasList ?? new List<PocketExtra>();
 
         var hint = new Label
         {
             X = 0,
             Y = 0,
             Width = Dim.Fill(),
-            Text = "Pocket Extras — select one and Install.  (↑/↓ move)"
+            Text = "↑/↓ move · Enter installs the highlighted extra"
         };
 
-        var list = new ListView
+        list = new MenuListView
         {
             X = 0,
             Y = 1,
             Width = Dim.Fill(),
-            Height = Dim.Fill(2),
-            CanFocus = true
+            Height = Dim.Fill()
         };
 
         list.SetSource(new ObservableCollection<string>(
             extras.Select(x => $"[{TypeLabel(x.type)}] {DisplayName(x)}")));
-        list.VerticalScrollBar.VisibilityMode = ScrollBarVisibilityMode.Auto;
 
-        var install = new Button
-        {
-            X = 1,
-            Y = Pos.AnchorEnd(1),
-            Text = "_Install Selected"
-        };
-
-        install.Accepting += (_, e) =>
+        list.Accepting += (_, e) =>
         {
             e.Handled = true;
-
-            int? index = list.SelectedItem;
-
-            if (!index.HasValue || index.Value < 0 || index.Value >= extras.Count)
-            {
-                TuiApp.PostStatus("No Pocket Extra selected.");
-                return;
-            }
-
-            PocketExtra extra = extras[index.Value];
-            string label = DisplayName(extra);
-
-            context.RunBackground(install, () =>
-            {
-                TuiApp.PostStatus($"Installing {label}...");
-                ServiceHelper.CoresService.GetPocketExtra(extra, ServiceHelper.UpdateDirectory, true);
-                ServiceHelper.CoresService.RefreshLocalCores();
-                ServiceHelper.CoresService.RefreshInstalledCores();
-                TuiApp.PostStatus($"{label} installed.");
-            });
+            InstallSelected();
         };
 
         Add(hint);
         Add(list);
-        Add(install);
     }
 
-    // additional_assets entries often have no name; the classic menu falls back to the first
-    // core identifier, so mirror that.
+    private void InstallSelected()
+    {
+        int? index = list.SelectedItem;
+
+        if (!index.HasValue || index.Value < 0 || index.Value >= extras.Count)
+        {
+            TuiApp.PostStatus("No Pocket Extra selected.");
+            return;
+        }
+
+        PocketExtra extra = extras[index.Value];
+        string label = DisplayName(extra);
+
+        context.RunBackground(null, () =>
+        {
+            TuiApp.PostStatus($"Installing {label}...");
+            ServiceHelper.CoresService.GetPocketExtra(extra, ServiceHelper.UpdateDirectory, true);
+            ServiceHelper.CoresService.RefreshLocalCores();
+            ServiceHelper.CoresService.RefreshInstalledCores();
+            TuiApp.PostStatus($"{label} installed.");
+        });
+    }
+
+    // additional_assets entries often have no name; mirror the classic menu's fallback.
     private static string DisplayName(PocketExtra extra) =>
         !string.IsNullOrWhiteSpace(extra.name)
             ? extra.name

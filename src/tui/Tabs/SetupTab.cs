@@ -1,80 +1,91 @@
+using System;
 using System.Linq;
 using Pannella.Helpers;
-using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 
 namespace Pannella.TUI;
 
 /// <summary>
-/// Setup tab. Phase 2/3: "Manage Display Modes" drives CoresService directly (no CLI-shared
-/// EnableDisplayModes), prompting merge/overwrite via a MessageBox and applying to all enabled
-/// cores on a background task. More Setup actions (image packs, palettes, Analogizer, etc.) land
-/// in later increments.
+/// Setup tab. "Manage Display Modes" drives CoresService directly (no CLI-shared
+/// EnableDisplayModes), prompting merge/overwrite and applying to all enabled cores on a
+/// background task. More Setup actions (image packs, palettes, tokens, Analogizer, etc.) land in
+/// later increments.
 /// </summary>
-public sealed class SetupTab : FrameView
+public sealed class SetupTab : ActionMenuTab
 {
-    public SetupTab(TuiContext context)
+    public SetupTab(TuiContext context) : base(context, "Setup")
     {
-        Title = "Setup";
+        AddAction("Manage Display Modes", ManageDisplayModes);
+        AddAction("Set GitHub Token", SetGitHubToken);
+    }
 
-        var displayModes = new Button
+    private void SetGitHubToken()
+    {
+        var config = ServiceHelper.SettingsService.Config;
+
+        string input = TuiPrompts.PromptText("GitHub Token",
+            "Enter your GitHub personal access token (leave blank to clear):",
+            config.github_token ?? string.Empty, secret: true);
+
+        if (input == null)
         {
-            X = 1,
-            Y = 1,
-            Text = "Manage _Display Modes"
-        };
+            TuiApp.PostStatus("GitHub token unchanged.");
+            return;
+        }
 
-        displayModes.Accepting += (_, e) =>
+        string newToken = string.IsNullOrWhiteSpace(input) ? string.Empty : input.Trim();
+
+        if (string.Equals(config.github_token, newToken, StringComparison.Ordinal))
         {
-            e.Handled = true;
+            TuiApp.PostStatus("GitHub token unchanged.");
+            return;
+        }
 
-            var values = DisplayModeSelectorDialog.Show(ServiceHelper.CoresService.AllDisplayModes);
+        config.github_token = newToken;
+        ServiceHelper.SettingsService.Save();
+        ServiceHelper.ReloadSettings();
+        Context.CoreUpdater.ReloadSettings();
 
-            if (values == null)
+        TuiApp.PostStatus("GitHub token updated.");
+    }
+
+    private void ManageDisplayModes()
+    {
+        var values = DisplayModeSelectorDialog.Show(ServiceHelper.CoresService.AllDisplayModes);
+
+        if (values == null)
+        {
+            TuiApp.PostStatus("Display mode selection cancelled.");
+            return;
+        }
+
+        int choice = MessageBox.Query(App, "Display Modes",
+            "Merge the selected display modes with existing ones, or overwrite?",
+            "Merge", "Overwrite", "Cancel") ?? 2;
+
+        if (choice == 2)
+        {
+            TuiApp.PostStatus("Display mode update cancelled.");
+            return;
+        }
+
+        bool merge = choice == 0;
+        var displayModeList = ServiceHelper.CoresService.ConvertDisplayModes(values);
+        var coreIds = ServiceHelper.CoresService.Cores
+            .Where(core => !ServiceHelper.SettingsService.GetCoreSettings(core.id).skip)
+            .Select(core => core.id)
+            .ToList();
+
+        Context.RunBackground(null, () =>
+        {
+            foreach (var id in coreIds)
             {
-                TuiApp.PostStatus("Display mode selection cancelled.");
-                return;
+                TuiApp.PostStatus($"Updating display modes for {id}");
+                ServiceHelper.CoresService.AddDisplayModes(id, displayModeList, isCurated: false, merge: merge);
             }
 
-            // Merge vs overwrite (replaces the classic Console M/O prompt). 0=Merge, 1=Overwrite.
-            int choice = MessageBox.Query(App, "Display Modes",
-                "Merge the selected display modes with existing ones, or overwrite?",
-                "Merge", "Overwrite", "Cancel") ?? 2;
-
-            if (choice == 2)
-            {
-                TuiApp.PostStatus("Display mode update cancelled.");
-                return;
-            }
-
-            bool merge = choice == 0;
-            var displayModeList = ServiceHelper.CoresService.ConvertDisplayModes(values);
-            var coreIds = ServiceHelper.CoresService.Cores
-                .Where(core => !ServiceHelper.SettingsService.GetCoreSettings(core.id).skip)
-                .Select(core => core.id)
-                .ToList();
-
-            context.RunBackground(displayModes, () =>
-            {
-                foreach (var id in coreIds)
-                {
-                    TuiApp.PostStatus($"Updating display modes for {id}");
-                    ServiceHelper.CoresService.AddDisplayModes(id, displayModeList, isCurated: false, merge: merge);
-                }
-
-                ServiceHelper.SettingsService.Save();
-                TuiApp.PostStatus($"Display modes updated for {coreIds.Count} core(s).");
-            });
-        };
-
-        var hint = new Label
-        {
-            X = 1,
-            Y = 3,
-            Text = "Apply selected display modes to all enabled cores."
-        };
-
-        Add(displayModes);
-        Add(hint);
+            ServiceHelper.SettingsService.Save();
+            TuiApp.PostStatus($"Display modes updated for {coreIds.Count} core(s).");
+        });
     }
 }

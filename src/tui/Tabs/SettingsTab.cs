@@ -11,10 +11,10 @@ using Terminal.Gui.Views;
 namespace Pannella.TUI;
 
 /// <summary>
-/// Settings tab. Reuses the same reflection the classic SettingsMenu used — every bool Config
-/// property carrying a [Description] becomes a checkable row — rendered as a marking ListView
-/// (Space toggles) so it scrolls cleanly. Save writes via SettingsService and reloads both
-/// services so changes take effect immediately.
+/// Settings tab. Every bool Config property carrying a [Description] becomes a checkable row
+/// (reusing the classic SettingsMenu reflection). Space toggles a row; Enter saves all changes
+/// (SettingsService.Save + reload both services). Consistent with the other list-based tabs —
+/// no loose buttons.
 /// </summary>
 public sealed class SettingsTab : FrameView
 {
@@ -32,16 +32,15 @@ public sealed class SettingsTab : FrameView
             X = 0,
             Y = 0,
             Width = Dim.Fill(),
-            Text = "↑/↓ move · Space toggles · then Save"
+            Text = "↑/↓ move · Space toggles · Enter saves"
         };
 
-        list = new ListView
+        list = new MenuListView
         {
             X = 0,
             Y = 1,
             Width = Dim.Fill(),
-            Height = Dim.Fill(2),
-            CanFocus = true,
+            Height = Dim.Fill(),
             ShowMarks = true,
             MarkMultiple = true
         };
@@ -68,16 +67,8 @@ public sealed class SettingsTab : FrameView
             list.Source.SetMark(i, (bool)(properties[i].GetValue(config) ?? false));
         }
 
-        list.VerticalScrollBar.VisibilityMode = ScrollBarVisibilityMode.Auto;
-
-        var save = new Button
-        {
-            X = 1,
-            Y = Pos.AnchorEnd(1),
-            Text = "_Save settings"
-        };
-
-        save.Accepting += (_, e) =>
+        // Enter commits all toggles.
+        list.Accepting += (_, e) =>
         {
             e.Handled = true;
             SaveSettings();
@@ -85,7 +76,6 @@ public sealed class SettingsTab : FrameView
 
         Add(hint);
         Add(list);
-        Add(save);
     }
 
     private void SaveSettings()
@@ -99,9 +89,6 @@ public sealed class SettingsTab : FrameView
         }
 
         ServiceHelper.SettingsService.Save();
-
-        // Reload BOTH so the new settings take effect immediately (issue #299); this also
-        // re-attaches the TUI status sink to the rebuilt services.
         ServiceHelper.ReloadSettings();
         context.CoreUpdater.ReloadSettings();
 

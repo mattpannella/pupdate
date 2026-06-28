@@ -1,95 +1,181 @@
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Pannella.Helpers;
-using Terminal.Gui.ViewBase;
-using Terminal.Gui.Views;
 
 namespace Pannella.TUI;
 
 /// <summary>
-/// Maintenance tab. Starts with the low-risk actions that map cleanly onto existing services:
-/// a clean reinstall (RunUpdates clean) and clearing the archive cache (small logic replicated
-/// from Program.ClearArchiveCache so it uses TUI prompts/status instead of Console). Prune,
-/// backups, pin-version and platform archiving land in later increments.
+/// Maintenance tab: bulk core operations (update/install/reinstall/uninstall selected, reinstall
+/// all) plus clearing the archive cache. Select-and-act items reuse CoreSelectorDialog's subset
+/// mode; the heavy work runs on a background task. (Prune save states, backups, pin-version and
+/// platform archiving land in later batches.)
 /// </summary>
-public sealed class MaintenanceTab : FrameView
+public sealed class MaintenanceTab : ActionMenuTab
 {
-    public MaintenanceTab(TuiContext context)
+    public MaintenanceTab(TuiContext context) : base(context, "Maintenance")
     {
-        Title = "Maintenance";
+        AddAction("Reinstall All Cores", ReinstallAll);
+        AddAction("Update Selected", UpdateSelected);
+        AddAction("Install Selected", InstallSelected);
+        AddAction("Reinstall Selected", ReinstallSelected);
+        AddAction("Uninstall Selected", UninstallSelected);
+        AddAction("Clear Archive Cache", ClearCache);
+    }
 
-        var reinstall = new Button
+    private void ReinstallAll()
+    {
+        if (!TuiPrompts.Confirm(App, "Reinstall All Cores",
+                "Re-download and reinstall ALL cores? This can take a while."))
         {
-            X = 1,
-            Y = 1,
-            Text = "_Reinstall All Cores"
-        };
+            return;
+        }
 
-        reinstall.Accepting += (_, e) =>
+        Context.RunBackground(null, () =>
         {
-            e.Handled = true;
+            TuiApp.PostStatus("Starting clean reinstall of all cores...");
+            int errors = Context.CoreUpdater.RunUpdates(null, clean: true, onlyUpdatedAssets: false);
+            TuiApp.PostStatus(errors > 0 ? $"Reinstall finished with {errors} error(s)." : "Reinstall complete.");
+        });
+    }
 
-            if (!TuiPrompts.Confirm(App, "Reinstall All Cores",
-                    "Re-download and reinstall ALL cores? This can take a while."))
+    private void UpdateSelected()
+    {
+        var ids = CoreSelectorDialog.SelectSubset(ServiceHelper.CoresService.InstalledCores,
+            "Which cores would you like to update?");
+
+        if (!Confirmed(ids, out var list))
+        {
+            return;
+        }
+
+        Context.RunBackground(null, () =>
+        {
+            TuiApp.PostStatus($"Updating {list.Length} core(s)...");
+            int errors = Context.CoreUpdater.RunUpdates(list, clean: false, onlyUpdatedAssets: false);
+            TuiApp.PostStatus(errors > 0 ? $"Finished with {errors} error(s)." : "Update complete.");
+        });
+    }
+
+    private void ReinstallSelected()
+    {
+        var ids = CoreSelectorDialog.SelectSubset(ServiceHelper.CoresService.InstalledCores,
+            "Which cores would you like to reinstall?");
+
+        if (!Confirmed(ids, out var list))
+        {
+            return;
+        }
+
+        Context.RunBackground(null, () =>
+        {
+            TuiApp.PostStatus($"Reinstalling {list.Length} core(s)...");
+            int errors = Context.CoreUpdater.RunUpdates(list, clean: true, onlyUpdatedAssets: false);
+            TuiApp.PostStatus(errors > 0 ? $"Finished with {errors} error(s)." : "Reinstall complete.");
+        });
+    }
+
+    private void InstallSelected()
+    {
+        var ids = CoreSelectorDialog.SelectSubset(ServiceHelper.CoresService.CoresNotInstalled,
+            "Which cores would you like pupdate to install and manage?");
+
+        if (!Confirmed(ids, out var list))
+        {
+            return;
+        }
+
+        Context.RunBackground(null, () =>
+        {
+            foreach (var id in list)
             {
-                return;
+                ServiceHelper.SettingsService.EnableCore(id);
             }
 
-            context.RunBackground(reinstall, () =>
-            {
-                TuiApp.PostStatus("Starting clean reinstall of all cores...");
-                int errors = context.CoreUpdater.RunUpdates(null, clean: true, onlyUpdatedAssets: false);
-                TuiApp.PostStatus(errors > 0
-                    ? $"Reinstall finished with {errors} error(s)."
-                    : "Reinstall complete.");
-            });
-        };
+            ServiceHelper.SettingsService.Save();
 
-        var clearCache = new Button
+            TuiApp.PostStatus($"Installing {list.Length} core(s)...");
+            int errors = Context.CoreUpdater.RunUpdates(list, clean: false, onlyUpdatedAssets: false);
+            TuiApp.PostStatus(errors > 0 ? $"Finished with {errors} error(s)." : "Install complete.");
+        });
+    }
+
+    private void UninstallSelected()
+    {
+        var ids = CoreSelectorDialog.SelectSubset(ServiceHelper.CoresService.InstalledCores,
+            "Which cores would you like to uninstall?");
+
+        if (!Confirmed(ids, out var list))
         {
-            X = 1,
-            Y = 3,
-            Text = "_Clear Archive Cache"
-        };
+            return;
+        }
 
-        clearCache.Accepting += (_, e) =>
+        bool nuke = TuiPrompts.Confirm(App, "Uninstall",
+            "Also delete the core-specific Assets folder for these cores?");
+
+        Context.RunBackground(null, () =>
         {
-            e.Handled = true;
-
-            if (!ServiceHelper.SettingsService.Config.cache_archive_files)
+            foreach (var id in list)
             {
-                TuiApp.PostStatus("Archive caching is not enabled.");
-                return;
+                var core = ServiceHelper.CoresService.GetCore(id);
+
+                if (core != null)
+                {
+                    TuiApp.PostStatus($"Uninstalling {id}...");
+                    Context.CoreUpdater.DeleteCore(core, force: true, nuke: nuke);
+                }
             }
 
-            string cacheDir = ServiceHelper.CacheDirectory;
+            TuiApp.PostStatus($"Uninstalled {list.Length} core(s).");
+        });
+    }
 
-            if (!Directory.Exists(cacheDir))
-            {
-                TuiApp.PostStatus("Cache directory is already empty.");
-                return;
-            }
-
-            if (!TuiPrompts.Confirm(App, "Clear Archive Cache", "Delete all cached archive files?"))
-            {
-                return;
-            }
-
-            context.RunBackground(clearCache, () =>
-            {
-                Directory.Delete(cacheDir, recursive: true);
-                TuiApp.PostStatus("Archive cache cleared.");
-            });
-        };
-
-        var hint = new Label
+    private void ClearCache()
+    {
+        if (!ServiceHelper.SettingsService.Config.cache_archive_files)
         {
-            X = 1,
-            Y = 5,
-            Text = "More maintenance (prune save states, backups, pin versions, platforms) coming next."
-        };
+            TuiApp.PostStatus("Archive caching is not enabled.");
+            return;
+        }
 
-        Add(reinstall);
-        Add(clearCache);
-        Add(hint);
+        string cacheDir = ServiceHelper.CacheDirectory;
+
+        if (!Directory.Exists(cacheDir))
+        {
+            TuiApp.PostStatus("Cache directory is already empty.");
+            return;
+        }
+
+        if (!TuiPrompts.Confirm(App, "Clear Archive Cache", "Delete all cached archive files?"))
+        {
+            return;
+        }
+
+        Context.RunBackground(null, () =>
+        {
+            Directory.Delete(cacheDir, recursive: true);
+            TuiApp.PostStatus("Archive cache cleared.");
+        });
+    }
+
+    // Shared guard for the select-and-act items: null = cancelled, empty = nothing picked.
+    private static bool Confirmed(List<string> ids, out string[] list)
+    {
+        if (ids == null)
+        {
+            list = null;
+            TuiApp.PostStatus("Cancelled.");
+            return false;
+        }
+
+        if (ids.Count == 0)
+        {
+            list = null;
+            TuiApp.PostStatus("No cores selected.");
+            return false;
+        }
+
+        list = ids.ToArray();
+        return true;
     }
 }

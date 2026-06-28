@@ -1,65 +1,37 @@
+using System.Linq;
 using Pannella.Helpers;
-using Terminal.Gui.ViewBase;
-using Terminal.Gui.Views;
 
 namespace Pannella.TUI;
 
-/// <summary>
-/// Phase 1 tab: proves the end-to-end status/progress/threading flow by wiring
-/// "Update All" and "Update Firmware" to the existing services via TuiContext.RunBackground.
-/// </summary>
-public sealed class UpdateTab : FrameView
+/// <summary>Update tab: full update, asset download, or firmware check. Output streams to Status.</summary>
+public sealed class UpdateTab : ActionMenuTab
 {
-    public UpdateTab(TuiContext context)
+    public UpdateTab(TuiContext context) : base(context, "Update")
     {
-        Title = "Update";
-
-        var updateAll = new Button
-        {
-            X = 1,
-            Y = 1,
-            Text = "Update _All"
-        };
-
-        updateAll.Accepting += (_, e) =>
-        {
-            e.Handled = true;
-            context.RunBackground(updateAll, () =>
+        AddAction("Update All", () =>
+            Context.RunBackground(null, () =>
             {
                 TuiApp.PostStatus("Starting update process...");
-                int errors = context.CoreUpdater.RunUpdates(null, false, false);
-                TuiApp.PostStatus(errors > 0
-                    ? $"Update finished with {errors} error(s)."
-                    : "Update complete.");
-            });
-        };
+                int errors = Context.CoreUpdater.RunUpdates(null, clean: false, onlyUpdatedAssets: false);
+                TuiApp.PostStatus(errors > 0 ? $"Update finished with {errors} error(s)." : "Update complete.");
+            }));
 
-        var updateFirmware = new Button
-        {
-            X = 1,
-            Y = 3,
-            Text = "Update _Firmware"
-        };
+        AddAction("Download Assets", () =>
+            Context.RunBackground(null, () =>
+            {
+                TuiApp.PostStatus("Checking for required files...");
+                var cores = ServiceHelper.CoresService.Cores
+                    .Where(core => !ServiceHelper.SettingsService.GetCoreSettings(core.id).skip)
+                    .ToList();
+                ServiceHelper.CoresService.DownloadCoreAssets(cores);
+                TuiApp.PostStatus("Asset check complete.");
+            }));
 
-        updateFirmware.Accepting += (_, e) =>
-        {
-            e.Handled = true;
-            context.RunBackground(updateFirmware, () =>
+        AddAction("Update Firmware", () =>
+            Context.RunBackground(null, () =>
             {
                 ServiceHelper.FirmwareService.UpdateFirmware(ServiceHelper.UpdateDirectory);
                 TuiApp.PostStatus("Firmware check complete.");
-            });
-        };
-
-        var hint = new Label
-        {
-            X = 1,
-            Y = 5,
-            Text = "Output streams to the Status pane below. Use Tab/arrows to navigate, Esc or Quit to exit."
-        };
-
-        Add(updateAll);
-        Add(updateFirmware);
-        Add(hint);
+            }));
     }
 }
