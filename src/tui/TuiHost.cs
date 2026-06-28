@@ -25,4 +25,7 @@ internal static class TuiHost
 
     /// <summary>Requests a clean stop of the running app loop.</summary>
     public static void RequestStop() => Application.RequestStop();
+
+    /// <summary>Forces a full layout + redraw of the running UI (e.g. after a live theme change).</summary>
+    public static void Refresh() => Application.LayoutAndDraw(true);
 }

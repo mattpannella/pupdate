@@ -102,6 +102,10 @@ public static class TuiApp
     {
         TuiHost.Init();
 
+        // Apply the saved color theme before the glyph overrides below, so our checkbox glyphs win
+        // regardless of the theme's own glyph config.
+        TuiTheme.Apply(ServiceHelper.SettingsService.Config.tui_theme);
+
         // Marking lists render the checked/unchecked state with the CheckState glyphs (default
         // ☑/☐). Swap to a high-contrast filled/empty square pair everywhere. (Selected/UnSelected
         // are set too in case any list uses those instead.)

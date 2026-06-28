@@ -72,6 +72,10 @@ public class Config
 
     public string patreon_session_cookie { get; set; } = null;
 
+    // Name of the Terminal.Gui theme used by the --tui interface (e.g. "Dark", "8-Bit"). No
+    // [Description] — only bool settings get that (the settings menu casts described props to bool).
+    public string tui_theme { get; set; } = "Dark";
+
     [Description("Adds a description element to the video.json display modes (non-breaking)")]
     public bool add_display_mode_description_to_video_json { get; set; } = false;
 

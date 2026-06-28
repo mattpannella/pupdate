@@ -24,7 +24,7 @@ public sealed class TuiShell : Window
 
     public TuiShell(TuiContext context)
     {
-        Title = "pupdate - (Esc: quit)";
+        Title = "pupdate  ·  Esc: quit  ·  F6: status pane  ·  F9: theme";
 
         tabs = new Tabs
         {
@@ -88,6 +88,12 @@ public sealed class TuiShell : Window
             {
                 statusExpanded = !statusExpanded;
                 ApplyLayout();
+                key.Handled = true;
+            }
+            else if (key == Key.F9)
+            {
+                // App-wide theme chooser (deliberately not in a tab — it's a pupdate-UI setting).
+                ThemePickerDialog.Show();
                 key.Handled = true;
             }
         };
