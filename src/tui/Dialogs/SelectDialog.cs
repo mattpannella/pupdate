@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 
@@ -26,7 +27,7 @@ public static class SelectDialog
             X = 0,
             Y = 0,
             Width = Dim.Fill(),
-            Text = $"{hint}   (↑/↓ move · Enter/click selects · Cancel below)"
+            Text = $"{hint}   (↑/↓ move · Enter/click/[key] selects · Cancel below)"
         };
 
         var list = new MenuListView
@@ -37,14 +38,16 @@ public static class SelectDialog
             Height = Dim.Fill(1)
         };
 
-        list.SetSource(new ObservableCollection<string>(labels));
+        // Prefix each option with its single-keypress accelerator ("[0] …", "[1] …", then "[G] …").
+        list.SetSource(new ObservableCollection<string>(
+            labels.Select((label, i) => TuiAccelerators.FormatItem(i, label))));
 
         int? result = null;
         list.OnActivate(index =>
         {
             result = index;
             TuiHost.RequestStop();
-        });
+        }, numbered: true);
 
         var cancel = new Button { Text = "_Cancel" };
         cancel.Accepting += (_, e) =>
