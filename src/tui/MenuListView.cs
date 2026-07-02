@@ -38,9 +38,8 @@ public class MenuListView : ListView
     /// Opt-in activation: a single click (on an item, deferred so the click first settles the
     /// selection) or Enter invokes <paramref name="onActivate"/> with the item index. Lists that
     /// have their own Enter semantics (e.g. Space-toggle + Save) simply don't call this.
-    /// When <paramref name="numbered"/> is set, a single-keypress accelerator (0-9 then G-Z, per
-    /// <see cref="TuiAccelerators"/>) jumps to and runs the matching item. Tab letters (A-F) are
-    /// intentionally NOT item keys, so they fall through to the shell's global tab-jump handler.
+    /// When <paramref name="numbered"/> is set, item-key accelerators (0-9 then G-Z) also run the
+    /// matching item — used by modal popups, where the shell's global accelerator stands down.
     /// </summary>
     public void OnActivate(Action<int> onActivate, bool numbered = false)
     {

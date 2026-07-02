@@ -117,46 +117,38 @@ public sealed class TuiShell : Window
             }
         };
 
-        // Tab-jump (A–F) is a GLOBAL shortcut: it must win even when the focused view would consume
-        // the letter itself (e.g. the Settings list's first-letter type-ahead), and must keep working
-        // after focus drifts to the status pane during an operation. So it can't ride the bubble-up
-        // KeyDown above — it hooks the app-wide key stream, which fires before the focused view.
+        // Accelerators hook the app-wide key stream (not the bubble-up KeyDown above) so they pre-empt
+        // the focused view's own key handling (e.g. ListView type-ahead) and work regardless of focus.
         TuiHost.AddGlobalKeyDown(OnGlobalKeyDown);
     }
 
     private void OnGlobalKeyDown(object sender, Key key)
     {
-        // Stand down while a modal dialog owns the screen (so its own keys/typing are untouched), and
-        // ignore modified/non-character keys.
+        // Stand down while a modal owns the screen; ignore modified/non-character keys.
         if (!TuiHost.IsTopRunnable(this) || key.IsCtrl || key.IsAlt || key.AsRune.Value == 0)
         {
             return;
         }
 
         char c = (char)key.AsRune.Value;
-
-        // Tab-jump: a plain letter (A–F) switches tabs, pre-empting the focused view.
         int tabIndex = TuiAccelerators.TabIndex(c);
 
         if (tabIndex >= 0 && tabIndex < orderedTabs.Length)
         {
             tabs.Value = orderedTabs[tabIndex];
-            orderedTabs[tabIndex].SetFocus(); // arrow keys land on the tab's list after a jump
+            orderedTabs[tabIndex].SetFocus(); // so arrow keys land on the tab's list after a jump
             key.Handled = true;
             return;
         }
 
-        // Item accelerator (0-9/G-Z): run the matching item on the active action-list tab. Driven here
-        // rather than on the list itself so it works regardless of focus — after running an item, a
-        // completed operation, etc. Extras/Settings aren't ActionMenuTabs, so their keys fall through
-        // to their own list behavior.
+        // 0-9/G-Z run the Nth item on the active action tab. Extras/Settings aren't ActionMenuTabs, so
+        // their keys fall through to their own list behavior.
         int itemIndex = TuiAccelerators.ItemIndex(c);
 
         if (itemIndex >= 0 && tabs.Value is ActionMenuTab activeTab && itemIndex < activeTab.ItemCount)
         {
             key.Handled = true;
-            // Defer so the key event fully unwinds before the action runs (it may open a modal or
-            // start a long operation) — mirrors the deferred mouse-activation path in MenuListView.
+            // Defer so the key event unwinds before the action runs (it may open a modal / long op).
             TuiHost.Invoke(() => activeTab.RunItem(itemIndex));
         }
     }
@@ -174,9 +166,8 @@ public sealed class TuiShell : Window
         }
         else if (TuiHost.IsTopRunnable(this))
         {
-            // Operation finished (raised on the UI thread via TuiHost.Invoke): return focus to the
-            // active tab so its item-key accelerators work again without a click back into the list.
-            // Only when the shell owns the screen — never steal focus from a modal that's still open.
+            // Op finished (on the UI thread via TuiHost.Invoke): restore focus to the active tab for
+            // arrow-key nav. Guarded so we never pull focus from a modal that's still open.
             tabs.Value?.SetFocus();
         }
     }

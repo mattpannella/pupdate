@@ -48,20 +48,16 @@ public abstract class ActionMenuTab : FrameView
 
         list.SetSource(labels);
 
-        // Hover + scrollbar come from MenuListView; single click / Enter runs the highlighted item.
-        // Item-KEY accelerators (0-9/G-Z) are driven by the shell's GLOBAL handler via RunItem, not
-        // here, so they work regardless of whether this list currently holds keyboard focus.
+        // Click / Enter run the highlighted item; the 0-9/G-Z key accelerators are driven by the
+        // shell's global handler (via RunItem), not here, so they don't depend on list focus.
         list.OnActivate(RunItem);
 
         Add(hint);
         Add(list);
     }
 
-    /// <summary>
-    /// Runs the item at <paramref name="index"/> (no-op if out of range), highlighting it first.
-    /// Also the click/Enter activation target. Public so the shell's global item-key accelerator can
-    /// invoke it even when the list doesn't have focus.
-    /// </summary>
+    /// <summary>Runs the item at <paramref name="index"/> (no-op if out of range), highlighting it
+    /// first. Public so the shell's global item-key accelerator can invoke it without list focus.</summary>
     public void RunItem(int index)
     {
         if (index < 0 || index >= actions.Count)
@@ -76,8 +72,7 @@ public abstract class ActionMenuTab : FrameView
     /// <summary>Registers a menu entry; the label appears in the list, the action runs on Enter.</summary>
     protected void AddAction(string label, Action action)
     {
-        // Prefix each row with its single-keypress accelerator ("[0] …", "[1] …", then "[G] …").
-        // labels.Count (before the Add) is this item's index; recomputed on ClearActions/rebuild.
+        // labels.Count (before the Add) is this item's index → its accelerator prefix.
         labels.Add(TuiAccelerators.FormatItem(labels.Count, label));
         actions.Add(action);
     }

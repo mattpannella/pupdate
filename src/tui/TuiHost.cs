@@ -31,16 +31,10 @@ internal static class TuiHost
     /// <summary>Forces a full layout + redraw of the running UI (e.g. after a live theme change).</summary>
     public static void Refresh() => Application.LayoutAndDraw(true);
 
-    /// <summary>
-    /// Subscribes a handler to the app-wide key stream. It fires before the focused view processes
-    /// the key, so setting <c>Key.Handled</c> pre-empts that view — used for global shortcuts that
-    /// must work regardless of which view currently has focus.
-    /// </summary>
+    /// <summary>Subscribes to the app-wide key stream, which fires before the focused view — so a
+    /// handler can pre-empt that view (and any focus) by setting <c>Key.Handled</c>.</summary>
     public static void AddGlobalKeyDown(EventHandler<Key> handler) => Application.KeyDown += handler;
 
-    /// <summary>
-    /// True when <paramref name="view"/> is the top runnable — i.e. no modal dialog is open on top of
-    /// it. Lets global shortcuts stand down while a dialog owns the screen.
-    /// </summary>
+    /// <summary>True when <paramref name="view"/> is the top runnable (no modal dialog on top).</summary>
     public static bool IsTopRunnable(View view) => Application.TopRunnableView == view;
 }

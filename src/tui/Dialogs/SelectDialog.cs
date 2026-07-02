@@ -38,7 +38,7 @@ public static class SelectDialog
             Height = Dim.Fill(1)
         };
 
-        // Prefix each option with its single-keypress accelerator ("[0] …", "[1] …", then "[G] …").
+        // Prefix each option with its accelerator ("[0] …", then "[G] …").
         list.SetSource(new ObservableCollection<string>(
             labels.Select((label, i) => TuiAccelerators.FormatItem(i, label))));
 
