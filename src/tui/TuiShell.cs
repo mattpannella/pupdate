@@ -20,11 +20,12 @@ public sealed class TuiShell : Window
     public StatusPane StatusPane { get; }
 
     private readonly Tabs tabs;
+    private readonly View[] orderedTabs;
     private bool statusExpanded;
 
     public TuiShell(TuiContext context)
     {
-        Title = "pupdate (Beta)  ·  Esc: quit  ·  F6: status pane  ·  F9: theme";
+        Title = "pupdate (Beta)  ·  A–F: tabs  ·  Esc: quit  ·  F6: status pane  ·  F9: theme";
 
         // Pinned welcome banner — the ASCII art the classic menu prints across the top.
         string banner = Program.RandomWelcomeBanner();
@@ -48,15 +49,18 @@ public sealed class TuiShell : Window
             Height = Dim.Percent(TabsHeightCollapsed)
         };
 
-        // Tab labels come from each child view's Title.
+        // Tab labels come from each child view's Title. Prefix each with its single-key switch
+        // shortcut ("[A] Main", "[B] Setup", …) BEFORE inserting, so the header shows the letter
+        // regardless of whether Tabs snapshots the title at insert-time or re-reads it on draw.
         var pluginsTab = new PluginsTab(context);
+        orderedTabs = new View[] { new MainTab(context), new SetupTab(context), new MaintenanceTab(context),
+            new ExtrasTab(context), pluginsTab, new SettingsTab(context) };
 
-        tabs.InsertTab(0, new MainTab(context));
-        tabs.InsertTab(1, new SetupTab(context));
-        tabs.InsertTab(2, new MaintenanceTab(context));
-        tabs.InsertTab(3, new ExtrasTab(context));
-        tabs.InsertTab(4, pluginsTab);
-        tabs.InsertTab(5, new SettingsTab(context));
+        for (int i = 0; i < orderedTabs.Length; i++)
+        {
+            orderedTabs[i].Title = TuiAccelerators.FormatTab(i, orderedTabs[i].Title);
+            tabs.InsertTab(i, orderedTabs[i]);
+        }
 
         // Re-discover plugins each time the Plugins tab is opened (catches plugins added or
         // removed outside this session).
@@ -112,15 +116,59 @@ public sealed class TuiShell : Window
                 key.Handled = true;
             }
         };
+
+        // Accelerators hook the app-wide key stream (not the bubble-up KeyDown above) so they pre-empt
+        // the focused view's own key handling (e.g. ListView type-ahead) and work regardless of focus.
+        TuiHost.AddGlobalKeyDown(OnGlobalKeyDown);
+    }
+
+    private void OnGlobalKeyDown(object sender, Key key)
+    {
+        // Stand down while a modal owns the screen; ignore modified/non-character keys.
+        if (!TuiHost.IsTopRunnable(this) || key.IsCtrl || key.IsAlt || key.AsRune.Value == 0)
+        {
+            return;
+        }
+
+        char c = (char)key.AsRune.Value;
+        int tabIndex = TuiAccelerators.TabIndex(c);
+
+        if (tabIndex >= 0 && tabIndex < orderedTabs.Length)
+        {
+            tabs.Value = orderedTabs[tabIndex];
+            orderedTabs[tabIndex].SetFocus(); // so arrow keys land on the tab's list after a jump
+            key.Handled = true;
+            return;
+        }
+
+        // 0-9/G-Z run the Nth item on the active action tab. Extras/Settings aren't ActionMenuTabs, so
+        // their keys fall through to their own list behavior.
+        int itemIndex = TuiAccelerators.ItemIndex(c);
+
+        if (itemIndex >= 0 && tabs.Value is ActionMenuTab activeTab && itemIndex < activeTab.ItemCount)
+        {
+            key.Handled = true;
+            // Defer so the key event unwinds before the action runs (it may open a modal / long op).
+            TuiHost.Invoke(() => activeTab.RunItem(itemIndex));
+        }
     }
 
     private void OnBusyChanged(bool busy)
     {
         // Expand on start; leave the layout untouched on completion so the summary stays visible.
-        if (busy && !statusExpanded)
+        if (busy)
         {
-            statusExpanded = true;
-            ApplyLayout();
+            if (!statusExpanded)
+            {
+                statusExpanded = true;
+                ApplyLayout();
+            }
+        }
+        else if (TuiHost.IsTopRunnable(this))
+        {
+            // Op finished (on the UI thread via TuiHost.Invoke): restore focus to the active tab for
+            // arrow-key nav. Guarded so we never pull focus from a modal that's still open.
+            tabs.Value?.SetFocus();
         }
     }
 

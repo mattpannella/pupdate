@@ -1,5 +1,7 @@
 using System;
 using Terminal.Gui.App;
+using Terminal.Gui.Input;
+using Terminal.Gui.ViewBase;
 
 namespace Pannella.TUI;
 
@@ -28,4 +30,11 @@ internal static class TuiHost
 
     /// <summary>Forces a full layout + redraw of the running UI (e.g. after a live theme change).</summary>
     public static void Refresh() => Application.LayoutAndDraw(true);
+
+    /// <summary>Subscribes to the app-wide key stream, which fires before the focused view — so a
+    /// handler can pre-empt that view (and any focus) by setting <c>Key.Handled</c>.</summary>
+    public static void AddGlobalKeyDown(EventHandler<Key> handler) => Application.KeyDown += handler;
+
+    /// <summary>True when <paramref name="view"/> is the top runnable (no modal dialog on top).</summary>
+    public static bool IsTopRunnable(View view) => Application.TopRunnableView == view;
 }
