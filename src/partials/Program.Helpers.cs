@@ -17,7 +17,16 @@ internal static partial class Program
             List<GithubRelease> releases = GithubApiService.GetReleases(USER, REPOSITORY,
                 ServiceHelper.SettingsService.Config.github_token);
 
-            string tagName = releases[0].tag_name;
+            GithubRelease target = SelectLatestRelease(releases, VERSION_MAJOR, int.MaxValue);
+
+            if (target == null)
+            {
+                Console.WriteLine("Up to date.");
+
+                return false;
+            }
+
+            string tagName = target.tag_name;
             string v = SemverUtil.FindSemver(tagName);
 
             if (v != null)
@@ -35,7 +44,7 @@ internal static partial class Program
 
                     Console.WriteLine("Download complete.");
                     Console.WriteLine(saveLocation);
-                    Console.WriteLine("Go to " + releases[0].html_url + " for a change log.");
+                    Console.WriteLine("Go to " + target.html_url + " for a change log.");
                 }
                 else
                 {
@@ -52,9 +61,38 @@ internal static partial class Program
             Console.WriteLine(ServiceHelper.SettingsService.Debug.show_stack_traces
                 ? ex
                 : Util.GetExceptionMessage(ex));
-           
+
             return false;
         }
+    }
+
+    // Highest-semver non-draft release with a major in [minMajor, maxMajor], or null if none.
+    internal static GithubRelease SelectLatestRelease(List<GithubRelease> releases, int minMajor, int maxMajor)
+    {
+        GithubRelease best = null;
+        Version bestVersion = null;
+
+        foreach (GithubRelease release in releases)
+        {
+            if (release.draft)
+                continue;
+
+            string semver = SemverUtil.FindSemver(release.tag_name);
+
+            if (semver == null || !Version.TryParse(semver, out Version version))
+                continue;
+
+            if (version.Major < minMajor || version.Major > maxMajor)
+                continue;
+
+            if (bestVersion == null || version > bestVersion)
+            {
+                best = release;
+                bestVersion = version;
+            }
+        }
+
+        return best;
     }
 
     private static void PrintPocketExtraInfo(PocketExtra extra)

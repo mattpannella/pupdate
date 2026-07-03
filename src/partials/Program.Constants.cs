@@ -8,6 +8,9 @@ internal static partial class Program
 {
     private static readonly string VERSION = Assembly.GetExecutingAssembly().GetName().Version!.ToString(3);
 
+    // Self-update only offers this major and up, never an older major line (e.g. 4.x).
+    private static readonly int VERSION_MAJOR = Assembly.GetExecutingAssembly().GetName().Version!.Major;
+
     private static readonly string SYSTEM_OS_PLATFORM = GetSystemPlatform();
 
     // Set from the global --yes/-y option. When true, all interactive prompts

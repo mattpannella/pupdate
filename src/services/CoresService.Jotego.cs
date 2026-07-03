@@ -8,7 +8,7 @@ public partial class CoresService
     private const string JTBETA_KEY_FILENAME = "jtbeta.zip";
     private const string JTBETA_KEY_ALT_FILENAME = "beta.bin";
     private const string JOTEGO_PATREON_VANITY = "jotego";
-    private const string JTBETA_GITHUB_OWNER = "jotego";
+    private const string JTBETA_GITHUB_OWNER = "JTFPGA";
     private const string JTBETA_GITHUB_REPO = "jtbeta";
     private const string JTBETA_GITHUB_PATH = "jtbeta.zip";
 
