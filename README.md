@@ -23,9 +23,6 @@ In most macOS default installation setups, you will likely encounter issues runn
 xattr -d com.apple.quarantine /path/to/pupdate
 ```
  
-
-
-
 ---
 
 ## Interactive menu
