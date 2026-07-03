@@ -60,7 +60,7 @@ public class Config
     [Description("Automatically install updates to Pupdate")]
     public bool auto_install_updates { get; set; } = false;
 
-    [Description("Auto-fetch Jotego jtbeta.zip from GitHub (requires github_token + access to jotego/jtbeta)")]
+    [Description("Auto-fetch Jotego jtbeta.zip from GitHub (requires github_token + access to JTFPGA/jtbeta)")]
     public bool jt_beta_github_fetch { get; set; } = false;
 
     [Description("Auto-fetch Jotego jtbeta.zip from Patreon (requires session cookie)")]
