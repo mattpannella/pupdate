@@ -440,13 +440,13 @@ Pupdate can download the latest `jtbeta.zip` for you. **Manual placement (puttin
 
 **Option A — GitHub (recommended):**
 
-Jotego distributes `jtbeta.zip` via a private GitHub repo (`jotego/jtbeta`). Per Jotego's own [Beta Files FAQ](https://github.com/jotego/jtbin/wiki/Beta-Files-FAQ), access is granted to **GitHub Sponsors of Jotego** — and since Jotego's [GitHub Sponsors page](https://github.com/sponsors/jotego) accepts Patreon as a payment route, existing Patreon patrons can get the same sponsor status (and therefore the repo invite) by linking their Patreon to their GitHub account.
+Jotego distributes `jtbeta.zip` via a private GitHub repo (`JTFPGA/jtbeta`). Per Jotego's own [Beta Files FAQ](https://github.com/jotego/jtbin/wiki/Beta-Files-FAQ), access is granted to **GitHub Sponsors of Jotego** — and since Jotego's [GitHub Sponsors page](https://github.com/sponsors/jotego) accepts Patreon as a payment route, existing Patreon patrons can get the same sponsor status (and therefore the repo invite) by linking their Patreon to their GitHub account.
 
 1. Make sure you have an active paid Jotego subscription. Either:
    - Subscribe directly on [Jotego's GitHub Sponsors page](https://github.com/sponsors/jotego), or
    - If you're already a Patreon patron, [link your Patreon account to GitHub](https://docs.github.com/en/sponsors/sponsoring-open-source-contributors/sponsoring-an-open-source-contributor-through-patreon) so GitHub recognizes your Patreon subscription as a sponsorship.
-2. Accept the invite to `jotego/jtbeta` once it arrives.
-3. Create a GitHub Personal Access Token with read access to private repos (classic PAT with `repo` scope, or a fine-grained PAT with `Contents: Read` on `jotego/jtbeta`).
+2. Accept the invite to `JTFPGA/jtbeta` once it arrives.
+3. Create a GitHub Personal Access Token with read access to private repos (classic PAT with `repo` scope, or a fine-grained PAT with `Contents: Read` on `JTFPGA/jtbeta`).
 4. Set `github_token` in `pupdate_settings.json` to that PAT.
 5. Enable **Auto-fetch Jotego jtbeta.zip from GitHub** in the Settings menu.
 
