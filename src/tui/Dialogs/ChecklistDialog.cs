@@ -18,7 +18,7 @@ namespace Pannella.TUI;
 /// matching rows (Backspace deletes, Esc clears the filter). Check state is tracked by original
 /// index, so it survives filtering — toggle, filter to something else, toggle more, then OK.
 ///
-/// Optionally a category filter (a dropdown-style button) narrows by a per-item key: pass
+/// Optionally a category filter (a dropdown) narrows by a per-item key: pass
 /// <paramref name="categories"/> (one key per label, e.g. a platform_id), an optional
 /// <paramref name="categoryDisplay"/> to map keys to friendly names, and a
 /// <paramref name="categoryLabel"/> (e.g. "Platform"). The text and category filters compose.
@@ -71,18 +71,36 @@ public static class ChecklistDialog
             Width = Dim.Fill()
         };
 
-        // Dropdown-style category filter button (opens a picker). null selection = all categories.
+        // Category filter as a real dropdown (read-only text field + popover list, Terminal.Gui's
+        // DropDownList). null selection = all categories.
         string selectedCategory = null;
-        Button filterButton = null;
+        Label filterLabel = null;
+        DropDownList filterDropDown = null;
+        var filterChoices = new List<string> { "(All)" };
 
         if (hasCategoryFilter)
         {
-            filterButton = new Button
+            filterChoices.AddRange(categoryChoices.Select(c => c.Display));
+
+            filterLabel = new Label
             {
                 X = 0,
                 Y = 1,
-                Text = $"{categoryLabel}: All ▾"
+                Text = $"{categoryLabel}:"
             };
+
+            filterDropDown = new DropDownList
+            {
+                X = Pos.Right(filterLabel) + 1,
+                Y = 1,
+                Source = new ListWrapper<string>(new ObservableCollection<string>(filterChoices)),
+                Value = "(All)"
+            };
+
+            // A closed DropDownList binds ↑/↓ to cycling its own selection, trapping the cursor
+            // after a pick — drop those; arrows belong to the checklist.
+            filterDropDown.KeyBindings.Remove(Key.CursorUp);
+            filterDropDown.KeyBindings.Remove(Key.CursorDown);
         }
 
         var list = new MenuListView
@@ -159,26 +177,22 @@ public static class ChecklistDialog
             hintLabel.Text = $"{hint}   ({filterNote})";
         }
 
-        if (filterButton != null)
+        if (filterDropDown != null)
         {
-            filterButton.Accepting += (_, e) =>
+            // After a pick, hand focus back to the checklist. The closing popover re-focuses the
+            // dropdown AFTER this event, so the move is queued for the next loop iteration.
+            filterDropDown.ValueChanged += (_, _) =>
             {
-                e.Handled = true;
+                int index = filterChoices.IndexOf(filterDropDown.Text);
 
-                var pickerLabels = new List<string> { "(All)" };
-                pickerLabels.AddRange(categoryChoices.Select(c => c.Display));
-
-                int? pick = SelectDialog.Show(categoryLabel, $"Filter by {categoryLabel.ToLower()}:", pickerLabels);
-
-                if (pick == null)
-                {
-                    return;
-                }
-
-                selectedCategory = pick.Value == 0 ? null : categoryChoices[pick.Value - 1].Key;
-                string display = pick.Value == 0 ? "All" : categoryChoices[pick.Value - 1].Display;
-                filterButton.Text = $"{categoryLabel}: {display} ▾";
+                selectedCategory = index <= 0 ? null : categoryChoices[index - 1].Key;
                 Rebuild();
+
+                TuiHost.AddTimeout(TimeSpan.Zero, () =>
+                {
+                    list.SetFocus();
+                    return false;
+                });
             };
         }
 
@@ -251,9 +265,10 @@ public static class ChecklistDialog
         dialog.AddButton(cancel);
         dialog.Add(hintLabel);
 
-        if (filterButton != null)
+        if (filterDropDown != null)
         {
-            dialog.Add(filterButton);
+            dialog.Add(filterLabel);
+            dialog.Add(filterDropDown);
         }
 
         dialog.Add(list);

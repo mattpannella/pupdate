@@ -100,6 +100,9 @@ public static class TuiApp
 
     public static void Run(CoreUpdaterService coreUpdaterService)
     {
+        // ConfigurationManager must be enabled before the application instance is created so the
+        // library themes are loaded when the driver initializes.
+        TuiTheme.EnsureEnabled();
         TuiHost.Init();
 
         // Apply the saved color theme before the glyph overrides below, so our checkbox glyphs win

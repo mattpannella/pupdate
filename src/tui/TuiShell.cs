@@ -25,7 +25,7 @@ public sealed class TuiShell : Window
 
     public TuiShell(TuiContext context)
     {
-        Title = "pupdate (Beta)  ·  A–F: tabs  ·  Esc: quit  ·  F6: status pane  ·  F9: theme";
+        Title = "pupdate (Beta)";
 
         // Pinned welcome banner — the ASCII art the classic menu prints across the top.
         string banner = Program.RandomWelcomeBanner();
@@ -77,12 +77,27 @@ public sealed class TuiShell : Window
             X = 0,
             Y = Pos.Bottom(tabs),
             Width = Dim.Fill(),
-            Height = Dim.Fill()
+            Height = Dim.Fill(1)
+        };
+
+        // Bottom key-hint bar. Display + click only: BindKeyToApplication stays false so these
+        // never compete with the KeyDown handling below (an app-bound Esc would also fire around
+        // modals). Clicking an entry invokes the same method as its key.
+        var statusBar = new StatusBar(new[]
+        {
+            new Shortcut(Key.Esc, "Quit", Quit, null),
+            new Shortcut(Key.F6, "Status pane", ToggleStatusPane, null),
+            new Shortcut(Key.F9, "Theme", PickTheme, null),
+            new Shortcut(Key.Empty, "A–F tabs · 0–9/G–Z items", null, null)
+        })
+        {
+            CanFocus = false
         };
 
         Add(header);
         Add(tabs);
         Add(StatusPane);
+        Add(statusBar);
 
         // Auto-expand the status pane when an operation starts so the live log/summary is easy to
         // follow. We deliberately do NOT collapse on completion — that would scroll the summary out
@@ -99,20 +114,17 @@ public sealed class TuiShell : Window
         {
             if (key == Key.Esc)
             {
-                // Esc requests a clean stop; Application.Shutdown runs in TuiApp.Run's finally.
-                TuiHost.RequestStop();
+                Quit();
                 key.Handled = true;
             }
             else if (key == Key.F6)
             {
-                statusExpanded = !statusExpanded;
-                ApplyLayout();
+                ToggleStatusPane();
                 key.Handled = true;
             }
             else if (key == Key.F9)
             {
-                // App-wide theme chooser (deliberately not in a tab — it's a pupdate-UI setting).
-                ThemePickerDialog.Show();
+                PickTheme();
                 key.Handled = true;
             }
         };
@@ -121,6 +133,18 @@ public sealed class TuiShell : Window
         // the focused view's own key handling (e.g. ListView type-ahead) and work regardless of focus.
         TuiHost.AddGlobalKeyDown(OnGlobalKeyDown);
     }
+
+    // Esc requests a clean stop; Application.Shutdown runs in TuiApp.Run's finally.
+    private static void Quit() => TuiHost.RequestStop();
+
+    private void ToggleStatusPane()
+    {
+        statusExpanded = !statusExpanded;
+        ApplyLayout();
+    }
+
+    // App-wide theme chooser (deliberately not in a tab — it's a pupdate-UI setting).
+    private static void PickTheme() => ThemePickerDialog.Show();
 
     private void OnGlobalKeyDown(object sender, Key key)
     {
@@ -155,6 +179,8 @@ public sealed class TuiShell : Window
 
     private void OnBusyChanged(bool busy)
     {
+        StatusPane.SetBusy(busy);
+
         // Expand on start; leave the layout untouched on completion so the summary stays visible.
         if (busy)
         {
