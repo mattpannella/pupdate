@@ -43,8 +43,7 @@ public sealed class StatusPane : FrameView
             Width = Dim.Fill(26),
             Height = 1,
             Fraction = 0f,
-            // The bar renders its own percentage (suppressed automatically in marquee mode).
-            ProgressBarFormat = ProgressBarFormat.SimplePlusPercentage
+            ProgressBarStyle = ProgressBarStyle.Continuous
         };
 
         info = new Label
@@ -117,7 +116,7 @@ public sealed class StatusPane : FrameView
             return;
         }
 
-        progress.ProgressBarStyle = ProgressBarStyle.MarqueeBlocks;
+        progress.ProgressBarStyle = ProgressBarStyle.MarqueeContinuous;
         progress.Fraction = 0f;
 
         marqueeToken = TuiHost.AddTimeout(TimeSpan.FromMilliseconds(120), () =>
@@ -143,7 +142,7 @@ public sealed class StatusPane : FrameView
         marqueeToken = null;
         TuiHost.RemoveTimeout(token);
 
-        progress.ProgressBarStyle = ProgressBarStyle.Blocks;
+        progress.ProgressBarStyle = ProgressBarStyle.Continuous;
         progress.Fraction = 0f;
     }
 
@@ -162,10 +161,10 @@ public sealed class StatusPane : FrameView
         StopMarquee();
         progress.Fraction = (float)clamped;
 
-        // While downloading, show the speed. Once complete it's meaningless, so drop it
+        // While downloading, show "% + speed". Once complete the speed is meaningless, so drop it
         // (otherwise the last reading sits frozen next to a full bar after the transfer ends).
         info.Text = bytesPerSecond > 0 && clamped < 1d
-            ? ConsoleHelper.FormatSpeed(bytesPerSecond)
-            : string.Empty;
+            ? $"{clamped * 100,3:0}%  {ConsoleHelper.FormatSpeed(bytesPerSecond)}"
+            : $"{clamped * 100,3:0}%";
     }
 }
