@@ -3,13 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Pannella.Services;
+using Terminal.Gui.ViewBase;
+using Terminal.Gui.Views;
 
 namespace Pannella.TUI;
 
 /// <summary>
 /// TUI front-ends for the two Analogizer configurators. Both reuse the service logic (bit-packing /
-/// file writing for Standard; the letter-encoding for Jotego) and only replace the console prompts
-/// with <see cref="SelectDialog"/> picks. Cancelling any step aborts without writing a file.
+/// file writing for Standard; the letter-encoding for Jotego) and share the same wizard page shape:
+/// a prompt above a radio-button option list, where a click only marks the choice and Back/Next
+/// navigate. Standard is one multi-step <see cref="Wizard"/>; Jotego is service-driven one prompt
+/// at a time, so each prompt is its own single-page wizard. Cancelling aborts without writing a file.
 /// </summary>
 public static class AnalogizerWizard
 {
@@ -17,65 +21,102 @@ public static class AnalogizerWizard
 
     public static void RunStandard()
     {
-        int? snac = Pick("Analogizer — SNAC Controller", "Select your SNAC game controller:",
-            AnalogizerSettingsService.SNACSelectionOptions);
+        var wizard = NewWizard("Analogizer — Standard");
 
-        if (snac == null)
+        var snac = AddPickStep(wizard, "SNAC Controller", "Select your SNAC game controller:",
+            AnalogizerSettingsService.SNACSelectionOptions);
+        var assign = AddPickStep(wizard, "SNAC Assignment", "Select the SNAC controller assignment:",
+            AnalogizerSettingsService.SNACassigmentsOptions);
+        var video = AddPickStep(wizard, "Video Output", "Select the video output:",
+            AnalogizerSettingsService.VideoOutputOptions);
+        var blank = AddPickStep(wizard, "Pocket Screen", "Pocket blank screen:",
+            AnalogizerSettingsService.PocketBlankScreenOptions);
+        var osd = AddPickStep(wizard, "OSD Output", "Where should the OSD be shown:",
+            AnalogizerSettingsService.AnalogizerOSDOptions);
+        var regional = AddPickStep(wizard, "Regional Settings", "Select the regional setting:",
+            AnalogizerSettingsService.AnalogizerRegionalSettingsOptions);
+
+        // The assignment question only applies when a SNAC controller is selected; the wizard
+        // skips disabled steps automatically (the classic flow's "assignment is bypassed" rule).
+        void SyncAssignStep() => assign.Step.Enabled = snac.SelectedKey != 0;
+        SyncAssignStep();
+        snac.Selector.ValueChanged += (_, _) => SyncAssignStep();
+
+        TuiHost.Run(wizard);
+
+        if (wizard.Canceled)
         {
             Cancel();
             return;
         }
 
-        int snacAssign;
+        int snacAssign = assign.Step.Enabled ? assign.SelectedKey : 0;
 
-        if (snac.Value == 0)
-        {
-            snacAssign = 0; // no SNAC controller selected → assignment is bypassed
-        }
-        else
-        {
-            int? assign = Pick("Analogizer — SNAC Assignment", "Select the SNAC controller assignment:",
-                AnalogizerSettingsService.SNACassigmentsOptions);
-
-            if (assign == null)
-            {
-                Cancel();
-                return;
-            }
-
-            snacAssign = assign.Value;
-        }
-
-        int? video = Pick("Analogizer — Video Output", "Select the video output:",
-            AnalogizerSettingsService.VideoOutputOptions);
-        if (video == null) { Cancel(); return; }
-
-        int? blank = Pick("Analogizer — Pocket Screen", "Pocket blank screen:",
-            AnalogizerSettingsService.PocketBlankScreenOptions);
-        if (blank == null) { Cancel(); return; }
-
-        int? osd = Pick("Analogizer — OSD Output", "Where should the OSD be shown:",
-            AnalogizerSettingsService.AnalogizerOSDOptions);
-        if (osd == null) { Cancel(); return; }
-
-        int? regional = Pick("Analogizer — Regional Settings", "Select the regional setting:",
-            AnalogizerSettingsService.AnalogizerRegionalSettingsOptions);
-        if (regional == null) { Cancel(); return; }
-
-        AnalogizerSettingsService.WriteConfig(regional.Value, osd.Value, blank.Value, video.Value,
-            snacAssign, snac.Value, TuiApp.PostStatus);
+        AnalogizerSettingsService.WriteConfig(regional.SelectedKey, osd.SelectedKey, blank.SelectedKey,
+            video.SelectedKey, snacAssign, snac.SelectedKey, TuiApp.PostStatus);
     }
 
-    // Shows a dictionary's entries as "key: label" and returns the chosen KEY (the value stored in
-    // the config word), or null if cancelled.
-    private static int? Pick(string title, string prompt, Dictionary<int, string> options)
+    // SelectedKey is the chosen dictionary KEY (the value stored in the config word).
+    private sealed class PickStep
+    {
+        public WizardStep Step { get; init; }
+        public OptionSelector Selector { get; init; }
+        public List<int> Keys { get; init; }
+
+        public int SelectedKey => Keys[Selector.Value is { } v && v >= 0 && v < Keys.Count ? v : 0];
+    }
+
+    private static PickStep AddPickStep(Wizard wizard, string title, string prompt, Dictionary<int, string> options)
     {
         var keys = options.Keys.ToList();
-        var labels = keys.Select(k => $"{k}: {options[k]}").ToList();
+        var (step, selector) = BuildStep(wizard, title, prompt, keys.Select(k => $"{k}: {options[k]}"));
 
-        int? index = SelectDialog.Show(title, prompt, labels);
+        return new PickStep { Step = step, Selector = selector, Keys = keys };
+    }
 
-        return index == null ? null : keys[index.Value];
+    private static Wizard NewWizard(string title) => new()
+    {
+        Title = title,
+        Width = Dim.Percent(75),
+        Height = Dim.Percent(75)
+    };
+
+    // The shared page shape: prompt label above a radio-button list. The prompt is deliberately
+    // NOT WizardStep.HelpText (which renders in a detached pane), and double-click accept is off
+    // so only Back/Next navigate.
+    private static (WizardStep Step, OptionSelector Selector) BuildStep(
+        Wizard wizard, string title, string prompt, IEnumerable<string> labels)
+    {
+        var step = new WizardStep
+        {
+            Title = title
+        };
+
+        var promptLabel = new Label
+        {
+            X = 0,
+            Y = 0,
+            Width = Dim.Fill(),
+            Text = prompt,
+            CanFocus = false
+        };
+
+        var selector = new OptionSelector
+        {
+            X = 0,
+            Y = 2,
+            Width = Dim.Fill(),
+            Height = Dim.Fill(),
+            Labels = labels.ToList(),
+            Value = 0,
+            DoubleClickAccepts = false
+        };
+
+        step.Add(promptLabel);
+        step.Add(selector);
+        wizard.AddStep(step);
+
+        return (step, selector);
     }
 
     // ── Jotego ───────────────────────────────────────────────────────────────────────────────
@@ -90,7 +131,8 @@ public static class AnalogizerWizard
     }
 
     // Supplies one option's chosen letter to the Jotego encoder by parsing the option table out of
-    // the record's prompt text and showing it as a SelectDialog. Returns null (→ abort) on cancel.
+    // the record's prompt text and showing it as a single-page wizard (the service asks one
+    // question at a time, so multi-step Back/Next isn't possible). Returns null (→ abort) on cancel.
     private static string JotegoPick(AnalogizerOptionType record)
     {
         var options = ParseLetterOptions(record.Options);
@@ -100,11 +142,14 @@ public static class AnalogizerWizard
             return null;
         }
 
-        var labels = options.Select(o => $"{o.Letter.ToUpper()}: {o.Description}").ToList();
+        var wizard = NewWizard("Analogizer — Jotego");
+        var (step, selector) = BuildStep(wizard, "Option", FirstPromptLine(record.Options),
+            options.Select(o => $"{o.Letter.ToUpper()}: {o.Description}"));
+        step.NextButtonText = "_Next";
 
-        int? index = SelectDialog.Show("Jotego Analogizer", FirstPromptLine(record.Options), labels);
+        TuiHost.Run(wizard);
 
-        return index == null ? null : options[index.Value].Letter;
+        return wizard.Canceled ? null : options[selector.Value ?? 0].Letter;
     }
 
     // Parses table rows like "A   | RBGS       (SCART)   |" into (letter, description) pairs. The

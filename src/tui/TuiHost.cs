@@ -5,36 +5,45 @@ using Terminal.Gui.ViewBase;
 
 namespace Pannella.TUI;
 
-// The single seam over Terminal.Gui's static Application API.
-//
-// That static API is marked obsolete in v2.4.12 ("the legacy static Application object is going
-// away"), but its replacement, ApplicationImpl, is internal — so the static API is currently the
-// only public way to bootstrap and drive the app loop. Isolating every reference behind this one
-// class keeps the deprecation suppression to a single file (rather than a pragma in every TUI
-// file) and makes the eventual move to the instance-based IApplication a one-file change.
-#pragma warning disable CS0618
-
+// The single seam over Terminal.Gui's application loop. Holds the one IApplication instance
+// (created via Application.Create()) so no other TUI file needs a handle to it.
 internal static class TuiHost
 {
-    public static void Init() => Application.Init();
+    private static IApplication app;
 
-    public static void Run(IRunnable runnable) => Application.Run(runnable);
+    public static void Init()
+    {
+        app = Application.Create();
+        app.Init();
+    }
 
-    public static void Shutdown() => Application.Shutdown();
+    public static void Run(IRunnable runnable) => app.Run(runnable);
+
+    public static void Shutdown()
+    {
+        app?.Dispose();
+        app = null;
+    }
 
     /// <summary>Marshals an action onto the main UI loop. Safe to call from a background thread.</summary>
-    public static void Invoke(Action action) => Application.Invoke(action);
+    public static void Invoke(Action action) => app.Invoke(action);
 
     /// <summary>Requests a clean stop of the running app loop.</summary>
-    public static void RequestStop() => Application.RequestStop();
+    public static void RequestStop() => app.RequestStop();
 
     /// <summary>Forces a full layout + redraw of the running UI (e.g. after a live theme change).</summary>
-    public static void Refresh() => Application.LayoutAndDraw(true);
+    public static void Refresh() => app.LayoutAndDraw(true);
 
     /// <summary>Subscribes to the app-wide key stream, which fires before the focused view — so a
     /// handler can pre-empt that view (and any focus) by setting <c>Key.Handled</c>.</summary>
-    public static void AddGlobalKeyDown(EventHandler<Key> handler) => Application.KeyDown += handler;
+    public static void AddGlobalKeyDown(EventHandler<Key> handler) => app.Keyboard.KeyDown += handler;
 
     /// <summary>True when <paramref name="view"/> is the top runnable (no modal dialog on top).</summary>
-    public static bool IsTopRunnable(View view) => Application.TopRunnableView == view;
+    public static bool IsTopRunnable(View view) => app.TopRunnableView == view;
+
+    /// <summary>Schedules <paramref name="callback"/> on the main loop after <paramref name="time"/>;
+    /// it repeats while it returns true. Returns a token for <see cref="RemoveTimeout"/>.</summary>
+    public static object AddTimeout(TimeSpan time, Func<bool> callback) => app.AddTimeout(time, callback);
+
+    public static void RemoveTimeout(object token) => app?.RemoveTimeout(token);
 }
