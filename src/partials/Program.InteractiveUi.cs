@@ -1,5 +1,6 @@
 using Pannella.Helpers;
 using Pannella.Options;
+using Pannella.TUI;
 
 namespace Pannella;
 
@@ -15,29 +16,40 @@ internal static partial class Program
             return false;
         }
 
+        bool useTui;
+
         if (options.UseTui ||
             string.Equals(Environment.GetEnvironmentVariable("PUPDATE_TUI"), "1", StringComparison.Ordinal))
         {
-            return true;
+            useTui = true;
         }
-
-        if (options.Classic)
+        else if (options.Classic)
         {
-            return false;
+            useTui = false;
         }
-
-        var config = ServiceHelper.SettingsService.Config;
-
-        // Ask once (unless unattended) and remember it. Re-changeable later via the "use_tui"
-        // setting, which is surfaced as a toggle in the classic settings menu and the TUI Settings tab.
-        if (!config.ui_prompt_completed && !AssumeYes)
+        else
         {
-            config.use_tui = PromptForUi();
-            config.ui_prompt_completed = true;
-            ServiceHelper.SettingsService.Save();
+            var config = ServiceHelper.SettingsService.Config;
+
+            // Ask once (unless unattended) and remember it. Re-changeable later via the "use_tui"
+            // setting, which is surfaced as a toggle in the classic settings menu and the TUI Settings tab.
+            if (!config.ui_prompt_completed && !AssumeYes)
+            {
+                config.use_tui = PromptForUi();
+                config.ui_prompt_completed = true;
+                ServiceHelper.SettingsService.Save();
+            }
+
+            useTui = config.use_tui;
         }
 
-        return config.use_tui;
+        if (useTui && !WindowsVirtualTerminal.TryEnable())
+        {
+            Console.WriteLine("This console can't display the new UI. Using the classic menu instead.");
+            useTui = false;
+        }
+
+        return useTui;
     }
 
     private static bool PromptForUi()
