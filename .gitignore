@@ -463,3 +463,6 @@ $RECYCLE.BIN/
 
 # pupdate self-contained publish output
 /out/
+
+CLAUDE.md
+AGENTS.md
