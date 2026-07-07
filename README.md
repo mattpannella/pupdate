@@ -17,7 +17,7 @@ Use **Settings** from the main menu to walk through toggles, or edit `pupdate_se
 
 ### macOS specific
 
-In most macOS default installation setups, you will likely encounter issues running the script the "easy way". The bellow command will remove the quarantine from the pupdate script only. ⚠️ Use sparingly ⚠️
+In most macOS default installation setups, you will likely encounter issues running the script the "easy way". The following command will remove the quarantine from the pupdate script only. ⚠️ Use sparingly ⚠️
 
 ```shell
 xattr -d com.apple.quarantine /path/to/pupdate
