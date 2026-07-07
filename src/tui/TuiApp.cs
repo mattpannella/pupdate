@@ -163,8 +163,10 @@ public static class TuiApp
 
             HttpHelper.Instance.DownloadProgressUpdate -= progressHandler;
 
-            // Always restore the terminal, even if the run threw.
+            // Always restore the terminal, even if the run threw. The console mode goes back
+            // last: Terminal.Gui's own restore sequences need VT processing still enabled.
             TuiHost.Shutdown();
+            WindowsVirtualTerminal.Restore();
         }
     }
 
