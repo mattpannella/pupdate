@@ -5,7 +5,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
-    <Version>5.3.0</Version>
+    <Version>5.3.1</Version>
     <Description>Keep your Analogue Pocket up to date</Description>
     <Copyright>2026 Matt Pannella</Copyright>
     <Authors>Matt Pannella</Authors>
