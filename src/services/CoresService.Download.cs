@@ -298,6 +298,8 @@ public partial class CoresService
             }
         }
 
+        Archive instanceArchive = this.archiveService.GetArchive();
+
         if (Directory.Exists(instancesDirectory))
         {
             string[] files = Directory.GetFiles(instancesDirectory, "*.json", SearchOption.AllDirectories);
@@ -362,7 +364,7 @@ public partial class CoresService
                                 else
                                 {
                                     WriteMessage($"Downloading: {slot.filename}...");
-                                    bool result = this.archiveService.DownloadArchiveFile(archive, archiveFile, slotDirectory, slotPath);
+                                    bool result = this.archiveService.DownloadArchiveFile(instanceArchive, archiveFile, slotDirectory, slotPath);
 
                                     if (result)
                                     {
