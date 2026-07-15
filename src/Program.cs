@@ -88,14 +88,13 @@ internal static partial class Program
                 Directory.CreateDirectory(path);
             }
 
-            // Initialize WITHOUT sinks first so the saved UI preference can be read before we decide
-            // which sinks to wire. ResolveInteractiveUi picks classic vs TUI (flag > env > saved
-            // setting > one-time startup prompt); the chosen status/complete sinks are then attached
-            // and reused for the CoreUpdaterService below. Verb mode keeps the console sinks and the
-            // \r progress bar. (Sinks are what ReloadSettings re-attaches — issue #299.)
             ServiceHelper.Initialize(path, path);
 
             bool useTui = ResolveInteractiveUi(parserResult.Value);
+
+            if (useTui && WindowsTerminalRelauncher.TryRelaunch(args))
+                return;
+
             ServiceHelper.InteractiveTui = useTui;
 
             EventHandler<StatusUpdatedEventArgs> statusSink = useTui
