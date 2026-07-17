@@ -39,6 +39,14 @@ public static class PatreonService
         return DownloadAttachment(client, downloadUrl);
     }
 
+    public enum AttachmentAccess
+    {
+        Unknown,     // not probed (e.g. no filename given or campaign lookup failed)
+        Accessible,  // a viewable post with the attachment was found
+        Gated,       // a post with the attachment exists but the account can't view it
+        NotFound     // no recent post with the attachment was found
+    }
+
     public class SessionCookieDiagnostics
     {
         public bool CookieValid { get; set; }
@@ -49,11 +57,14 @@ public static class PatreonService
         public string TierName { get; set; }
         public string PatronStatus { get; set; }      // e.g. "active_patron", "declined_patron", "former_patron"
         public bool PostsQueryReachable { get; set; }
+        public AttachmentAccess AttachmentAccess { get; set; }
+        public string SourcePostUrl { get; set; }
         public List<string> Messages { get; } = new();
     }
 
     //verify the session cookie works.
-    public static SessionCookieDiagnostics TestSessionCookie(string sessionCookie, string creatorVanity = null)
+    public static SessionCookieDiagnostics TestSessionCookie(string sessionCookie, string creatorVanity = null,
+        string attachmentFilename = null)
     {
         var diag = new SessionCookieDiagnostics { CreatorVanity = creatorVanity };
 
@@ -204,24 +215,33 @@ public static class PatreonService
         if (!campaignResolveOk)
             return diag;
 
-        //verify the posts endpoint responds
+        if (string.IsNullOrWhiteSpace(attachmentFilename))
+            return diag;
+
         try
         {
-            string postsUrl =
-                $"{PATREON_BASE}/api/posts" +
-                $"?filter[campaign_id]={diag.CampaignId}" +
-                $"&sort=-published_at" +
-                $"&page[count]=1";
-            var response = client.GetAsync(postsUrl).Result;
+            diag.AttachmentAccess = ProbeAttachment(client, diag.CampaignId, creatorVanity,
+                attachmentFilename, out string postUrl, out _);
+            diag.SourcePostUrl = postUrl;
+            diag.PostsQueryReachable = true;
 
-            diag.PostsQueryReachable = response.IsSuccessStatusCode;
-            diag.Messages.Add(response.IsSuccessStatusCode
-                ? "Posts query reachable."
-                : $"Posts query failed (HTTP {(int)response.StatusCode}).");
+            switch (diag.AttachmentAccess)
+            {
+                case AttachmentAccess.Accessible:
+                    diag.Messages.Add($"'{attachmentFilename}' post is viewable by this account" +
+                                      (string.IsNullOrEmpty(postUrl) ? "." : $": {postUrl}"));
+                    break;
+                case AttachmentAccess.Gated:
+                    diag.Messages.Add($"Found a '{attachmentFilename}' post, but this account can't view it.");
+                    break;
+                case AttachmentAccess.NotFound:
+                    diag.Messages.Add($"No recent post with an attachment named '{attachmentFilename}' was found.");
+                    break;
+            }
         }
         catch (Exception ex)
         {
-            diag.Messages.Add("Posts query threw: " + ex.Message);
+            diag.Messages.Add("Attachment access probe failed: " + ex.Message);
         }
 
         return diag;
@@ -281,6 +301,33 @@ public static class PatreonService
     private static (string postUrl, string downloadUrl) FindLatestPostWithAttachment(
         HttpClient client, string campaignId, string creatorVanity, string filename)
     {
+        var access = ProbeAttachment(client, campaignId, creatorVanity, filename,
+            out string postUrl, out string downloadUrl);
+
+        switch (access)
+        {
+            case AttachmentAccess.Accessible:
+                return (postUrl, downloadUrl);
+
+            case AttachmentAccess.Gated:
+                throw new Exception(
+                    $"Found a '{creatorVanity}' post with {filename}, but your account can't view it. " +
+                    "Your Patreon subscription tier may not include access to this post.");
+
+            default:
+                throw new Exception(
+                    $"No recent '{creatorVanity}' Patreon post with an attachment named '{filename}' was found " +
+                    $"in the last {MAX_PAGES * PAGE_SIZE} posts.");
+        }
+    }
+
+    private static AttachmentAccess ProbeAttachment(
+        HttpClient client, string campaignId, string creatorVanity, string filename,
+        out string postUrl, out string downloadUrl)
+    {
+        postUrl = null;
+        downloadUrl = null;
+
         string nextUrl =
             $"{PATREON_BASE}/api/posts" +
             $"?filter[campaign_id]={campaignId}" +
@@ -316,6 +363,7 @@ public static class PatreonService
 
             var posts = json["data"] as JArray ?? new JArray();
             bool sawGatedPost = false;
+            string gatedPostUrl = null;
 
             foreach (var post in posts)
             {
@@ -338,39 +386,40 @@ public static class PatreonService
                         continue;
 
                     bool canView = post["attributes"]?["current_user_can_view"]?.Value<bool?>() ?? false;
-                    string postUrl = post["attributes"]?["url"]?.ToString() ?? "(unknown post)";
+                    string currentPostUrl = post["attributes"]?["url"]?.ToString() ?? "(unknown post)";
 
                     if (!canView)
                     {
                         sawGatedPost = true;
+                        gatedPostUrl = currentPostUrl;
                         continue;
                     }
 
-                    string downloadUrl = media["attributes"]?["download_url"]?.ToString();
+                    string mediaDownloadUrl = media["attributes"]?["download_url"]?.ToString();
 
-                    if (string.IsNullOrEmpty(downloadUrl))
+                    if (string.IsNullOrEmpty(mediaDownloadUrl))
                     {
                         throw new Exception(
-                            $"Found {filename} on post {postUrl} but no download URL was returned.");
+                            $"Found {filename} on post {currentPostUrl} but no download URL was returned.");
                     }
 
-                    return (postUrl, downloadUrl);
+                    postUrl = currentPostUrl;
+                    downloadUrl = mediaDownloadUrl;
+
+                    return AttachmentAccess.Accessible;
                 }
             }
 
             if (sawGatedPost)
             {
-                throw new Exception(
-                    $"Found a '{creatorVanity}' post with {filename}, but your account can't view it. " +
-                    "Your Patreon subscription tier may not include access to this post.");
+                postUrl = gatedPostUrl;
+                return AttachmentAccess.Gated;
             }
 
             nextUrl = json["links"]?["next"]?.ToString();
         }
 
-        throw new Exception(
-            $"No recent '{creatorVanity}' Patreon post with an attachment named '{filename}' was found " +
-            $"in the last {MAX_PAGES * PAGE_SIZE} posts.");
+        return AttachmentAccess.NotFound;
     }
 
     private static Dictionary<string, JToken> BuildMediaMap(JArray included)

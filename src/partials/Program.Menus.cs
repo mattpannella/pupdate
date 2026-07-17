@@ -303,7 +303,7 @@ internal static partial class Program
                 Console.WriteLine("Testing Patreon session cookie (this hits /api/current_user and the Jotego campaign page)...");
                 Console.WriteLine();
 
-                var diag = PatreonService.TestSessionCookie(cookie, "jotego");
+                var diag = PatreonService.TestSessionCookie(cookie, "jotego", "jtbeta.zip");
 
                 foreach (var msg in diag.Messages)
                     Console.WriteLine("  - " + msg);
@@ -314,20 +314,28 @@ internal static partial class Program
                 {
                     Console.WriteLine("RESULT: Cookie is NOT valid. Re-grab a fresh session_id from your browser.");
                 }
-                else if (diag.IsPatron)
-                {
-                    string status = string.IsNullOrEmpty(diag.PatronStatus) ? "unknown" : diag.PatronStatus;
-                    string tier = string.IsNullOrEmpty(diag.TierName) ? "(no tier returned)" : diag.TierName;
-
-                    Console.WriteLine($"RESULT: You ARE a Jotego patron. Status: {status}. Tier(s): {tier}.");
-                    Console.WriteLine("Whether your tier includes beta access is decided per-post; auto-fetch will tell you if it can't see a beta post.");
-                }
                 else
                 {
-                    Console.WriteLine("RESULT: Cookie works, but the /api/current_user response did not include an active Jotego membership.");
-                    Console.WriteLine("This can happen for grandfathered/legacy tiers where Patreon's API shape differs.");
-                    Console.WriteLine("Auto-fetch is decided per-post (current_user_can_view), so it may still succeed — try it.");
-                    Console.WriteLine("If it fails, please share the diagnostic lines above.");
+                    switch (diag.AttachmentAccess)
+                    {
+                        case PatreonService.AttachmentAccess.Accessible:
+                            Console.WriteLine("RESULT: Cookie valid — your account can access the JT Beta post. Auto-fetch will work.");
+                            if (!string.IsNullOrEmpty(diag.SourcePostUrl))
+                                Console.WriteLine($"        Beta post: {diag.SourcePostUrl}");
+                            break;
+                        case PatreonService.AttachmentAccess.Gated:
+                            Console.WriteLine("RESULT: Cookie valid, but your Patreon tier can't view the JT Beta post.");
+                            Console.WriteLine("        Your subscription may not include beta access.");
+                            break;
+                        case PatreonService.AttachmentAccess.NotFound:
+                            Console.WriteLine("RESULT: Cookie valid, but no recent jtbeta.zip post was found.");
+                            Console.WriteLine("        Nothing to fetch right now — try again after Jotego posts a new beta.");
+                            break;
+                        default:
+                            Console.WriteLine("RESULT: Cookie valid, but the beta-access check couldn't be completed.");
+                            Console.WriteLine("        See the diagnostic lines above.");
+                            break;
+                    }
                 }
 
                 Pause();

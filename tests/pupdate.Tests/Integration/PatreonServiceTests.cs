@@ -105,11 +105,89 @@ public class PatreonServiceTests : IDisposable
             .Given(Request.Create().WithPath("/api/posts").UsingGet())
             .RespondWith(Response.Create().WithStatusCode(200).WithBody("""{ "data": [] }"""));
 
-        var diag = PatreonService.TestSessionCookie("good-cookie", "jotego");
+        var diag = PatreonService.TestSessionCookie("good-cookie", "jotego", "jtbeta.zip");
 
         diag.CookieValid.Should().BeTrue();
         diag.CampaignId.Should().Be("123456");
         diag.PostsQueryReachable.Should().BeTrue();
+        diag.AttachmentAccess.Should().Be(PatreonService.AttachmentAccess.NotFound);
+    }
+
+    [Fact]
+    public void TestSessionCookie_ViewableBetaPost_ReportsAccessible()
+    {
+        _mock.Server
+            .Given(Request.Create().WithPath("/api/current_user").UsingGet())
+            .RespondWith(Response.Create().WithStatusCode(200).WithBody(
+                """{ "data": { "id": "1", "type": "user", "attributes": { "full_name": "Jane Patron" } }, "included": [] }"""));
+
+        _mock.Server
+            .Given(Request.Create().WithPath("/jotego").UsingGet())
+            .RespondWith(Response.Create().WithStatusCode(200).WithBody(
+                """<html>{"id":"123456","type":"campaign"}</html>"""));
+
+        const string postsBody = """
+        {
+          "data": [
+            {
+              "id": "p1",
+              "type": "post",
+              "attributes": { "title": "Beta", "url": "/posts/p1", "current_user_can_view": true },
+              "relationships": { "attachments_media": { "data": [ { "id": "m1", "type": "media" } ] } }
+            }
+          ],
+          "included": [
+            { "id": "m1", "type": "media", "attributes": { "file_name": "jtbeta.zip", "download_url": "http://x/jtbeta.zip" } }
+          ]
+        }
+        """;
+        _mock.Server
+            .Given(Request.Create().WithPath("/api/posts").UsingGet())
+            .RespondWith(Response.Create().WithStatusCode(200).WithBody(postsBody));
+
+        var diag = PatreonService.TestSessionCookie("good-cookie", "jotego", "jtbeta.zip");
+
+        diag.CookieValid.Should().BeTrue();
+        diag.AttachmentAccess.Should().Be(PatreonService.AttachmentAccess.Accessible);
+        diag.SourcePostUrl.Should().Be("/posts/p1");
+    }
+
+    [Fact]
+    public void TestSessionCookie_GatedBetaPost_ReportsGated()
+    {
+        _mock.Server
+            .Given(Request.Create().WithPath("/api/current_user").UsingGet())
+            .RespondWith(Response.Create().WithStatusCode(200).WithBody(
+                """{ "data": { "id": "1", "type": "user", "attributes": { "full_name": "Jane Patron" } }, "included": [] }"""));
+
+        _mock.Server
+            .Given(Request.Create().WithPath("/jotego").UsingGet())
+            .RespondWith(Response.Create().WithStatusCode(200).WithBody(
+                """<html>{"id":"123456","type":"campaign"}</html>"""));
+
+        const string postsBody = """
+        {
+          "data": [
+            {
+              "id": "p1",
+              "type": "post",
+              "attributes": { "title": "Beta", "url": "/posts/p1", "current_user_can_view": false },
+              "relationships": { "attachments_media": { "data": [ { "id": "m1", "type": "media" } ] } }
+            }
+          ],
+          "included": [
+            { "id": "m1", "type": "media", "attributes": { "file_name": "jtbeta.zip", "download_url": "http://x/jtbeta.zip" } }
+          ]
+        }
+        """;
+        _mock.Server
+            .Given(Request.Create().WithPath("/api/posts").UsingGet())
+            .RespondWith(Response.Create().WithStatusCode(200).WithBody(postsBody));
+
+        var diag = PatreonService.TestSessionCookie("good-cookie", "jotego", "jtbeta.zip");
+
+        diag.CookieValid.Should().BeTrue();
+        diag.AttachmentAccess.Should().Be(PatreonService.AttachmentAccess.Gated);
     }
 
     [Fact]
