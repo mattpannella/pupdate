@@ -515,7 +515,7 @@ public sealed class SetupTab : ActionMenuTab
         {
             TuiApp.PostStatus("Testing Patreon session cookie...");
 
-            var diag = PatreonService.TestSessionCookie(cookie, "jotego");
+            var diag = PatreonService.TestSessionCookie(cookie, "jotego", "jtbeta.zip");
 
             foreach (var message in diag.Messages)
             {
@@ -526,13 +526,23 @@ public sealed class SetupTab : ActionMenuTab
             {
                 TuiApp.PostStatus("Result: cookie is NOT valid. Grab a fresh session_id from your browser.");
             }
-            else if (diag.IsPatron)
-            {
-                TuiApp.PostStatus("Result: cookie valid — you ARE a Jotego patron.");
-            }
             else
             {
-                TuiApp.PostStatus("Result: cookie works, but no active Jotego membership was detected.");
+                switch (diag.AttachmentAccess)
+                {
+                    case PatreonService.AttachmentAccess.Accessible:
+                        TuiApp.PostStatus("Result: cookie valid — your account can access the JT Beta post. Auto-fetch will work.");
+                        break;
+                    case PatreonService.AttachmentAccess.Gated:
+                        TuiApp.PostStatus("Result: cookie valid, but your Patreon tier can't view the JT Beta post (tier may not include beta access).");
+                        break;
+                    case PatreonService.AttachmentAccess.NotFound:
+                        TuiApp.PostStatus("Result: cookie valid, but no recent jtbeta.zip post was found. Try again after Jotego posts a new beta.");
+                        break;
+                    default:
+                        TuiApp.PostStatus("Result: cookie valid, but the beta-access check couldn't be completed. See the lines above.");
+                        break;
+                }
             }
         });
     }
