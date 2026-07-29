@@ -43,7 +43,8 @@ public class ArchiveService : Base
 
         if (!string.IsNullOrEmpty(coreIdentifier))
         {
-            result = this.archives.FirstOrDefault(x => x.name == coreIdentifier);
+            result = this.archives.FirstOrDefault(x =>
+                string.Equals(x.name, coreIdentifier, StringComparison.OrdinalIgnoreCase));
         }
 
         if (result == null)

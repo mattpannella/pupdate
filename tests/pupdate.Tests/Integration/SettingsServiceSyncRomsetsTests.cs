@@ -88,6 +88,38 @@ public class SettingsServiceSyncRomsetsTests : IDisposable
     }
 
     [Fact]
+    public void SyncRomsets_CorrectsMisCasedExistingName()
+    {
+        const string body = """
+        [
+          { "name": "budude2.GB", "type": "core_specific_archive",
+            "archive_name": "htgdb-gamepacks", "files": ["pack.zip"] }
+        ]
+        """;
+        _mock.Server
+            .Given(Request.Create().WithPath("/romsets.json").UsingGet())
+            .RespondWith(Response.Create().WithStatusCode(200).WithBody(body));
+
+        string settingsDir = Path.Combine(_temp.Path, "settings");
+        Directory.CreateDirectory(settingsDir);
+        var svc = new SettingsService(settingsDir);
+
+        // Seed a mis-cased existing entry, mimicking settings written by an older romsets.json.
+        svc.Config.archives.Add(new Archive
+        {
+            name = "budude2.gb",
+            type = ArchiveType.core_specific_archive,
+            archive_name = "htgdb-gamepacks"
+        });
+
+        svc.SyncRomsets();
+
+        svc.Config.archives.Should().ContainSingle(a => a.name == "budude2.GB",
+            "the mis-cased entry should be corrected in place, not duplicated");
+        svc.Config.archives.Should().NotContain(a => a.name == "budude2.gb");
+    }
+
+    [Fact]
     public void SyncRomsets_LocalFileWins_OverRemote()
     {
         // Place a local romsets.json in CWD; remote endpoint should NOT be hit.

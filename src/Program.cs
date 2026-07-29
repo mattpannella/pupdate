@@ -191,11 +191,28 @@ internal static partial class Program
                         options.ImagePackVariant);
                     break;
 
+                case AssetsOptions options
+                    when !string.IsNullOrEmpty(options.CoreName) &&
+                         ServiceHelper.CoresService.GetCore(options.CoreName) == null:
+                    Console.WriteLine($"Unknown core '{options.CoreName}'");
+                    break;
+
                 case AssetsOptions options:
                     var cores = ServiceHelper.CoresService.Cores
-                        .Where(core => !string.IsNullOrEmpty(options.CoreName) || core.id == options.CoreName)
+                        .Where(core => string.IsNullOrEmpty(options.CoreName) || core.id == options.CoreName)
                         .Where(core => !ServiceHelper.SettingsService.GetCoreSettings(core.id).skip)
                         .ToList();
+
+                    if (!string.IsNullOrEmpty(options.CoreName))
+                    {
+                        if (cores.Count == 0)
+                        {
+                            Console.WriteLine($"Core '{options.CoreName}' is set to skip. Nothing to do.");
+                            break;
+                        }
+
+                        Console.WriteLine($"Downloading assets for: {options.CoreName}");
+                    }
 
                     ServiceHelper.CoresService.DownloadCoreAssets(cores);
                     break;

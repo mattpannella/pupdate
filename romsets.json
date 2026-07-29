@@ -154,7 +154,7 @@
         "complete": false
       },
       {
-        "name": "budude2.gb",
+        "name": "budude2.GB",
         "type": "core_specific_archive",
         "archive_name": "htgdb-gamepacks",
         "files": [
@@ -165,7 +165,7 @@
         "complete": false
       },
       {
-        "name": "budude2.gbc",
+        "name": "budude2.GBC",
         "type": "core_specific_archive",
         "archive_name": "htgdb-gamepacks",
         "files": [
