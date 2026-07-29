@@ -240,6 +240,7 @@ public class SettingsService
 
             if (existingArchive != null)
             {
+                existingArchive.name = remoteRomset.name;
                 // Update files and file_extensions for existing entry
                 existingArchive.files = remoteRomset.files;
                 existingArchive.file_extensions = remoteRomset.file_extensions;

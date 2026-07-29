@@ -57,6 +57,31 @@ public class ArchiveServiceTests : IDisposable
     }
 
     [Fact]
+    public void GetArchive_MatchesCoreId_CaseInsensitively()
+    {
+        var coreSpecific = new SettingsArchive
+        {
+            name = "budude2.gb",
+            type = ArchiveType.core_specific_archive,
+            archive_name = "htgdb-gamepacks"
+        };
+
+        var svc = new ArchiveService(
+            archives: new List<SettingsArchive> { InternetArchiveOf("openFPGA-Files"), coreSpecific },
+            credentials: null,
+            crcCheck: false,
+            useCustomArchive: false,
+            showStackTraces: false,
+            cacheArchiveFiles: false,
+            cacheDirectory: Path.Combine(_temp.Path, "cache"));
+
+        var resolved = svc.GetArchive("budude2.GB");
+
+        resolved.Should().BeSameAs(coreSpecific,
+            "core-id lookup must be case-insensitive so mis-cased romset names still resolve");
+    }
+
+    [Fact]
     public void GetArchiveFiles_ReturnsParsedFiles_FromMetadataEndpoint()
     {
         _mock.Server
