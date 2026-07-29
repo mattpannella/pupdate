@@ -25,6 +25,9 @@ public class Config
     [Description("Delete cores, not managed by pupdate, during 'Update All'")]
     public bool delete_skipped_cores { get; set; } = false;
 
+    [Description("Rebuild the openFPGA menu cache during 'Update All'")]
+    public bool build_menu_cache { get; set; } = false;
+
     public string download_new_cores { get; set; }
 
     public string display_modes_option { get; set; }

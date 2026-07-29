@@ -340,6 +340,11 @@ public class CoreUpdaterService : BaseProcess
         this.coresService.RefreshLocalCores();
         this.coresService.RefreshInstalledCores();
 
+        if (this.settingsService.Config.build_menu_cache)
+        {
+            this.BuildMenuCache(installed);
+        }
+
         UpdateProcessCompleteEventArgs args = new UpdateProcessCompleteEventArgs
         {
             Message = "Update Process Complete.",
@@ -355,6 +360,54 @@ public class CoreUpdaterService : BaseProcess
         OnUpdateProcessComplete(args);
 
         return errorCount;
+    }
+
+    // Regenerates the Pocket's /System menu cache so it accepts our files as fresh and skips the slow
+    // post-update rebuild ("freeze"). Only cores updated this run get their FAT timestamps recomputed;
+    // everything else keeps the Pocket's baked values. When the by-platform view would exceed the Pocket's
+    // 32 KB build buffer we can't help (the Pocket rebuilds the view on boot and crashes regardless), so we
+    // warn and leave the cache untouched instead of writing an over-limit set.
+    private void BuildMenuCache(List<Dictionary<string, string>> installed)
+    {
+        try
+        {
+            IEnumerable<string> updatedFolders = installed
+                .Where(s => s.ContainsKey("core"))
+                .Select(s => s["core"]);
+
+            var menuCache = new MenuCacheService(this.installPath, this.coresService, updatedFolders);
+            var model = menuCache.BuildModel();
+            int cores = model.Cores.Count;
+            int platforms = model.Platforms.Count(p => p.Installed);
+            int projected = menuCache.ProjectedCoreViewSize();
+
+            WriteMessage("Building openFPGA menu cache...");
+
+            if (projected >= MenuCacheService.BufferSize)
+            {
+                WriteMessage($"WARNING: the openFPGA menu is over the Pocket's limit " +
+                             $"({projected:n0} / {MenuCacheService.BufferSize:n0} bytes, {platforms} platforms, " +
+                             $"{cores} cores). The Pocket will rebuild the menu on boot and may crash to the QR " +
+                             "screen. Archive unused platforms to get back under the limit. Leaving the cache untouched.");
+                Divide();
+
+                return;
+            }
+
+            foreach (var (name, bytes, _) in menuCache.ApplyToSystem())
+            {
+                WriteMessage($"  {name} ({bytes:n0} bytes)");
+            }
+
+            WriteMessage($"Menu cache built: {cores} cores, {platforms} platforms, " +
+                         $"{projected:n0} / {MenuCacheService.BufferSize:n0} bytes. The Pocket will skip its rebuild.");
+            Divide();
+        }
+        catch (Exception ex)
+        {
+            WriteMessage("Menu cache build failed (skipping): " + Util.GetExceptionMessage(ex));
+            Divide();
+        }
     }
 
     private void JotegoRename(Core core)

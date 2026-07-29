@@ -33,6 +33,7 @@ internal static partial class Program
         typeof(ClearArchiveCacheOptions),
         typeof(ValidateCoresOptions),
         typeof(PlatformsOptions),
+        typeof(MenuCacheOptions),
     };
 
     private static void Main(string[] args)
@@ -144,6 +145,10 @@ internal static partial class Program
                 case PlatformsOptions options:
                     RunPlatforms(options);
                     return;
+
+                case MenuCacheOptions options:
+                    RunMenuCache(options);
+                    return;
             }
 
             // If we have any missing cores, handle them.
@@ -193,7 +198,7 @@ internal static partial class Program
 
                 case AssetsOptions options:
                     var cores = ServiceHelper.CoresService.Cores
-                        .Where(core => !string.IsNullOrEmpty(options.CoreName) || core.id == options.CoreName)
+                        .Where(core => string.IsNullOrEmpty(options.CoreName) || core.id == options.CoreName)
                         .Where(core => !ServiceHelper.SettingsService.GetCoreSettings(core.id).skip)
                         .ToList();
 
