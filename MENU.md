@@ -114,7 +114,8 @@
       6. Download Dual Aspect Ratio: Super GameBoy
       7. Download Dual Aspect Ratio: Super GameBoy 2
       8. Download Dual Aspect Ratio: Super GameBoy 2: Vaporwave Edition
-      9. Go Back
+      9. Download BrickBoy DMG
+      10. Go Back
    4. Go Back
 9. Settings
 10. Exit

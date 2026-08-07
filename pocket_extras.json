@@ -225,6 +225,18 @@
       "additional_links": [
         "https://www.romhacking.net/hacks/6449/"
       ]
+    },
+    {
+      "id": "brickboy-dmg",
+      "name": "BrickBoy DMG",
+      "description": "Installs the BrickBoy DMG core, a Game Boy core with brickboy's DMG LCD panel and speaker model. You do not need another Game Boy core installed prior to using this.",
+      "type": "variant_core",
+      "core_identifiers": [
+        "fugudaro.BrickBoy"
+      ],
+      "github_user": "kathoc",
+      "github_repository": "brickboy-dmg-fpgacore",
+      "github_asset_prefix": "brickboy-dmg-pocket.zip"
     }
   ]
 }
