@@ -151,6 +151,8 @@ public static class TuiApp
             // as soon as the main loop starts (a modal can't run before the loop exists).
             TuiHost.Invoke(SupportModal.Show);
 
+            TuiHost.Invoke(PlatformLimitModal.Show);
+
             TuiHost.Run(shell);
         }
         finally
