@@ -27,6 +27,8 @@ internal static partial class Program
 
         string sponsorLinks = GetRandomSponsorLinks();
 
+        string menuCacheLine = GetMenuCacheStatusLine();
+
         var menuConfig = new MenuConfig
         {
             Selector = "=>",
@@ -37,6 +39,13 @@ internal static partial class Program
                 Console.WriteLine(welcome);
                 Console.WriteLine(sponsorLinks);
                 Console.WriteLine(rateLimitMessage);
+
+                if (!string.IsNullOrEmpty(menuCacheLine))
+                {
+                    Console.WriteLine();
+                    Console.WriteLine(menuCacheLine);
+                }
+
                 Console.WriteLine();
                 Console.WriteLine("Choose your destiny:");
             },
@@ -661,6 +670,7 @@ internal static partial class Program
                 Console.WriteLine("Starting update process...");
                 coreUpdaterService.RunUpdates();
                 ServiceHelper.CoresService.RefreshInstalledCores();
+                menuCacheLine = GetMenuCacheStatusLine();
                 Pause();
             })
             .Add("Update Firmware", _ =>
@@ -678,6 +688,7 @@ internal static partial class Program
                 // "Update All" until pupdate is restarted. See issue #299.
                 ServiceHelper.ReloadSettings();
                 coreUpdaterService.ReloadSettings();
+                menuCacheLine = GetMenuCacheStatusLine();
             })
             .Add("Download Assets", _ =>
             {
@@ -697,7 +708,11 @@ internal static partial class Program
                 Pause();
             })
             .Add("Pocket Setup            >", pocketSetupMenu.Show)
-            .Add("Pocket Maintenance      >", pocketMaintenanceMenu.Show)
+            .Add("Pocket Maintenance      >", () =>
+            {
+                pocketMaintenanceMenu.Show();
+                menuCacheLine = GetMenuCacheStatusLine();
+            })
             .Add("Pocket Extras           >", pocketExtrasMenu.Show)
             .Add("Settings                >", () =>
             {

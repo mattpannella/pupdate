@@ -362,9 +362,14 @@ internal static partial class Program
 
                 default:
                     if (useTui)
+                    {
                         TuiApp.Run(coreUpdaterService);
+                    }
                     else
+                    {
+                        WarnIfPlatformLimitExceeded();
                         DisplayMenu(coreUpdaterService);
+                    }
                     break;
             }
         }
