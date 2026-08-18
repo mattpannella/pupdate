@@ -76,7 +76,7 @@ class AnalogizerSettingsService
 
     internal static readonly Dictionary<int, string> SNACSelectionOptions = new Dictionary<int, string>
     {
-        {0, "None - No SNAC gamepad, use Pocket and/or Dock controls"},
+        {0, "None - No SNAC game controller, use Pocket and/or Dock controls"},
         {1, "DB15 Normal - Neogeo/Arcade using DB15 connector (normal polling speed)"},
         {2, "NES - Nintendo Entertainment System gamepad"},
         {3, "SNES - Super Nintendo gamepad"},
@@ -85,10 +85,14 @@ class AnalogizerSettingsService
         {6, "PCE Multitap - Multitap for PC Engine"},
         {0x9, "DB15 Fast - Neogeo/Arcade using DB15 connector (fast polling speed)"},
         {0xb, "SNES A,B<->X,Y - SNES with remapped buttons"},
+        {0xc, "PS/2 Keyboard & Mouse + NES One Player"},
+        {0xd, "PS/2 Keyboard & Mouse + SNES One Player"},
+        {0xe, "PS/2 Keyboard & Mouse + DB15 Two Players"},
+        {0xf, "PS/2 Keyboard & Mouse + No SNAC game controller"},
         {0x11, "PSX (Digital PAD) - PlayStation 1/2 digital gamepad"},
-        {0x13, "PSX (Analog PAD) - PlayStation 1/2 analog gamepad"}
+        {0x13, "PSX (Analog PAD) - PlayStation 1/2 analog gamepad"},
+        {0x14, "JVS RS485/RS232 - JVS IO board device"}
     };
-
 
     internal static readonly Dictionary<int, string> PocketBlankScreenOptions = new Dictionary<int, string>
     {
