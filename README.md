@@ -298,13 +298,12 @@ Edit `pupdate_settings.json` for keys that are not bool menu toggles:
 
 pupdate will filter out cores that appear to be AI-generated, using the [openFPGA AI check report](https://openfpga-library.github.io/openfpga-ai-check/ai_report.json) built by [neil-morrison44](https://github.com/neil-morrison44). Each core is given a score from `0` to `1`. The closer to 1, the more likely it is to be AI generated.
 
-**How the score is calculated:** An automated tool ([openfpga-library/openfpga-ai-check](https://github.com/openfpga-library/openfpga-ai-check)) regularly looks through each core's public development history for signs that AI tools helped build it — for example, how often recent changes credit an AI assistant like "Claude" by name, plus clues in the core's description and contributor list. The more signs it finds, the higher the score: a core that looks entirely AI-made scores near `1`, one that only had occasional AI help scores lower, and older cores from before AI tools were common are treated as human-made (`0`). Keep in mind this is a best guess, not a certainty — it can be wrong, and core makers will be able to ask for an incorrect score to be fixed. Treat it as a rough signal, not a final verdict.
+**How the score is calculated:** An automated tool ([openfpga-library/openfpga-ai-check](https://github.com/openfpga-library/openfpga-ai-check)) regularly looks through each core's public development history for signs that AI tools were used. For example, how often "co-authored by Claude" appears in commit messages. Moer signs means a higher score. A core that looks entirely AI made scores near `1`, one that only had occasional AI help scores lower. Older cores from before AI tools were common are given a 0. Keep in mind this is an educated guess and it can be inaccurate. Core devs will be able to submit requests to fix incorrect detections. Use at your own risk (the risk really just being you will have some cores hidden from you with false positives)
 
-- Turn on **Hide and uninstall AI-generated cores (Experimental)** in the **Settings** menu — this is the on/off switch, and it's off by default.
-- Set the cutoff with **Pocket Setup → Set AI Filter Threshold** — a percentage (`0`–`100`, default `80`), stored as `config.ai_core_threshold`. Cores scoring **over** the threshold are hidden; e.g. a threshold of `50` hides cores scoring above `0.50`.
-- Cores that aren't listed in the report are never filtered.
-- Hidden cores are removed from **Select Cores**, updates, and asset downloads. Any that are already installed are uninstalled during the next **Update All**.
-- The report is fetched at runtime; if it can't be reached, nothing is filtered (fails open).
+- Turn on **Hide and uninstall AI-generated cores (Experimental)** in the **Settings** menu - off by default.
+- Set the cutoff with **Pocket Setup → Set AI Filter Threshold** - a percentage (`0`–`100`, defaults to `80`). Cores that score **over** the threshold are hidden. Example: a threshold of `50` hides cores scoring above `0.50`.
+- Cores that aren't scored at all will never be hidden
+- Hidden cores are removed from the **Select Cores** screen, updates, and asset downloads. Any that are already installed will be uninstalled during the next **Update All**.
 
 ---
 
