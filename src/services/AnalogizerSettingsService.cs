@@ -30,7 +30,7 @@ class AnalogizerSettingsService
     static int videoSelection = -1;
     static int snacAssigmentSelection = -1;
     static int snacSelection = -1;
-    static readonly int analogizerEnaSelection = 1;
+    static int analogizerEnaSelection = -1;
     static int pocketBlankScreenSelection =-1;
     static int analogizerOsdOutSelection = -1;
     static int analogizerRegionalSettings = -1;
@@ -42,7 +42,7 @@ class AnalogizerSettingsService
  #.....#.#.   ##.#.....#.#.      #.     #.#.      #.  #.   #.     #.      #. #.
  #.    #.#.    #.#.    #.#.       #.   #. #.      #.  #.  #.      #.      #.  #
  #.    #.#.    #.#.    #.#######   ####.   #######.  #### ####### ####### #.  #
-===================== C O N F I G U R A T O R   V 0.4 =========================";
+============== C O N F I G U R A T O R   V 0.7 by @RndMnkIII ==================";
 
     internal static readonly Dictionary<int, string> VideoOutputOptions = new Dictionary<int, string>
     {
@@ -58,11 +58,11 @@ class AnalogizerSettingsService
         {9, "SC HQ2x RGBHV"}
     };
 
-    //static Dictionary<int, string> AnalogizerEnableOptions = new Dictionary<int, string>
-    //{
-    //    {1, "On"},
-    //    {0, "Off"}
-    //};
+    internal static Dictionary<int, string> AnalogizerEnableOptions = new Dictionary<int, string>
+    {
+       {1, "On"},
+       {0, "Off"}
+    };
 
     internal static readonly Dictionary<int, string> SNACassigmentsOptions = new Dictionary<int, string>
     {
@@ -122,6 +122,34 @@ class AnalogizerSettingsService
             Console.In.Read();
     }
 
+    private static void AnalogizerEnaOptions()
+    {
+        while (analogizerEnaSelection == -1)
+        {
+            ShowHeader();
+            //Opciones de habilitacion de Analogizer
+            // Console.WriteLine($"\n\n{GREY}{REVERSE}=== SNAC Game Controller Selection:==={NOREVERSE}{NORMAL}");
+            Console.WriteLine($"====== ANALOGIZER ENABLE OPTIONS ======");
+            foreach (var option in AnalogizerEnableOptions)
+            {
+                Console.WriteLine("{0}: {1}", option.Key, option.Value);
+                //Console.WriteLine("{0}{1}: {2}{3}", GREEN, option.Key, NORMAL, option.Value);
+            }
+            //Console.WriteLine("");
+            Console.Write($"Select an option:");
+            if (int.TryParse(Console.ReadLine(), out int input) && AnalogizerEnableOptions.ContainsKey(input))
+            {
+                analogizerEnaSelection = input;
+            }
+            else
+            {
+                FlushKeyboard();
+                Console.WriteLine($"Option not valid.Try again.");
+                Console.ReadLine(); // Espera a que el usuario presione Enter
+                analogizerEnaSelection = -1; // Reinicia la selección  para repetir el menú completo
+            }
+        }
+    }
     private static void SnacOptions()
     {
         while (snacSelection == -1)
@@ -289,6 +317,7 @@ class AnalogizerSettingsService
         Console.Clear();
         Console.WriteLine($"{AnalogizerHeader}");
         //Console.WriteLine($"======================= C U R R E N T   S E T T I N G S =======================");
+        Console.WriteLine("Enable Analogizer:   {0,-40}", analogizerEnaSelection == -1 ? "-" : AnalogizerEnableOptions[analogizerEnaSelection]);
         Console.WriteLine("SNAC Controller:     {0,-40}", snacSelection == -1 ? "-" : SNACSelectionOptions[snacSelection]);
         Console.WriteLine("SNAC Assigments:     {0,-40}", snacAssigmentSelection == -1 ? "-" : SNACassigmentsOptions[snacAssigmentSelection]);
         Console.WriteLine("Video output:        {0,-40}", videoSelection == -1 ? "-" : VideoOutputOptions[videoSelection]);
@@ -300,12 +329,32 @@ class AnalogizerSettingsService
     }
     public static void ShowWizard()
     {
-        int menuDone = 1;
+        int menuDone = 0;
 
         while (menuDone != 7)
         {
             switch (menuDone)
             {
+                case 0:
+                {
+                    //Analogizer enable options
+                    AnalogizerEnaOptions();
+                    if (analogizerEnaSelection == 0) //If Analogizer is disabled, bypass SNAC and Video assigments
+                    {
+                        snacSelection = 0;
+                        snacAssigmentSelection = 0;
+                        videoSelection = 0;
+                        pocketBlankScreenSelection = 0;
+                        analogizerOsdOutSelection = 0;
+                        analogizerRegionalSettings = 0;
+                        menuDone = 7; // Skip to the end of the menu
+                    }
+                    else{
+                        menuDone++;
+                    }
+                    break;
+                }
+
                 case 1:
                 {
                     //SNAC game controller options
@@ -359,19 +408,19 @@ class AnalogizerSettingsService
             }
         }
 
-        WriteConfig(analogizerRegionalSettings, analogizerOsdOutSelection, pocketBlankScreenSelection,
+        WriteConfig(analogizerEnaSelection, analogizerRegionalSettings, analogizerOsdOutSelection, pocketBlankScreenSelection,
             videoSelection, snacAssigmentSelection, snacSelection);
     }
 
     // Packs the six selections into the 32-bit analogizer config word and writes analogizer.bin.
     // Shared by the classic console wizard and the TUI wizard; log defaults to Console.WriteLine.
-    internal static void WriteConfig(int regional, int osd, int blank, int video, int snacAssign, int snac,
+    internal static void WriteConfig(int analogizer_ena, int regional, int osd, int blank, int video, int snacAssign, int snac,
         Action<string> log = null)
     {
         log ??= Console.WriteLine;
 
         uint data = (uint)((regional << 16) | (osd << 15) | (blank << 14) | (video << 10) |
-                           (snacAssign << 6) | (analogizerEnaSelection << 5) | snac);
+                           (snacAssign << 6) | (analogizer_ena << 5) | snac);
         byte[] buffer = BitConverter.GetBytes(data);
         string filename = "analogizer.bin";
         string filepath = Path.Combine(ServiceHelper.UpdateDirectory, filename);
@@ -390,6 +439,16 @@ class AnalogizerSettingsService
             string destPath = Path.Combine(destination, filename);
 
             File.Move(filepath, destPath, true);
+
+            if(analogizer_ena == 0)
+                {
+                    log("Analogizer is disabled, SNAC and Video assigments are bypassed.");
+                }
+            else
+                {
+                    log("Analogizer is enabled, SNAC and Video assigments are applied.");
+                }
+                
             log($"Analogizer configuration saved to '{destPath}'");
         }
     }
