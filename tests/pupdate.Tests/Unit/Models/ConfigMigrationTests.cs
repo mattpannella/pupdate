@@ -7,6 +7,15 @@ namespace Pannella.Tests.Unit.Models;
 public class ConfigMigrationTests
 {
     [Fact]
+    public void AiFilterDefaults_OffAndEightyPercent()
+    {
+        var config = new Config();
+
+        config.filter_ai_cores.Should().BeFalse();
+        config.ai_core_threshold.Should().Be(80);
+    }
+
+    [Fact]
     public void Migrate_LegacyArchiveName_PopulatesDefaultArchive()
     {
         var json = "{ \"archive_name\": \"my-custom-files\" }";

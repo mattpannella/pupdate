@@ -260,6 +260,7 @@ Toggles exposed in the **Settings** menu (stored in `pupdate_settings.json`):
 | Cache downloaded archive files locally | Keep a reusable cache; optional cache path in JSON |
 | Adds a description element to the video.json display modes | Non-breaking extra field in generated video JSON |
 | Hide and uninstall Analogizer core variants | Hides Analogizer-specific core variants |
+| Hide and uninstall AI-generated cores (Experimental) | Hides and (during Update All) uninstalls cores whose AI score exceeds your threshold. Toggle this on, then set the cutoff with **Set AI Filter Threshold** (see [AI-generated core filter](#ai-generated-core-filter-experimental)). Cores anot included in the report are left alone. |
 | Download files in concurrent chunks | Splits downloads into parallel HTTP range requests for faster transfers on bandwidth-limited servers like archive.org; falls back to a single connection when the server doesn't support ranges (default on). Tune the parallelism with `config.download_chunk_count` |
 
 Game & Watch (and other **core-specific** archives) are enabled in the `archives` array in JSON, not via a separate Settings row.
@@ -279,6 +280,7 @@ Edit `pupdate_settings.json` for keys that are not bool menu toggles:
 | `config.temp_directory` | Override temp extract path (default: OS temp); **Pocket Setup → Directory Locations → Set Temp Directory** |
 | `config.archive_cache_location` | Override archive cache directory when caching is on; **Pocket Setup → Directory Locations → Set Archive Cache Location** |
 | `config.download_chunk_count` | Number of parallel HTTP range chunks when **Download files in concurrent chunks** is on (default `4`); ignored for files under 1 MB or servers without range support |
+| `config.ai_core_threshold` | Percentage `0`–`100` for the **Hide and uninstall AI-generated cores** filter; cores scoring **over** this value are hidden and uninstalled (default `80`). Set via **Pocket Setup → Set AI Filter Threshold** |
 | `config.suppress_already_installed` | Reduce “already installed” console noise |
 | `config.use_local_cores_inventory` | Use local **`cores.json`** and **`platforms.json`** (openFPGA Library **v3** format) next to the executable |
 | `config.use_local_blacklist` | Use local `blacklist.json` instead of downloading |
@@ -291,6 +293,18 @@ Edit `pupdate_settings.json` for keys that are not bool menu toggles:
 ### Asset blacklist
 
 [`blacklist.json`](blacklist.json) lists filenames **not** downloaded as assets. Entries support `*` and `?` wildcards; matching applies to the full slot path and to the file name alone (useful for paths like `subfolder/game.bin`).
+
+### AI generated core filter (Experimental)
+
+pupdate will filter out cores that appear to be AI-generated, using the [openFPGA AI check report](https://openfpga-library.github.io/openfpga-ai-check/ai_report.json) built by [neil-morrison44](https://github.com/neil-morrison44). Each core is given a score from `0` to `1`. The closer to 1, the more likely it is to be AI generated.
+
+**How the score is calculated:** An automated tool ([openfpga-library/openfpga-ai-check](https://github.com/openfpga-library/openfpga-ai-check)) regularly looks through each core's public development history for signs that AI tools helped build it — for example, how often recent changes credit an AI assistant like "Claude" by name, plus clues in the core's description and contributor list. The more signs it finds, the higher the score: a core that looks entirely AI-made scores near `1`, one that only had occasional AI help scores lower, and older cores from before AI tools were common are treated as human-made (`0`). Keep in mind this is a best guess, not a certainty — it can be wrong, and core makers will be able to ask for an incorrect score to be fixed. Treat it as a rough signal, not a final verdict.
+
+- Turn on **Hide and uninstall AI-generated cores (Experimental)** in the **Settings** menu — this is the on/off switch, and it's off by default.
+- Set the cutoff with **Pocket Setup → Set AI Filter Threshold** — a percentage (`0`–`100`, default `80`), stored as `config.ai_core_threshold`. Cores scoring **over** the threshold are hidden; e.g. a threshold of `50` hides cores scoring above `0.50`.
+- Cores that aren't listed in the report are never filtered.
+- Hidden cores are removed from **Select Cores**, updates, and asset downloads. Any that are already installed are uninstalled during the next **Update All**.
+- The report is fetched at runtime; if it can't be reached, nothing is filtered (fails open).
 
 ---
 

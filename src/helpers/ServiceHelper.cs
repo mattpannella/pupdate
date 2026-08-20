@@ -146,6 +146,7 @@ public static class ServiceHelper
             CacheDirectory);
         CoresService = new CoresService(UpdateDirectory, SettingsService, ArchiveService, AssetsService);
         CoresService.StatusUpdated += StatusUpdated;
+        Services.CoresService.ResetCaches();
 
         PluginsDirectory = string.IsNullOrEmpty(SettingsService.Config.plugins_directory)
             ? Path.Combine(AppContext.BaseDirectory, "plugins")

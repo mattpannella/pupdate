@@ -109,13 +109,16 @@ public partial class CoresService : BaseProcess
                                 coresList.Add(inventoryCore);
                         }
 
-                        if (settingsService.Config.no_analogizer_variants)
-                            CORES = coresList.Where(core => !IsAnalogizerVariant(core.id)).ToList();
-                        else
-                            CORES = coresList;
+                        CORES = coresList
+                            .Where(core => !settingsService.Config.no_analogizer_variants || !IsAnalogizerVariant(core.id))
+                            .ToList();
 
                         CORES.AddRange(this.GetLocalCores());
-                        CORES = CORES.OrderBy(c => c.id.ToLowerInvariant()).ToList();
+
+                        CORES = CORES
+                            .Where(core => !IsAiFiltered(core.id))
+                            .OrderBy(c => c.id.ToLowerInvariant())
+                            .ToList();
                     }
                     catch (Exception ex)
                     {
@@ -199,10 +202,7 @@ public partial class CoresService : BaseProcess
         }
     }
 
-    // Test-only seam: clears the static caches that back the public Cores / InstalledCores /
-    // CoresNotInstalled / InstalledCoresWithSponsors / InstalledCoresWithCustomDisplayModes
-    // properties so each test gets a fresh inventory load.
-    internal static void ResetCachesForTests()
+    public static void ResetCaches()
     {
         CORES = null;
         INSTALLED_CORES = null;
@@ -210,6 +210,8 @@ public partial class CoresService : BaseProcess
         INSTALLED_CORES_WITH_CUSTOM_DISPLAY_MODES = null;
         CORES_NOT_INSTALLED = null;
     }
+
+    internal static void ResetCachesForTests() => ResetCaches();
 
     public CoresService(string path, SettingsService settingsService, ArchiveService archiveService,
         AssetsService assetsService)

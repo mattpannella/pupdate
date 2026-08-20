@@ -85,6 +85,18 @@ public class CoreUpdaterService : BaseProcess
 
         this.coresService.RetrieveKeys();
 
+        if (ids == null && this.settingsService.Config.filter_ai_cores)
+        {
+            foreach (string id in this.coresService.GetInstalledCoreIds().ToList())
+            {
+                if (this.coresService.IsAiFiltered(id))
+                {
+                    WriteMessage($"Removing AI-generated core: {id}");
+                    DeleteCore(new Core { id = id }, force: true);
+                }
+            }
+        }
+
         foreach (var core in this.cores.Where(core => ids == null || ids.Any(id => id == core.id)))
         {
             var coreSettings = this.settingsService.GetCoreSettings(core.id);
@@ -92,7 +104,7 @@ public class CoreUpdaterService : BaseProcess
             try
             {
                 //if its installed, it's an analogizer variant, and the setting is on
-                bool force = this.coresService.IsInstalled(core.id) && 
+                bool force = this.coresService.IsInstalled(core.id) &&
                     this.settingsService.Config.no_analogizer_variants && this.coresService.IsAnalogizerVariant(core.id);
                 if (coreSettings.skip || force)
                 {

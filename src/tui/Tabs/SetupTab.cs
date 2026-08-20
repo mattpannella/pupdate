@@ -33,6 +33,7 @@ public sealed class SetupTab : ActionMenuTab
         AddAction("Set GitHub Token", SetGitHubToken);
         AddAction("Set Backup Saves Location", SetBackupLocation);
         AddAction("Set Archive Cache Location", SetArchiveCacheLocation);
+        AddAction("Set AI Filter Threshold", SetAiThreshold);
         AddAction("Set Temp Directory", SetTempDirectory);
         AddAction("Set Patreon Session Cookie", SetPatreonCookie);
         AddAction("Test Patreon Session Cookie", TestPatreonCookie);
@@ -413,6 +414,42 @@ public sealed class SetupTab : ActionMenuTab
         Context.CoreUpdater.ReloadSettings();
 
         TuiApp.PostStatus("GitHub token updated.");
+    }
+
+    private void SetAiThreshold()
+    {
+        var config = ServiceHelper.SettingsService.Config;
+
+        string input = TuiPrompts.PromptText("AI Filter Threshold",
+            "Cores with an AI score over this percentage are hidden (0-100):",
+            config.ai_core_threshold.ToString());
+
+        if (input == null)
+        {
+            TuiApp.PostStatus("AI filter threshold unchanged.");
+            return;
+        }
+
+        if (!int.TryParse(input.Trim(), out int pct))
+        {
+            TuiApp.PostStatus("Invalid threshold. Enter a whole number from 0 to 100.");
+            return;
+        }
+
+        int newThreshold = Math.Clamp(pct, 0, 100);
+
+        if (newThreshold == config.ai_core_threshold)
+        {
+            TuiApp.PostStatus("AI filter threshold unchanged.");
+            return;
+        }
+
+        config.ai_core_threshold = newThreshold;
+        ServiceHelper.SettingsService.Save();
+        ServiceHelper.ReloadSettings();
+        Context.CoreUpdater.ReloadSettings();
+
+        TuiApp.PostStatus($"AI filter threshold set to {config.ai_core_threshold}%.");
     }
 
     private void SetBackupLocation()
