@@ -280,7 +280,7 @@ Edit `pupdate_settings.json` for keys that are not bool menu toggles:
 | `config.temp_directory` | Override temp extract path (default: OS temp); **Pocket Setup → Directory Locations → Set Temp Directory** |
 | `config.archive_cache_location` | Override archive cache directory when caching is on; **Pocket Setup → Directory Locations → Set Archive Cache Location** |
 | `config.download_chunk_count` | Number of parallel HTTP range chunks when **Download files in concurrent chunks** is on (default `4`); ignored for files under 1 MB or servers without range support |
-| `config.ai_core_threshold` | Percentage `0`–`100` for the **Hide and uninstall AI-generated cores** filter; cores scoring **over** this value are hidden and uninstalled (default `80`). Set via **Pocket Setup → Set AI Filter Threshold** |
+| `config.ai_core_threshold` | Percentage `0`–`100` for the **Hide and uninstall AI-generated cores** filter; cores scoring **over** this value are hidden and uninstalled (defaults to `100`, so no cores will ever be marked by default). Set via **Pocket Setup → Set AI Filter Threshold** |
 | `config.suppress_already_installed` | Reduce “already installed” console noise |
 | `config.use_local_cores_inventory` | Use local **`cores.json`** and **`platforms.json`** (openFPGA Library **v3** format) next to the executable |
 | `config.use_local_blacklist` | Use local `blacklist.json` instead of downloading |

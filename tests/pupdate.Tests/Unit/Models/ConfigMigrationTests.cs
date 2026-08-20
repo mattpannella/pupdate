@@ -7,12 +7,13 @@ namespace Pannella.Tests.Unit.Models;
 public class ConfigMigrationTests
 {
     [Fact]
-    public void AiFilterDefaults_OffAndEightyPercent()
+    public void AiFilterDefaults_OffAndDisabledThreshold()
     {
         var config = new Config();
 
         config.filter_ai_cores.Should().BeFalse();
-        config.ai_core_threshold.Should().Be(80);
+        // 100 = effectively off: nothing scores above 1.0, so nothing is tagged or filtered by default.
+        config.ai_core_threshold.Should().Be(100);
     }
 
     [Fact]
