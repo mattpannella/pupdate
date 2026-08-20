@@ -23,6 +23,8 @@ public static class AnalogizerWizard
     {
         var wizard = NewWizard("Analogizer — Standard");
 
+        var analog_enable = AddPickStep(wizard, "Analogizer Enable", "Enable globally Analogizer adapter:",
+            AnalogizerSettingsService.AnalogizerEnableOptions); 
         var snac = AddPickStep(wizard, "SNAC Controller", "Select your SNAC game controller:",
             AnalogizerSettingsService.SNACSelectionOptions);
         var assign = AddPickStep(wizard, "SNAC Assignment", "Select the SNAC controller assignment:",
@@ -36,11 +38,29 @@ public static class AnalogizerWizard
         var regional = AddPickStep(wizard, "Regional Settings", "Select the regional setting:",
             AnalogizerSettingsService.AnalogizerRegionalSettingsOptions);
 
-        // The assignment question only applies when a SNAC controller is selected; the wizard
-        // skips disabled steps automatically (the classic flow's "assignment is bypassed" rule).
-        void SyncAssignStep() => assign.Step.Enabled = snac.SelectedKey != 0;
-        SyncAssignStep();
-        snac.Selector.ValueChanged += (_, _) => SyncAssignStep();
+
+        // The disabled adapter (Off = key 0) causes the wizard to skip the remaining steps.
+        // Furthermore, 'assign' only applies if a SNAC is selected. Since the wizard automatically
+        // skips disabled steps, it suffices to keep their .Enabled states synchronized.
+        bool AnalogizerEnabled() => analog_enable.SelectedKey != 0;
+
+        void SyncSteps()
+        {
+            bool enabled = AnalogizerEnabled();
+
+            snac.Step.Enabled     = enabled;
+            video.Step.Enabled    = enabled;
+            blank.Step.Enabled    = enabled;
+            osd.Step.Enabled      = enabled;
+            regional.Step.Enabled = enabled;
+
+            // assign depende de las dos condiciones: adaptador On Y un SNAC elegido.
+            assign.Step.Enabled = enabled && snac.SelectedKey != 0;
+        }
+
+        SyncSteps();
+        analog_enable.Selector.ValueChanged += (_, _) => SyncSteps();
+        snac.Selector.ValueChanged          += (_, _) => SyncSteps();
 
         TuiHost.Run(wizard);
 
@@ -52,7 +72,7 @@ public static class AnalogizerWizard
 
         int snacAssign = assign.Step.Enabled ? assign.SelectedKey : 0;
 
-        AnalogizerSettingsService.WriteConfig(regional.SelectedKey, osd.SelectedKey, blank.SelectedKey,
+        AnalogizerSettingsService.WriteConfig(analog_enable.SelectedKey, regional.SelectedKey, osd.SelectedKey, blank.SelectedKey,
             video.SelectedKey, snacAssign, snac.SelectedKey, TuiApp.PostStatus);
     }
 
