@@ -45,14 +45,16 @@ public partial class CoresService
         return overallScore > thresholdPercent / 100.0;
     }
 
-    public bool IsAiFiltered(string identifier)
+    public bool IsAiOverThreshold(string identifier)
     {
-        if (!this.settingsService.Config.filter_ai_cores)
-            return false;
-
         if (!this.AiReport.TryGetValue(identifier, out var entry) || entry == null)
             return false;
 
         return ExceedsAiThreshold(entry.overall_score, this.settingsService.Config.ai_core_threshold);
+    }
+
+    public bool IsAiFiltered(string identifier)
+    {
+        return this.settingsService.Config.filter_ai_cores && this.IsAiOverThreshold(identifier);
     }
 }

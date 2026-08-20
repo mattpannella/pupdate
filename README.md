@@ -296,14 +296,14 @@ Edit `pupdate_settings.json` for keys that are not bool menu toggles:
 
 ### AI generated core filter (Experimental)
 
-pupdate will filter out cores that appear to be AI-generated, using the [openFPGA AI check report](https://openfpga-library.github.io/openfpga-ai-check/ai_report.json) built by [neil-morrison44](https://github.com/neil-morrison44). Each core is given a score from `0` to `1`. The closer to 1, the more likely it is to be AI generated.
+pupdate can mark or filter out cores that appear to be AI-generated, using the [openFPGA AI check report](https://openfpga-library.github.io/openfpga-ai-check/ai_report.json) built by [neil-morrison44](https://github.com/neil-morrison44). Each core is given a score from `0` to `1`. The closer to 1, the more likely it is to be AI generated.
 
 **How the score is calculated:** An automated tool ([openfpga-library/openfpga-ai-check](https://github.com/openfpga-library/openfpga-ai-check)) regularly looks through each core's public development history for signs that AI tools were used. For example, how often "co-authored by Claude" appears in commit messages. The more signs detected, the higher the score. A core that looks entirely AI made scores near `1`, one that only had occasional AI help scores lower. Older cores from before AI tools were common are given a 0. Keep in mind this is an educated guess and it can be inaccurate. Core devs will be able to submit requests to fix incorrect detections. Use at your own risk (the risk really just being you will have some cores hidden from you with false positives)
 
-- Turn on **Hide and uninstall AI-generated cores (Experimental)** in the **Settings** menu - off by default.
-- Set the cutoff with **Pocket Setup → Set AI Filter Threshold** - a percentage (`0`–`100`, defaults to `80`). Cores that score **over** the threshold are hidden. Example: a threshold of `50` hides cores scoring above `0.50`.
-- Cores that aren't scored at all will never be hidden
-- Hidden cores are removed from the **Select Cores** screen, updates, and asset downloads. Any that are already installed will be uninstalled during the next **Update All**.
+- Set the cutoff with **Pocket Setup → Set AI Filter Threshold** - a percentage (`0`–`100`, defaults to `80`). Cores that score **over** the threshold are labeled or hidden. Example: a threshold of `50` targets cores scoring above `0.50`.
+- **Filter off (default):** over-threshold cores are left in place but marked as **(AI)** on the **Select Cores** screen, so you can spot them and manually deselect the ones you don't want.
+- **Filter on** (turn on **Hide and uninstall AI-generated cores (Experimental)** in the **Settings** menu): over threshold cores are removed from **Select Cores**, updates, and asset downloads, and any that are already installed are uninstalled during the next **Update All**.
+- Cores that aren't scored at all are never marked or hidden. Set the threshold to `100` to turn everything off (nothing scores above `1.0`), including the labels.
 
 ---
 

@@ -72,7 +72,10 @@ internal static partial class Program
                     var selected =
                         (isCoreSelection && !coreSettings.skip) ||
                         (results.TryGetValue(core.id, out var result) && result);
-                    var name = core.id;
+
+                    var name = ServiceHelper.CoresService.IsAiOverThreshold(core.id)
+                        ? $"{core.id} (AI)"
+                        : core.id;
                     var title = MenuItemName(name, selected, core.requires_license);
 
                     menu.Add(title, thisMenu =>
@@ -89,7 +92,7 @@ internal static partial class Program
                             results.Add(core.id, selected);
                         }
 
-                        thisMenu.CurrentItem.Name = MenuItemName(core.id, selected, core.requires_license);
+                        thisMenu.CurrentItem.Name = MenuItemName(name, selected, core.requires_license);
                     });
                 }
             }
