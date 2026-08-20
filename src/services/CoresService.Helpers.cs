@@ -43,6 +43,22 @@ public partial class CoresService
         CORES.AddRange(this.GetLocalCores());
     }
 
+    public IEnumerable<string> GetInstalledCoreIds()
+    {
+        string coresDirectory = Path.Combine(this.installPath, "Cores");
+
+        if (!Directory.Exists(coresDirectory))
+            yield break;
+
+        foreach (string directory in Directory.GetDirectories(coresDirectory, "*", SearchOption.TopDirectoryOnly))
+        {
+            string id = Path.GetFileName(directory);
+
+            if (this.IsInstalled(id))
+                yield return id;
+        }
+    }
+
     private bool InstallGithubAsset(string identifier, string platformId, string downloadUrl)
     {
         if (downloadUrl == null)

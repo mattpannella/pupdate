@@ -42,6 +42,22 @@ internal static partial class Program
             });
         }
 
+        var config = ServiceHelper.SettingsService.Config;
+        string AiThresholdLabel() => $"Set AI Filter Threshold (current: {config.ai_core_threshold}%)";
+
+        menu.Add(AiThresholdLabel(), thisMenu =>
+        {
+            Console.WriteLine($"Current AI filter threshold: {config.ai_core_threshold}%");
+            Console.WriteLine("Cores with an AI score over this percentage are hidden (0-100).");
+
+            string input = PromptForInput();
+
+            if (int.TryParse(input?.Trim(), out int pct))
+                config.ai_core_threshold = Math.Clamp(pct, 0, 100);
+
+            thisMenu.CurrentItem.Name = AiThresholdLabel();
+        });
+
         menu.Add("Save", thisMenu => { thisMenu.CloseMenu(); });
 
         menu.Show();

@@ -1,4 +1,6 @@
 using FluentAssertions;
+using Newtonsoft.Json;
+using Pannella.Models.AiCheck;
 using Pannella.Services;
 using Pannella.Tests.Fixtures;
 
@@ -40,5 +42,35 @@ public class CoresServiceLogicTests : IClassFixture<TempDirectoryFixture>
         var svc = BuildBare();
         var act = () => svc.IsAnalogizerVariant(null);
         act.Should().Throw<NullReferenceException>();
+    }
+
+    [Theory]
+    [InlineData(0.81, 80, true)]   // over the threshold
+    [InlineData(0.80, 80, false)]  // boundary: strictly greater, so equal is NOT filtered
+    [InlineData(0.79, 80, false)]  // under the threshold
+    [InlineData(1.0, 80, true)]
+    [InlineData(0.51, 50, true)]
+    [InlineData(0.50, 50, false)]  // boundary
+    [InlineData(0.0, 0, false)]    // score 0 is not > 0%
+    [InlineData(0.01, 0, true)]    // any positive score is over a 0% threshold
+    public void ExceedsAiThreshold_IsStrictlyGreaterThanPercentage(double score, int thresholdPercent, bool expected)
+    {
+        CoresService.ExceedsAiThreshold(score, thresholdPercent).Should().Be(expected);
+    }
+
+    [Fact]
+    public void AiReport_DeserializesEndpointShape_KeyedByCoreIdWithOverallScore()
+    {
+        // Mirrors the ai_report.json shape: a top-level object keyed by core id, extra fields ignored.
+        var json = @"{
+            ""HarpMudd.Mpatrol"": { ""last_run"": 1787158836133, ""results"": {}, ""overall_score"": 1.0 },
+            ""HarpMudd.Mp3Player"": { ""results"": {}, ""overall_score"": 0.52 }
+        }";
+
+        var report = JsonConvert.DeserializeObject<Dictionary<string, AiCheckEntry>>(json);
+
+        report.Should().ContainKey("HarpMudd.Mpatrol");
+        report["HarpMudd.Mpatrol"].overall_score.Should().Be(1.0);
+        report["HarpMudd.Mp3Player"].overall_score.Should().Be(0.52);
     }
 }

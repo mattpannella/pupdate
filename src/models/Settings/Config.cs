@@ -124,6 +124,11 @@ public class Config
     [Description("Hide and uninstall Analogizer core variants")]
     public bool no_analogizer_variants { get; set; } = false;
 
+    [Description("Hide and uninstall AI-generated cores above the score threshold (Experimental)")]
+    public bool filter_ai_cores { get; set; } = false;
+
+    public int ai_core_threshold { get; set; } = 100;
+
     [Description("Download files in concurrent chunks (faster on bandwidth-limited servers)")]
     public bool concurrent_downloads { get; set; } = true;
 

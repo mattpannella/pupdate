@@ -46,7 +46,17 @@ public static class CoreSelectorDialog
     }
 
     private static List<string> Labels(IReadOnlyList<Core> cores) =>
-        cores.Select(c => c.requires_license ? $"{c.id}  (license required)" : c.id).ToList();
+        cores.Select(Label).ToList();
+
+    private static string Label(Core c)
+    {
+        string label = c.requires_license ? $"{c.id}  (license required)" : c.id;
+
+        if (ServiceHelper.CoresService.IsAiOverThreshold(c.id))
+            label += "  (AI)";
+
+        return label;
+    }
 
     // Filter key per core: the platform_id (precise). "(none)" for cores without one.
     private static List<string> PlatformKeys(IReadOnlyList<Core> cores) =>
