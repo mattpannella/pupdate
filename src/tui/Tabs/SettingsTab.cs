@@ -38,7 +38,7 @@ public sealed class SettingsTab : FrameView
         list = new MenuListView
         {
             X = 0,
-            Y = 1,
+            Y = 2,
             Width = Dim.Fill(),
             Height = Dim.Fill(1), // leave the bottom row for the Save button
             ShowMarks = true,

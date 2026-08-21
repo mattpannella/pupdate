@@ -45,10 +45,10 @@ public static class CoreSelectorDialog
         return marked?.Select(i => cores[i].id).ToList();
     }
 
-    private static List<string> Labels(IReadOnlyList<Core> cores) =>
+    internal static List<string> Labels(IReadOnlyList<Core> cores) =>
         cores.Select(Label).ToList();
 
-    private static string Label(Core c)
+    internal static string Label(Core c)
     {
         string label = c.requires_license ? $"{c.id}  (license required)" : c.id;
 
@@ -59,11 +59,11 @@ public static class CoreSelectorDialog
     }
 
     // Filter key per core: the platform_id (precise). "(none)" for cores without one.
-    private static List<string> PlatformKeys(IReadOnlyList<Core> cores) =>
+    internal static List<string> PlatformKeys(IReadOnlyList<Core> cores) =>
         cores.Select(c => string.IsNullOrEmpty(c.platform_id) ? "(none)" : c.platform_id).ToList();
 
     // Maps a platform_id to its friendly platform name for the dropdown (falls back to the id).
-    private static Func<string, string> PlatformDisplay(IReadOnlyList<Core> cores)
+    internal static Func<string, string> PlatformDisplay(IReadOnlyList<Core> cores)
     {
         var names = cores
             .Where(c => !string.IsNullOrEmpty(c.platform_id) && !string.IsNullOrWhiteSpace(c.platform?.name))
@@ -72,4 +72,12 @@ public static class CoreSelectorDialog
 
         return id => names.TryGetValue(id, out var name) ? name : id;
     }
+
+    internal static List<string> CategoryKeys(IReadOnlyList<Core> cores) =>
+        cores.Select(c => string.IsNullOrEmpty(c.platform?.category) ? "(none)" : c.platform.category).ToList();
+
+    internal static Func<string, string> CategoryDisplay(IReadOnlyList<Core> cores) =>
+        key => string.IsNullOrEmpty(key) || key == "(none)"
+            ? key
+            : char.ToUpperInvariant(key[0]) + key.Substring(1);
 }

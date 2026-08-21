@@ -1,22 +1,18 @@
-using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 
 namespace Pannella.TUI;
 
 /// <summary>
-/// The standard modal checklist popup: a titled dialog with a marking <see cref="MenuListView"/>
-/// (Space toggles, hover, scrollbar) and OK/Cancel. Returns the set of checked indices (into the
-/// original <paramref name="labels"/> list), or null if cancelled. Optionally enforces a maximum
-/// number of selections on confirm. Every "pick from a list" dialog should be built on this.
+/// The standard modal checklist popup: a titled dialog wrapping a <see cref="MarkableFilterList"/>
+/// (Space toggles, type-ahead filter, optional category dropdown) plus OK/Cancel. Returns the set of
+/// checked indices (into the original <paramref name="labels"/> list), or null if cancelled.
+/// Optionally enforces a maximum number of selections on confirm. Every "pick from a list" dialog
+/// should be built on this.
 ///
-/// Long lists support type-ahead filtering: with the list focused, typing letters narrows it to
-/// matching rows (Backspace deletes, Esc clears the filter). Check state is tracked by original
-/// index, so it survives filtering — toggle, filter to something else, toggle more, then OK.
+/// Check state is tracked by original index, so it survives filtering — toggle, filter to something
+/// else, toggle more, then OK.
 ///
 /// Optionally a category filter (a dropdown) narrows by a per-item key: pass
 /// <paramref name="categories"/> (one key per label, e.g. a platform_id), an optional
@@ -43,158 +39,19 @@ public static class ChecklistDialog
             Height = Dim.Percent(80)
         };
 
-        // Checked state is keyed by ORIGINAL index so it survives filtering/re-sourcing.
-        var checkedSet = new HashSet<int>();
-
-        for (int i = 0; i < labels.Count; i++)
-        {
-            if (initialChecked(i))
-            {
-                checkedSet.Add(i);
-            }
-        }
-
-        // Distinct category choices (key + display name), only if there's more than one to filter by.
-        categoryDisplay ??= k => k;
-        var categoryChoices = categories?
-            .Where(c => !string.IsNullOrEmpty(c))
-            .Distinct()
-            .Select(k => (Key: k, Display: categoryDisplay(k)))
-            .OrderBy(x => x.Display, StringComparer.OrdinalIgnoreCase)
-            .ToList();
-        bool hasCategoryFilter = categoryChoices is { Count: > 1 };
-
-        var hintLabel = new Label
+        var panel = new MarkableFilterList
         {
             X = 0,
             Y = 0,
-            Width = Dim.Fill()
-        };
-
-        // Category filter as a real dropdown (read-only text field + popover list, Terminal.Gui's
-        // DropDownList). null selection = all categories.
-        string selectedCategory = null;
-        Label filterLabel = null;
-        DropDownList filterDropDown = null;
-        var filterChoices = new List<string> { "(All)" };
-
-        if (hasCategoryFilter)
-        {
-            filterChoices.AddRange(categoryChoices.Select(c => c.Display));
-
-            filterLabel = new Label
-            {
-                X = 0,
-                Y = 1,
-                Text = $"{categoryLabel}:"
-            };
-
-            filterDropDown = new DropDownList
-            {
-                X = Pos.Right(filterLabel) + 1,
-                Y = 1,
-                Source = new ListWrapper<string>(new ObservableCollection<string>(filterChoices)),
-                Value = "(All)"
-            };
-
-            // A closed DropDownList binds ↑/↓ to cycling its own selection, trapping the cursor
-            // after a pick — drop those; arrows belong to the checklist.
-            filterDropDown.KeyBindings.Remove(Key.CursorUp);
-            filterDropDown.KeyBindings.Remove(Key.CursorDown);
-        }
-
-        var list = new MenuListView
-        {
-            X = 0,
-            Y = 2,
             Width = Dim.Fill(),
-            Height = Dim.Fill(1),
-            ShowMarks = true,
-            MarkMultiple = true
+            Height = Dim.Fill()
         };
 
-        // Maps the current visible row -> original index in labels.
-        var visibleToOriginal = new List<int>();
-        string query = string.Empty;
+        var filters = categories != null
+            ? new[] { new MarkableFilterList.FilterSpec(categories, categoryLabel, categoryDisplay) }
+            : null;
 
-        // Pull the current visible marks back into checkedSet before the source changes.
-        void SyncMarksFromVisible()
-        {
-            if (list.Source == null || visibleToOriginal.Count == 0)
-            {
-                return;
-            }
-
-            var marked = new HashSet<int>(list.GetAllMarkedItems());
-
-            for (int v = 0; v < visibleToOriginal.Count; v++)
-            {
-                int original = visibleToOriginal[v];
-
-                if (marked.Contains(v))
-                {
-                    checkedSet.Add(original);
-                }
-                else
-                {
-                    checkedSet.Remove(original);
-                }
-            }
-        }
-
-        void Rebuild()
-        {
-            SyncMarksFromVisible();
-
-            visibleToOriginal.Clear();
-            var source = new ObservableCollection<string>();
-
-            for (int i = 0; i < labels.Count; i++)
-            {
-                bool matchText = query.Length == 0 || labels[i].Contains(query, StringComparison.OrdinalIgnoreCase);
-                bool matchCategory = selectedCategory == null
-                    || (categories != null && i < categories.Count
-                        && string.Equals(categories[i], selectedCategory, StringComparison.Ordinal));
-
-                if (matchText && matchCategory)
-                {
-                    visibleToOriginal.Add(i);
-                    source.Add(labels[i]);
-                }
-            }
-
-            list.SetSource(source);
-
-            for (int v = 0; v < visibleToOriginal.Count; v++)
-            {
-                list.Source.SetMark(v, checkedSet.Contains(visibleToOriginal[v]));
-            }
-
-            string filterNote = query.Length == 0
-                ? $"type to filter · Space toggles · {okText} / Cancel below"
-                : $"filter: \"{query}\"  ({visibleToOriginal.Count}/{labels.Count}) · Backspace edits · Esc clears";
-
-            hintLabel.Text = $"{hint}   ({filterNote})";
-        }
-
-        if (filterDropDown != null)
-        {
-            // After a pick, hand focus back to the checklist. The closing popover re-focuses the
-            // dropdown AFTER this event, so the move is queued for the next loop iteration.
-            filterDropDown.ValueChanged += (_, _) =>
-            {
-                int index = filterChoices.IndexOf(filterDropDown.Text);
-
-                selectedCategory = index <= 0 ? null : categoryChoices[index - 1].Key;
-                Rebuild();
-
-                TuiHost.AddTimeout(TimeSpan.Zero, () =>
-                {
-                    list.SetFocus();
-                    return false;
-                });
-            };
-        }
+        panel.SetItems(labels, initialChecked, hint, filters, actionHint: $"{okText} / Cancel below");
 
         HashSet<int> result = null;
 
@@ -202,16 +59,16 @@ public static class ChecklistDialog
         ok.Accepting += (_, e) =>
         {
             e.Handled = true;
-            SyncMarksFromVisible();
+            var chosen = panel.CheckedOriginalIndices;
 
-            if (maxSelected.HasValue && checkedSet.Count > maxSelected.Value)
+            if (maxSelected.HasValue && chosen.Count > maxSelected.Value)
             {
                 MessageBox.Query(dialog.App, "Too many",
-                    $"Maximum is {maxSelected.Value}; you selected {checkedSet.Count}. Unselect some.", "OK");
+                    $"Maximum is {maxSelected.Value}; you selected {chosen.Count}. Unselect some.", "OK");
                 return; // keep the dialog open
             }
 
-            result = new HashSet<int>(checkedSet);
+            result = chosen;
             TuiHost.RequestStop();
         };
 
@@ -223,59 +80,13 @@ public static class ChecklistDialog
             TuiHost.RequestStop();
         };
 
-        // Type-ahead filtering, handled on the list itself so we don't need a focusable TextField
-        // (which fights the dialog button-bar for focus). Space is left alone so it still toggles.
-        list.KeyDown += (_, key) =>
-        {
-            if (key == Key.Backspace)
-            {
-                if (query.Length > 0)
-                {
-                    query = query.Substring(0, query.Length - 1);
-                    Rebuild();
-                    key.Handled = true;
-                }
-            }
-            else if (key == Key.Esc)
-            {
-                if (query.Length > 0)
-                {
-                    query = string.Empty;
-                    Rebuild();
-                    key.Handled = true;
-                }
-            }
-            else
-            {
-                var rune = key.AsRune;
-                char c = (char)rune.Value;
-
-                if (rune.Value > 32 && rune.Value < 0x10000 && !char.IsControl(c))
-                {
-                    query += c;
-                    Rebuild();
-                    key.Handled = true;
-                }
-            }
-        };
-
-        Rebuild();
-
         dialog.AddButton(ok);
         dialog.AddButton(cancel);
-        dialog.Add(hintLabel);
-
-        if (filterDropDown != null)
-        {
-            dialog.Add(filterLabel);
-            dialog.Add(filterDropDown);
-        }
-
-        dialog.Add(list);
+        dialog.Add(panel);
 
         // Focus the list initially so Space/type-ahead work immediately (the filter button and the
         // OK/Cancel bar are otherwise reachable by Tab or mouse).
-        dialog.Initialized += (_, _) => TuiHost.Invoke(() => list.SetFocus());
+        dialog.Initialized += (_, _) => TuiHost.Invoke(() => panel.FocusList());
 
         TuiHost.Run(dialog);
 

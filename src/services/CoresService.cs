@@ -101,6 +101,8 @@ public partial class CoresService : BaseProcess
                         if (coresWrapper?.data == null)
                             throw new InvalidOperationException($"The {CORES_FILE} file from the openFPGA cores inventory could not be parsed or has no data.");
 
+                        ApplyPlatformNameOverrides(platformsById);
+
                         List<Core> coresList = new List<Core>();
 
                         foreach (Core inventoryCore in coresWrapper.data)
