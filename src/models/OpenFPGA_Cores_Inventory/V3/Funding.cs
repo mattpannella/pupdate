@@ -11,6 +11,33 @@ public class Funding
     public string ko_fi { get; set; }
     public List<string> custom { get; set; }
 
+    public List<string> GetLinks()
+    {
+        var links = new List<string>();
+
+        if (github != null)
+        {
+            links.AddRange(github.Where(item => !string.IsNullOrWhiteSpace(item)));
+        }
+
+        if (!string.IsNullOrWhiteSpace(patreon))
+        {
+            links.Add(patreon);
+        }
+
+        if (!string.IsNullOrWhiteSpace(ko_fi))
+        {
+            links.Add(ko_fi);
+        }
+
+        if (custom != null)
+        {
+            links.AddRange(custom.Where(item => !string.IsNullOrWhiteSpace(item)));
+        }
+
+        return links;
+    }
+
     public override string ToString()
     {
         return ToString(string.Empty);

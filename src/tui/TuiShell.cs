@@ -56,12 +56,13 @@ public sealed class TuiShell : Window
         // shortcut ("[A] Main", "[B] Setup", …) BEFORE inserting, so the header shows the letter
         // regardless of whether Tabs snapshots the title at insert-time or re-reads it on draw.
         var pluginsTab = new PluginsTab(context);
-        orderedTabs = new View[] { new MainTab(context), new SetupTab(context), new MaintenanceTab(context),
+        var coresTab = new CoresTab(context);
+        orderedTabs = new View[] { new MainTab(context), coresTab, new SetupTab(context), new MaintenanceTab(context),
             new ExtrasTab(context), pluginsTab, new SettingsTab(context) };
 
         for (int i = 0; i < orderedTabs.Length; i++)
         {
-            orderedTabs[i].Title = TuiAccelerators.FormatTab(i, orderedTabs[i].Title);
+            orderedTabs[i].Title = $" {TuiAccelerators.FormatTab(i, orderedTabs[i].Title)} ";
             tabs.InsertTab(i, orderedTabs[i]);
         }
 
@@ -72,6 +73,10 @@ public sealed class TuiShell : Window
             if (tabs.Value == pluginsTab)
             {
                 pluginsTab.Refresh();
+            }
+            else if (tabs.Value == coresTab)
+            {
+                coresTab.Refresh();
             }
 
             platformLimit.Refresh();

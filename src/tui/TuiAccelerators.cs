@@ -11,7 +11,7 @@ internal static class TuiAccelerators
 {
     // Tabs use letters 'A'..'A'+TabCount-1; if the tab set changes, bump this and the item-key
     // letters below shift past it automatically.
-    public const int TabCount = 6;
+    public const int TabCount = 7;
 
     private const string Letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 

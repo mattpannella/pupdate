@@ -37,7 +37,7 @@ public sealed class ExtrasTab : FrameView
         list = new MenuListView
         {
             X = 0,
-            Y = 1,
+            Y = 2,
             Width = Dim.Fill(),
             Height = Dim.Fill()
         };

@@ -1,7 +1,9 @@
 using System;
 using Terminal.Gui.App;
+using Terminal.Gui.Drawing;
 using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
+using Terminal.Gui.Views;
 
 namespace Pannella.TUI;
 
@@ -17,7 +19,20 @@ internal static class TuiHost
         app.Init();
     }
 
-    public static void Run(IRunnable runnable) => app.Run(runnable);
+    public static void Run(IRunnable runnable)
+    {
+        if (runnable is Dialog dialog)
+        {
+            if (dialog.Title is { Length: > 0 } title && !title.StartsWith(" "))
+            {
+                dialog.Title = $" {title} ";
+            }
+
+            dialog.Border.Thickness = new Thickness(1, 3, 1, 1);
+        }
+
+        app.Run(runnable);
+    }
 
     public static void Shutdown()
     {

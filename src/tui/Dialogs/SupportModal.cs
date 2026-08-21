@@ -40,7 +40,7 @@ public static class SupportModal
                 ? new Link { Url = line }
                 : new Label { Text = raw.TrimEnd(), Width = Dim.Fill(), Height = 1, CanFocus = false };
 
-            row.X = 0;
+            row.X = 1;
             row.Y = previous == null ? 0 : Pos.Bottom(previous);
 
             dialog.Add(row);
