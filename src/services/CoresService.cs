@@ -251,6 +251,8 @@ public partial class CoresService : BaseProcess
 
     public void RefreshInstalledCores()
     {
+        _ = this.Cores;
+
         INSTALLED_CORES = new List<Core>();
         CORES_NOT_INSTALLED = new List<Core>();
         INSTALLED_CORES_WITH_SPONSORS = new Dictionary<string, List<Core>>();
