@@ -40,6 +40,7 @@ public partial class CoresService
 
     public void RefreshLocalCores()
     {
+        _ = this.Cores;
         CORES.AddRange(this.GetLocalCores());
     }
 
