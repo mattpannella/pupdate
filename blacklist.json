@@ -37,5 +37,6 @@
     "single_*.sv",
     "slowhd1.img",
     "slowhd2.img",
+    "stash.hsv",
     "stash.sv"
 ]
