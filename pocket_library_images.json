@@ -172,7 +172,7 @@
           "github_user": "g026r",
           "github_repository": "pocket-pce-library-images",
           "sources": [
-            { "release_asset": "BoxArt.zip", "path_under_extract": "pce", "dest_images_subfolder": "pce" }
+            { "release_asset": "BoxArt.zip", "path_under_extract": "BoxArt", "dest_images_subfolder": "pce" }
           ]
         },
         {
@@ -182,7 +182,7 @@
           "github_user": "g026r",
           "github_repository": "pocket-pce-library-images",
           "sources": [
-            { "release_asset": "Title.zip", "path_under_extract": "pce", "dest_images_subfolder": "pce" }
+            { "release_asset": "Title.zip", "path_under_extract": "Titles", "dest_images_subfolder": "pce" }
           ]
         },
         {
@@ -192,7 +192,7 @@
           "github_user": "g026r",
           "github_repository": "pocket-pce-library-images",
           "sources": [
-            { "release_asset": "Snap.zip", "path_under_extract": "pce", "dest_images_subfolder": "pce" }
+            { "release_asset": "Snap.zip", "path_under_extract": "Snaps", "dest_images_subfolder": "pce" }
           ]
         }
       ]
