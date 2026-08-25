@@ -25,6 +25,9 @@ public class Config
     [Description("Delete cores, not managed by pupdate, during 'Update All'")]
     public bool delete_skipped_cores { get; set; } = false;
 
+    [Description("Show the openFPGA platform limit indicator in the menus")]
+    public bool show_menu_cache_status { get; set; } = true;
+
     public string download_new_cores { get; set; }
 
     public string display_modes_option { get; set; }
