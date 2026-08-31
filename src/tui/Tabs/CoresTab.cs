@@ -38,6 +38,8 @@ public sealed class CoresTab : FrameView
     private string selectedCategory;
     private string selectedPlatform;
     private string query = string.Empty;
+    private bool dirty;
+    private bool loading;
 
     private int onColIndex;
     private int detailsColIndex;
@@ -57,6 +59,8 @@ public sealed class CoresTab : FrameView
             Orientation = Orientation.Horizontal,
             Labels = NewCoreLabels
         };
+
+        newCoreSelector.ValueChanged += (_, _) => MarkDirty();
 
         hintLabel = new Label { X = 1, Y = 2, Width = Dim.Fill(1) };
 
@@ -122,9 +126,26 @@ public sealed class CoresTab : FrameView
             platformLabel, platformDropdown, table, selectAll, clearAll, save, revert);
     }
 
-    /// <summary>Load the core list and reset the controls to the saved state (called when the tab opens).</summary>
+    /// <summary>
+    /// Called when the tab is opened. Reloads from the saved state only when nothing is staged -
+    /// arrowing off the tab and back must not discard toggles you haven't saved yet (issue #517).
+    /// </summary>
+    public void Activated()
+    {
+        if (dirty)
+        {
+            FocusTableSoon();
+            return;
+        }
+
+        Refresh();
+    }
+
+    /// <summary>Load the core list and reset the controls to the saved state (also used by Revert).</summary>
     public void Refresh()
     {
+        loading = true;
+
         try
         {
             cores = ServiceHelper.CoresService.Cores;
@@ -166,8 +187,22 @@ public sealed class CoresTab : FrameView
             _ => 0
         };
 
+        dirty = false;
+        loading = false;
+
         RebuildTable();
         FocusTableSoon();
+    }
+
+    private void MarkDirty()
+    {
+        if (loading)
+        {
+            return;
+        }
+
+        dirty = true;
+        UpdateHint();
     }
 
     private void RebuildTable()
@@ -215,11 +250,17 @@ public sealed class CoresTab : FrameView
             table.SetSelection(Math.Max(onColIndex, 0), 0, false);
         }
 
+        UpdateHint();
+    }
+
+    private void UpdateHint()
+    {
         string filterNote = query.Length == 0
             ? "click/Space toggles · click Details or Enter = info"
             : $"filter: \"{query}\"  ({visible.Count}/{cores.Count}) · Backspace edits · Esc clears";
 
-        hintLabel.Text = $"Choose which cores pupdate installs   ({filterNote})";
+        hintLabel.Text = $"Choose which cores pupdate installs   ({filterNote})"
+                         + (dirty ? "   - unsaved changes" : string.Empty);
     }
 
     private void OnTableMouse(object sender, Mouse mouse)
@@ -325,6 +366,7 @@ public sealed class CoresTab : FrameView
             checkedIds.Add(core.id);
         }
 
+        MarkDirty();
         table.SetNeedsDraw();
     }
 
@@ -342,6 +384,7 @@ public sealed class CoresTab : FrameView
             }
         }
 
+        MarkDirty();
         table.SetNeedsDraw();
     }
 
@@ -375,6 +418,9 @@ public sealed class CoresTab : FrameView
         settings.Save();
         ServiceHelper.ReloadSettings();
         context.CoreUpdater.ReloadSettings();
+
+        dirty = false;
+        UpdateHint();
 
         TuiApp.PostStatus($"Core selection saved: {enabled} enabled, {disabled} disabled.");
     }

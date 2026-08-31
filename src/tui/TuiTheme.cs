@@ -36,7 +36,7 @@ public static class TuiTheme
 
     /// <summary>
     /// Applies the named theme, falling back to the default (then the current) if it isn't known.
-    /// Returns the name actually applied. Does not redraw — callers changing the theme on a running
+    /// Returns the name actually applied. Does not redraw - callers changing the theme on a running
     /// UI should follow with <see cref="TuiHost.Refresh"/>.
     /// </summary>
     public static string Apply(string name)

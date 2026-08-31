@@ -11,7 +11,7 @@ namespace Pannella.TUI;
 /// Optionally enforces a maximum number of selections on confirm. Every "pick from a list" dialog
 /// should be built on this.
 ///
-/// Check state is tracked by original index, so it survives filtering — toggle, filter to something
+/// Check state is tracked by original index, so it survives filtering - toggle, filter to something
 /// else, toggle more, then OK.
 ///
 /// Optionally a category filter (a dropdown) narrows by a per-item key: pass

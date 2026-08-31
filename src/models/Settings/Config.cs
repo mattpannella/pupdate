@@ -8,7 +8,7 @@ namespace Pannella.Models.Settings;
 
 public class Config
 {
-    [Description("Download Missing Assets (ROMs and BIOS Files) during 'Update All'")]
+    [Description("Download Assets (ROMs and BIOS Files) during 'Update All'")]
     public bool download_assets { get; set; } = true;
 
     [Description("Only check assets for cores updated during 'Update All'")]
@@ -76,10 +76,10 @@ public class Config
     public string patreon_session_cookie { get; set; } = null;
 
     // Name of the Terminal.Gui theme used by the --tui interface (e.g. "Dark", "8-Bit"). No
-    // [Description] — only bool settings get that (the settings menu casts described props to bool).
+    // [Description] - only bool settings get that (the settings menu casts described props to bool).
     public string tui_theme { get; set; } = "Dark";
 
-    [Description("Use the new full-screen UI (Beta) on startup — takes effect next launch")]
+    [Description("Use new pupdate UI (Beta). takes effect next launch")]
     public bool use_tui { get; set; } = false;
 
     // Set once the startup "which interface?" prompt has been answered, so we only ask once.

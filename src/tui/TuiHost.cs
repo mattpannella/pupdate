@@ -49,12 +49,15 @@ internal static class TuiHost
     /// <summary>Forces a full layout + redraw of the running UI (e.g. after a live theme change).</summary>
     public static void Refresh() => app.LayoutAndDraw(true);
 
-    /// <summary>Subscribes to the app-wide key stream, which fires before the focused view — so a
+    /// <summary>Subscribes to the app-wide key stream, which fires before the focused view - so a
     /// handler can pre-empt that view (and any focus) by setting <c>Key.Handled</c>.</summary>
     public static void AddGlobalKeyDown(EventHandler<Key> handler) => app.Keyboard.KeyDown += handler;
 
     /// <summary>True when <paramref name="view"/> is the top runnable (no modal dialog on top).</summary>
     public static bool IsTopRunnable(View view) => app.TopRunnableView == view;
+
+    /// <summary>The view that currently has focus, or null.</summary>
+    public static View Focused => app?.Navigation?.GetFocused();
 
     /// <summary>Schedules <paramref name="callback"/> on the main loop after <paramref name="time"/>;
     /// it repeats while it returns true. Returns a token for <see cref="RemoveTimeout"/>.</summary>

@@ -46,7 +46,7 @@ internal static class WindowsTerminalRelauncher
             return false;
         }
 
-        // wt.exe command line: `wt.exe "<self>" <original args...>` — opens a new tab that runs us
+        // wt.exe command line: `wt.exe "<self>" <original args...>` - opens a new tab that runs us
         // again in a console Terminal.Gui can draw in. Note: wt.exe treats ';' in its command line
         // as a command separator, but Windows paths can't contain ';' and pupdate's args don't, so
         // forwarding them verbatim is safe.

@@ -46,7 +46,7 @@ public sealed class TuiContext
         {
             if (busy)
             {
-                TuiApp.PostStatus("An operation is already running — please wait for it to finish.");
+                TuiApp.PostStatus("An operation is already running - please wait for it to finish.");
                 return;
             }
 

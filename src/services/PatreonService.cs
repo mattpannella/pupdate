@@ -123,7 +123,7 @@ public static class PatreonService
         if (string.IsNullOrWhiteSpace(creatorVanity))
             return diag;
 
-        // Resolve the campaign id from the public page first — used as the primary key
+        // Resolve the campaign id from the public page first - used as the primary key
         // for matching the user's membership below. The vanity attribute on the campaign
         // object in `included` can be missing/empty for some membership shapes (e.g.
         // grandfathered/legacy tiers), so id matching is more reliable than vanity matching.
@@ -271,7 +271,7 @@ public static class PatreonService
 
     private static string ResolveCampaignId(HttpClient client, string creatorVanity)
     {
-        // Scrape the creator's public campaign page — the campaign id is embedded in the
+        // Scrape the creator's public campaign page - the campaign id is embedded in the
         // bootstrap JSON. This is more resilient than the frontend /api/campaigns filter
         // endpoints, which Patreon changes periodically.
         string url = $"{PATREON_BASE}/{Uri.EscapeDataString(creatorVanity)}";
@@ -346,7 +346,7 @@ public static class PatreonService
                 response.StatusCode == HttpStatusCode.Forbidden)
             {
                 throw new Exception(
-                    "Patreon rejected the session cookie. It may be expired — " +
+                    "Patreon rejected the session cookie. It may be expired - " +
                     "grab a fresh one from your browser and try again.");
             }
 

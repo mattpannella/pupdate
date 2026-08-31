@@ -24,10 +24,22 @@ public class MenuListView : ListView
             {
                 int row = Viewport.Y + position.Y;
 
-                if (row >= 0 && row < Count)
+                if (row >= 0 && row < Count && CanSelect(row))
                 {
                     SetSelection(row, false);
                 }
+            }
+        };
+
+        // Up at the first row / Down at the last must stop here. An unhandled cursor key bubbles
+        // into Terminal.Gui's focus navigation, which walks out of the list and switches tabs -
+        // losing whatever the tab had staged (issue #517).
+        KeyDown += (_, key) =>
+        {
+            if ((key == Key.CursorUp && (SelectedItem ?? 0) <= 0)
+                || (key == Key.CursorDown && (SelectedItem ?? 0) >= Count - 1))
+            {
+                key.Handled = true;
             }
         };
     }
@@ -35,11 +47,17 @@ public class MenuListView : ListView
     private int Count => Source?.Count ?? 0;
 
     /// <summary>
+    /// Whether a row can be highlighted/activated. Override to make a list skip non-items (e.g. the
+    /// Settings tab's group headers); the default list has no such rows.
+    /// </summary>
+    protected virtual bool CanSelect(int row) => true;
+
+    /// <summary>
     /// Opt-in activation: a single click (on an item, deferred so the click first settles the
     /// selection) or Enter invokes <paramref name="onActivate"/> with the item index. Lists that
     /// have their own Enter semantics (e.g. Space-toggle + Save) simply don't call this.
     /// When <paramref name="numbered"/> is set, item-key accelerators (0-9 then G-Z) also run the
-    /// matching item — used by modal popups, where the shell's global accelerator stands down.
+    /// matching item - used by modal popups, where the shell's global accelerator stands down.
     /// </summary>
     public void OnActivate(Action<int> onActivate, bool numbered = false)
     {
@@ -49,7 +67,7 @@ public class MenuListView : ListView
             {
                 int row = Viewport.Y + position.Y;
 
-                if (row >= 0 && row < Count)
+                if (row >= 0 && row < Count && CanSelect(row))
                 {
                     TuiHost.Invoke(() => onActivate(row));
                 }
@@ -58,7 +76,7 @@ public class MenuListView : ListView
 
         KeyDown += (_, key) =>
         {
-            if (key == Key.Enter && SelectedItem is { } index && index >= 0 && index < Count)
+            if (key == Key.Enter && SelectedItem is { } index && index >= 0 && index < Count && CanSelect(index))
             {
                 onActivate(index);
                 key.Handled = true;
@@ -69,7 +87,7 @@ public class MenuListView : ListView
             {
                 int target = TuiAccelerators.ItemIndex((char)key.AsRune.Value);
 
-                if (target >= 0 && target < Count)
+                if (target >= 0 && target < Count && CanSelect(target))
                 {
                     SetSelection(target, false);
                     onActivate(target);

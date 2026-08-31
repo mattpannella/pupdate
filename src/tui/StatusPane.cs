@@ -56,7 +56,7 @@ public sealed class StatusPane : FrameView
         };
 
         // Clickable expand/collapse control at the top-right of the pane. Natural sizing
-        // (X/Y/Text only) is the only config that renders reliably here — Dim.Auto / a fixed
+        // (X/Y/Text only) is the only config that renders reliably here - Dim.Auto / a fixed
         // small Width drew an empty block. (Adornments aren't view containers in this Terminal.Gui
         // build, so a control literally on the border line isn't available; top-right is closest.)
         // "+" = expand, "−" = collapse; raises ToggleRequested.

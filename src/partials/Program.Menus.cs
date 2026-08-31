@@ -328,7 +328,7 @@ internal static partial class Program
                     switch (diag.AttachmentAccess)
                     {
                         case PatreonService.AttachmentAccess.Accessible:
-                            Console.WriteLine("RESULT: Cookie valid — your account can access the JT Beta post. Auto-fetch will work.");
+                            Console.WriteLine("RESULT: Cookie valid - your account can access the JT Beta post. Auto-fetch will work.");
                             if (!string.IsNullOrEmpty(diag.SourcePostUrl))
                                 Console.WriteLine($"        Beta post: {diag.SourcePostUrl}");
                             break;
@@ -338,7 +338,7 @@ internal static partial class Program
                             break;
                         case PatreonService.AttachmentAccess.NotFound:
                             Console.WriteLine("RESULT: Cookie valid, but no recent jtbeta.zip post was found.");
-                            Console.WriteLine("        Nothing to fetch right now — try again after Jotego posts a new beta.");
+                            Console.WriteLine("        Nothing to fetch right now - try again after Jotego posts a new beta.");
                             break;
                         default:
                             Console.WriteLine("RESULT: Cookie valid, but the beta-access check couldn't be completed.");

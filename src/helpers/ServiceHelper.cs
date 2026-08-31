@@ -104,7 +104,7 @@ public static class ServiceHelper
     /// <summary>
     /// Subscribes the status/complete sinks to every service. Split out of <see cref="Initialize"/>
     /// so callers can initialize first, decide which UI is launching (and thus which sinks to use),
-    /// then attach — see Program.Main's interactive-UI resolution.
+    /// then attach - see Program.Main's interactive-UI resolution.
     /// </summary>
     public static void AttachSinks(EventHandler<StatusUpdatedEventArgs> statusUpdated,
         EventHandler<UpdateProcessCompleteEventArgs> updateProcessComplete)

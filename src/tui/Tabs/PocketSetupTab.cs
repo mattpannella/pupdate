@@ -10,15 +10,15 @@ using Terminal.Gui.Views;
 namespace Pannella.TUI;
 
 /// <summary>
-/// Setup tab: display modes, image/palette downloads, file generators, directory locations, GitHub
-/// token, Patreon config, and Super GameBoy aspect ratio. Built from the shared components
-/// (ActionMenuTab + SubMenuDialog + the dialog/prompt set). Related actions are grouped behind
-/// submenu entries (…) to keep the list tidy, mirroring the classic menu structure. Analogizer
-/// lands in a later batch.
+/// Pocket Setup tab: things done TO the Pocket - display modes, image/palette downloads, file
+/// generators, Analogizer config, and Super GameBoy aspect ratio. pupdate's own configuration
+/// (tokens, directories, thresholds, toggles) lives on the Settings tab. Built from the shared
+/// components (ActionMenuTab + SubMenuDialog + the dialog/prompt set); related actions are grouped
+/// behind submenu entries (…) to keep the list tidy, mirroring the classic menu structure.
 /// </summary>
-public sealed class SetupTab : ActionMenuTab
+public sealed class PocketSetupTab : ActionMenuTab
 {
-    public SetupTab(TuiContext context) : base(context, "Setup")
+    public PocketSetupTab(TuiContext context) : base(context, "Pocket Setup")
     {
         AddAction("Display Modes…", DisplayModesMenu);
         AddAction("Download Images & Palettes…", DownloadsMenu);
@@ -30,13 +30,6 @@ public sealed class SetupTab : ActionMenuTab
             ("Standard Analogizer Config", AnalogizerWizard.RunStandard),
             ("Jotego Analogizer Config", AnalogizerWizard.RunJotego),
         }));
-        AddAction("Set GitHub Token", SetGitHubToken);
-        AddAction("Set Backup Saves Location", SetBackupLocation);
-        AddAction("Set Archive Cache Location", SetArchiveCacheLocation);
-        AddAction("Set AI Filter Threshold", SetAiThreshold);
-        AddAction("Set Temp Directory", SetTempDirectory);
-        AddAction("Set Patreon Session Cookie", SetPatreonCookie);
-        AddAction("Test Patreon Session Cookie", TestPatreonCookie);
         AddAction("Super GameBoy: Apply 8:7 Aspect Ratio", () => ChangeSgbAspectRatio("8:7", 4, 3, 8, 7));
         AddAction("Super GameBoy: Restore 4:3 Aspect Ratio", () => ChangeSgbAspectRatio("4:3", 8, 7, 4, 3));
     }
@@ -52,7 +45,6 @@ public sealed class SetupTab : ActionMenuTab
             ("Enable Recommended Display Modes", EnableRecommendedDisplayModes),
             ("Reset All Customized Display Modes", () => ResetDisplayModes(null)),
             ("Reset Selected Customized Display Modes", ResetSelectedDisplayModes),
-            ("Change Merge/Overwrite Default Setting", ChangeDisplayModesSetting),
         });
     }
 
@@ -194,25 +186,6 @@ public sealed class SetupTab : ActionMenuTab
             ServiceHelper.SettingsService.Save();
             TuiApp.PostStatus($"Reset display modes for {coreIds.Count} core(s).");
         });
-    }
-
-    private void ChangeDisplayModesSetting()
-    {
-        var config = ServiceHelper.SettingsService.Config;
-
-        int? choice = SelectDialog.Show("Display Modes Default",
-            "When applying display modes, by default:",
-            new List<string> { "Merge with existing", "Overwrite existing", "Ask each time" });
-
-        if (choice == null)
-        {
-            TuiApp.PostStatus("Setting unchanged.");
-            return;
-        }
-
-        config.display_modes_option = choice switch { 0 => "merge", 1 => "overwrite", _ => "ask" };
-        ServiceHelper.SettingsService.Save();
-        TuiApp.PostStatus($"Display modes default set to '{config.display_modes_option}'.");
     }
 
     // Curated path respects the saved default; only prompts when it's "ask" or unset.
@@ -383,204 +356,6 @@ public sealed class SetupTab : ActionMenuTab
             }
 
             TuiApp.PostStatus($"Aspect ratio updated for {ids.Count} core(s).");
-        });
-    }
-
-    private void SetGitHubToken()
-    {
-        var config = ServiceHelper.SettingsService.Config;
-
-        string input = TuiPrompts.PromptText("GitHub Token",
-            "Enter your GitHub personal access token (leave blank to clear):",
-            config.github_token ?? string.Empty, secret: true);
-
-        if (input == null)
-        {
-            TuiApp.PostStatus("GitHub token unchanged.");
-            return;
-        }
-
-        string newToken = string.IsNullOrWhiteSpace(input) ? string.Empty : input.Trim();
-
-        if (string.Equals(config.github_token, newToken, StringComparison.Ordinal))
-        {
-            TuiApp.PostStatus("GitHub token unchanged.");
-            return;
-        }
-
-        config.github_token = newToken;
-        ServiceHelper.SettingsService.Save();
-        ServiceHelper.ReloadSettings();
-        Context.CoreUpdater.ReloadSettings();
-
-        TuiApp.PostStatus("GitHub token updated.");
-    }
-
-    private void SetAiThreshold()
-    {
-        var config = ServiceHelper.SettingsService.Config;
-
-        string input = TuiPrompts.PromptText("AI Filter Threshold",
-            "Cores with an AI score over this percentage are hidden (0-100):",
-            config.ai_core_threshold.ToString());
-
-        if (input == null)
-        {
-            TuiApp.PostStatus("AI filter threshold unchanged.");
-            return;
-        }
-
-        if (!int.TryParse(input.Trim(), out int pct))
-        {
-            TuiApp.PostStatus("Invalid threshold. Enter a whole number from 0 to 100.");
-            return;
-        }
-
-        int newThreshold = Math.Clamp(pct, 0, 100);
-
-        if (newThreshold == config.ai_core_threshold)
-        {
-            TuiApp.PostStatus("AI filter threshold unchanged.");
-            return;
-        }
-
-        config.ai_core_threshold = newThreshold;
-        ServiceHelper.SettingsService.Save();
-        ServiceHelper.ReloadSettings();
-        Context.CoreUpdater.ReloadSettings();
-
-        TuiApp.PostStatus($"AI filter threshold set to {config.ai_core_threshold}%.");
-    }
-
-    private void SetBackupLocation()
-    {
-        var config = ServiceHelper.SettingsService.Config;
-
-        SetDirectory("Backup Saves Location", "Folder for save/memory backups (blank = \"Backups\"):",
-            config.backup_saves_location,
-            input => string.IsNullOrWhiteSpace(input) ? "Backups" : input.Trim(),
-            value => config.backup_saves_location = value,
-            reload: false);
-    }
-
-    private void SetArchiveCacheLocation()
-    {
-        var config = ServiceHelper.SettingsService.Config;
-
-        SetDirectory("Archive Cache Location", "Folder for cached archive files (blank = default):",
-            config.archive_cache_location,
-            input => string.IsNullOrWhiteSpace(input) ? null : input.Trim(),
-            value => config.archive_cache_location = value,
-            reload: true);
-    }
-
-    private void SetTempDirectory()
-    {
-        var config = ServiceHelper.SettingsService.Config;
-
-        SetDirectory("Temp Directory", "Temp directory (blank = system default):",
-            config.temp_directory,
-            input => string.IsNullOrWhiteSpace(input) ? null : input.Trim(),
-            value => config.temp_directory = value,
-            reload: true);
-    }
-
-    // Shared directory-setter: prompt, normalize, apply, save, optionally reload services.
-    private void SetDirectory(string title, string prompt, string current,
-        Func<string, string> normalize, Action<string> apply, bool reload)
-    {
-        string input = TuiPrompts.PromptText(title, prompt, current ?? string.Empty);
-
-        if (input == null)
-        {
-            TuiApp.PostStatus($"{title} unchanged.");
-            return;
-        }
-
-        apply(normalize(input));
-        ServiceHelper.SettingsService.Save();
-
-        if (reload)
-        {
-            ServiceHelper.ReloadSettings();
-            Context.CoreUpdater.ReloadSettings();
-        }
-
-        TuiApp.PostStatus($"{title} updated.");
-    }
-
-    private void SetPatreonCookie()
-    {
-        var config = ServiceHelper.SettingsService.Config;
-
-        TuiApp.PostStatus("Patreon cookie: in your browser, log in to patreon.com, open DevTools → " +
-                          "Application/Storage → Cookies → patreon.com, and copy the 'session_id' value.");
-
-        string input = TuiPrompts.PromptText("Patreon Session Cookie",
-            "Paste the patreon.com 'session_id' value (blank to clear):",
-            config.patreon_session_cookie ?? string.Empty, secret: true);
-
-        if (input == null)
-        {
-            TuiApp.PostStatus("Patreon session cookie unchanged.");
-            return;
-        }
-
-        config.patreon_session_cookie = string.IsNullOrWhiteSpace(input) ? null : input.Trim();
-
-        if (!config.jt_beta_patreon_fetch && config.patreon_session_cookie != null
-            && TuiPrompts.Confirm(App, "JT Beta", "Enable JT Beta auto-fetch via Patreon?"))
-        {
-            config.jt_beta_patreon_fetch = true;
-        }
-
-        ServiceHelper.SettingsService.Save();
-        TuiApp.PostStatus("Patreon session cookie saved.");
-    }
-
-    private void TestPatreonCookie()
-    {
-        string cookie = ServiceHelper.SettingsService.Config.patreon_session_cookie;
-
-        if (string.IsNullOrWhiteSpace(cookie))
-        {
-            TuiApp.PostStatus("No Patreon session cookie set. Use 'Set Patreon Session Cookie' first.");
-            return;
-        }
-
-        Context.RunBackground(null, () =>
-        {
-            TuiApp.PostStatus("Testing Patreon session cookie...");
-
-            var diag = PatreonService.TestSessionCookie(cookie, "jotego", "jtbeta.zip");
-
-            foreach (var message in diag.Messages)
-            {
-                TuiApp.PostStatus("  - " + message);
-            }
-
-            if (!diag.CookieValid)
-            {
-                TuiApp.PostStatus("Result: cookie is NOT valid. Grab a fresh session_id from your browser.");
-            }
-            else
-            {
-                switch (diag.AttachmentAccess)
-                {
-                    case PatreonService.AttachmentAccess.Accessible:
-                        TuiApp.PostStatus("Result: cookie valid — your account can access the JT Beta post. Auto-fetch will work.");
-                        break;
-                    case PatreonService.AttachmentAccess.Gated:
-                        TuiApp.PostStatus("Result: cookie valid, but your Patreon tier can't view the JT Beta post (tier may not include beta access).");
-                        break;
-                    case PatreonService.AttachmentAccess.NotFound:
-                        TuiApp.PostStatus("Result: cookie valid, but no recent jtbeta.zip post was found. Try again after Jotego posts a new beta.");
-                        break;
-                    default:
-                        TuiApp.PostStatus("Result: cookie valid, but the beta-access check couldn't be completed. See the lines above.");
-                        break;
-                }
-            }
         });
     }
 }
