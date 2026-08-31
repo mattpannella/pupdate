@@ -13,7 +13,7 @@ Please use the [latest release](https://github.com/mattpannella/pupdate/releases
 
 Do **not** clone the repo if you only want to run the tool. Download the latest release, unzip it, place the executable for your OS on the **root of your SD card** (or another folder you use as the install path), and run it.
 
-Use **Settings** from the main menu to walk through toggles, or edit `pupdate_settings.json` for advanced options. In the full-screen UI (`--tui`) the same options live on the **Settings** tab, grouped and including the non-toggle ones (tokens, directories, thresholds) — see [Settings](#settings).
+Use **Settings** from the main menu to walk through toggles, or edit `pupdate_settings.json` for advanced options. In the full-screen UI (`--tui`) the same options live on the **Settings** tab, grouped — see [Settings](#settings).
 
 ### macOS specific
 
@@ -198,7 +198,7 @@ For installed cores with a GitHub-backed inventory entry:
 
 ## Pocket Extras
 
-Third-party bundles defined in [`pocket_extras.json`](pocket_extras.json). Each entry can show a description and links before install (`show_menu_descriptions` in settings) - in the classic menu it prints them and asks to confirm; in the full-screen UI (`--tui`) the **Extras** tab shows the same description and links in a dialog with **Install** / **Cancel**.
+Third-party bundles defined in [`pocket_extras.json`](pocket_extras.json). Each entry can show a description and links before install (`show_menu_descriptions` in settings).
 
 - **Additional Assets** — Needs the base core; extends ROMs or multi-game support.
 - **Combination Platforms** — Multiple cores under one platform entry.
@@ -237,31 +237,6 @@ See [openfpga-library/pocket-plugin](https://github.com/openfpga-library/pocket-
 ---
 
 ## Settings
-
-**Settings** is pupdate's own configuration; **Pocket Setup** is what pupdate does *to* the Pocket. In the
-full-screen UI (`--tui`) that split is exact: the **Settings** tab holds every option below, and the
-**Pocket Setup** tab holds only Pocket-side operations (display modes, image/palette downloads, file
-generators, Analogizer config, Super GameBoy aspect ratio).
-
-The Settings tab groups its rows, and shows non-toggle settings inline with their current value:
-
-| Group | Contains |
-|-------|----------|
-| Update All | The Update All toggles, plus **Backup saves location** |
-| Assets & Downloads | CRC check, alternative ROMs, concurrent chunks, custom archive, archive caching, plus **Archive cache location** and **Temp directory** |
-| Core Filtering | Analogizer variants, AI core filter, plus **AI score threshold** |
-| Display Modes | **Merge or overwrite default**, video.json description field |
-| Accounts | **GitHub token**, **Patreon session cookie**, both JT Beta auto-fetch toggles, and **Test Patreon session cookie** |
-| Application & Interface | Full-screen UI on startup, menu descriptions, platform limit indicator, self-update |
-| Advanced | The "use a local *.json*" overrides |
-
-Changes stay pending until you press **Save** (leaving the tab saves them for you); the hint line says
-"unsaved changes" while anything is staged. In the classic menu the same toggles are a flat list.
-
-Keyboard, in the full-screen UI: **↑/↓** move within the current list only - they never change tabs.
-**←/→** switch tabs (except in a text field or the Cores tab's "New cores installed by default"
-selector, which use them for their own choices), and **A**–**G** jump straight to a tab. The
-**Cores** tab also keeps unsaved selections when you switch away and come back.
 
 Toggles exposed in the **Settings** menu (stored in `pupdate_settings.json`):
 
