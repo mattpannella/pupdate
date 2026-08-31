@@ -11,7 +11,8 @@ namespace Pannella.TUI;
 /// <summary>
 /// Extras tab. Lists the available Pocket Extras (additional assets / combination platforms /
 /// variant cores); Enter installs the highlighted one via CoresService.GetPocketExtra on a
-/// background task. Consistent with the other list tabs — no loose button.
+/// background task. With the show_menu_descriptions setting on, the extra's description and links
+/// are shown for confirmation first. Consistent with the other list tabs - no loose button.
 /// </summary>
 public sealed class ExtrasTab : FrameView
 {
@@ -67,6 +68,16 @@ public sealed class ExtrasTab : FrameView
 
         PocketExtra extra = extras[index.Value];
         string label = DisplayName(extra);
+
+        // Mirror the classic menu: when show_menu_descriptions is on, show the blurb and links and
+        // confirm before installing (Program.Menus.cs).
+        if (ServiceHelper.SettingsService.Config.show_menu_descriptions
+            && !string.IsNullOrWhiteSpace(extra.description)
+            && !ExtraDetailsModal.Confirm(extra, label))
+        {
+            TuiApp.PostStatus($"{label} not installed.");
+            return;
+        }
 
         context.RunBackground(null, () =>
         {

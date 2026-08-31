@@ -521,7 +521,7 @@ public class PluginService : Base
 
     private void HandlePrintMsg(CurrentPlugin plugin, Span<ExtismVal> inputs, Span<ExtismVal> outputs)
     {
-        // `print_msg` is the plugin's stdout equivalent — fires synchronously
+        // `print_msg` is the plugin's stdout equivalent - fires synchronously
         // during the wasm call so progress bars and live status output render
         // immediately, unlike `info!()` logs which are batched by Extism and
         // only delivered when DrainCustomLogs runs. Write raw to Console

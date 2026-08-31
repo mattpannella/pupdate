@@ -13,7 +13,7 @@ Please use the [latest release](https://github.com/mattpannella/pupdate/releases
 
 Do **not** clone the repo if you only want to run the tool. Download the latest release, unzip it, place the executable for your OS on the **root of your SD card** (or another folder you use as the install path), and run it.
 
-Use **Settings** from the main menu to walk through toggles, or edit `pupdate_settings.json` for advanced options.
+Use **Settings** from the main menu to walk through toggles, or edit `pupdate_settings.json` for advanced options. In the full-screen UI (`--tui`) the same options live on the **Settings** tab, grouped — see [Settings](#settings).
 
 ### macOS specific
 
@@ -198,7 +198,7 @@ For installed cores with a GitHub-backed inventory entry:
 
 ## Pocket Extras
 
-Third-party bundles defined in [`pocket_extras.json`](pocket_extras.json). Each entry can show a description and links before install (`show_menu_descriptions` in settings).
+Third-party bundles defined in [`pocket_extras.json`](pocket_extras.json). Each entry can show a description and links before install (`show_menu_descriptions` in settings); the `--tui` **Extras** tab shows them in an **Install** / **Cancel** dialog.
 
 - **Additional Assets** — Needs the base core; extends ROMs or multi-game support.
 - **Combination Platforms** — Multiple cores under one platform entry.
@@ -238,6 +238,11 @@ See [openfpga-library/pocket-plugin](https://github.com/openfpga-library/pocket-
 
 ## Settings
 
+In the full-screen UI (`--tui`), **↑/↓** stay inside the current list, **←/→** switch tabs, and
+**A**–**G** jump straight to one. Those single-key shortcuts stand down while a text box has focus,
+so the **Cores** tab's **Filter** box takes every key - press **/** from the core table to jump into
+it and **Esc** to clear it.
+
 Toggles exposed in the **Settings** menu (stored in `pupdate_settings.json`):
 
 | Name | Description |
@@ -260,7 +265,7 @@ Toggles exposed in the **Settings** menu (stored in `pupdate_settings.json`):
 | Cache downloaded archive files locally | Keep a reusable cache; optional cache path in JSON |
 | Adds a description element to the video.json display modes | Non-breaking extra field in generated video JSON |
 | Hide and uninstall Analogizer core variants | Hides Analogizer-specific core variants |
-| Hide and uninstall AI-generated cores (Experimental) | Hides and (during Update All) uninstalls cores whose AI score exceeds your threshold. Toggle this on, then set the cutoff with **Set AI Filter Threshold** (see [AI-generated core filter](#ai-generated-core-filter-experimental)). Cores anot included in the report are left alone. |
+| Hide and uninstall AI-generated cores (Experimental) | Hides and (during Update All) uninstalls cores whose AI score exceeds your threshold. Toggle this on, then set the cutoff with **Settings → Set AI Filter Threshold** (see [AI-generated core filter](#ai-generated-core-filter-experimental)). Cores not included in the report are left alone. |
 | Download files in concurrent chunks | Splits downloads into parallel HTTP range requests for faster transfers on bandwidth-limited servers like archive.org; falls back to a single connection when the server doesn't support ranges (default on). Tune the parallelism with `config.download_chunk_count` |
 
 Game & Watch (and other **core-specific** archives) are enabled in the `archives` array in JSON, not via a separate Settings row.
@@ -273,14 +278,14 @@ Edit `pupdate_settings.json` for keys that are not bool menu toggles:
 
 | Name | Description |
 |------|-------------|
-| `config.github_token` | Used for GitHub API calls (rate limits); also settable under **Pocket Setup → Set GitHub Token** |
+| `config.github_token` | Used for GitHub API calls (rate limits); also settable under **Pocket Setup → Set GitHub Token** (classic) or **Settings → Accounts → GitHub token** (`--tui`) |
 | `config.download_new_cores` | `yes` / `no` / `ask` — set by Select Cores |
-| `config.display_modes_option` | `merge` / `overwrite` / `ask` |
-| `config.backup_saves_location` | Backup output directory; **Pocket Setup → Directory Locations → Set Backup Saves Location** |
-| `config.temp_directory` | Override temp extract path (default: OS temp); **Pocket Setup → Directory Locations → Set Temp Directory** |
-| `config.archive_cache_location` | Override archive cache directory when caching is on; **Pocket Setup → Directory Locations → Set Archive Cache Location** |
+| `config.display_modes_option` | `merge` / `overwrite` / `ask`; **Pocket Setup → Manage Display Modes → Change Display Modes Option Setting** (classic) or **Settings → Display Modes → Merge or overwrite default** (`--tui`) |
+| `config.backup_saves_location` | Backup output directory; **Pocket Setup → Directory Locations → Set Backup Saves Location** (classic) or **Settings → Update All → Backup saves location** (`--tui`) |
+| `config.temp_directory` | Override temp extract path (default: OS temp); **Pocket Setup → Directory Locations → Set Temp Directory** (classic) or **Settings → Assets & Downloads → Temp directory** (`--tui`) |
+| `config.archive_cache_location` | Override archive cache directory when caching is on; **Pocket Setup → Directory Locations → Set Archive Cache Location** (classic) or **Settings → Assets & Downloads → Archive cache location** (`--tui`) |
 | `config.download_chunk_count` | Number of parallel HTTP range chunks when **Download files in concurrent chunks** is on (default `4`); ignored for files under 1 MB or servers without range support |
-| `config.ai_core_threshold` | Percentage `0`–`100` for the **Hide and uninstall AI-generated cores** filter; cores scoring **over** this value are hidden and uninstalled (defaults to `100`, so no cores will ever be marked by default). Set via **Pocket Setup → Set AI Filter Threshold** |
+| `config.ai_core_threshold` | Percentage `0`–`100` for the **Hide and uninstall AI-generated cores** filter; cores scoring **over** this value are hidden and uninstalled (defaults to `100`, so no cores will ever be marked by default). Set via **Settings → Set AI Filter Threshold** (classic) or **Settings → Core Filtering → AI score threshold** (`--tui`) |
 | `config.suppress_already_installed` | Reduce “already installed” console noise |
 | `config.use_local_cores_inventory` | Use local **`cores.json`** and **`platforms.json`** (openFPGA Library **v3** format) next to the executable |
 | `config.use_local_blacklist` | Use local `blacklist.json` instead of downloading |
@@ -300,10 +305,11 @@ pupdate can mark or filter out cores that appear to be AI-generated, using the [
 
 **How the score is calculated:** An automated tool ([openfpga-library/openfpga-ai-check](https://github.com/openfpga-library/openfpga-ai-check)) regularly looks through each core's public development history for signs that AI tools were used. For example, how often "co-authored by Claude" appears in commit messages. The more signs detected, the higher the score. A core that looks entirely AI made scores near `1`, one that only had occasional AI help scores lower. Older cores from before AI tools were common are given a 0. Keep in mind this is an educated guess and it can be inaccurate. Core devs will be able to submit requests to fix incorrect detections. Use at your own risk (the risk really just being you will have some cores hidden from you with false positives)
 
-- Set the cutoff with **Pocket Setup → Set AI Filter Threshold** - a percentage (`0`–`100`, defaults to `100`). Cores that score **over** the threshold are labeled or hidden. Example: a threshold of `50` targets cores scoring above `0.50`.
+- Set the cutoff with **Settings → Set AI Filter Threshold** (**Settings → Core Filtering → AI score threshold** in `--tui`) - a percentage (`0`–`100`, defaults to `100`). Cores that score **over** the threshold are labeled or hidden. Example: a threshold of `50` targets cores scoring above `0.50`.
 - **Filter off (default):** over-threshold cores are left in place but marked as **(AI)** on the **Select Cores** screen, so you can spot them and manually deselect the ones you don't want.
 - **Filter on** (turn on **Hide and uninstall AI-generated cores (Experimental)** in the **Settings** menu): over threshold cores are removed from **Select Cores**, updates, and asset downloads, and any that are already installed are uninstalled during the next **Update All**.
 - Cores that aren't scored at all are never marked or hidden. Set the threshold to `100` to turn everything off (nothing scores above `1.0`), including the labels.
+- In the full-screen UI (`--tui`), the **Cores** tab's details popup (Enter, or click **[view]**) shows the full report for that core: its score against your threshold, each individual check with the evidence it recorded (e.g. "Of the last 100 commit messages 97 mention Claude"), and when it was last analyzed. Cores missing from the report show as **not scored**.
 
 ---
 
@@ -469,7 +475,7 @@ Jotego distributes `jtbeta.zip` via a private GitHub repo (`JTFPGA/jtbeta`). Per
 2. Accept the invite to `JTFPGA/jtbeta` once it arrives.
 3. Create a GitHub Personal Access Token with read access to private repos (classic PAT with `repo` scope, or a fine-grained PAT with `Contents: Read` on `JTFPGA/jtbeta`).
 4. Set `github_token` in `pupdate_settings.json` to that PAT.
-5. Enable **Auto-fetch Jotego jtbeta.zip from GitHub** in the Settings menu.
+5. Enable **Auto-fetch Jotego jtbeta.zip from GitHub** in the Settings menu (**Settings → Accounts** in `--tui`).
 
 **Option B — Patreon session cookie (experimental, fallback):**
 
@@ -480,10 +486,10 @@ Jotego distributes `jtbeta.zip` via a private GitHub repo (`JTFPGA/jtbeta`). Per
 1. Open <https://www.patreon.com> in your browser and log in.
 2. Open DevTools (F12 or ⌘⌥I) → **Application** (Chrome/Edge/Brave) or **Storage** (Firefox) → **Cookies** → `https://www.patreon.com`.
 3. Copy the **value** of the `session_id` cookie.
-4. In pupdate: **Pocket Setup → Patreon Config → Set Patreon Session Cookie**, paste the value.
-5. Enable **Auto-fetch Jotego jtbeta.zip from Patreon** in the Settings menu.
+4. In pupdate: **Pocket Setup → Patreon Config → Set Patreon Session Cookie** (**Settings → Accounts → Patreon session cookie** in `--tui`), paste the value.
+5. Enable **Auto-fetch Jotego jtbeta.zip from Patreon** in the Settings menu (**Settings → Accounts** in `--tui`).
 
-Use **Pocket Setup → Patreon Config → Test Patreon Session Cookie** to verify the cookie works and whether your account is currently a Jotego patron.
+Use **Pocket Setup → Patreon Config → Test Patreon Session Cookie** (**Settings → Accounts → Test Patreon session cookie** in `--tui`) to verify the cookie works and whether your account is currently a Jotego patron.
 
 **Notes:**
 

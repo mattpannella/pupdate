@@ -1,3 +1,4 @@
+using System;
 using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
@@ -6,8 +7,7 @@ namespace Pannella.TUI;
 
 /// <summary>
 /// The root full-screen window: a tab strip across the top (one section per tab) over the
-/// persistent <see cref="StatusPane"/>. Phase 1 ships the Update tab wired end-to-end; the
-/// remaining sections are placeholders filled in by later phases.
+/// persistent <see cref="StatusPane"/>.
 /// </summary>
 public sealed class TuiShell : Window
 {
@@ -22,13 +22,14 @@ public sealed class TuiShell : Window
     private readonly Tabs tabs;
     private readonly PlatformLimitBar platformLimit;
     private readonly View[] orderedTabs;
+    private readonly SettingsTab settingsTab;
     private bool statusExpanded;
 
     public TuiShell(TuiContext context)
     {
         Title = "pupdate (Beta)";
 
-        // Pinned welcome banner — the ASCII art the classic menu prints across the top.
+        // Pinned welcome banner - the ASCII art the classic menu prints across the top.
         string banner = Program.RandomWelcomeBanner();
         var header = new Label
         {
@@ -57,8 +58,10 @@ public sealed class TuiShell : Window
         // regardless of whether Tabs snapshots the title at insert-time or re-reads it on draw.
         var pluginsTab = new PluginsTab(context);
         var coresTab = new CoresTab(context);
-        orderedTabs = new View[] { new MainTab(context), coresTab, new SetupTab(context), new MaintenanceTab(context),
-            new ExtrasTab(context), pluginsTab, new SettingsTab(context) };
+        settingsTab = new SettingsTab(context);
+        orderedTabs = new View[] { new UpdatesTab(context), coresTab, new PocketSetupTab(context),
+            new MaintenanceTab(context), new ExtrasTab(context), pluginsTab, settingsTab };
+        View previousTab = orderedTabs[0];
 
         for (int i = 0; i < orderedTabs.Length; i++)
         {
@@ -70,13 +73,24 @@ public sealed class TuiShell : Window
         // removed outside this session).
         tabs.ValueChanged += (_, _) =>
         {
+            if (previousTab == settingsTab)
+            {
+                settingsTab.CommitIfDirty();
+            }
+
+            previousTab = tabs.Value;
+
             if (tabs.Value == pluginsTab)
             {
                 pluginsTab.Refresh();
             }
             else if (tabs.Value == coresTab)
             {
-                coresTab.Refresh();
+                coresTab.Activated();
+            }
+            else if (tabs.Value == settingsTab)
+            {
+                settingsTab.Refresh();
             }
 
             platformLimit.Refresh();
@@ -98,7 +112,7 @@ public sealed class TuiShell : Window
             new Shortcut(Key.Esc, "Quit", Quit, null),
             new Shortcut(Key.F6, "Status pane", ToggleStatusPane, null),
             new Shortcut(Key.F9, "Theme", PickTheme, null),
-            new Shortcut(Key.Empty, "A–F tabs · 0–9/G–Z items", null, null)
+            new Shortcut(Key.Empty, "←/→ or A–G tabs · 0–9/H–Z items", null, null)
         })
         {
             CanFocus = false
@@ -113,8 +127,8 @@ public sealed class TuiShell : Window
         platformLimit.Refresh();
 
         // Auto-expand the status pane when an operation starts so the live log/summary is easy to
-        // follow. We deliberately do NOT collapse on completion — that would scroll the summary out
-        // of view — so it stays expanded until the user presses F6. StatusPane is anchored to
+        // follow. We deliberately do NOT collapse on completion - that would scroll the summary out
+        // of view - so it stays expanded until the user presses F6. StatusPane is anchored to
         // Pos.Bottom(tabs) with Dim.Fill(), so resizing tabs re-flows it for free.
         context.BusyChanged += OnBusyChanged;
         StatusPane.ToggleRequested += () =>
@@ -148,7 +162,11 @@ public sealed class TuiShell : Window
     }
 
     // Esc requests a clean stop; Application.Shutdown runs in TuiApp.Run's finally.
-    private static void Quit() => TuiHost.RequestStop();
+    private void Quit()
+    {
+        settingsTab.CommitIfDirty();
+        TuiHost.RequestStop();
+    }
 
     private void ToggleStatusPane()
     {
@@ -156,13 +174,39 @@ public sealed class TuiShell : Window
         ApplyLayout();
     }
 
-    // App-wide theme chooser (deliberately not in a tab — it's a pupdate-UI setting).
+    // App-wide theme chooser (deliberately not in a tab - it's a pupdate-UI setting).
     private static void PickTheme() => ThemePickerDialog.Show();
 
     private void OnGlobalKeyDown(object sender, Key key)
     {
-        // Stand down while a modal owns the screen; ignore modified/non-character keys.
-        if (!TuiHost.IsTopRunnable(this) || key.IsCtrl || key.IsAlt || key.AsRune.Value == 0)
+        // Stand down while a modal owns the screen.
+        if (!TuiHost.IsTopRunnable(this) || key.IsCtrl || key.IsAlt)
+        {
+            return;
+        }
+
+        // A focused text entry owns every key. These accelerators run before the focused view, so
+        // without this, typing into the Cores tab's filter box jumps tabs the moment you type a
+        // letter that happens to be a tab or item key.
+        if (TuiHost.Focused is TextField or TextView)
+        {
+            return;
+        }
+
+        if (key == Key.CursorUp || key == Key.CursorDown)
+        {
+            GuardVerticalKey();
+            return;
+        }
+
+        if (key == Key.CursorLeft || key == Key.CursorRight)
+        {
+            SwitchTab(key == Key.CursorRight ? 1 : -1, key);
+            return;
+        }
+
+        // Accelerators are single characters; ignore anything else.
+        if (key.AsRune.Value == 0)
         {
             return;
         }
@@ -187,6 +231,57 @@ public sealed class TuiShell : Window
             key.Handled = true;
             // Defer so the key event unwinds before the action runs (it may open a modal / long op).
             TuiHost.Invoke(() => activeTab.RunItem(itemIndex));
+        }
+    }
+
+    // Up/Down belong to the focused list, never to the tab strip. Views that don't consume them let
+    // the key bubble into focus navigation, which walks out of the tab - so snap the selection back
+    // if that happened (issue #517). Runs on the next loop iteration, after the key has been
+    // dispatched to the focused view.
+    private void GuardVerticalKey()
+    {
+        var current = tabs.Value;
+
+        if (current == null)
+        {
+            return;
+        }
+
+        TuiHost.Invoke(() =>
+        {
+            if (tabs.Value != current)
+            {
+                tabs.Value = current;
+                current.SetFocus();
+            }
+        });
+    }
+
+    // Left/Right move between tabs. Text entry already returned above; the only other view whose
+    // horizontal keys carry real meaning is the Cores tab's horizontal option selector. Notably NOT
+    // the cores TableView - it's FullRowSelect with row-level actions, so its column navigation just
+    // ate five Right presses before the tab would move (issue #517).
+    private void SwitchTab(int direction, Key key)
+    {
+        if (TuiHost.Focused is OptionSelector)
+        {
+            return;
+        }
+
+        int index = Array.IndexOf(orderedTabs, tabs.Value);
+
+        if (index < 0)
+        {
+            return;
+        }
+
+        int target = Math.Clamp(index + direction, 0, orderedTabs.Length - 1);
+        key.Handled = true;
+
+        if (target != index)
+        {
+            tabs.Value = orderedTabs[target];
+            orderedTabs[target].SetFocus();
         }
     }
 

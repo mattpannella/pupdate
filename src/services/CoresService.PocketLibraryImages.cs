@@ -163,7 +163,7 @@ public partial class CoresService
 
                 if (!Directory.Exists(srcDir))
                 {
-                    WriteMessage($"Warning: folder '{pathUnder}' not found in {asset.name} — skipping this source.");
+                    WriteMessage($"Warning: folder '{pathUnder}' not found in {asset.name} - skipping this source.");
                     continue;
                 }
 

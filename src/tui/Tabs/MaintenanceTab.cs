@@ -382,7 +382,7 @@ public sealed class MaintenanceTab : ActionMenuTab
 
         var core = cores[coreIndex.Value];
 
-        // Releases are already on the core object — no fetch needed. Build label/version pairs.
+        // Releases are already on the core object - no fetch needed. Build label/version pairs.
         var releases = new List<(string label, string version)>();
 
         if (core.releases != null)
@@ -397,7 +397,7 @@ public sealed class MaintenanceTab : ActionMenuTab
             }
         }
 
-        var options = new List<string> { "(Unpin — track latest)" };
+        var options = new List<string> { "(Unpin - track latest)" };
         options.AddRange(releases.Select(r => r.label));
 
         string current = settings.GetCoreSettings(core.id).pinned_version;

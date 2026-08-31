@@ -4,8 +4,8 @@ namespace Pannella.TUI;
 
 /// <summary>
 /// Turns on ANSI/VT processing for the Windows console before the TUI starts. Windows Terminal
-/// enables it by default, but the legacy console host (conhost) does not — e.g. double-clicking
-/// pupdate.exe when conhost is the default terminal — and Terminal.Gui's windows driver then
+/// enables it by default, but the legacy console host (conhost) does not - e.g. double-clicking
+/// pupdate.exe when conhost is the default terminal - and Terminal.Gui's windows driver then
 /// falls into its "legacy console" mode, rendering a blank but responsive screen (issue #490).
 /// </summary>
 internal static class WindowsVirtualTerminal
@@ -78,7 +78,7 @@ internal static class WindowsVirtualTerminal
 
     /// <summary>
     /// Puts the console mode back if <see cref="TryEnable"/> changed it. Must run after the TUI
-    /// has fully shut down — Terminal.Gui's terminal-restore sequences need VT still enabled.
+    /// has fully shut down - Terminal.Gui's terminal-restore sequences need VT still enabled.
     /// </summary>
     public static void Restore()
     {

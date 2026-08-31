@@ -7,8 +7,8 @@ namespace Pannella.TUI;
 
 /// <summary>
 /// Core-selection dialogs, built on the shared <see cref="ChecklistDialog"/>.
-///   • Show         — enable/disable: pre-checks enabled cores, returns id-&gt;wanted map.
-///   • SelectSubset — pick a subset to act on: starts unchecked, returns the chosen ids.
+///   • Show         - enable/disable: pre-checks enabled cores, returns id-&gt;wanted map.
+///   • SelectSubset - pick a subset to act on: starts unchecked, returns the chosen ids.
 /// Both return null when cancelled.
 /// </summary>
 public static class CoreSelectorDialog

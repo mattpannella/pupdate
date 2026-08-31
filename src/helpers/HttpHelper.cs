@@ -13,7 +13,7 @@ public class HttpHelper
     private HttpClientHandler handler;
 
     // Test-only seam: dispose the singleton and clear cookie/login state. Production code
-    // never calls this — the HttpClient/CookieContainer is intentionally process-singleton.
+    // never calls this - the HttpClient/CookieContainer is intentionally process-singleton.
     internal static void Reset()
     {
         lock (SYNC_LOCK)

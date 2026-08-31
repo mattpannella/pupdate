@@ -4,7 +4,7 @@ namespace Pannella.Models.Plugins;
 
 // Sidecar file (`installed.json`) stored next to plugin.wasm / plugin.json.
 // Tracks where the plugin came from + which release tag is installed so we
-// can check for updates. Local-only — not part of pocket-plugin's upstream
+// can check for updates. Local-only - not part of pocket-plugin's upstream
 // plugin.json schema.
 public class PluginInstallInfo
 {

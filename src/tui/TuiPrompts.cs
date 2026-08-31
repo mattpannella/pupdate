@@ -22,14 +22,17 @@ internal static class TuiPrompts
     /// </summary>
     public static string PromptText(string title, string prompt, string initial = "", bool secret = false)
     {
-        // The button bar reserves the bottom of the dialog by SHRINKING the content area
-        // (ContentSize); anything placed below it is silently clipped but stays focusable.
-        // Height 10 leaves exactly 4 content rows: the label + the 3-row bordered field.
+        // The button bar lives in the dialog's Padding and reserves the bottom by SHRINKING the
+        // content area (ContentSize); anything below it is silently clipped but stays focusable.
+        // Measured against Terminal.Gui 2.4.12 with TuiHost.Run's Thickness(1, 3, 1, 1) border:
+        // Height 10 yields only 2 content rows (the field's bottom border is cut off), 12 is the
+        // first that fits the label + 3-row bordered field. 13 keeps a row of slack so a future
+        // chrome change can't silently clip the field again.
         var dialog = new Dialog
         {
             Title = title,
             Width = Dim.Percent(70),
-            Height = 10
+            Height = 13
         };
 
         var label = new Label

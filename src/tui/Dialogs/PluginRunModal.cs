@@ -63,7 +63,7 @@ public static class PluginRunModal
                 TuiHost.Invoke(() =>
                 {
                     log.AppendLine(string.Empty);
-                    log.AppendLine("— finished — press Close —");
+                    log.AppendLine("- finished - press Close -");
                     close.Enabled = true;
                     close.SetFocus();
                 });

@@ -4,12 +4,12 @@ using Pannella.Helpers;
 namespace Pannella.TUI;
 
 /// <summary>
-/// Main tab: the primary day-to-day actions — full update, asset download, and firmware check.
+/// Updates tab: the primary day-to-day actions - full update, asset download, and firmware check.
 /// Choosing which cores pupdate manages lives on the dedicated <see cref="CoresTab"/>.
 /// </summary>
-public sealed class MainTab : ActionMenuTab
+public sealed class UpdatesTab : ActionMenuTab
 {
-    public MainTab(TuiContext context) : base(context, "Main")
+    public UpdatesTab(TuiContext context) : base(context, "Updates")
     {
         AddAction("Update All", () =>
             Context.RunBackground(null, () =>

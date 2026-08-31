@@ -61,7 +61,7 @@ public sealed class MarkableFilterList : View
     public event Action<int> ItemActivated;
 
     /// <param name="enterActivates">When true, pressing Enter on the highlighted row raises
-    /// <see cref="ItemActivated"/>. Single click is left to the list, which toggles the mark — so a
+    /// <see cref="ItemActivated"/>. Single click is left to the list, which toggles the mark - so a
     /// click checks/unchecks the row, it does not activate. Leave false for checklists whose Enter
     /// belongs to a default button.</param>
     public MarkableFilterList(bool enterActivates = false)

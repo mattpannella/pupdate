@@ -21,7 +21,7 @@ public static class AnalogizerWizard
 
     public static void RunStandard()
     {
-        var wizard = NewWizard("Analogizer — Standard");
+        var wizard = NewWizard("Analogizer - Standard");
 
         var analog_enable = AddPickStep(wizard, "Analogizer Enable", "Enable globally Analogizer adapter:",
             AnalogizerSettingsService.AnalogizerEnableOptions); 
@@ -162,7 +162,7 @@ public static class AnalogizerWizard
             return null;
         }
 
-        var wizard = NewWizard("Analogizer — Jotego");
+        var wizard = NewWizard("Analogizer - Jotego");
         var (step, selector) = BuildStep(wizard, "Option", FirstPromptLine(record.Options),
             options.Select(o => $"{o.Letter.ToUpper()}: {o.Description}"));
         step.NextButtonText = "_Next";
