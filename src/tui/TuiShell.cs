@@ -185,6 +185,14 @@ public sealed class TuiShell : Window
             return;
         }
 
+        // A focused text entry owns every key. These accelerators run before the focused view, so
+        // without this, typing into the Cores tab's filter box jumps tabs the moment you type a
+        // letter that happens to be a tab or item key.
+        if (TuiHost.Focused is TextField or TextView)
+        {
+            return;
+        }
+
         if (key == Key.CursorUp || key == Key.CursorDown)
         {
             GuardVerticalKey();
@@ -249,13 +257,13 @@ public sealed class TuiShell : Window
         });
     }
 
-    // Left/Right move between tabs. Only views whose horizontal keys carry real meaning opt out: a
-    // text caret and the Cores tab's horizontal option selector. Notably NOT the cores TableView -
-    // it's FullRowSelect with row-level actions, so its column navigation just ate five Right
-    // presses before the tab would move (issue #517).
+    // Left/Right move between tabs. Text entry already returned above; the only other view whose
+    // horizontal keys carry real meaning is the Cores tab's horizontal option selector. Notably NOT
+    // the cores TableView - it's FullRowSelect with row-level actions, so its column navigation just
+    // ate five Right presses before the tab would move (issue #517).
     private void SwitchTab(int direction, Key key)
     {
-        if (TuiHost.Focused is TextField or TextView or OptionSelector)
+        if (TuiHost.Focused is OptionSelector)
         {
             return;
         }

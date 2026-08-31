@@ -29,6 +29,19 @@ public sealed class ScrollableBody : View
         VerticalScrollBar.VisibilityMode = ScrollBarVisibilityMode.Auto;
 
         KeyDown += (_, key) => Scroll(key);
+
+        // Neither a plain View nor TableView scrolls on the wheel in Terminal.Gui 2.4.12 (ListView
+        // does), so translate it into the same clamped move the keys use.
+        MouseEvent += (_, mouse) =>
+        {
+            bool down = mouse.Flags.HasFlag(MouseFlags.WheeledDown);
+
+            if (down || mouse.Flags.HasFlag(MouseFlags.WheeledUp))
+            {
+                ScrollTo(Viewport.Y + (down ? 1 : -1));
+                mouse.Handled = true;
+            }
+        };
     }
 
     /// <summary>Appends a row directly below the previous one.</summary>
@@ -71,7 +84,14 @@ public sealed class ScrollableBody : View
             return;
         }
 
-        Viewport = Viewport with { Y = Math.Clamp(target.Value, 0, max) };
+        ScrollTo(target.Value);
         key.Handled = true;
+    }
+
+    private void ScrollTo(int y)
+    {
+        int max = Math.Max(0, GetContentSize().Height - Viewport.Height);
+
+        Viewport = Viewport with { Y = Math.Clamp(y, 0, max) };
     }
 }

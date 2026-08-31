@@ -198,7 +198,7 @@ For installed cores with a GitHub-backed inventory entry:
 
 ## Pocket Extras
 
-Third-party bundles defined in [`pocket_extras.json`](pocket_extras.json). Each entry can show a description and links before install (`show_menu_descriptions` in settings).
+Third-party bundles defined in [`pocket_extras.json`](pocket_extras.json). Each entry can show a description and links before install (`show_menu_descriptions` in settings); the `--tui` **Extras** tab shows them in an **Install** / **Cancel** dialog.
 
 - **Additional Assets** — Needs the base core; extends ROMs or multi-game support.
 - **Combination Platforms** — Multiple cores under one platform entry.
@@ -237,6 +237,11 @@ See [openfpga-library/pocket-plugin](https://github.com/openfpga-library/pocket-
 ---
 
 ## Settings
+
+In the full-screen UI (`--tui`), **↑/↓** stay inside the current list, **←/→** switch tabs, and
+**A**–**G** jump straight to one. Those single-key shortcuts stand down while a text box has focus,
+so the **Cores** tab's **Filter** box takes every key - press **/** from the core table to jump into
+it and **Esc** to clear it.
 
 Toggles exposed in the **Settings** menu (stored in `pupdate_settings.json`):
 

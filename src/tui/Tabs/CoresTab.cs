@@ -23,6 +23,7 @@ public sealed class CoresTab : FrameView
     private readonly TuiContext context;
     private readonly OptionSelector newCoreSelector;
     private readonly Label hintLabel;
+    private readonly TextField filterField;
     private readonly DropDownList categoryDropdown;
     private readonly DropDownList platformDropdown;
     private readonly TableView table;
@@ -62,7 +63,44 @@ public sealed class CoresTab : FrameView
 
         newCoreSelector.ValueChanged += (_, _) => MarkDirty();
 
-        hintLabel = new Label { X = 1, Y = 2, Width = Dim.Fill(1) };
+        var filterLabel = new Label { X = 1, Y = 2, Text = "Filter:" };
+
+        // A real input box rather than type-ahead on the table: the shell's single-key tab/item
+        // accelerators fire before the focused view, so typing a letter into the table jumped tabs.
+        // TuiShell stands down for text entry, so every key belongs to this field while it has focus.
+        filterField = new TextField { X = Pos.Right(filterLabel) + 1, Y = 2, Width = 30 };
+
+        filterField.ValueChanged += (_, _) =>
+        {
+            if (loading)
+            {
+                return;
+            }
+
+            query = filterField.Text ?? string.Empty;
+            RebuildTable();
+        };
+
+        filterField.KeyDown += (_, key) =>
+        {
+            if (key == Key.Esc)
+            {
+                if (filterField.Text?.Length > 0)
+                {
+                    filterField.Text = string.Empty;
+                }
+
+                table.SetFocus();
+                key.Handled = true;
+            }
+            else if (key == Key.Enter || key == Key.CursorDown)
+            {
+                table.SetFocus();
+                key.Handled = true;
+            }
+        };
+
+        hintLabel = new Label { X = Pos.Right(filterField) + 2, Y = 2, Width = Dim.Fill(1) };
 
         var categoryLabel = new Label { X = 1, Y = 4, Text = "Category:" };
         categoryDropdown = new DropDownList { X = Pos.Right(categoryLabel) + 1, Y = 4, Width = 26 };
@@ -122,8 +160,9 @@ public sealed class CoresTab : FrameView
             TuiApp.PostStatus("Reverted to saved core selection.");
         };
 
-        Add(newCoreLabel, newCoreSelector, hintLabel, categoryLabel, categoryDropdown,
-            platformLabel, platformDropdown, table, selectAll, clearAll, save, revert);
+        Add(newCoreLabel, newCoreSelector, filterLabel, filterField, hintLabel,
+            categoryLabel, categoryDropdown, platformLabel, platformDropdown,
+            table, selectAll, clearAll, save, revert);
     }
 
     /// <summary>
@@ -167,6 +206,7 @@ public sealed class CoresTab : FrameView
         }
 
         query = string.Empty;
+        filterField.Text = string.Empty;
         selectedCategory = null;
         selectedPlatform = null;
 
@@ -255,16 +295,29 @@ public sealed class CoresTab : FrameView
 
     private void UpdateHint()
     {
-        string filterNote = query.Length == 0
-            ? "click/Space toggles · click Details or Enter = info"
-            : $"filter: \"{query}\"  ({visible.Count}/{cores.Count}) · Backspace edits · Esc clears";
+        string note = query.Length == 0
+            ? "Space toggles · Enter = info · / to filter"
+            : $"{visible.Count}/{cores.Count} shown · Esc clears";
 
-        hintLabel.Text = $"Choose which cores pupdate installs   ({filterNote})"
-                         + (dirty ? "   - unsaved changes" : string.Empty);
+        hintLabel.Text = note + (dirty ? "   - unsaved changes" : string.Empty);
     }
 
     private void OnTableMouse(object sender, Mouse mouse)
     {
+        // TableView ignores the wheel in Terminal.Gui 2.4.12 (ListView handles it, which is why the
+        // other tabs scroll and this one didn't), so drive RowOffset ourselves. Handled first: the
+        // hit-testing below would otherwise drag the selection to whatever row is under the pointer.
+        bool wheelDown = mouse.Flags.HasFlag(MouseFlags.WheeledDown);
+
+        if (wheelDown || mouse.Flags.HasFlag(MouseFlags.WheeledUp))
+        {
+            table.RowOffset += wheelDown ? 1 : -1;
+            table.EnsureValidScrollOffsets();
+            table.SetNeedsDraw();
+            mouse.Handled = true;
+            return;
+        }
+
         if (mouse.Position is not { } pos)
         {
             return;
@@ -318,35 +371,18 @@ public sealed class CoresTab : FrameView
 
             key.Handled = true;
         }
-        else if (key == Key.Backspace)
-        {
-            if (query.Length > 0)
-            {
-                query = query.Substring(0, query.Length - 1);
-                RebuildTable();
-                key.Handled = true;
-            }
-        }
         else if (key == Key.Esc)
         {
             if (query.Length > 0)
             {
-                query = string.Empty;
-                RebuildTable();
+                filterField.Text = string.Empty;
                 key.Handled = true;
             }
         }
-        else
+        else if (key.AsRune.Value == '/')
         {
-            var rune = key.AsRune;
-            char c = (char)rune.Value;
-
-            if (rune.Value > 32 && rune.Value < 0x10000 && !char.IsControl(c))
-            {
-                query += c;
-                RebuildTable();
-                key.Handled = true;
-            }
+            filterField.SetFocus();
+            key.Handled = true;
         }
     }
 
