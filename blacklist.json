@@ -5,6 +5,7 @@
     "*.sys",
     "AmigaVision-Saves.hdf",
     "AmigaVision.hdf",
+    "GBPrinter_*.png",
     "HDD-3.hdf",
     "HDD-4.hdf",
     "MegaAGS-Saves.hdf",
