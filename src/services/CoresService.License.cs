@@ -51,6 +51,8 @@ public partial class CoresService
 
     public void RetrieveKeys()
     {
+        string keyPath = Path.Combine(this.installPath, LICENSE_EXTRACT_LOCATION);
+
         bool foundLocalJtBeta = this.ExtractJTBetaKey();
 
         if (!foundLocalJtBeta)
@@ -60,6 +62,60 @@ public partial class CoresService
             if (config.jt_beta_github_fetch || config.jt_beta_patreon_fetch)
             {
                 this.AutoFetchJtBetaKey();
+            }
+        }
+
+        if (ServiceHelper.SettingsService.Config.coin_op_beta)
+        {
+            string serial = null;
+            var idFiles = Directory.GetFiles(this.installPath, "*.ID");
+
+            if (idFiles.Length > 0)
+            {
+                serial = Path.GetFileNameWithoutExtension(idFiles[0]);
+            }
+            else
+            {
+                Console.WriteLine("Coin-Op Collection Beta is enabled, but no .ID file was found in the root of your SD card.");
+                Console.WriteLine("To create one, paste your device serial number from the Coin-Op license portal.");
+                Console.Write("Enter serial number (or leave blank to skip): ");
+
+                string input = Console.ReadLine();
+
+                if (!string.IsNullOrWhiteSpace(input))
+                {
+                    serial = input.Trim();
+                    string idFilePath = Path.Combine(this.installPath, serial + ".ID");
+                    File.Create(idFilePath).Dispose();
+                    Console.WriteLine($"Created {serial}.ID");
+                }
+            }
+
+            if (serial != null)
+            {
+                if (!Directory.Exists(keyPath))
+                {
+                    Directory.CreateDirectory(keyPath);
+                }
+
+                try
+                {
+                    Console.WriteLine("Retrieving Coin-Op Collection license...");
+
+                    var license = CoinOpService.FetchLicense(serial);
+
+                    File.WriteAllBytes(Path.Combine(keyPath, "coinop.key"), license);
+
+                    Console.WriteLine("License successfully downloaded.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error retrieving Coin-Op Collection license: {ex.Message}");
+                }
+                finally
+                {
+                    Divide();
+                }
             }
         }
     }
