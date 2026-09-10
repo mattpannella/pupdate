@@ -713,6 +713,17 @@ internal static partial class Program
         menu.Show();
     }
 
+    private static string PromptForCoinOpSerial()
+    {
+        Console.WriteLine();
+        Console.WriteLine("Coin-Op Collection beta access is enabled, but no .ID file was found in the root of");
+        Console.WriteLine("your install path. Paste the device serial number from the Coin-Op license portal to");
+        Console.WriteLine("create one.");
+        Console.Write("Enter serial number (or leave blank to skip): ");
+
+        return Console.ReadLine();
+    }
+
     private static string PromptForInput()
     {
         Console.Write("Enter value: ");

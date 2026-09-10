@@ -1,3 +1,4 @@
+using System.Threading;
 using Terminal.Gui.App;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.Input;
@@ -103,6 +104,28 @@ internal static class TuiPrompts
         });
 
         TuiHost.Run(dialog);
+
+        return result;
+    }
+    
+    public static T FromBackground<T>(Func<T> show)
+    {
+        T result = default;
+        using var done = new ManualResetEventSlim(false);
+
+        TuiHost.Invoke(() =>
+        {
+            try
+            {
+                result = show();
+            }
+            finally
+            {
+                done.Set();
+            }
+        });
+
+        done.Wait();
 
         return result;
     }

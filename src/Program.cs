@@ -367,6 +367,7 @@ internal static partial class Program
                     }
                     else
                     {
+                        CoresService.CoinOpSerialPrompt = PromptForCoinOpSerial;
                         DisplayMenu(coreUpdaterService);
                     }
                     break;

@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
+using Newtonsoft.Json.Linq;
 
 namespace Pannella.Services;
 
@@ -9,34 +10,60 @@ public static class CoinOpService
 
     public static byte[] FetchLicense(string serial)
     {
-        var client = new HttpClient();
+        string url = string.Format(LICENSE_ENDPOINT, Uri.EscapeDataString(serial));
 
-        string url = string.Format(LICENSE_ENDPOINT, serial);
-        var request = new HttpRequestMessage
+        using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
+        using var request = new HttpRequestMessage
         {
             Method = HttpMethod.Get,
             RequestUri = new Uri(url)
         };
 
-        var agent = new ProductInfoHeaderValue("Pupdate", "1.0");
+        request.Headers.UserAgent.Add(new ProductInfoHeaderValue("Pupdate", "1.0"));
 
-        request.Headers.UserAgent.Add(agent);
-
-        var response = client.Send(request);
+        using var response = client.Send(request);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
-            var responseBody = response.Content.ReadAsStringAsync().Result;
-            throw new Exception(responseBody);
+            throw new Exception(GetErrorMessage(response) ??
+                $"No Coin-Op Collection license found for serial '{serial}'. " +
+                "Check the serial on the Coin-Op license portal.");
         }
 
         if (response.StatusCode != HttpStatusCode.OK)
         {
-            throw new Exception("Error fetching Coin-Op Collection license.");
+            throw new Exception(GetErrorMessage(response) ??
+                $"Error fetching Coin-Op Collection license ({(int)response.StatusCode} {response.ReasonPhrase}).");
         }
 
         var bytes = response.Content.ReadAsByteArrayAsync().Result;
 
+        if (bytes.Length == 0)
+        {
+            throw new Exception("The Coin-Op Collection license response was empty.");
+        }
+
         return bytes;
+    }
+
+    private static string GetErrorMessage(HttpResponseMessage response)
+    {
+        try
+        {
+            string body = response.Content.ReadAsStringAsync().Result;
+
+            if (string.IsNullOrWhiteSpace(body) || !body.TrimStart().StartsWith("{"))
+            {
+                return null;
+            }
+
+            string message = JObject.Parse(body)["error"]?.ToString();
+
+            return string.IsNullOrWhiteSpace(message) ? null : message.Trim();
+        }
+        catch
+        {
+            return null;
+        }
     }
 }

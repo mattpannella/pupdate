@@ -132,6 +132,7 @@ public sealed class SettingsTab : FrameView
         AddValue(nameof(Config.patreon_session_cookie), "Patreon session cookie", PatreonCookieEditor, SecretDisplay);
         AddToggle(nameof(Config.jt_beta_patreon_fetch));
         rows.Add(new SettingsActionRow("Test Patreon session cookie", TestPatreonCookie));
+        AddToggle(nameof(Config.coin_op_beta));
 
         AddGroup("Application & Interface");
         AddToggle(nameof(Config.use_tui));

@@ -121,6 +121,10 @@ public static class TuiApp
         PluginService.ChoiceHandler = TuiPluginPrompts.Choice;
         PluginService.TextHandler = TuiPluginPrompts.Text;
 
+        CoresService.CoinOpSerialPrompt = () => TuiPrompts.FromBackground(() => TuiPrompts.PromptText(
+            "Coin-Op Collection Beta",
+            "No .ID file found. Paste the device serial from the Coin-Op license portal:"));
+
         EventHandler<DownloadProgressEventArgs> progressHandler = (_, e) => PostProgress(e.Progress, e.BytesPerSecond);
         HttpHelper.Instance.DownloadProgressUpdate += progressHandler;
 

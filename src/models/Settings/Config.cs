@@ -60,14 +60,14 @@ public class Config
     [Description("Automatically install updates to Pupdate")]
     public bool auto_install_updates { get; set; } = false;
 
-    [Description("Coin-Op Collection Beta Access")]
-    public bool coin_op_beta { get; set; } = false;
-
     [Description("Auto-fetch Jotego jtbeta.zip from GitHub (requires github_token + access to JTFPGA/jtbeta)")]
     public bool jt_beta_github_fetch { get; set; } = false;
 
     [Description("Auto-fetch Jotego jtbeta.zip from Patreon (requires session cookie)")]
     public bool jt_beta_patreon_fetch { get; set; } = false;
+
+    [Description("Auto-fetch Coin-Op Collection license (requires a <serial>.ID file in your install path)")]
+    public bool coin_op_beta { get; set; } = false;
 
     public string temp_directory { get; set; } = null;
 
