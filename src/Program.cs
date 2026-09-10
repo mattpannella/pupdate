@@ -367,7 +367,6 @@ internal static partial class Program
                     }
                     else
                     {
-                        WarnIfPlatformLimitExceeded();
                         DisplayMenu(coreUpdaterService);
                     }
                     break;

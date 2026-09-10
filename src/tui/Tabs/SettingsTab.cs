@@ -136,7 +136,6 @@ public sealed class SettingsTab : FrameView
         AddGroup("Application & Interface");
         AddToggle(nameof(Config.use_tui));
         AddToggle(nameof(Config.show_menu_descriptions));
-        AddToggle(nameof(Config.show_menu_cache_status));
         AddToggle(nameof(Config.auto_install_updates));
 
         AddGroup("Advanced");
