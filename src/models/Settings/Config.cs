@@ -66,6 +66,9 @@ public class Config
     [Description("Auto-fetch Jotego jtbeta.zip from Patreon (requires session cookie)")]
     public bool jt_beta_patreon_fetch { get; set; } = false;
 
+    [Description("Auto-fetch Coin-Op Collection license (requires a <serial>.ID file in your install path)")]
+    public bool coin_op_beta { get; set; } = false;
+
     public string temp_directory { get; set; } = null;
 
     public string plugins_directory { get; set; } = null;

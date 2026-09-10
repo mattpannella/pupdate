@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using Pannella.Models.Plugins;
 
 namespace Pannella.TUI;
@@ -39,24 +38,5 @@ internal static class TuiPluginPrompts
         });
     }
 
-    private static HostMessage RunOnUi(Func<HostMessage> show)
-    {
-        HostMessage result = null;
-        using var done = new ManualResetEventSlim(false);
-
-        TuiHost.Invoke(() =>
-        {
-            try
-            {
-                result = show();
-            }
-            finally
-            {
-                done.Set();
-            }
-        });
-
-        done.Wait();
-        return result;
-    }
+    private static HostMessage RunOnUi(Func<HostMessage> show) => TuiPrompts.FromBackground(show);
 }
