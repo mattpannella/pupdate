@@ -73,11 +73,6 @@ internal static partial class Program
 
     private static string GetMenuCacheStatusLine()
     {
-        if (!ServiceHelper.SettingsService.Config.show_menu_cache_status)
-        {
-            return string.Empty;
-        }
-
         return BuildMenuCacheMeter(GetMenuCacheStatus());
     }
 

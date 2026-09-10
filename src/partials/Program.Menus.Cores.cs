@@ -27,10 +27,6 @@ internal static partial class Program
             quit = "Quit without applying";
         }
 
-        string headroomLine = isCoreSelection && ServiceHelper.SettingsService.Config.show_menu_cache_status
-            ? BuildMenuCacheMeter(GetMenuCacheStatus())
-            : string.Empty;
-
         while (more)
         {
             var menu = new ConsoleMenu()
@@ -41,11 +37,6 @@ internal static partial class Program
                     config.WriteHeaderAction = () =>
                     {
                         Console.WriteLine($"{message} Use enter to check/uncheck your choices.");
-
-                        if (!string.IsNullOrEmpty(headroomLine))
-                        {
-                            Console.WriteLine(headroomLine);
-                        }
                     };
                     config.SelectedItemBackgroundColor = Console.ForegroundColor;
                     config.SelectedItemForegroundColor = Console.BackgroundColor;

@@ -327,7 +327,6 @@ internal static partial class Program
                     break;
 
                 default:
-                    WarnIfPlatformLimitExceeded();
                     DisplayMenu(coreUpdaterService);
                     break;
             }
