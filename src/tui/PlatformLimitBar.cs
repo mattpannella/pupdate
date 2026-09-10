@@ -1,5 +1,4 @@
 using System;
-using Pannella.Helpers;
 using Pannella.Services;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.ViewBase;
@@ -46,7 +45,7 @@ public sealed class PlatformLimitBar : View
     public void Refresh()
     {
         MenuCacheService.MenuCacheStatus status = Program.GetMenuCacheStatus();
-        bool show = status != null && ServiceHelper.SettingsService.Config.show_menu_cache_status;
+        bool show = status != null;
 
         Visible = show;
         Height = show ? ExpandedHeight : 0;

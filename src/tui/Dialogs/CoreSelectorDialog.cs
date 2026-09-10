@@ -15,10 +15,7 @@ public static class CoreSelectorDialog
 {
     public static Dictionary<string, bool> Show(IReadOnlyList<Core> cores, string message)
     {
-        string headroom = Program.GetPlatformLimitHeadroomText();
-        string hint = string.IsNullOrEmpty(headroom) ? message : $"{message}   [{headroom}]";
-
-        var marked = ChecklistDialog.Show("Select Cores", hint, Labels(cores),
+        var marked = ChecklistDialog.Show("Select Cores", message, Labels(cores),
             i => !ServiceHelper.SettingsService.GetCoreSettings(cores[i].id).skip, "Save",
             categories: PlatformKeys(cores), categoryDisplay: PlatformDisplay(cores), categoryLabel: "Platform");
 

@@ -73,22 +73,12 @@ internal static partial class Program
 
     private static string GetMenuCacheStatusLine()
     {
-        if (!ServiceHelper.SettingsService.Config.show_menu_cache_status)
-        {
-            return string.Empty;
-        }
-
         return BuildMenuCacheMeter(GetMenuCacheStatus());
     }
 
-    // Plain (uncolored) one-liner for the TUI core-selector footer. Null when disabled/unavailable.
+    // Plain (uncolored) one-liner for the TUI core-selector footer. Null when unavailable.
     internal static string GetPlatformLimitHeadroomText()
     {
-        if (!ServiceHelper.SettingsService.Config.show_menu_cache_status)
-        {
-            return null;
-        }
-
         MenuCacheService.MenuCacheStatus status = GetMenuCacheStatus();
 
         if (status == null)

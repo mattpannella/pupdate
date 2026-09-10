@@ -20,7 +20,6 @@ public sealed class TuiShell : Window
     public StatusPane StatusPane { get; }
 
     private readonly Tabs tabs;
-    private readonly PlatformLimitBar platformLimit;
     private readonly View[] orderedTabs;
     private readonly SettingsTab settingsTab;
     private bool statusExpanded;
@@ -41,14 +40,12 @@ public sealed class TuiShell : Window
             CanFocus = false
         };
 
-        platformLimit = new PlatformLimitBar { X = 0, Y = Pos.Bottom(header) };
-
         // Tabs + status stay direct children of the window (so the Tabs control keeps focus and
         // arrow/click navigation), anchored just below the banner.
         tabs = new Tabs
         {
             X = 0,
-            Y = Pos.Bottom(platformLimit),
+            Y = Pos.Bottom(header),
             Width = Dim.Fill(),
             Height = Dim.Percent(TabsHeightCollapsed)
         };
@@ -92,8 +89,6 @@ public sealed class TuiShell : Window
             {
                 settingsTab.Refresh();
             }
-
-            platformLimit.Refresh();
         };
 
         StatusPane = new StatusPane
@@ -119,12 +114,9 @@ public sealed class TuiShell : Window
         };
 
         Add(header);
-        Add(platformLimit);
         Add(tabs);
         Add(StatusPane);
         Add(statusBar);
-
-        platformLimit.Refresh();
 
         // Auto-expand the status pane when an operation starts so the live log/summary is easy to
         // follow. We deliberately do NOT collapse on completion - that would scroll the summary out
@@ -303,7 +295,6 @@ public sealed class TuiShell : Window
             // Op finished (on the UI thread via TuiHost.Invoke): restore focus to the active tab for
             // arrow-key nav. Guarded so we never pull focus from a modal that's still open.
             tabs.Value?.SetFocus();
-            platformLimit.Refresh();
         }
     }
 
