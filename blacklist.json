@@ -6,6 +6,7 @@
     "AmigaVision-Saves.hdf",
     "AmigaVision.hdf",
     "CARTDUMP.gb",
+    "Example*Track*.bin",
     "GBPrinter_*.png",
     "HDD-3.hdf",
     "HDD-4.hdf",
@@ -32,7 +33,9 @@
     "maclc.iso",
     "maclc2.hda",
     "mpu.bin",
+    "n64savedb.txt",
     "palram.bin",
+    "playlist.bin",
     "playlist.m3u",
     "savestate.ss",
     "settings.dat",
@@ -41,5 +44,7 @@
     "slowhd1.img",
     "slowhd2.img",
     "stash.hsv",
-    "stash.sv"
+    "stash.sv",
+    "test_audio_bank*.bin",
+    "track_thumbs.bin"
 ]
