@@ -1,4 +1,5 @@
 using System;
+using Pannella.Helpers;
 using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
@@ -106,6 +107,7 @@ public sealed class TuiShell : Window
         {
             new Shortcut(Key.Esc, "Quit", Quit, null),
             new Shortcut(Key.F6, "Status pane", ToggleStatusPane, null),
+            new Shortcut(Key.F8, "Export log", ExportLog, null),
             new Shortcut(Key.F9, "Theme", PickTheme, null),
             new Shortcut(Key.Empty, "←/→ or A–G tabs · 0–9/H–Z items", null, null)
         })
@@ -141,6 +143,11 @@ public sealed class TuiShell : Window
                 ToggleStatusPane();
                 key.Handled = true;
             }
+            else if (key == Key.F8)
+            {
+                ExportLog();
+                key.Handled = true;
+            }
             else if (key == Key.F9)
             {
                 PickTheme();
@@ -168,6 +175,19 @@ public sealed class TuiShell : Window
 
     // App-wide theme chooser (deliberately not in a tab - it's a pupdate-UI setting).
     private static void PickTheme() => ThemePickerDialog.Show();
+    
+    private static void ExportLog()
+    {
+        try
+        {
+            string path = SessionLog.Export(ServiceHelper.UpdateDirectory, Program.VERSION, ServiceHelper.UpdateDirectory);
+            TuiApp.PostStatus($"Log exported to {path}");
+        }
+        catch (Exception ex)
+        {
+            TuiApp.PostStatus($"Could not export the log: {ex.Message}");
+        }
+    }
 
     private void OnGlobalKeyDown(object sender, Key key)
     {

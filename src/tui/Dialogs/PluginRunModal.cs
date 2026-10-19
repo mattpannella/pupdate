@@ -45,7 +45,11 @@ public static class PluginRunModal
 
         // Capture plugin output + status into this modal for the duration of the run.
         var previousOutput = PluginService.OutputHandler;
-        PluginService.OutputHandler = text => TuiHost.Invoke(() => log.WriteRaw(text));
+        PluginService.OutputHandler = text =>
+        {
+            SessionLog.RecordRaw(text);
+            TuiHost.Invoke(() => log.WriteRaw(text));
+        };
         TuiApp.SetStatusRedirect(message => TuiHost.Invoke(() => log.AppendLine(message)));
 
         Task.Run(() =>
