@@ -112,7 +112,15 @@ public sealed class PocketSetupTab : ActionMenuTab
             foreach (var id in coreIds)
             {
                 TuiApp.PostStatus($"Updating display modes for {id}");
-                ServiceHelper.CoresService.AddDisplayModes(id, displayModes, isCurated: isCurated, merge: merge);
+
+                try
+                {
+                    ServiceHelper.CoresService.AddDisplayModes(id, displayModes, isCurated: isCurated, merge: merge);
+                }
+                catch (Exception ex)
+                {
+                    TuiApp.PostStatus($"Error updating {id}: {Util.GetExceptionMessage(ex)}");
+                }
             }
 
             ServiceHelper.SettingsService.Save();
@@ -211,7 +219,7 @@ public sealed class PocketSetupTab : ActionMenuTab
     }
 
     private static List<string> AllNonSkippedCoreIds() =>
-        ServiceHelper.CoresService.Cores
+        ServiceHelper.CoresService.InstalledCores
             .Where(core => !ServiceHelper.SettingsService.GetCoreSettings(core.id).skip)
             .Select(core => core.id)
             .ToList();

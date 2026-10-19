@@ -97,11 +97,11 @@ public partial class CoresService
             };
         }
 
-        //dynamically add the license file to the blacklist so we dont try to download it
-        if (core.license_slot_filename != null)
-        {
-            this.assetsService.Blacklist.Add(core.license_slot_filename);
-        }
+        // skip this core's license file too, without leaking it into the shared blacklist
+        bool IsSkipped(string filename) =>
+            this.assetsService.IsBlacklisted(filename) ||
+            (core.license_slot_filename != null &&
+             string.Equals(Path.GetFileName(filename), core.license_slot_filename, StringComparison.OrdinalIgnoreCase));
 
 
         // run if:
@@ -137,7 +137,7 @@ public partial class CoresService
             {
                 if (!string.IsNullOrEmpty(slot.filename) &&
                     !slot.filename.EndsWith(".sav") &&
-                    !this.assetsService.IsBlacklisted(slot.filename))
+                    !IsSkipped(slot.filename))
                 {
                     string path;
 
@@ -157,7 +157,7 @@ public partial class CoresService
 
                     if (slot.alternate_filenames != null)
                     {
-                        files.AddRange(slot.alternate_filenames.Where(f => !this.assetsService.IsBlacklisted(f)));
+                        files.AddRange(slot.alternate_filenames.Where(f => !IsSkipped(f)));
                     }
 
                     foreach (string file in files)
@@ -338,7 +338,7 @@ public partial class CoresService
                                 missingLicense = true;
                             }
 
-                            if (!this.assetsService.IsBlacklisted(fileName) &&
+                            if (!IsSkipped(fileName) &&
                                 !fileName.EndsWith(".sav"))
                             {
                                 string commonPath = Path.Combine(platformPath, "common");

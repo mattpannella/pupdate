@@ -17,7 +17,7 @@ internal static partial class Program
             answer = AskAboutDisplayModes();
         }
 
-        coreIdentifiers ??= ServiceHelper.CoresService.Cores
+        coreIdentifiers ??= ServiceHelper.CoresService.InstalledCores
             .Where(core => !ServiceHelper.SettingsService.GetCoreSettings(core.id).skip)
             .Select(core => core.id)
             .ToList();
