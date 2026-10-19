@@ -192,9 +192,11 @@ public class AssetsService
         return BitConverter.ToString(finalHashBytes).Replace("-", "").ToLowerInvariant();
     }
 
-    public static void PruneSaveStates(string rootDirectory, string coreName = null, Action<string> log = null)
+    public static void PruneSaveStates(string rootDirectory, string coreName = null, Action<string> log = null,
+        int? keep = null)
     {
         log ??= Console.WriteLine;
+        int keepCount = Math.Max(1, keep ?? ServiceHelper.SettingsService.Config.save_states_to_keep);
         BackupMemories(ServiceHelper.UpdateDirectory, ServiceHelper.SettingsService.Config.backup_saves_location, log);
         string savesPath = Path.Combine(rootDirectory, "Memories", "Save States");
 
@@ -210,58 +212,28 @@ public class AssetsService
                 continue;
             }
 
-            // Dictionary to store the most recent file per game
-            var mostRecentFiles = new Dictionary<string, (string fileName, long timestamp)>();
+            var games = Directory.GetFiles(dir, "*.sta")
+                .Select(file => (file, match: regex.Match(Path.GetFileName(file))))
+                .Where(x => x.match.Success)
+                .GroupBy(x => x.match.Groups[2].Value);
 
-            // Get all .sta files in the directory
-            var files = Directory.GetFiles(dir, "*.sta");
-
-            foreach (var file in files)
+            foreach (var game in games)
             {
-                string fileName = Path.GetFileName(file);
+                // Newest first; delete everything past the first keepCount
+                var stale = game
+                    .OrderByDescending(x => long.Parse(x.match.Groups[1].Value.Replace("_", string.Empty)))
+                    .Skip(keepCount);
 
-                // Match the filename with the regex
-                Match match = regex.Match(fileName);
-
-                if (match.Success)
+                foreach (var (file, _) in stale)
                 {
-                    // Extract the timestamp (group 1) and game name (group 2)
-                    long timestamp = long.Parse(match.Groups[1].Value.Replace("_", string.Empty));
-                    string applicationName = match.Groups[2].Value;
-
-                    // Check if this game already has a file in the dictionary
-                    if (!mostRecentFiles.ContainsKey(applicationName) || mostRecentFiles[applicationName].timestamp < timestamp)
-                    {
-                        // If the file is more recent, or the first one for this game, store it
-                        mostRecentFiles[applicationName] = (fileName, timestamp);
-                    }
-                }
-            }
-
-            // Now prune the folder by deleting older files
-            foreach (var file in files)
-            {
-                string fileName = Path.GetFileName(file);
-
-                // Match the filename with the regex
-                Match match = regex.Match(fileName);
-
-                if (match.Success)
-                {
-                    // Extract the game name (Group 2)
-                    string applicationName = match.Groups[2].Value;
-
-                    // Check if the file is the most recent for this game
-                    if (mostRecentFiles.ContainsKey(applicationName) && mostRecentFiles[applicationName].fileName != fileName)
-                    {
-                        // If it's not the most recent file for this game, delete it
-                        File.Delete(file);
-                        log($"Deleted file: {fileName}");
-                    }
+                    File.Delete(file);
+                    log($"Deleted file: {Path.GetFileName(file)}");
                 }
             }
         }
 
-        log("Pruning completed. Most recent save state for each game retained.");
+        log(keepCount == 1
+            ? "Pruning completed. Most recent save state for each game retained."
+            : $"Pruning completed. {keepCount} most recent save states for each game retained.");
     }
 }

@@ -58,6 +58,21 @@ internal static partial class Program
             thisMenu.CurrentItem.Name = AiThresholdLabel();
         });
 
+        string KeepStatesLabel() => $"Set Save States to Keep per Game (current: {config.save_states_to_keep})";
+
+        menu.Add(KeepStatesLabel(), thisMenu =>
+        {
+            Console.WriteLine($"Current save states kept per game: {config.save_states_to_keep}");
+            Console.WriteLine("Prune Save States keeps this many of the most recent save states for each game.");
+
+            string input = PromptForInput();
+
+            if (int.TryParse(input?.Trim(), out int count))
+                config.save_states_to_keep = Math.Max(1, count);
+
+            thisMenu.CurrentItem.Name = KeepStatesLabel();
+        });
+
         menu.Add("Save", thisMenu => { thisMenu.CloseMenu(); });
 
         menu.Show();
