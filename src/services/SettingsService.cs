@@ -46,6 +46,7 @@ public class SettingsService
 
         // band-aid to fix old settings files
         settings.config ??= new Config();
+        settings.plugin_settings ??= new SortedDictionary<string, PluginSettings>(StringComparer.InvariantCultureIgnoreCase);
         this.settingsFile = file;
 
         if (cores != null)
@@ -184,6 +185,32 @@ public class SettingsService
         return settings.core_settings.TryGetValue(name, out CoreSettings value)
             ? value
             : new CoreSettings();
+    }
+
+    public IReadOnlyDictionary<string, PluginSettings> PluginSettings => settings.plugin_settings;
+
+    public PluginSettings GetPluginSettings(string directoryName)
+    {
+        return directoryName != null && settings.plugin_settings.TryGetValue(directoryName, out PluginSettings value)
+            ? value
+            : new PluginSettings();
+    }
+
+    //disabling removes the entry so the settings file only lists plugins that actually auto-run.
+    public void SetPluginAutoRun(string directoryName, string repo, bool enabled, PluginPhase phase = PluginPhase.after)
+    {
+        if (!enabled)
+        {
+            settings.plugin_settings.Remove(directoryName);
+            return;
+        }
+
+        settings.plugin_settings[directoryName] = new PluginSettings
+        {
+            repo = repo,
+            run_on_update = true,
+            phase = phase
+        };
     }
 
     public void SyncRomsets()

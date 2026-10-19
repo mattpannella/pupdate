@@ -91,6 +91,7 @@ public sealed class SettingsTab : FrameView
         AddToggle(nameof(Config.preserve_platforms_folder));
         AddToggle(nameof(Config.delete_skipped_cores));
         AddToggle(nameof(Config.backup_saves));
+        AddToggle(nameof(Config.update_plugins));
         AddValue(nameof(Config.backup_saves_location), "Backup saves location",
             TextEditor("Backup Saves Location", "Folder for save/memory backups (blank = \"Backups\"):",
                 input => string.IsNullOrWhiteSpace(input) ? "Backups" : input.Trim()),
@@ -143,6 +144,7 @@ public sealed class SettingsTab : FrameView
         AddToggle(nameof(Config.use_local_pocket_extras));
         AddToggle(nameof(Config.use_local_pocket_library_images));
         AddToggle(nameof(Config.use_local_display_modes));
+        AddToggle(nameof(Config.use_local_plugins_catalog));
 
         AddUncataloguedToggles();
     }

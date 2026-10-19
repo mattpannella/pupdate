@@ -8,6 +8,7 @@ public class Settings
 {
     public Config config { get; set; } = new();
     public SortedDictionary<string, CoreSettings> core_settings { get; set; } = new(StringComparer.InvariantCultureIgnoreCase);
+    public SortedDictionary<string, PluginSettings> plugin_settings { get; set; } = new(StringComparer.InvariantCultureIgnoreCase);
     public Debug debug { get; set; } = new();
     public Credentials credentials { get; set; }
 

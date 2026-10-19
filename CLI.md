@@ -14,6 +14,7 @@ update                   Run update all. (Can be configured via the settings men
   -c, --core                The core you want to update. Runs for all otherwise
   -r, --clean               Clean install. Remove all existing core files, and force a fresh re-install
   -u, --updated-assets-only Only check/download assets for cores that are updated during this run
+  -y, --yes                 Non-interactive: assume defaults for all prompts. Exits non-zero on failure
 
 uninstall                Delete a core
   -p, --path                Absolute path to install location
@@ -58,6 +59,20 @@ pocket-extras            Download Pocket Extras
 
 display-modes            Enable the curated list of Display Modes for all cores
   -p, --path                Absolute path to install location
+
+plugins                  List, install, run, update or remove plugins
+  -p, --path                Absolute path to install location
+  -l, --list                List installed plugins
+  -b, --browse              List the plugins in the catalog (plugins.json)
+  -i, --install             Install a plugin: owner/repo, a github.com URL, or a catalog id
+  -r, --run                 Run a plugin by name
+  -y, --yes                 With --run: answer any prompt with Kill (unattended)
+      --remove              Uninstall a plugin by name
+  -u, --update              Update installed plugins (all, or just -n)
+  -n, --name                Limit --update to this plugin
+      --set-auto            Run this plugin during 'Update All'
+      --phase               before or after cores, for --set-auto (default: after)
+      --unset-auto          Stop running this plugin during 'Update All'
 
 update-self              Check for updates to pupdate
 

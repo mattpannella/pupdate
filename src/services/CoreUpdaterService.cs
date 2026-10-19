@@ -4,6 +4,8 @@ using Pannella.Models;
 using Pannella.Models.Events;
 using Pannella.Models.Extras;
 using Pannella.Models.OpenFPGA_Cores_Inventory.V3;
+using Pannella.Models.Plugins;
+using Pannella.Models.Settings;
 using File = System.IO.File;
 using AnalogueCore = Pannella.Models.Analogue.Core.Core;
 
@@ -16,19 +18,24 @@ public class CoreUpdaterService : BaseProcess
     private readonly FirmwareService firmwareService;
     private SettingsService settingsService;
     private CoresService coresService;
+    private IPluginService pluginService;
+
+    public static Func<string, string, bool> InstallPluginPrompt;
 
     public CoreUpdaterService(
         string path,
         List<Core> cores,
         FirmwareService firmwareService,
         SettingsService settingsService,
-        CoresService coresService)
+        CoresService coresService,
+        IPluginService pluginService = null)
     {
         this.installPath = path;
         this.cores = cores;
         this.firmwareService = firmwareService;
         this.settingsService = settingsService;
         this.coresService = coresService;
+        this.pluginService = pluginService ?? ServiceHelper.PluginService;
 
         Directory.CreateDirectory(Path.Combine(path, "Cores"));
     }
@@ -56,9 +63,12 @@ public class CoreUpdaterService : BaseProcess
         List<string> installedAssets = new List<string>();
         List<string> skippedAssets = new List<string>();
         List<string> missingLicenses = new List<string>();
+        List<string> pluginsRun = new List<string>();
+        List<string> pluginsNeedInput = new List<string>();
+        List<string> pluginsFailed = new List<string>();
+        List<(string coreId, string slug)> pluginRecommendations = new List<(string, string)>();
         string firmwareDownloaded = null;
         int errorCount = 0;
-
 
         bool skipUnchangedAssets = onlyUpdatedAssets ||
             this.settingsService.Config.only_check_updated_core_assets;
@@ -83,6 +93,13 @@ public class CoreUpdaterService : BaseProcess
             Divide();
         }
 
+        if (ids == null)
+        {
+            EnsureAutoRunPluginsInstalled();
+            UpdateInstalledPlugins();
+            RunPluginPhase(PluginPhase.before, pluginsRun, pluginsNeedInput, pluginsFailed);
+        }
+
         this.coresService.RetrieveKeys();
 
         if (ids == null && this.settingsService.Config.filter_ai_cores)
@@ -103,8 +120,10 @@ public class CoreUpdaterService : BaseProcess
 
             try
             {
+                bool wasInstalled = this.coresService.IsInstalled(core.id);
+
                 //if its installed, it's an analogizer variant, and the setting is on
-                bool force = this.coresService.IsInstalled(core.id) &&
+                bool force = wasInstalled &&
                     this.settingsService.Config.no_analogizer_variants && this.coresService.IsAnalogizerVariant(core.id);
                 if (coreSettings.skip || force)
                 {
@@ -315,6 +334,11 @@ public class CoreUpdaterService : BaseProcess
                     }
                 }
 
+                if (!wasInstalled && this.coresService.IsInstalled(core.id))
+                {
+                    CollectRecommendedPlugins(core, pluginRecommendations);
+                }
+
                 JotegoRename(core);
 
                 var isJtBetaCore = this.coresService.RequiresLicense(core.id);
@@ -349,6 +373,13 @@ public class CoreUpdaterService : BaseProcess
             }
         }
 
+        if (ids == null)
+        {
+            RunPluginPhase(PluginPhase.after, pluginsRun, pluginsNeedInput, pluginsFailed);
+        }
+
+        List<string> recommendedPlugins = ResolveRecommendedPlugins(pluginRecommendations);
+
         this.coresService.RefreshLocalCores();
         this.coresService.RefreshInstalledCores();
 
@@ -359,6 +390,10 @@ public class CoreUpdaterService : BaseProcess
             InstalledAssets = installedAssets,
             SkippedAssets = skippedAssets,
             MissingLicenses = missingLicenses,
+            PluginsRun = pluginsRun,
+            PluginsNeedInput = pluginsNeedInput,
+            PluginsFailed = pluginsFailed,
+            RecommendedPlugins = recommendedPlugins,
             FirmwareUpdated = firmwareDownloaded,
             ErrorCount = errorCount,
             SkipOutro = false
@@ -367,6 +402,184 @@ public class CoreUpdaterService : BaseProcess
         OnUpdateProcessComplete(args);
 
         return errorCount;
+    }
+
+    private void EnsureAutoRunPluginsInstalled()
+    {
+        if (this.pluginService == null)
+        {
+            return;
+        }
+
+        var installed = this.pluginService.Discover();
+
+        foreach (var (directoryName, pluginSettings) in this.settingsService.PluginSettings)
+        {
+            if (!pluginSettings.run_on_update || string.IsNullOrEmpty(pluginSettings.repo))
+            {
+                continue;
+            }
+
+            if (installed.Any(p => string.Equals(p.DirectoryName, directoryName, StringComparison.OrdinalIgnoreCase)))
+            {
+                continue;
+            }
+
+            WriteMessage($"Auto-run plugin {pluginSettings.repo} is not installed on this computer. Installing...");
+
+            try
+            {
+                this.pluginService.InstallFromGithub(pluginSettings.repo);
+            }
+            catch (Exception ex)
+            {
+                WriteMessage($"Could not install plugin {pluginSettings.repo}: {Util.GetExceptionMessage(ex)}");
+            }
+
+            Divide();
+        }
+    }
+
+    private void UpdateInstalledPlugins()
+    {
+        if (this.pluginService == null || !this.settingsService.Config.update_plugins)
+        {
+            return;
+        }
+
+        foreach (var plugin in this.pluginService.Discover())
+        {
+            if (string.IsNullOrEmpty(plugin.Repo))
+            {
+                continue;
+            }
+
+            try
+            {
+                string newTag = this.pluginService.CheckForUpdate(plugin);
+
+                if (newTag != null)
+                {
+                    WriteMessage($"Updating plugin {plugin.DisplayName}: {plugin.InstalledTag} -> {newTag}");
+                    this.pluginService.Update(plugin);
+                    Divide();
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteMessage($"Could not update plugin {plugin.DisplayName}: {Util.GetExceptionMessage(ex)}");
+                Divide();
+            }
+        }
+    }
+
+    private void RunPluginPhase(PluginPhase phase, List<string> ran, List<string> needInput, List<string> failed)
+    {
+        if (this.pluginService == null)
+        {
+            return;
+        }
+
+        foreach (var plugin in this.pluginService.Discover())
+        {
+            var pluginSettings = this.settingsService.GetPluginSettings(plugin.DirectoryName);
+
+            if (!pluginSettings.run_on_update || pluginSettings.phase != phase)
+            {
+                continue;
+            }
+
+            WriteMessage($"Running plugin ({phase} cores): {plugin.DisplayName}");
+
+            try
+            {
+                switch (this.pluginService.Run(plugin, ServiceHelper.Unattended))
+                {
+                    case PluginRunResult.Completed:
+                        ran.Add(plugin.DisplayName);
+                        break;
+                    case PluginRunResult.NeedsInput:
+                        needInput.Add(plugin.DisplayName);
+                        break;
+                    default:
+                        failed.Add(plugin.DisplayName);
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                failed.Add(plugin.DisplayName);
+                WriteMessage($"Plugin {plugin.DisplayName} failed: {Util.GetExceptionMessage(ex)}");
+            }
+
+            Divide();
+        }
+    }
+
+    private void CollectRecommendedPlugins(Core core, List<(string coreId, string slug)> bag)
+    {
+        IEnumerable<string> specs = (core.updaters?.plugins ?? Array.Empty<string>())
+            .Concat(this.coresService.ReadUpdatersJson(core.id)?.plugins ?? Array.Empty<string>());
+
+        foreach (string spec in specs)
+        {
+            string slug = PluginService.NormalizeRepoSlug(spec);
+
+            if (slug != null && !bag.Any(x => string.Equals(x.slug, slug, StringComparison.OrdinalIgnoreCase)))
+            {
+                bag.Add((core.id, slug));
+            }
+        }
+    }
+
+    private List<string> ResolveRecommendedPlugins(List<(string coreId, string slug)> bag)
+    {
+        var notInstalled = new List<string>();
+
+        if (bag.Count == 0 || this.pluginService == null)
+        {
+            return notInstalled;
+        }
+
+        foreach (var (coreId, slug) in bag)
+        {
+            if (this.pluginService.FindByRepo(slug) != null)
+            {
+                continue;
+            }
+
+            var prompt = InstallPluginPrompt;
+
+            if (ServiceHelper.Unattended || prompt == null)
+            {
+                WriteMessage($"Core {coreId} recommends the plugin {slug}. Install it from Pocket Extras > Plugins " +
+                             $"or with: pupdate plugins --install {slug}");
+                notInstalled.Add($"{slug} (recommended by {coreId})");
+                continue;
+            }
+
+            if (!prompt(coreId, slug))
+            {
+                notInstalled.Add($"{slug} (recommended by {coreId})");
+                continue;
+            }
+
+            try
+            {
+                this.pluginService.InstallFromGithub(slug);
+            }
+            catch (Exception ex)
+            {
+                WriteMessage($"Could not install plugin {slug}: {Util.GetExceptionMessage(ex)}");
+            }
+        }
+
+        if (notInstalled.Count > 0)
+        {
+            Divide();
+        }
+
+        return notInstalled;
     }
 
     private void JotegoRename(Core core)
@@ -423,5 +636,6 @@ public class CoreUpdaterService : BaseProcess
     {
         this.settingsService = ServiceHelper.SettingsService;
         this.coresService = ServiceHelper.CoresService;
+        this.pluginService = ServiceHelper.PluginService ?? this.pluginService;
     }
 }

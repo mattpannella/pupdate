@@ -12,6 +12,8 @@ namespace Pannella.TUI;
 internal static class TuiHost
 {
     private static IApplication app;
+    
+    public static IApplication App => app;
 
     public static void Init()
     {

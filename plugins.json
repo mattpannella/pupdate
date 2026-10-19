@@ -1,0 +1,15 @@
+{
+  "plugins": [
+    {
+      "id": "playstation-game-files",
+      "repo": "GuardianSoul/openfpga-PlayStation-plugin",
+      "name": "PlayStation game files",
+      "author": "GuardianSoul",
+      "description": "Makes the game files (.json) for the PlayStation core: one entry per multi-disc game with every disc in it and one shared memory card, cue-only game files for cores from 0.5.3, LibCrypt .sbi files, and CHD images extracted safely. Put your games in Assets/playstation/common/, each in its own folder.",
+      "tags": ["playstation", "game-files"],
+      "requires_input": true,
+      "phase": "after",
+      "links": ["https://github.com/GuardianSoul/openfpga-PlayStation"]
+    }
+  ]
+}

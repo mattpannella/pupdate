@@ -88,6 +88,20 @@ Usage:
     -u, --unarchive           Comma-separated platform ids to unarchive
         --archive-unused      Archive all platforms with no installed core
 
+  plugins                  List, install, run, update or remove plugins
+    -p, --path                Absolute path to install location
+    -l, --list                List installed plugins
+    -b, --browse              List the plugins in the catalog
+    -i, --install             Install a plugin: owner/repo, a github.com URL, or a catalog id
+    -r, --run                 Run a plugin by name
+    -y, --yes                 With --run: answer any prompt with Kill (unattended)
+        --remove              Uninstall a plugin by name
+    -u, --update              Update installed plugins (all, or just -n)
+    -n, --name                Limit --update to this plugin
+        --set-auto            Run this plugin during 'Update All'
+        --phase               before or after cores, for --set-auto (default: after)
+        --unset-auto          Stop running this plugin during 'Update All'
+
   update-self              Check for updates to pupdate
 
   help                     Display more information on a specific command.

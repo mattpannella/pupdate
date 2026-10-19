@@ -125,6 +125,10 @@ public static class TuiApp
             "Coin-Op Collection Beta",
             "No .ID file found. Paste the device serial from the Coin-Op license portal:"));
 
+        CoreUpdaterService.InstallPluginPrompt = (coreId, repo) => TuiPrompts.FromBackground(() =>
+            TuiPrompts.Confirm(TuiHost.App, "Recommended Plugin",
+                $"Core {coreId} recommends the plugin {repo}. Install it?"));
+
         EventHandler<DownloadProgressEventArgs> progressHandler = (_, e) => PostProgress(e.Progress, e.BytesPerSecond);
         HttpHelper.Instance.DownloadProgressUpdate += progressHandler;
 
@@ -212,6 +216,46 @@ public static class TuiApp
             foreach (string core in e.MissingLicenses)
             {
                 yield return $"  {core}";
+            }
+        }
+
+        if (e.PluginsRun is { Count: > 0 })
+        {
+            yield return "Plugins run:";
+
+            foreach (string plugin in e.PluginsRun)
+            {
+                yield return $"  {plugin}";
+            }
+        }
+
+        if (e.PluginsNeedInput is { Count: > 0 })
+        {
+            yield return "Plugins skipped (need input - run them from the Plugins tab):";
+
+            foreach (string plugin in e.PluginsNeedInput)
+            {
+                yield return $"  {plugin}";
+            }
+        }
+
+        if (e.PluginsFailed is { Count: > 0 })
+        {
+            yield return "Plugins failed:";
+
+            foreach (string plugin in e.PluginsFailed)
+            {
+                yield return $"  {plugin}";
+            }
+        }
+
+        if (e.RecommendedPlugins is { Count: > 0 })
+        {
+            yield return "Recommended plugins not installed:";
+
+            foreach (string plugin in e.RecommendedPlugins)
+            {
+                yield return $"  {plugin}";
             }
         }
 

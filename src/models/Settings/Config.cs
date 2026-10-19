@@ -69,6 +69,9 @@ public class Config
     [Description("Auto-fetch Coin-Op Collection license (requires a <serial>.ID file in your install path)")]
     public bool coin_op_beta { get; set; } = false;
 
+    [Description("Check for and install plugin updates during 'Update All'")]
+    public bool update_plugins { get; set; } = false;
+
     public string temp_directory { get; set; } = null;
 
     public string plugins_directory { get; set; } = null;
@@ -112,6 +115,9 @@ public class Config
     //[JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
     [Description("Use a local display_modes.json file")]
     public bool use_local_display_modes { get; set; } = false;
+
+    [Description("Use a local plugins.json file")]
+    public bool use_local_plugins_catalog { get; set; } = false;
 
     [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
     //[Description("Use a local ignore_instance.json file")]
