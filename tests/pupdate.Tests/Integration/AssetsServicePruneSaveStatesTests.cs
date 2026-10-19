@@ -69,6 +69,35 @@ public class AssetsServicePruneSaveStatesTests : IDisposable
     }
 
     [Fact]
+    public void PruneSaveStates_KeepCount_RetainsNewestN()
+    {
+        WriteState("agg23.NES", "20240101_120000_aaa_b1_Mario.sta");
+        WriteState("agg23.NES", "20240201_120000_aaa_b1_Mario.sta");
+        WriteState("agg23.NES", "20240301_120000_aaa_b1_Mario.sta");
+
+        AssetsService.PruneSaveStates(_fx.PocketDir, keep: 2);
+
+        File.Exists(Path.Combine(SaveStatesDir("agg23.NES"), "20240301_120000_aaa_b1_Mario.sta")).Should().BeTrue();
+        File.Exists(Path.Combine(SaveStatesDir("agg23.NES"), "20240201_120000_aaa_b1_Mario.sta")).Should().BeTrue();
+        File.Exists(Path.Combine(SaveStatesDir("agg23.NES"), "20240101_120000_aaa_b1_Mario.sta")).Should().BeFalse();
+    }
+
+    [Fact]
+    public void PruneSaveStates_KeepCount_DefaultsToSetting()
+    {
+        ServiceHelper.SettingsService.Config.save_states_to_keep = 3;
+        WriteState("agg23.NES", "20240101_120000_aaa_b1_Mario.sta");
+        WriteState("agg23.NES", "20240201_120000_aaa_b1_Mario.sta");
+        WriteState("agg23.NES", "20240301_120000_aaa_b1_Mario.sta");
+        WriteState("agg23.NES", "20240401_120000_aaa_b1_Mario.sta");
+
+        AssetsService.PruneSaveStates(_fx.PocketDir);
+
+        Directory.GetFiles(SaveStatesDir("agg23.NES"), "*.sta").Should().HaveCount(3);
+        File.Exists(Path.Combine(SaveStatesDir("agg23.NES"), "20240101_120000_aaa_b1_Mario.sta")).Should().BeFalse();
+    }
+
+    [Fact]
     public void PruneSaveStates_NonMatchingFilenames_AreUntouched()
     {
         // Files that don't match the regex pattern should be left alone.

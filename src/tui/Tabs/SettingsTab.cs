@@ -96,6 +96,9 @@ public sealed class SettingsTab : FrameView
             TextEditor("Backup Saves Location", "Folder for save/memory backups (blank = \"Backups\"):",
                 input => string.IsNullOrWhiteSpace(input) ? "Backups" : input.Trim()),
             PathDisplay("Backups"));
+        AddValue(nameof(Config.save_states_to_keep), "Save states to keep per game",
+            NumberEditor("Save States to Keep", "Prune Save States keeps this many of the newest save states per game:", 1, 999),
+            value => $"{value}");
 
         AddGroup("Assets & Downloads");
         AddToggle(nameof(Config.crc_check));

@@ -341,7 +341,7 @@ internal static partial class Program
                     break;
 
                 case PruneMemoriesOptions options:
-                    AssetsService.PruneSaveStates(ServiceHelper.UpdateDirectory, options.CoreName);
+                    AssetsService.PruneSaveStates(ServiceHelper.UpdateDirectory, options.CoreName, keep: options.Keep);
                     break;
 
                 case AnalogizerSetupOptions options:

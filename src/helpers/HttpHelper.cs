@@ -277,69 +277,57 @@ public class HttpHelper
         }
     }
 
-    public void GetAuthCookie(string username, string password, string loginUrl, Dictionary<string, string> additional)
+    public void GetAuthCookie(string username, string password, string loginUrl)
     {
         //this code is all internet archive specific now, but whatever
         if (this.loggedIn)
             return;
 
         var archiveUri = new Uri("https://archive.org");
-
-        // First, GET the login page to establish session
-        var loginPageUrl = "https://archive.org/account/login";
-        this.client.GetAsync(loginPageUrl).Wait();
-        
-        // Second, GET the token from the AJAX endpoint
-        var tokenResponse = this.client.GetAsync(loginUrl).Result;
-        var tokenJson = tokenResponse.Content.ReadAsStringAsync().Result;
-        
-        // Parse the JSON to extract the token
-        var tokenMatch = System.Text.RegularExpressions.Regex.Match(tokenJson, @"""token""\s*:\s*""([^""]+)""");
-        if (!tokenMatch.Success)
+        var content = new FormUrlEncodedContent(new Dictionary<string, string>
         {
-            throw new Exception("Failed to extract authentication token from Archive.org");
+            { "email", username },
+            { "password", password }
+        });
+
+        HttpResponseMessage loginResponse = this.client.PostAsync(loginUrl, content).Result;
+        var body = loginResponse.Content.ReadAsStringAsync().Result;
+
+        using var json = System.Text.Json.JsonDocument.Parse(body);
+        var root = json.RootElement;
+
+        if (!root.TryGetProperty("success", out var success) || !success.GetBoolean())
+        {
+            string reason = root.TryGetProperty("values", out var v) && v.TryGetProperty("reason", out var r)
+                ? r.GetString()
+                : body;
+
+            throw new Exception(reason switch
+            {
+                "account_not_found" => "Archive.org login failed: account not found, check your email.",
+                "account_bad_password" => "Archive.org login failed: incorrect password.",
+                _ => $"Archive.org login failed: {reason}"
+            });
         }
-        
-        var token = tokenMatch.Groups[1].Value;
 
-        var jsonData = new
+        if (root.GetProperty("values").TryGetProperty("cookies", out var cookieValues))
         {
-            username = username,
-            password = password,
-            remember = true,
-            t = token
-        };
-
-        var jsonString = System.Text.Json.JsonSerializer.Serialize(jsonData);
-        var jsonContent = new StringContent(jsonString, System.Text.Encoding.UTF8, "application/json");
-
-        this.client.DefaultRequestHeaders.Clear();
-        this.client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
-        this.client.DefaultRequestHeaders.Add("Accept", "*/*");
-        this.client.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.9");
-        this.client.DefaultRequestHeaders.Add("Referer", loginPageUrl);
-        this.client.DefaultRequestHeaders.Add("Origin", "https://archive.org");
-        this.client.DefaultRequestHeaders.Add("Cache-Control", "no-cache");
-        this.client.DefaultRequestHeaders.Add("Pragma", "no-cache");
-
-        HttpResponseMessage loginResponse = this.client.PostAsync(loginUrl, jsonContent).Result;
-        
-        if (!loginResponse.IsSuccessStatusCode)
-        {
-            var errorBody = loginResponse.Content.ReadAsStringAsync().Result;
-            throw new Exception($"Archive.org login failed: {errorBody}");
+            foreach (var cookie in cookieValues.EnumerateObject())
+            {
+                this.handler.CookieContainer.Add(archiveUri,
+                    new Cookie(cookie.Name, cookie.Value.GetString(), "/", ".archive.org"));
+            }
         }
-        
-        // Verify we got the auth cookies
+
         var cookies = this.handler.CookieContainer.GetCookies(archiveUri);
-        bool hasAuthCookie = cookies.Cast<Cookie>().Any(c => 
-            c.Name == "logged-in-user" || c.Name == "logged-in-sig");
-        
+        bool hasAuthCookie = cookies.Any(c => c.Name == "logged-in-user") &&
+                             cookies.Any(c => c.Name == "logged-in-sig");
+
         if (!hasAuthCookie)
         {
             throw new Exception("Archive.org login succeeded but authentication cookies were not set");
         }
-        
+
         this.loggedIn = true;
     }
 

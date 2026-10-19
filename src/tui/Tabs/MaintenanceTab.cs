@@ -240,8 +240,11 @@ public sealed class MaintenanceTab : ActionMenuTab
 
     private void PruneSaveStates()
     {
+        int keep = Math.Max(1, ServiceHelper.SettingsService.Config.save_states_to_keep);
+        string kept = keep == 1 ? "most recent save state" : $"{keep} most recent save states";
+
         if (!TuiPrompts.Confirm(App, "Prune Save States",
-                "Back up Memories, then delete all but the most recent save state per game?"))
+                $"Back up Memories, then delete all but the {kept} per game?"))
         {
             return;
         }

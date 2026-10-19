@@ -13,7 +13,7 @@ public class ArchiveService : Base
 {
     internal static string METADATA = "https://archive.org/metadata/{0}";
     internal static string DOWNLOAD = "https://archive.org/download/{0}/{1}";
-    internal static string LOGIN = "https://archive.org/services/account/login/";
+    internal static string LOGIN = "https://archive.org/services/xauthn/?op=login";
 
     private readonly bool crcCheck;
     private readonly Dictionary<string, Archive> archiveFiles;
@@ -342,15 +342,7 @@ public class ArchiveService : Base
     {
         if (this.credentials != null)
         {
-            var fields = new Dictionary<string, string>
-            {
-                { "login", "true" },
-                { "remember", "true" },
-                { "submit_by_js", "true" },
-                { "referrer", "https://archive.org/CREATE/" }
-            };
-
-            HttpHelper.Instance.GetAuthCookie(this.credentials.username, this.credentials.password, LOGIN, fields);
+            HttpHelper.Instance.GetAuthCookie(this.credentials.username, this.credentials.password, LOGIN);
         }
     }
 
