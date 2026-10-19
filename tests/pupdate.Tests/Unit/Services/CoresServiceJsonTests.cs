@@ -318,4 +318,36 @@ public class CoresServiceJsonTests : IClassFixture<TempDirectoryFixture>
 
         svc.ReadUpdatersJson("nope").Should().BeNull();
     }
+
+    // -------- ReadUpdatersJson: plugins --------
+
+    [Fact]
+    public void ReadUpdatersJson_ParsesPlugins_UrlsAndSlugs()
+    {
+        var (install, svc) = NewSvc();
+        WriteFile(Path.Combine(install, "Cores", "owner.Core", "updaters.json"),
+            """
+            {
+              "previous": [],
+              "plugins": ["https://github.com/GuardianSoul/openfpga-PlayStation-plugin", "owner/other-plugin"]
+            }
+            """);
+
+        var updaters = svc.ReadUpdatersJson("owner.Core");
+
+        updaters.Should().NotBeNull();
+        updaters!.plugins.Should().Equal(
+            "https://github.com/GuardianSoul/openfpga-PlayStation-plugin", "owner/other-plugin");
+        updaters.license.Should().BeNull();
+    }
+
+    [Fact]
+    public void ReadUpdatersJson_NoPluginsField_IsNull()
+    {
+        var (install, svc) = NewSvc();
+        WriteFile(Path.Combine(install, "Cores", "owner.Core", "updaters.json"),
+            """{ "license": { "filename": "beta.bin" } }""");
+
+        svc.ReadUpdatersJson("owner.Core")!.plugins.Should().BeNull();
+    }
 }

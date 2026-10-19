@@ -29,11 +29,14 @@ public static class ServiceHelper
     /// </summary>
     public static bool InteractiveTui { get; set; }
 
+    public static bool Unattended { get; set; }
+
     private static bool IS_INITIALIZED;
 
     internal static void ResetForTests()
     {
         IS_INITIALIZED = false;
+        Unattended = false;
         UpdateDirectory = null;
         SettingsDirectory = null;
         TempDirectory = null;

@@ -54,6 +54,9 @@
     <None Update="jtbeta.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="plugins.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <RuntimeHostConfigurationOption Include="System.Globalization.Invariant" Value="true" />

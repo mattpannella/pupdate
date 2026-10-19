@@ -60,6 +60,8 @@ The “do everything” option. Steps marked with * follow your **Settings** tog
 5. Remove cores you have not selected (when that option is enabled) *
 6. Run the instance JSON builder for supported cores (e.g. PC Engine CD) when enabled *
 7. Rename Jotego cores to friendly titles when enabled *
+8. Check for and install plugin updates *
+9. Run any plugins marked **Auto-run during Update All** (before or after the cores, per plugin) *
 
 **Pinned versions:** If a core has `pinned_version` set in settings, the updater resolves that version from the **inventory release list** only. If the pin does not match any listed release, that core is skipped with a message and the run continues.
 
@@ -210,25 +212,68 @@ Exact menu labels are built at runtime; see **[MENU.md](MENU.md)** for a current
 
 ## Plugins
 
-Pupdate can install and run plugins distributed as GitHub repos. Each plugin is a small program that can drive its own interactive flow inside pupdate. To install ROM packs, configure something on your Pocket, fetch external content, etc.
+Pupdate can install and run plugins distributed as GitHub repos. Each plugin is a small program that can drive its own interactive flow inside pupdate. To install ROM packs, configure something on your Pocket, fetch external content, etc. Plugins follow the [pocket-plugin](https://github.com/openfpga-library/pocket-plugin) spec, so the same plugin works in pupdate and Pocket Sync.
+
+A plugin sees your whole SD card (mounted as `pocket/`) and gets a private folder on your computer for its own data. It can only reach the web hosts its `plugin.json` lists.
 
 ### Installing a plugin
 
-**Pocket Extras → Plugins → Install from GitHub...** and paste either:
+**Pocket Extras → Plugins → Browse plugin catalog...** lists the plugins in [`plugins.json`](plugins.json). Pick one to see its description and links, then install it. To get a plugin listed, open a pull request that adds it to `plugins.json`.
+
+**Install from GitHub...** installs anything else. Paste either:
 
 - a short slug like `owner/repo`, or
 - a full URL like `https://github.com/owner/repo`
 
 pupdate downloads the latest release of that repo. Example to try: `openfpga-library/pocket-plugin`.
 
+Plugins live in a `plugins` folder next to the pupdate executable (override with `config.plugins_directory`).
+
 ### Running a plugin
 
 After installing, the plugin appears in the same **Pocket Extras → Plugins** menu by its name. Select it and follow its prompts. Pick **Cancel** at any prompt to stop the plugin.
+
+### Running plugins during Update All
+
+**Pocket Extras → Plugins → Auto-run during Update All...** (the **Plugins** tab in the TUI) marks a plugin to run on every **Update All**, in one of two phases:
+
+- **before cores** - runs ahead of the core install loop. Use this for plugins that fetch license keys, so license gated cores aren't skipped.
+- **after cores** - runs once cores and assets are done (default). Use this for plugins that build game files or touch installed cores.
+
+Plugins may still ask questions during Update All. With `update -y` (unattended) any question is answered with **Cancel** and the plugin is listed as "skipped (need input)" in the summary. Plugin errors won't stop 
+the update from completing.
+
+Turn on **Check for and install plugin updates during 'Update All'** in Settings (off by default) to have every installed plugin checked against its GitHub release and updated at the start of Update All, before any plugin runs.
+
+### Recommended plugins (for core authors)
+
+A core can recommend plugins in its `updaters.json`:
+
+```json
+{
+  "plugins": ["https://github.com/GuardianSoul/openfpga-PlayStation-plugin"]
+}
+```
+
+When pupdate installs that core for the first time, it offers to install each listed plugin that isn't installed yet.
 
 ### Updating and uninstalling
 
 - **Check for updates** - checks every installed plugin against its source repo and offers to update any that have a newer release.
 - **Uninstall a plugin...** - pick one from the list and confirm.
+
+### CLI
+
+```
+pupdate plugins -l                                  list installed plugins
+pupdate plugins -b                                  list the catalog
+pupdate plugins -i owner/repo                       install (slug, URL, or catalog id)
+pupdate plugins -r "Plugin Name"                    run a plugin (-y answers prompts with Cancel)
+pupdate plugins -u                                  update all plugins (-n limits to one)
+pupdate plugins --set-auto "Plugin Name" --phase before
+pupdate plugins --unset-auto "Plugin Name"
+pupdate plugins --remove "Plugin Name"
+```
 
 ### Creating a plugin
 
@@ -260,8 +305,10 @@ Toggles exposed in the **Settings** menu (stored in `pupdate_settings.json`):
 | Show Menu Descriptions | Prompts/descriptions for Pocket Extras and similar |
 | Use custom archive | Use the preconfigured “custom” archive entry instead of default archive.org |
 | Automatically install updates to Pupdate | Self-update without prompt on startup |
+| Check for and install plugin updates during 'Update All' | Update every installed plugin at the start of Update All (off by default; see [Plugins](#plugins)) |
 | Use Local Pocket Extras | Use local `pocket_extras.json` |
 | Use Local Display Modes | Use local `display_modes.json` |
+| Use a local plugins.json file | Use local `plugins.json` for the plugin catalog |
 | Cache downloaded archive files locally | Keep a reusable cache; optional cache path in JSON |
 | Adds a description element to the video.json display modes | Non-breaking extra field in generated video JSON |
 | Hide and uninstall Analogizer core variants | Hides Analogizer-specific core variants |
@@ -294,6 +341,8 @@ Edit `pupdate_settings.json` for keys that are not bool menu toggles:
 | `archives` | Archive definitions: `internet_archive`, `custom_archive`, `core_specific_archive`, `core_specific_custom_archive` (see below) |
 | `credentials.internet_archive` | Optional archive.org username/password |
 | `core_settings.<core_id>.*` | Per core: `skip`, `download_assets`, `platform_rename`, `pocket_extras`, `pocket_extras_version`, `display_modes`, `original_display_modes`, `selected_display_modes`, `requires_license`, **`pinned_version`** |
+| `config.plugins_directory` | Where plugins are installed (default: `plugins` next to the executable) |
+| `plugin_settings.<owner.repo>.*` | Per plugin: `repo`, `run_on_update`, `phase` (`before` / `after`); set via **Auto-run during Update All** or `pupdate plugins --set-auto` |
 
 ### Asset blacklist
 

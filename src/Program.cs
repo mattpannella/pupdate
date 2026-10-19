@@ -33,6 +33,7 @@ internal static partial class Program
         typeof(ClearArchiveCacheOptions),
         typeof(ValidateCoresOptions),
         typeof(PlatformsOptions),
+        typeof(PluginsOptions),
     };
 
     private static void Main(string[] args)
@@ -69,6 +70,7 @@ internal static partial class Program
             if (parserResult.Value is BaseOptions baseOptions)
             {
                 AssumeYes = baseOptions.AssumeYes;
+                ServiceHelper.Unattended = baseOptions.AssumeYes;
             }
 
             string path;
@@ -144,6 +146,10 @@ internal static partial class Program
                 case PlatformsOptions options:
                     RunPlatforms(options);
                     return;
+
+                case PluginsOptions options:
+                    RunPlugins(options);
+                    return;
             }
 
             // If we have any missing cores, handle them.
@@ -156,7 +162,8 @@ internal static partial class Program
                 ServiceHelper.CoresService.Cores,
                 ServiceHelper.FirmwareService,
                 ServiceHelper.SettingsService,
-                ServiceHelper.CoresService);
+                ServiceHelper.CoresService,
+                ServiceHelper.PluginService);
 
             coreUpdaterService.StatusUpdated += statusSink;
             coreUpdaterService.UpdateProcessComplete += completeSink;
@@ -368,6 +375,8 @@ internal static partial class Program
                     else
                     {
                         CoresService.CoinOpSerialPrompt = PromptForCoinOpSerial;
+                        CoreUpdaterService.InstallPluginPrompt = (coreId, repo) =>
+                            AskYesNoQuestion($"Core {coreId} recommends the plugin {repo}. Install it?");
                         DisplayMenu(coreUpdaterService);
                     }
                     break;
@@ -457,6 +466,54 @@ internal static partial class Program
             foreach (string core in e.MissingLicenses)
             {
                 Console.WriteLine(core);
+            }
+
+            Console.WriteLine();
+        }
+
+        if (e.PluginsRun is { Count: > 0 })
+        {
+            Console.WriteLine("Plugins run:");
+
+            foreach (string plugin in e.PluginsRun)
+            {
+                Console.WriteLine(plugin);
+            }
+
+            Console.WriteLine();
+        }
+
+        if (e.PluginsNeedInput is { Count: > 0 })
+        {
+            Console.WriteLine("Plugins skipped (need input - run them from the Plugins menu):");
+
+            foreach (string plugin in e.PluginsNeedInput)
+            {
+                Console.WriteLine(plugin);
+            }
+
+            Console.WriteLine();
+        }
+
+        if (e.PluginsFailed is { Count: > 0 })
+        {
+            Console.WriteLine("Plugins failed:");
+
+            foreach (string plugin in e.PluginsFailed)
+            {
+                Console.WriteLine(plugin);
+            }
+
+            Console.WriteLine();
+        }
+
+        if (e.RecommendedPlugins is { Count: > 0 })
+        {
+            Console.WriteLine("Recommended plugins not installed:");
+
+            foreach (string plugin in e.RecommendedPlugins)
+            {
+                Console.WriteLine(plugin);
             }
 
             Console.WriteLine();

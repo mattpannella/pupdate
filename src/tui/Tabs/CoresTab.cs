@@ -473,12 +473,7 @@ public sealed class CoresTab : FrameView
         string.IsNullOrEmpty(c.platform_id) ? "(none)" : c.platform_id;
 
     private static List<(string Key, string Display)> BuildChoices(IReadOnlyList<string> keys, Func<string, string> display) =>
-        keys
-            .Where(k => !string.IsNullOrEmpty(k))
-            .Distinct()
-            .Select(k => (Key: k, Display: display(k)))
-            .OrderBy(x => x.Display, StringComparer.OrdinalIgnoreCase)
-            .ToList();
+        FilterChoices.Build(keys, display);
 
     private static List<string> ToChoiceLabels(List<(string Key, string Display)> choices)
     {

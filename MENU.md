@@ -115,6 +115,14 @@
       7. Download Dual Aspect Ratio: Super GameBoy 2
       8. Download Dual Aspect Ratio: Super GameBoy 2: Vaporwave Edition
       9. Go Back
-   4. Go Back
+   4. Plugins
+      1. (installed plugins, one entry each)
+      2. Browse plugin catalog...
+      3. Install from GitHub...
+      4. Auto-run during Update All...
+      5. Check for updates
+      6. Uninstall a plugin...
+      7. Back
+   5. Go Back
 9. Settings
 10. Exit

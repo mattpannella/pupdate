@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using ConsoleTools;
 using Extism.Sdk;
@@ -10,7 +11,7 @@ using Pannella.Models.Plugins;
 
 namespace Pannella.Services;
 
-public class PluginService : Base
+public class PluginService : Base, IPluginService
 {
     private const string WASM_FILE = "plugin.wasm";
     private const string MANIFEST_FILE = "plugin.json";
@@ -89,6 +90,55 @@ public class PluginService : Base
         return result.OrderBy(p => p.DisplayName, StringComparer.OrdinalIgnoreCase).ToList();
     }
 
+    public static bool TryParseRepoSpec(string spec, out string owner, out string repo)
+    {
+        owner = repo = null;
+        if (string.IsNullOrWhiteSpace(spec))
+            return false;
+
+        var m = RepoSpecRegex.Match(spec.Trim());
+        if (!m.Success)
+            return false;
+
+        owner = m.Groups["owner"].Value;
+        repo = m.Groups["repo"].Value;
+        return true;
+    }
+
+    public static string NormalizeRepoSlug(string spec)
+    {
+        return TryParseRepoSpec(spec, out var owner, out var repo) ? $"{owner}/{repo}" : null;
+    }
+
+    public static string DirectoryNameFor(string slug)
+    {
+        return TryParseRepoSpec(slug, out var owner, out var repo) ? $"{owner}.{repo}" : null;
+    }
+
+    public PluginDescriptor FindByRepo(string repoSpec)
+    {
+        var slug = NormalizeRepoSlug(repoSpec);
+        if (slug == null)
+            return null;
+
+        var dir = DirectoryNameFor(slug);
+
+        return Discover().FirstOrDefault(p =>
+            string.Equals(p.Repo, slug, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(p.DirectoryName, dir, StringComparison.OrdinalIgnoreCase));
+    }
+
+    public PluginDescriptor FindByName(string nameOrDirectory)
+    {
+        if (string.IsNullOrWhiteSpace(nameOrDirectory))
+            return null;
+
+        var plugins = Discover();
+
+        return plugins.FirstOrDefault(p => string.Equals(p.DisplayName, nameOrDirectory, StringComparison.OrdinalIgnoreCase))
+            ?? plugins.FirstOrDefault(p => string.Equals(p.DirectoryName, nameOrDirectory, StringComparison.OrdinalIgnoreCase));
+    }
+
     public bool InstallFromGithub(string repoSpec)
     {
         if (string.IsNullOrWhiteSpace(repoSpec))
@@ -97,15 +147,12 @@ public class PluginService : Base
             return false;
         }
 
-        var m = RepoSpecRegex.Match(repoSpec.Trim());
-        if (!m.Success)
+        if (!TryParseRepoSpec(repoSpec, out var owner, out var repo))
         {
             WriteMessage($"Could not parse '{repoSpec}'. Expected 'owner/repo' or a github.com URL.");
             return false;
         }
 
-        var owner = m.Groups["owner"].Value;
-        var repo = m.Groups["repo"].Value;
         var slug = $"{owner}/{repo}";
 
         WriteMessage($"Fetching latest release of {slug}...");
@@ -122,8 +169,7 @@ public class PluginService : Base
             return false;
         }
 
-        var safeDirName = $"{owner}.{repo}";
-        var targetDir = Path.Combine(pluginsDirectory, safeDirName);
+        var targetDir = Path.Combine(pluginsDirectory, DirectoryNameFor(slug));
         var targetExisted = Directory.Exists(targetDir);
 
         try
@@ -323,13 +369,18 @@ public class PluginService : Base
     public static Func<ChoicePluginMessage, HostMessage> ChoiceHandler;
     public static Func<TextPluginMessage, HostMessage> TextHandler;
 
-    public void Run(PluginDescriptor descriptor)
+    public PluginRunResult Run(PluginDescriptor descriptor, bool unattended = false)
     {
         if (descriptor == null || !File.Exists(descriptor.WasmPath))
         {
             WriteMessage($"Plugin not found: {descriptor?.WasmPath}");
-            return;
+            return PluginRunResult.NotFound;
         }
+
+        bool killPrompts = unattended ||
+            (ChoiceHandler == null && TextHandler == null && Console.IsInputRedirected);
+        bool needsInput = false;
+        int killsSent = 0;
 
         HostFunction openUrl = null;
         HostFunction printMsg = null;
@@ -349,6 +400,8 @@ public class PluginService : Base
                 manifest.AllowedHosts.Add(allowed);
 
             manifest.Timeout = TimeSpan.FromMinutes(5);
+            manifest.Config ??= new Dictionary<string, string>();
+            manifest.Config["locale"] = GetLocale();
 
             openUrl = new HostFunction(
                 "open_url",
@@ -374,12 +427,30 @@ public class PluginService : Base
             {
                 DrainLogs();
 
-                HostMessage reply = msg switch
+                HostMessage reply;
+
+                if (killPrompts && msg is ChoicePluginMessage or TextPluginMessage)
                 {
-                    ChoicePluginMessage c => PromptChoice(c),
-                    TextPluginMessage t => PromptText(t),
-                    _ => new KillHostMessage(),
-                };
+                    if (!needsInput)
+                    {
+                        needsInput = true;
+                        WriteMessage($"Plugin '{descriptor.DisplayName}' needs input; skipping (unattended).");
+                    }
+
+                    if (++killsSent > 3)
+                        break;
+
+                    reply = new KillHostMessage();
+                }
+                else
+                {
+                    reply = msg switch
+                    {
+                        ChoicePluginMessage c => PromptChoice(c),
+                        TextPluginMessage t => PromptText(t),
+                        _ => new KillHostMessage(),
+                    };
+                }
 
                 // Per pocket-plugin README: sending Kill notifies the plugin
                 // to wind down, but the plugin may run cleanup / confirmation
@@ -395,6 +466,7 @@ public class PluginService : Base
         catch (Exception ex)
         {
             WriteMessage($"Plugin error: {ex.Message}");
+            return PluginRunResult.Failed;
         }
         finally
         {
@@ -402,6 +474,26 @@ public class PluginService : Base
             openUrl?.Dispose();
             printMsg?.Dispose();
         }
+
+        return needsInput ? PluginRunResult.NeedsInput : PluginRunResult.Completed;
+    }
+
+    private static string GetLocale()
+    {
+        var name = CultureInfo.CurrentUICulture.Name;
+        if (!string.IsNullOrEmpty(name))
+            return name;
+
+        foreach (var variable in new[] { "LC_ALL", "LC_MESSAGES", "LANG" })
+        {
+            var value = Environment.GetEnvironmentVariable(variable);
+            if (string.IsNullOrEmpty(value) || value.StartsWith("C", StringComparison.Ordinal))
+                continue;
+
+            return value.Split('.')[0].Split('@')[0].Replace('_', '-');
+        }
+
+        return "en-US";
     }
 
     private string EnsureHostFolder(PluginDescriptor descriptor)

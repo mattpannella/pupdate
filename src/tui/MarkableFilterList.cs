@@ -232,12 +232,7 @@ public sealed class MarkableFilterList : View
 
         foreach (var spec in specs ?? Array.Empty<FilterSpec>())
         {
-            var choices = spec.Keys?
-                .Where(c => !string.IsNullOrEmpty(c))
-                .Distinct()
-                .Select(k => (Key: k, Display: spec.Display(k)))
-                .OrderBy(x => x.Display, StringComparer.OrdinalIgnoreCase)
-                .ToList();
+            var choices = FilterChoices.Build(spec.Keys, spec.Display);
 
             if (choices is not { Count: > 1 })
             {

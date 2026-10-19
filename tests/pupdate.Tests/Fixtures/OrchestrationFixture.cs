@@ -43,6 +43,7 @@ public class OrchestrationFixture : IDisposable
         File.WriteAllText(Path.Combine(WorkDir, "ignore_instance.json"), """{ "core_identifiers": [] }""");
         File.WriteAllText(Path.Combine(WorkDir, "pocket_library_images.json"),
             """{ "pocket_library_images": [] }""");
+        File.WriteAllText(Path.Combine(WorkDir, "plugins.json"), """{ "plugins": [] }""");
     }
 
     /// <summary>
@@ -50,10 +51,13 @@ public class OrchestrationFixture : IDisposable
     /// no firmware, no asset downloads, no backups, no JT fetches, all use_local_* on.
     /// Caller can pre-populate per-core settings via <paramref name="coreSettings"/>.
     /// </summary>
-    public void WriteSettings(IDictionary<string, CoreSettings> coreSettings = null)
+    public void WriteSettings(IDictionary<string, CoreSettings> coreSettings = null,
+        IDictionary<string, PluginSettings> pluginSettings = null, bool updatePlugins = false)
     {
         var settings = new Settings();
         settings.config.download_firmware = false;
+        settings.config.update_plugins = updatePlugins;
+        settings.config.use_local_plugins_catalog = true;
         settings.config.download_assets = false;
         settings.config.backup_saves = false;
         settings.config.crc_check = false;
@@ -70,6 +74,12 @@ public class OrchestrationFixture : IDisposable
         {
             foreach (var kvp in coreSettings)
                 settings.core_settings[kvp.Key] = kvp.Value;
+        }
+
+        if (pluginSettings != null)
+        {
+            foreach (var kvp in pluginSettings)
+                settings.plugin_settings[kvp.Key] = kvp.Value;
         }
 
         var json = JsonConvert.SerializeObject(settings, Formatting.Indented,
@@ -130,7 +140,8 @@ public class OrchestrationFixture : IDisposable
     /// produces {pocket}/Cores/{id}/core.json and the matching Platforms/{platformId}.json.
     /// Returns the absolute path to the zip.
     /// </summary>
-    public string BuildCoreReleaseZip(string id, string platformId, string version, string platformName)
+    public string BuildCoreReleaseZip(string id, string platformId, string version, string platformName,
+        string updatersJson = null)
     {
         string zipPath = Path.Combine(Root, $"core-release-{id}.zip");
 
@@ -170,6 +181,11 @@ public class OrchestrationFixture : IDisposable
 
         AddEntry(zip, $"Cores/{id}/core.json", coreJson);
         AddEntry(zip, $"Platforms/{platformId}.json", platformJson);
+
+        if (updatersJson != null)
+        {
+            AddEntry(zip, $"Cores/{id}/updaters.json", updatersJson);
+        }
 
         return zipPath;
     }
