@@ -59,6 +59,8 @@ public static class TuiApp
             return;
         }
 
+        SessionLog.Record(message);
+
         Action<string> redirect;
 
         lock (SYNC)
