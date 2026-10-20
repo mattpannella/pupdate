@@ -10,6 +10,16 @@
       "requires_input": true,
       "phase": "after",
       "links": ["https://github.com/GuardianSoul/openfpga-PlayStation"]
+    },
+    {
+      "id": "jotego-analogizer-config",
+      "repo": "mattpannella/pocket-plugin-jotego-analogizer-config",
+      "name": "Jotego Analogizer Config",
+      "author": "mattpannella",
+      "description": "Analogizer settings wizard for Jotego cores. Generates the config file used by all of his cores.",
+      "tags": ["analogizer", "jotego", "config"],
+      "requires_input": true,
+      "links": ["https://github.com/RndMnkIII/Analogizer"]
     }
   ]
 }
