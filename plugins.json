@@ -20,6 +20,16 @@
       "tags": ["analogizer", "jotego", "config"],
       "requires_input": true,
       "links": ["https://github.com/RndMnkIII/Analogizer"]
+    },
+    {
+      "id": "analogizer-config",
+      "repo": "mattpannella/pocket-plugin-analogizer-config",
+      "name": "Analogizer Config",
+      "author": "mattpannella",
+      "description": "Analogizer settings wizard for cores that use the standard Analogizer config (writes Assets/analogizer/common/analogizer.bin).",
+      "tags": ["analogizer", "config"],
+      "requires_input": true,
+      "links": ["https://github.com/RndMnkIII/Analogizer"]
     }
   ]
 }
