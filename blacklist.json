@@ -19,6 +19,7 @@
     "avoxee.bin",
     "avoxrom.bin",
     "backup.bak",
+    "bbs.p8pack",
     "beta.bin",
     "bios_1_0_usa.pce",
     "config.cfg",
@@ -34,6 +35,7 @@
     "maclc2.hda",
     "mpu.bin",
     "n64savedb.txt",
+    "openice-*.bin",
     "palram.bin",
     "playlist.bin",
     "playlist.m3u",
@@ -45,6 +47,8 @@
     "slowhd2.img",
     "stash.hsv",
     "stash.sv",
+    "tau-assets.bin",
+    "tau-library.tdb",
     "test_audio_bank*.bin",
     "track_thumbs.bin"
 ]
