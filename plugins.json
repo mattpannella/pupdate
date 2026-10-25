@@ -30,6 +30,17 @@
       "tags": ["analogizer", "config"],
       "requires_input": true,
       "links": ["https://github.com/RndMnkIII/Analogizer"]
+    },
+    {
+      "id": "jotego-platform-names",
+      "repo": "mattpannella/pocket-plugin-jotego-platform-names",
+      "name": "Rename Jotego Platform Names",
+      "author": "mattpannella",
+      "description": "Gives Jotego cores friendly platform names.",
+      "tags": ["jotego", "platforms"],
+      "requires_input": false,
+      "phase": "after",
+      "links": ["https://github.com/dyreschlock/pocket-platform-images"]
     }
   ]
 }
