@@ -64,20 +64,13 @@
    4. Super GameBoy Aspect Ratio
       1. Apply 8:7 Aspect Ratio to Super GameBoy cores
       2. Restore 4:3 Aspect Ratio to Super GameBoy cores
-   5. Analogizer Config
-      1. Jotego Analogizer Config
-      2. Standard Analogizer Config
-   6. Patreon Config
-      1. Set Patreon Email Address
-      2. Set Patreon Session Cookie (for JT Beta auto-fetch)
-      3. Test Patreon Session Cookie
-   7. Directory Locations
+   5. Directory Locations
       1. Set Backup Saves Location
       2. Set Archive Cache Location
       3. Set Temp Directory
-   8. Set GitHub Token
-   9. Print openFPGA Category Structure
-   10. Go Back
+   6. Set GitHub Token
+   7. Print openFPGA Category Structure
+   8. Go Back
 6. Pocket Maintenance
    1. Update Firmware
    2. Update Selected

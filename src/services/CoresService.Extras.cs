@@ -233,13 +233,14 @@ public partial class CoresService
 
         if (!this.IsInstalled(core.id))
         {
-            bool jtBetaKeyExists = this.ExtractJTBetaKey();
+            bool jtBetaKeyExists = this.ImportLocalLicenseFiles();
 
             WriteMessage($"The '{pocketExtra.core_identifiers[0]}' core is not currently installed.");
 
             if (core.requires_license && !jtBetaKeyExists)
             {
-                // Moved message to the ExtractBetaKey method
+                WriteMessage("This core needs a beta key. Place jtbeta.zip on the root of the SD card, " +
+                             "or install the Jotego Beta Key plugin, then try again.");
                 return;
             }
 

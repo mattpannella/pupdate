@@ -65,10 +65,6 @@ Usage:
   display-modes            Apply recommended (curated) display modes from display_modes.json
     -p, --path                Absolute path to install location
 
-  analogizer-setup         Set up Analogizer options
-    -p, --path                Absolute path to install location
-    -j, --jotego              Run setup for Jotego cores
-
   prune-memories           Prune old save states (memories) for installed cores
     -p, --path                Absolute path to install location
     -c, --core                Limit pruning to this core (optional)

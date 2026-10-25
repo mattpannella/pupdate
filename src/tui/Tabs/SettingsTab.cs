@@ -87,7 +87,6 @@ public sealed class SettingsTab : FrameView
         AddToggle(nameof(Config.only_check_updated_core_assets));
         AddToggle(nameof(Config.download_firmware));
         AddToggle(nameof(Config.build_instance_jsons));
-        AddToggle(nameof(Config.fix_jt_names));
         AddToggle(nameof(Config.preserve_platforms_folder));
         AddToggle(nameof(Config.delete_skipped_cores));
         AddToggle(nameof(Config.backup_saves));
@@ -132,11 +131,6 @@ public sealed class SettingsTab : FrameView
             TextEditor("GitHub Token", "Enter your GitHub personal access token (leave blank to clear):",
                 input => string.IsNullOrWhiteSpace(input) ? string.Empty : input.Trim(), secret: true),
             SecretDisplay);
-        AddToggle(nameof(Config.jt_beta_github_fetch));
-        AddValue(nameof(Config.patreon_session_cookie), "Patreon session cookie", PatreonCookieEditor, SecretDisplay);
-        AddToggle(nameof(Config.jt_beta_patreon_fetch));
-        rows.Add(new SettingsActionRow("Test Patreon session cookie", TestPatreonCookie));
-        AddToggle(nameof(Config.coin_op_beta));
 
         AddGroup("Application & Interface");
         AddToggle(nameof(Config.use_tui));
@@ -276,82 +270,6 @@ public sealed class SettingsTab : FrameView
             return true;
         };
 
-    // Setting a cookie for the first time is almost always followed by wanting the auto-fetch on, so
-    // offer it - staged on the sibling toggle, like every other pending change.
-    private bool PatreonCookieEditor(SettingsValueRow row)
-    {
-        TuiApp.PostStatus("Patreon cookie: in your browser, log in to patreon.com, open DevTools → " +
-                          "Application/Storage → Cookies → patreon.com, and copy the 'session_id' value.");
-
-        if (!TextEditor("Patreon Session Cookie", "Paste the patreon.com 'session_id' value (blank to clear):",
-                Blank, secret: true)(row))
-        {
-            return false;
-        }
-
-        var fetch = ToggleRow(nameof(Config.jt_beta_patreon_fetch));
-
-        if (!fetch.Value && row.Value != null
-            && TuiPrompts.Confirm(App, "JT Beta", "Enable JT Beta auto-fetch via Patreon?"))
-        {
-            fetch.Value = true;
-        }
-
-        return true;
-    }
-
-    private void TestPatreonCookie()
-    {
-        // Commit first so the test uses the cookie that's on screen, not the last saved one.
-        CommitIfDirty();
-
-        string cookie = ServiceHelper.SettingsService.Config.patreon_session_cookie;
-
-        if (string.IsNullOrWhiteSpace(cookie))
-        {
-            TuiApp.PostStatus("No Patreon session cookie set. Set it on the row above first.");
-            return;
-        }
-
-        context.RunBackground(null, () =>
-        {
-            TuiApp.PostStatus("Testing Patreon session cookie...");
-
-            var diag = PatreonService.TestSessionCookie(cookie, "jotego", "jtbeta.zip");
-
-            foreach (var message in diag.Messages)
-            {
-                TuiApp.PostStatus("  - " + message);
-            }
-
-            if (!diag.CookieValid)
-            {
-                TuiApp.PostStatus("Result: cookie is NOT valid. Grab a fresh session_id from your browser.");
-            }
-            else
-            {
-                switch (diag.AttachmentAccess)
-                {
-                    case PatreonService.AttachmentAccess.Accessible:
-                        TuiApp.PostStatus("Result: cookie valid - your account can access the JT Beta post. Auto-fetch will work.");
-                        break;
-                    case PatreonService.AttachmentAccess.Gated:
-                        TuiApp.PostStatus("Result: cookie valid, but your Patreon tier can't view the JT Beta post (tier may not include beta access).");
-                        break;
-                    case PatreonService.AttachmentAccess.NotFound:
-                        TuiApp.PostStatus("Result: cookie valid, but no recent jtbeta.zip post was found. Try again after Jotego posts a new beta.");
-                        break;
-                    default:
-                        TuiApp.PostStatus("Result: cookie valid, but the beta-access check couldn't be completed. See the lines above.");
-                        break;
-                }
-            }
-        });
-    }
-
-    private SettingsToggleRow ToggleRow(string name) =>
-        rows.OfType<SettingsToggleRow>().First(row => row.PropertyName == name);
-
     // ── State ────────────────────────────────────────────────────────────────────────────────
 
     private void ActivateRow(int index)
@@ -364,7 +282,7 @@ public sealed class SettingsTab : FrameView
         if (rows[index].Activate())
         {
             dirty = true;
-            RenderAll(); // an edit can stage a sibling row too (see PatreonCookieEditor)
+            RenderAll();
         }
     }
 

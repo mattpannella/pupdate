@@ -35,9 +35,6 @@ public class Config
     [Description("Use CRC check when checking ROMs and BIOS files")]
     public bool crc_check { get; set; } = true;
 
-    [Description("Automatically rename Jotego cores during 'Update All'")]
-    public bool fix_jt_names { get; set; } = true;
-
     [Description("Skip alternative roms when downloading assets")]
     public bool skip_alternative_assets { get; set; } = true;
 
@@ -62,23 +59,12 @@ public class Config
     [Description("Automatically install updates to Pupdate")]
     public bool auto_install_updates { get; set; } = false;
 
-    [Description("Auto-fetch Jotego jtbeta.zip from GitHub (requires github_token + access to JTFPGA/jtbeta)")]
-    public bool jt_beta_github_fetch { get; set; } = false;
-
-    [Description("Auto-fetch Jotego jtbeta.zip from Patreon (requires session cookie)")]
-    public bool jt_beta_patreon_fetch { get; set; } = false;
-
-    [Description("Auto-fetch Coin-Op Collection license (requires a <serial>.ID file in your install path)")]
-    public bool coin_op_beta { get; set; } = false;
-
     [Description("Check for and install plugin updates during 'Update All'")]
     public bool update_plugins { get; set; } = false;
 
     public string temp_directory { get; set; } = null;
 
     public string plugins_directory { get; set; } = null;
-
-    public string patreon_session_cookie { get; set; } = null;
 
     // Name of the Terminal.Gui theme used by the --tui interface (e.g. "Dark", "8-Bit"). No
     // [Description] - only bool settings get that (the settings menu casts described props to bool).
@@ -142,6 +128,10 @@ public class Config
 
     public int download_chunk_count { get; set; } = 4;
 
+    // Plugin ids (see RetiredSettingMigrations) whose replacement install hasn't been offered yet.
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public List<string> pending_plugin_migrations { get; set; }
+
     [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
     public List<Archive> archives { get; set; } = new()
     {
@@ -192,9 +182,53 @@ public class Config
     [JsonProperty]
     private CustomArchive custom_archive { set { _custom_archive = value; } }
 
+    // Settings retired when their feature moved to a plugin. Write-only so they drop out of the
+    // file on the next save; Migrate() queues the replacement plugin offer when they were on.
+    private bool? _fix_jt_names;
+
+    [JsonProperty]
+    private bool? fix_jt_names { set { _fix_jt_names = value; } }
+
+    private bool? _coin_op_beta;
+
+    [JsonProperty]
+    private bool? coin_op_beta { set { _coin_op_beta = value; } }
+
+    private bool? _jt_beta_github_fetch;
+
+    [JsonProperty]
+    private bool? jt_beta_github_fetch { set { _jt_beta_github_fetch = value; } }
+
+    private bool? _jt_beta_patreon_fetch;
+
+    [JsonProperty]
+    private bool? jt_beta_patreon_fetch { set { _jt_beta_patreon_fetch = value; } }
+
+    private string _patreon_session_cookie;
+
+    [JsonProperty]
+    private string patreon_session_cookie { set { _patreon_session_cookie = value; } }
+
     public void Migrate()
     {
         Archive archive;
+
+        if (_coin_op_beta == true)
+        {
+            this.AddPendingPluginMigration(RetiredSettingMigrations.COINOP_LICENSE);
+        }
+
+        // default was true, so only an explicit true (an existing file) counts, not a fresh install
+        if (_fix_jt_names == true)
+        {
+            this.AddPendingPluginMigration(RetiredSettingMigrations.JOTEGO_PLATFORM_NAMES);
+        }
+
+        if (_jt_beta_github_fetch == true || _jt_beta_patreon_fetch == true ||
+            !string.IsNullOrWhiteSpace(_patreon_session_cookie))
+        {
+            this.AddPendingPluginMigration(RetiredSettingMigrations.JOTEGO_BETA_KEY);
+        }
 
         if (!string.IsNullOrEmpty(_archive_name))
         {
@@ -241,6 +275,26 @@ public class Config
         if (archive is { type: ArchiveType.custom_archive } && string.IsNullOrEmpty(archive.archive_name))
         {
             archive.archive_name = "custom";
+        }
+    }
+
+    private void AddPendingPluginMigration(string pluginId)
+    {
+        this.pending_plugin_migrations ??= new List<string>();
+
+        if (!this.pending_plugin_migrations.Contains(pluginId, StringComparer.OrdinalIgnoreCase))
+        {
+            this.pending_plugin_migrations.Add(pluginId);
+        }
+    }
+
+    public void ClearPendingPluginMigration(string pluginId)
+    {
+        this.pending_plugin_migrations?.RemoveAll(id => string.Equals(id, pluginId, StringComparison.OrdinalIgnoreCase));
+
+        if (this.pending_plugin_migrations is { Count: 0 })
+        {
+            this.pending_plugin_migrations = null;
         }
     }
 

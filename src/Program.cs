@@ -29,7 +29,6 @@ internal static partial class Program
         typeof(PocketExtrasOptions), 
         typeof(DisplayModesOptions), 
         typeof(PruneMemoriesOptions),
-        typeof(AnalogizerSetupOptions),
         typeof(ClearArchiveCacheOptions),
         typeof(ValidateCoresOptions),
         typeof(PlatformsOptions),
@@ -171,6 +170,7 @@ internal static partial class Program
             switch (parserResult.Value)
             {
                 case UpdateOptions options:
+                    OfferPluginMigrations(null);
                     Console.WriteLine("Starting update process...");
                     string[] identifiers = null;
 
@@ -344,19 +344,6 @@ internal static partial class Program
                     AssetsService.PruneSaveStates(ServiceHelper.UpdateDirectory, options.CoreName, keep: options.Keep);
                     break;
 
-                case AnalogizerSetupOptions options:
-                    if (options.Jotego)
-                    {
-                        JotegoAnalogizerSettingsService settings = new JotegoAnalogizerSettingsService();
-                        settings.RunAnalogizerSettings();
-                        Console.WriteLine("Jotego Analogizer configuration updated.");
-                    }
-                    else 
-                    {
-                        AnalogizerSettingsService.ShowWizard();
-                    }
-                    break;
-
                 case ClearArchiveCacheOptions options:
                     if (!options.AssumeYes)
                     {
@@ -374,9 +361,9 @@ internal static partial class Program
                     }
                     else
                     {
-                        CoresService.CoinOpSerialPrompt = PromptForCoinOpSerial;
                         CoreUpdaterService.InstallPluginPrompt = (coreId, repo) =>
                             AskYesNoQuestion($"Core {coreId} recommends the plugin {repo}. Install it?");
+                        OfferPluginMigrations(message => AskYesNoQuestion(message));
                         DisplayMenu(coreUpdaterService);
                     }
                     break;

@@ -100,7 +100,7 @@ public class CoreUpdaterService : BaseProcess
             RunPluginPhase(PluginPhase.before, pluginsRun, pluginsNeedInput, pluginsFailed);
         }
 
-        this.coresService.RetrieveKeys();
+        this.coresService.ImportLocalLicenseFiles();
 
         if (ids == null && this.settingsService.Config.filter_ai_cores)
         {
@@ -196,7 +196,6 @@ public class CoreUpdaterService : BaseProcess
                         }
                     }
 
-                    JotegoRename(core);
                     Divide();
                     continue;
                 }
@@ -243,11 +242,6 @@ public class CoreUpdaterService : BaseProcess
                             {
                                 WriteMessage("Up to date. Skipping Pocket Extras.");
                             }
-                        }
-
-                        if (!coreSettings.pocket_extras)
-                        {
-                            JotegoRename(core);
                         }
 
                         if (!skipUnchangedAssets)
@@ -338,8 +332,6 @@ public class CoreUpdaterService : BaseProcess
                 {
                     CollectRecommendedPlugins(core, pluginRecommendations);
                 }
-
-                JotegoRename(core);
 
                 var isJtBetaCore = this.coresService.RequiresLicense(core.id);
 
@@ -580,37 +572,6 @@ public class CoreUpdaterService : BaseProcess
         }
 
         return notInstalled;
-    }
-
-    private void JotegoRename(Core core)
-    {
-        if (this.settingsService.Config.fix_jt_names &&
-            this.settingsService.GetCoreSettings(core.id).platform_rename &&
-            core.id.Contains("jotego"))
-        {
-            core.platform_id = core.id.Split('.')[1];
-
-            // resolve the platform file wherever it lives (Platforms/ or Platforms/_archive/)
-            // so a rename writes back to the same place and an archived platform stays archived
-            string path = this.coresService.GetPlatformFilePath(core.platform_id);
-
-            if (!File.Exists(path))
-            {
-                return;
-            }
-
-            string json = File.ReadAllText(path);
-            Dictionary<string, Platform> data = JsonConvert.DeserializeObject<Dictionary<string, Platform>>(json);
-            Platform platform = data["platform"];
-
-            if (this.coresService.RenamedPlatformFiles.TryGetValue(core.platform_id, out string value) &&
-                platform.name == core.platform_id)
-            {
-                WriteMessage("Updating JT Platform Name...");
-                HttpHelper.Instance.DownloadFile(value, path);
-                WriteMessage("Complete");
-            }
-        }
     }
 
     public void DeleteCore(Core core, bool force = false, bool nuke = false)

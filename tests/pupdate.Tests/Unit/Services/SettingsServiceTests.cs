@@ -102,7 +102,6 @@ public class SettingsServiceTests : IClassFixture<TempDirectoryFixture>
 
         s.skip.Should().BeFalse();
         s.download_assets.Should().BeTrue();
-        s.platform_rename.Should().BeTrue();
 
         svc.Save();
         string json = File.ReadAllText(Path.Combine(dir, "pupdate_settings.json"));
@@ -150,5 +149,23 @@ public class SettingsServiceTests : IClassFixture<TempDirectoryFixture>
         var svc = new SettingsService(dir);
 
         svc.Config.github_token.Should().Be("modern");
+    }
+
+    [Fact]
+    public void Constructor_RetiredSettingOn_PersistsPendingMigrationAndDropsKey()
+    {
+        string dir = MakeScratchDir();
+        File.WriteAllText(
+            Path.Combine(dir, "pupdate_settings.json"),
+            JsonConvert.SerializeObject(new { config = new { coin_op_beta = true, fix_jt_names = false } }));
+
+        var svc = new SettingsService(dir);
+
+        svc.Config.pending_plugin_migrations.Should().Equal(RetiredSettingMigrations.COINOP_LICENSE);
+        string json = File.ReadAllText(Path.Combine(dir, "pupdate_settings.json"));
+        json.Should().Contain("pending_plugin_migrations").And.NotContain("coin_op_beta").And.NotContain("fix_jt_names");
+
+        var reloaded = new SettingsService(dir);
+        reloaded.Config.pending_plugin_migrations.Should().Equal(RetiredSettingMigrations.COINOP_LICENSE);
     }
 }

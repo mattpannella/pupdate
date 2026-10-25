@@ -185,20 +185,4 @@ public class GithubApiServiceTests : IDisposable
         var act = () => GithubApiService.GetFile("foo", "bar", "missing");
         act.Should().Throw<HttpRequestException>();
     }
-
-    [Fact]
-    public void DownloadFileContents_ReturnsRawBytes_AndSendsAcceptRawHeader()
-    {
-        var bytes = new byte[] { 0x01, 0x02, 0x03, 0x04 };
-        _mock.Server
-            .Given(Request.Create()
-                .WithPath("/repos/raw/test/contents/path/to/file.bin")
-                .WithHeader("Accept", new RegexMatcher(".*application/vnd\\.github\\.raw.*"))
-                .UsingGet())
-            .RespondWith(Response.Create().WithStatusCode(200).WithBody(bytes));
-
-        var result = GithubApiService.DownloadFileContents("raw", "test", "path/to/file.bin");
-
-        result.Should().Equal(bytes);
-    }
 }
