@@ -18,7 +18,7 @@ internal static class TuiPluginPrompts
         return RunOnUi(() =>
         {
             List<string> choices = choice.Choices?.ToList() ?? new List<string>();
-            int? index = SelectDialog.Show(choice.Query ?? "Choose", "Select an option:", choices);
+            int? index = SelectDialog.Show(choice.Query ?? "Choose", "Select an option:", choices, forPlugin: true);
 
             return index == null
                 ? (HostMessage)new KillHostMessage()
@@ -30,7 +30,7 @@ internal static class TuiPluginPrompts
     {
         return RunOnUi(() =>
         {
-            string input = TuiPrompts.PromptText(text.Query ?? "Input", text.Query ?? "Enter value:");
+            string input = TuiPrompts.PromptText(text.Query ?? "Enter value:", null, forPlugin: true);
 
             return string.IsNullOrEmpty(input)
                 ? (HostMessage)new KillHostMessage()

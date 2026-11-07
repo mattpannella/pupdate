@@ -1,3 +1,4 @@
+using System.Text;
 using System.Threading;
 using Terminal.Gui.App;
 using Terminal.Gui.Drawing;
@@ -17,11 +18,17 @@ internal static class TuiPrompts
     public static bool Confirm(IApplication app, string title, string message)
         => MessageBox.Query(app, title, message, "Yes", "No") == 0;
 
+    // Disables Terminal.Gui's "_x" hotkey parsing so text from plugins shows underscores as typed.
+    internal static readonly Rune NoHotKey = (Rune)0xFFFF;
+
     /// <summary>
     /// Single-line text entry. Returns the entered text, or null if cancelled. Set
-    /// <paramref name="secret"/> to mask the input (e.g. tokens).
+    /// <paramref name="secret"/> to mask the input (e.g. tokens). <paramref name="forPlugin"/>
+    /// docks a compact dialog at the top (the plugin's output stays visible below it), shows the
+    /// question once as the title (pass a null <paramref name="prompt"/>) and renders it literally.
     /// </summary>
-    public static string PromptText(string title, string prompt, string initial = "", bool secret = false)
+    public static string PromptText(string title, string prompt, string initial = "", bool secret = false,
+        bool forPlugin = false)
     {
         // The button bar lives in the dialog's Padding and reserves the bottom by SHRINKING the
         // content area (ContentSize); anything below it is silently clipped but stays focusable.
@@ -32,22 +39,29 @@ internal static class TuiPrompts
         var dialog = new Dialog
         {
             Title = title,
-            Width = Dim.Percent(70),
-            Height = 13
+            Width = Dim.Percent(forPlugin ? 85 : 70),
+            Height = prompt == null ? 12 : 13
         };
 
-        var label = new Label
+        if (forPlugin)
+        {
+            dialog.Y = 0;
+            dialog.HotKeySpecifier = NoHotKey;
+        }
+
+        var label = prompt == null ? null : new Label
         {
             X = 1,
             Y = 0,
             Width = Dim.Fill(2),
-            Text = prompt
+            Text = prompt,
+            HotKeySpecifier = forPlugin ? NoHotKey : (Rune)'_'
         };
 
         var field = new TextField
         {
             X = 1,
-            Y = 1,
+            Y = label == null ? 0 : 1,
             Width = Dim.Fill(2),
             Height = 3,
             Text = initial ?? string.Empty,
@@ -90,7 +104,11 @@ internal static class TuiPrompts
             TuiHost.RequestStop();
         };
 
-        dialog.Add(label);
+        if (label != null)
+        {
+            dialog.Add(label);
+        }
+
         dialog.Add(field);
         dialog.AddButton(save);
         dialog.AddButton(cancel);
