@@ -260,13 +260,15 @@ In the TUI, selecting an installed plugin on the **Plugins** tab opens a menu wi
 ```
 pupdate plugins -l                                  list installed plugins
 pupdate plugins -b                                  list the catalog
-pupdate plugins -i owner/repo                       install (slug, URL, or catalog id)
-pupdate plugins -r "Plugin Name"                    run a plugin (-y answers prompts with Cancel)
+pupdate plugins -i coinop-license                   install
+pupdate plugins -r coinop-license                   run a plugin (-y answers prompts with Cancel)
 pupdate plugins -u                                  update all plugins (-n limits to one)
-pupdate plugins --set-auto "Plugin Name" --phase before
-pupdate plugins --unset-auto "Plugin Name"
-pupdate plugins --remove "Plugin Name"
+pupdate plugins --set-auto coinop-license --phase before
+pupdate plugins --unset-auto coinop-license
+pupdate plugins --remove coinop-license
 ```
+
+Anywhere a plugin is expected you can use its catalog id (shown by `-b` and `-l`), its GitHub `owner/repo`, or its name.
 
 ### Creating a plugin
 
@@ -514,7 +516,7 @@ A few features that only served one core author or one adapter were moved out of
 | Setting **Automatically rename Jotego cores** (and `platform_rename` per core) | [Jotego Platform Names](https://github.com/mattpannella/pocket-plugin-jotego-platform-names) | `jotego-platform-names` | after cores |
 | Settings **Auto-fetch Jotego jtbeta.zip from GitHub / Patreon**, Pocket Setup → Patreon Config | [Jotego Beta Key](https://github.com/mattpannella/pocket-plugin-jotego-beta-key) | `jotego-beta-key` | before cores |
 
-Also removed: the `analogizer-setup` CLI verb (use `pupdate plugins -r "Analogizer Config"` or `-r "Jotego Analogizer Config"`).
+Also removed: the `analogizer-setup` CLI verb (use `pupdate plugins -r analogizer-config` or `pupdate plugins -r jotego-analogizer-config`).
 
 **Upgrading:** the first time you launch the menu after upgrading, pupdate checks the retired settings in your `pupdate_settings.json`. For each one that was on it asks once whether to install the replacement plugin, then drops the old key. If you answer no you can install the plugin later from the catalog. With `pupdate update -y` the offer is printed as a one-line hint and asked again on the next interactive launch. The Jotego Platform Names offer only appears if you have a `jotego.*` core installed.
 
