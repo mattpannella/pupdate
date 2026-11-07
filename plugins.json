@@ -41,6 +41,17 @@
       "requires_input": false,
       "phase": "after",
       "links": ["https://github.com/dyreschlock/pocket-platform-images"]
+    },
+    {
+      "id": "coinop-license",
+      "repo": "mattpannella/pocket-plugin-coinop-license",
+      "name": "Coin-Op License",
+      "author": "mattpannella",
+      "description": "Downloads your Coin-Op Collection license key (Licenses/coinop.key) using the <serial>.ID file on the SD card root, or asks for the serial the first time. Run it before the cores during Update All so license-gated cores aren't skipped.",
+      "tags": ["coin-op", "license", "keys"],
+      "requires_input": true,
+      "phase": "before",
+      "links": ["https://coinopcollection.org"]
     }
   ]
 }
