@@ -52,6 +52,17 @@
       "requires_input": true,
       "phase": "before",
       "links": ["https://coinopcollection.org"]
+    },
+    {
+      "id": "jotego-beta-key",
+      "repo": "mattpannella/pocket-plugin-jotego-beta-key",
+      "name": "Jotego Beta Key",
+      "author": "mattpannella",
+      "description": "Downloads the latest jtbeta.zip for Jotego beta cores from GitHub (sponsors, needs a token) or Patreon (needs your session cookie) and extracts it into Licenses/. A jtbeta.zip placed on the SD card root will skip the downloads. Asks for the source and credential on the first run, then runs without input. Run it before the cores during Update All, in pupdate.",
+      "tags": ["jotego", "license", "keys"],
+      "requires_input": true,
+      "phase": "before",
+      "links": ["https://github.com/jotego/jtbin/wiki/Beta-Files-FAQ", "https://github.com/sponsors/jotego"]
     }
   ]
 }
