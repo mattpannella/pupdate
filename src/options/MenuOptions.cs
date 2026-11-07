@@ -11,9 +11,9 @@ public class MenuOptions : BaseOptions
     [Option('s', "skip-update", HelpText = "Skip the self update check", Required = false)]
     public bool SkipUpdate { get; set; }
 
-    [Option('t', "tui", HelpText = "Launch the new full-screen UI (Beta)", Required = false)]
+    [Option('t', "tui", HelpText = "Launch the full-screen UI (the default)", Required = false)]
     public bool UseTui { get; set; }
 
-    [Option("classic", HelpText = "Force the classic menu and skip the startup UI prompt", Required = false)]
+    [Option("classic", HelpText = "Use the classic menu and skip the startup UI prompt", Required = false)]
     public bool Classic { get; set; }
 }

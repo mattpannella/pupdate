@@ -1,3 +1,5 @@
+The classic menu (`pupdate --classic`). The full-screen UI, the default, has the same features on its tabs.
+
 1. Update All
 2. Select Cores
 3. Download Assets

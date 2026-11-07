@@ -154,7 +154,7 @@ internal static partial class Program
             // If we have any missing cores, handle them.
             // If we're in Menu mode, show the core selector.
             // If not, auto enable them.
-            CheckForMissingCores(enableMissingCores);
+            CheckForMissingCores(enableMissingCores, useTui);
 
             CoreUpdaterService coreUpdaterService = new CoreUpdaterService(
                 ServiceHelper.UpdateDirectory,
@@ -355,19 +355,28 @@ internal static partial class Program
                     break;
 
                 default:
+                    bool checkPluginUpdates = parserResult.Value is not MenuOptions { SkipUpdate: true };
+
                     if (useTui)
                     {
-                        TuiApp.Run(coreUpdaterService);
+                        TuiApp.Run(coreUpdaterService, checkPluginUpdates);
                     }
                     else
                     {
                         CoreUpdaterService.InstallPluginPrompt = (coreId, repo) =>
                             AskYesNoQuestion($"Core {coreId} recommends the plugin {repo}. Install it?");
-                        if (OfferPluginMigrations(AskYesNoQuestion, message =>
-                            {
-                                Console.WriteLine(message);
-                                Console.WriteLine();
-                            }, Console.WriteLine))
+                        bool shown = OfferPluginMigrations(AskYesNoQuestion, message =>
+                        {
+                            Console.WriteLine(message);
+                            Console.WriteLine();
+                        }, Console.WriteLine);
+
+                        if (checkPluginUpdates)
+                        {
+                            shown |= CheckPluginUpdatesOnLaunch(AskYesNoQuestion, Console.WriteLine);
+                        }
+
+                        if (shown)
                         {
                             Pause();
                         }

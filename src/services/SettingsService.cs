@@ -157,6 +157,11 @@ public class SettingsService
 
     public List<Core> GetMissingCores() => this.missingCores;
 
+    // False until the user has chosen any cores, i.e. a fresh install.
+    public bool HasCoreSelections => settings.core_settings is { Count: > 0 };
+
+    public void ClearMissingCores() => this.missingCores.Clear();
+
     public void EnableMissingCores()
     {
         foreach (var core in this.missingCores)

@@ -9,6 +9,8 @@ Usage:
   menu                     Interactive Main Menu (Default Verb)
     -p, --path                Absolute path to install location
     -s, --skip-update         Go straight to the menu, without looking for an update
+    -t, --tui                 Use the full-screen UI (the default)
+        --classic             Use the classic menu
 
   fund                     List sponsor links. Lists all if no core is provided
     -p, --path                Absolute path to install location
