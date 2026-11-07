@@ -74,8 +74,8 @@ public class Config
     // [Description] - only bool settings get that (the settings menu casts described props to bool).
     public string tui_theme { get; set; } = "Dark";
 
-    [Description("Use new pupdate UI (Beta). takes effect next launch")]
-    public bool use_tui { get; set; } = false;
+    [Description("Use the full-screen UI (off = classic menu). takes effect next launch")]
+    public bool use_tui { get; set; } = true;
 
     // Set once the startup "which interface?" prompt has been answered, so we only ask once.
     // Internal gate (no [Description] so it isn't a menu toggle; hidden from JSON until true).

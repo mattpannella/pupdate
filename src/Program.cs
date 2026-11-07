@@ -154,7 +154,7 @@ internal static partial class Program
             // If we have any missing cores, handle them.
             // If we're in Menu mode, show the core selector.
             // If not, auto enable them.
-            CheckForMissingCores(enableMissingCores);
+            CheckForMissingCores(enableMissingCores, useTui);
 
             CoreUpdaterService coreUpdaterService = new CoreUpdaterService(
                 ServiceHelper.UpdateDirectory,

@@ -5,8 +5,23 @@ namespace Pannella;
 
 internal static partial class Program
 {
-    private static void CheckForMissingCores(bool enableMissingCores)
+    // Longer lists of new cores are summarised instead of printed or paged through.
+    private const int NEW_CORES_LIST_LIMIT = 15;
+
+    private static void CheckForMissingCores(bool enableMissingCores, bool useTui = false)
     {
+        if (FirstRunCoreSetupNeeded() && !AssumeYes)
+        {
+            // The full-screen UI asks the same question in a dialog once it opens.
+            if (!useTui)
+            {
+                RunClassicFirstRunCoreSetup();
+                ServiceHelper.ReloadSettings();
+            }
+
+            return;
+        }
+
         if (ServiceHelper.SettingsService.GetMissingCores().Any())
         {
             Console.WriteLine("\nNew cores found since the last run.");
@@ -18,11 +33,7 @@ internal static partial class Program
             {
                 case "yes":
                     Console.WriteLine("The following cores have been enabled:");
-
-                    foreach (Core core in ServiceHelper.SettingsService.GetMissingCores())
-                    {
-                        Console.WriteLine($"- {core.id}");
-                    }
+                    PrintCoreList(ServiceHelper.SettingsService.GetMissingCores());
 
                     ServiceHelper.SettingsService.EnableMissingCores();
                     ServiceHelper.SettingsService.Save();
@@ -30,11 +41,7 @@ internal static partial class Program
 
                 case "no":
                     Console.WriteLine("The following cores have been disabled:");
-
-                    foreach (Core core in ServiceHelper.SettingsService.GetMissingCores())
-                    {
-                        Console.WriteLine($"- {core.id}");
-                    }
+                    PrintCoreList(ServiceHelper.SettingsService.GetMissingCores());
 
                     ServiceHelper.SettingsService.DisableMissingCores();
                     ServiceHelper.SettingsService.Save();
@@ -47,6 +54,15 @@ internal static partial class Program
                     {
                         ServiceHelper.SettingsService.Save();
                     }
+                    else if (ServiceHelper.SettingsService.GetMissingCores().Count > NEW_CORES_LIST_LIMIT)
+                    {
+                        int count = ServiceHelper.SettingsService.GetMissingCores().Count;
+
+                        ServiceHelper.SettingsService.DisableMissingCores();
+                        ServiceHelper.SettingsService.Save();
+                        Console.WriteLine($"{count} new cores are available. They're turned off for now; " +
+                                          "turn on the ones you want in Select Cores (the Cores tab in the full-screen UI).");
+                    }
                     else
                     {
                         RunCoreSelector(ServiceHelper.SettingsService.GetMissingCores(), "New cores are available!", true);
@@ -57,6 +73,19 @@ internal static partial class Program
 
             // Is reloading the settings file necessary?
             ServiceHelper.ReloadSettings();
+        }
+    }
+
+    private static void PrintCoreList(List<Core> cores)
+    {
+        foreach (Core core in cores.Take(NEW_CORES_LIST_LIMIT))
+        {
+            Console.WriteLine($"- {core.id}");
+        }
+
+        if (cores.Count > NEW_CORES_LIST_LIMIT)
+        {
+            Console.WriteLine($"...and {cores.Count - NEW_CORES_LIST_LIMIT} more.");
         }
     }
 }

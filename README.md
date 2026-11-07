@@ -13,7 +13,7 @@ Please use the [latest release](https://github.com/mattpannella/pupdate/releases
 
 Do **not** clone the repo if you only want to run the tool. Download the latest release, unzip it, place the executable for your OS on the **root of your SD card** (or another folder you use as the install path), and run it.
 
-Use **Settings** from the main menu to walk through toggles, or edit `pupdate_settings.json` for advanced options. In the full-screen UI (`--tui`) the same options live on the **Settings** tab, grouped — see [Settings](#settings).
+Use **Settings** from the main menu to walk through toggles, or edit `pupdate_settings.json` for advanced options. In the full-screen UI (the default) the same options live on the **Settings** tab, grouped — see [Settings](#settings).
 
 ### macOS specific
 
@@ -27,7 +27,20 @@ xattr -d com.apple.quarantine /path/to/pupdate
 
 ## Interactive menu
 
-The full menu tree is documented in **[MENU.md](MENU.md)**.
+pupdate opens in the full-screen UI by default. The first time you run it, it asks which interface you want; you can switch later with the **Use the full-screen UI** setting, or for one run with `--classic` / `--tui`. Settings files from before this change keep the interface you already picked.
+
+The classic menu tree is documented in **[MENU.md](MENU.md)**.
+
+### First run
+
+On a fresh install pupdate asks which cores you want instead of listing every one:
+
+- **Keep the cores already on my SD card** (offered when it finds some)
+- **Choose by type** — Console, Handheld, Computer, Arcade and so on
+- **Start with none** — pick them later in **Select Cores** (the **Cores** tab in the full-screen UI)
+- **Install everything** — every core in the library, which needs a lot of space
+
+When more than a handful of new cores appear later, pupdate leaves them off and tells you how many there are, instead of listing them all.
 
 ---
 
@@ -406,6 +419,8 @@ Some items need login. Add to `pupdate_settings.json`:
   menu                     Interactive main menu (default)
     -p, --path                Absolute path to Pocket install / SD root
     -s, --skip-update         Open menu without checking for pupdate self-update
+    -t, --tui                 Use the full-screen UI (the default)
+        --classic             Use the classic menu
 
   fund                     List sponsor / funding links
     -p, --path

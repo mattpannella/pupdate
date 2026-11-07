@@ -56,14 +56,14 @@ internal static partial class Program
     {
         Console.WriteLine();
         Console.WriteLine("Which interface would you like to use?");
-        Console.WriteLine("  [1] Classic menu");
-        Console.WriteLine("  [2] New UI (Beta)");
+        Console.WriteLine("  [1] Full-screen UI (recommended)");
+        Console.WriteLine("  [2] Classic menu");
         Console.Write("Choose [1/2] (default 1): ");
 
         ConsoleKey key = Console.ReadKey(intercept: false).Key;
 
         Console.WriteLine();
 
-        return key is ConsoleKey.D2 or ConsoleKey.NumPad2;
+        return key is not (ConsoleKey.D2 or ConsoleKey.NumPad2);
     }
 }

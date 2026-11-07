@@ -150,18 +150,24 @@ public static class TuiApp
                 preInitBuffer.Clear();
             }
 
-            // Show the support/donation message once, on top of the shell. Queued now so it fires
-            // as soon as the main loop starts (a modal can't run before the loop exists).
-            TuiHost.Invoke(SupportModal.Show);
-
-            // Then the one-time "this feature is now a plugin" offers, after the modal is dismissed.
-            // Only started when there's something to do: a background job expands the status pane.
+            // Startup sequence, in order once the main loop starts (a modal can't run before the loop
+            // exists): the support message, the fresh-install core choice, then the background
+            // plugin work. Chained in one callback so the dialogs never stack on each other.
             bool migrations = ServiceHelper.SettingsService.Config.pending_plugin_migrations is { Count: > 0 };
             bool pluginUpdates = checkPluginUpdates && Program.PluginUpdateCheckDue();
 
-            if (migrations || pluginUpdates)
+            TuiHost.Invoke(() =>
             {
-                TuiHost.Invoke(() => context.RunBackground(null, () =>
+                SupportModal.Show();
+                FirstRunDialog.ShowIfNeeded();
+
+                // Only started when there's something to do: a background job expands the status pane.
+                if (!migrations && !pluginUpdates)
+                {
+                    return;
+                }
+
+                context.RunBackground(null, () =>
                 {
                     if (migrations)
                     {
@@ -177,8 +183,8 @@ public static class TuiApp
                             message => TuiPrompts.FromBackground(() => TuiPrompts.Confirm(TuiHost.App, "Plugin Updates", message)),
                             PostStatus);
                     }
-                }));
-            }
+                });
+            });
 
             TuiHost.Run(shell);
         }
