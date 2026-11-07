@@ -158,8 +158,10 @@ public static class TuiApp
             // Only started when there's something pending: a background job expands the status pane.
             if (ServiceHelper.SettingsService.Config.pending_plugin_migrations is { Count: > 0 })
             {
-                TuiHost.Invoke(() => context.RunBackground(null, () => Program.OfferPluginMigrations(message =>
-                    TuiPrompts.FromBackground(() => TuiPrompts.Confirm(TuiHost.App, "Now a Plugin", message)))));
+                TuiHost.Invoke(() => context.RunBackground(null, () => Program.OfferPluginMigrations(
+                    message => TuiPrompts.FromBackground(() => TuiPrompts.Confirm(TuiHost.App, "Now a Plugin", message)),
+                    message => TuiPrompts.FromBackground(() => Terminal.Gui.Views.MessageBox.Query(TuiHost.App, "Now a Plugin", message, "OK")),
+                    PostStatus)));
             }
 
             TuiHost.Run(shell);

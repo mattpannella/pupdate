@@ -218,7 +218,7 @@ A plugin sees your whole SD card (mounted as `pocket/`) and gets a private folde
 
 pupdate downloads the latest release of that repo. Example to try: `openfpga-library/pocket-plugin`.
 
-Plugins live in a `plugins` folder next to the pupdate executable (override with `config.plugins_directory`).
+Plugins live in a `plugins` folder on the SD card, next to your settings and cores (the path given with `-p`, or where pupdate runs from). Override it with `config.plugins_directory`.
 
 ### Running a plugin
 
@@ -333,7 +333,7 @@ Edit `pupdate_settings.json` for keys that are not bool menu toggles:
 | `archives` | Archive definitions: `internet_archive`, `custom_archive`, `core_specific_archive`, `core_specific_custom_archive` (see below) |
 | `credentials.internet_archive` | Optional archive.org username/password |
 | `core_settings.<core_id>.*` | Per core: `skip`, `download_assets`, `pocket_extras`, `pocket_extras_version`, `display_modes`, `original_display_modes`, `selected_display_modes`, `requires_license`, **`pinned_version`** |
-| `config.plugins_directory` | Where plugins are installed (default: `plugins` next to the executable) |
+| `config.plugins_directory` | Where plugins are installed (default: `plugins` in the install path, i.e. the SD card) |
 | `plugin_settings.<owner.repo>.*` | Per plugin: `repo`, `run_on_update`, `phase` (`before` / `after`); set via **Auto-run during Update All** or `pupdate plugins --set-auto` |
 
 ### Asset blacklist

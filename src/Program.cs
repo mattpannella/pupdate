@@ -170,7 +170,7 @@ internal static partial class Program
             switch (parserResult.Value)
             {
                 case UpdateOptions options:
-                    OfferPluginMigrations(null);
+                    OfferPluginMigrations(null, null, Console.WriteLine);
                     Console.WriteLine("Starting update process...");
                     string[] identifiers = null;
 
@@ -363,7 +363,15 @@ internal static partial class Program
                     {
                         CoreUpdaterService.InstallPluginPrompt = (coreId, repo) =>
                             AskYesNoQuestion($"Core {coreId} recommends the plugin {repo}. Install it?");
-                        OfferPluginMigrations(message => AskYesNoQuestion(message));
+                        if (OfferPluginMigrations(AskYesNoQuestion, message =>
+                            {
+                                Console.WriteLine(message);
+                                Console.WriteLine();
+                            }, Console.WriteLine))
+                        {
+                            Pause();
+                        }
+
                         DisplayMenu(coreUpdaterService);
                     }
                     break;
