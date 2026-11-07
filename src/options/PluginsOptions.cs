@@ -14,19 +14,19 @@ public class PluginsOptions : BaseOptions
     [Option('i', "install", Required = false, HelpText = "Install a plugin: owner/repo, a github.com URL, or a catalog id")]
     public string Install { get; set; }
 
-    [Option('r', "run", Required = false, HelpText = "Run a plugin by name (or directory name)")]
+    [Option('r', "run", Required = false, HelpText = "Run a plugin: catalog id, owner/repo, or name")]
     public string Run { get; set; }
 
-    [Option("remove", Required = false, HelpText = "Uninstall a plugin by name (or directory name)")]
+    [Option("remove", Required = false, HelpText = "Uninstall a plugin: catalog id, owner/repo, or name")]
     public string Remove { get; set; }
 
     [Option('u', "update", Required = false, HelpText = "Update installed plugins (all, or just -n)")]
     public bool Update { get; set; }
 
-    [Option('n', "name", Required = false, HelpText = "Limit --update to this plugin")]
+    [Option('n', "name", Required = false, HelpText = "Limit --update to this plugin (catalog id, owner/repo, or name)")]
     public string Name { get; set; }
 
-    [Option("set-auto", Required = false, HelpText = "Run this plugin during 'Update All' (see --phase)")]
+    [Option("set-auto", Required = false, HelpText = "Run this plugin during 'Update All' (catalog id, owner/repo, or name; see --phase)")]
     public string SetAuto { get; set; }
 
     [Option("phase", Required = false, Default = "after", HelpText = "before or after cores, for --set-auto")]

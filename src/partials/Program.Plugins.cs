@@ -83,20 +83,44 @@ internal static partial class Program
         }
         else
         {
-            Console.WriteLine("Specify one of: -l, -b, -i <repo>, -r <name>, --remove <name>, -u, --set-auto <name>, --unset-auto <name>");
+            Console.WriteLine("Specify one of: -l, -b, -i <plugin>, -r <plugin>, --remove <plugin>, -u, --set-auto <plugin>, --unset-auto <plugin>");
         }
     }
 
-    private static PluginDescriptor RequirePlugin(string nameOrDirectory)
+    private static PluginDescriptor RequirePlugin(string spec)
     {
-        var descriptor = ServiceHelper.PluginService.FindByName(nameOrDirectory.Trim());
+        var descriptor = FindInstalledPlugin(spec);
 
         if (descriptor == null)
         {
-            Console.WriteLine($"Plugin '{nameOrDirectory}' is not installed. Use -l to list installed plugins.");
+            Console.WriteLine($"Plugin '{spec}' is not installed. Use -l to list installed plugins.");
         }
 
         return descriptor;
+    }
+
+    // Accepts the same identifiers as --install (catalog id, owner/repo, URL) as well as the plugin's name.
+    private static PluginDescriptor FindInstalledPlugin(string spec)
+    {
+        if (string.IsNullOrWhiteSpace(spec))
+        {
+            return null;
+        }
+
+        spec = spec.Trim();
+        var plugins = ServiceHelper.PluginService;
+
+        return plugins.FindByName(spec)
+               ?? plugins.FindByRepo(spec)
+               ?? (ServiceHelper.CoresService.GetPluginCatalogEntry(spec) is { } entry
+                   ? plugins.FindByRepo(entry.Slug)
+                   : null);
+    }
+
+    private static string PluginId(PluginDescriptor plugin)
+    {
+        return (plugin.Repo == null ? null : ServiceHelper.CoresService.GetPluginCatalogEntry(plugin.Repo)?.id)
+               ?? plugin.DirectoryName;
     }
 
     private static void ListPlugins()
@@ -114,7 +138,7 @@ internal static partial class Program
         foreach (var plugin in plugins)
         {
             Console.WriteLine(plugin.DisplayName);
-            Console.WriteLine($"  {plugin.DirectoryName}  {plugin.InstalledTag ?? "(local)"}  auto: {PluginAutoLabel(plugin)}");
+            Console.WriteLine($"  {PluginId(plugin)}  {plugin.InstalledTag ?? "(local)"}  auto: {PluginAutoLabel(plugin)}");
 
             if (!string.IsNullOrWhiteSpace(plugin.Description))
             {
@@ -171,11 +195,11 @@ internal static partial class Program
 
     private static void UpdatePluginsCli(string name)
     {
+        var only = string.IsNullOrWhiteSpace(name) ? null : FindInstalledPlugin(name);
         var plugins = ServiceHelper.PluginService.Discover()
             .Where(p => !string.IsNullOrEmpty(p.Repo))
             .Where(p => string.IsNullOrWhiteSpace(name) ||
-                        string.Equals(p.DisplayName, name.Trim(), StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(p.DirectoryName, name.Trim(), StringComparison.OrdinalIgnoreCase))
+                        string.Equals(p.DirectoryName, only?.DirectoryName, StringComparison.OrdinalIgnoreCase))
             .ToList();
 
         if (plugins.Count == 0)
