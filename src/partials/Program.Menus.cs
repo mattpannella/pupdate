@@ -228,122 +228,6 @@ internal static partial class Program
 
         #endregion
 
-        #region Pocket Setup - Analogizer Setup
-
-        var analogizerMenu = new ConsoleMenu()
-            .Configure(menuConfig)
-            .Add("Jotego Analogizer Config", _=>
-            {
-                JotegoAnalogizerSettingsService settings = new JotegoAnalogizerSettingsService();
-                settings.RunAnalogizerSettings();
-
-                Console.WriteLine("Jotego Analogizer configuration updated.");
-                Pause();
-            })
-            .Add("Standard Analogizer Config", _=>
-            {
-                AnalogizerSettingsService.ShowWizard();
-
-                Console.WriteLine("Analogizer configuration updated.");
-                Pause();
-            })
-            .Add("Go Back", ConsoleMenu.Close);
-
-        #endregion
-
-        #region Pocket Setup - Patreon Config
-
-        var patreonConfigMenu = new ConsoleMenu()
-            .Configure(menuConfig)
-            .Add("Set Patreon Session Cookie (for JT Beta auto-fetch)", () =>
-            {
-                var config = ServiceHelper.SettingsService.Config;
-
-                Console.WriteLine($"Session cookie: {(string.IsNullOrWhiteSpace(config.patreon_session_cookie) ? "not set" : "set")}");
-                Console.WriteLine("Note: session cookies expire periodically. If auto-fetch starts failing, re-paste a fresh one.");
-                Console.WriteLine();
-                Console.WriteLine("To get the cookie:");
-                Console.WriteLine("  1. Open patreon.com in your browser and log in.");
-                Console.WriteLine("  2. Open DevTools (F12 or Cmd+Opt+I).");
-                Console.WriteLine("  3. Go to the Application tab (Chrome/Edge/Brave) or Storage tab (Firefox).");
-                Console.WriteLine("  4. Expand Cookies > https://www.patreon.com.");
-                Console.WriteLine("  5. Copy the Value of the 'session_id' row");
-
-                var result = AskYesNoQuestion("Would you like to set/change the session cookie?");
-
-                if (!result)
-                    return;
-
-                string input = PromptForInput();
-                config.patreon_session_cookie = string.IsNullOrWhiteSpace(input) ? null : input.Trim();
-
-                if (!config.jt_beta_patreon_fetch && config.patreon_session_cookie != null)
-                {
-                    if (AskYesNoQuestion("Would you like to enable JT Beta auto-fetch via Patreon?"))
-                    {
-                        config.jt_beta_patreon_fetch = true;
-                    }
-                }
-
-                ServiceHelper.SettingsService.Save();
-
-                Pause();
-            })
-            .Add("Test Patreon Session Cookie", () =>
-            {
-                string cookie = ServiceHelper.SettingsService.Config.patreon_session_cookie;
-
-                if (string.IsNullOrWhiteSpace(cookie))
-                {
-                    Console.WriteLine("No Patreon session cookie is set. Use 'Set Patreon Session Cookie' first.");
-                    Pause();
-                    return;
-                }
-
-                Console.WriteLine("Testing Patreon session cookie (this hits /api/current_user and the Jotego campaign page)...");
-                Console.WriteLine();
-
-                var diag = PatreonService.TestSessionCookie(cookie, "jotego", "jtbeta.zip");
-
-                foreach (var msg in diag.Messages)
-                    Console.WriteLine("  - " + msg);
-
-                Console.WriteLine();
-
-                if (!diag.CookieValid)
-                {
-                    Console.WriteLine("RESULT: Cookie is NOT valid. Re-grab a fresh session_id from your browser.");
-                }
-                else
-                {
-                    switch (diag.AttachmentAccess)
-                    {
-                        case PatreonService.AttachmentAccess.Accessible:
-                            Console.WriteLine("RESULT: Cookie valid - your account can access the JT Beta post. Auto-fetch will work.");
-                            if (!string.IsNullOrEmpty(diag.SourcePostUrl))
-                                Console.WriteLine($"        Beta post: {diag.SourcePostUrl}");
-                            break;
-                        case PatreonService.AttachmentAccess.Gated:
-                            Console.WriteLine("RESULT: Cookie valid, but your Patreon tier can't view the JT Beta post.");
-                            Console.WriteLine("        Your subscription may not include beta access.");
-                            break;
-                        case PatreonService.AttachmentAccess.NotFound:
-                            Console.WriteLine("RESULT: Cookie valid, but no recent jtbeta.zip post was found.");
-                            Console.WriteLine("        Nothing to fetch right now - try again after Jotego posts a new beta.");
-                            break;
-                        default:
-                            Console.WriteLine("RESULT: Cookie valid, but the beta-access check couldn't be completed.");
-                            Console.WriteLine("        See the diagnostic lines above.");
-                            break;
-                    }
-                }
-
-                Pause();
-            })
-            .Add("Go Back", ConsoleMenu.Close);
-
-        #endregion
-
         #region Pocket Setup - Directory Locations
 
         var directoryLocationsMenu = new ConsoleMenu()
@@ -451,8 +335,6 @@ internal static partial class Program
             .Add("Download Images and Palettes >", downloadFilesMenu.Show)
             .Add("Generate ROMs & JSON Files   >", generateFilesMenu.Show)
             .Add("Super GameBoy Aspect Ratio   >", sgbAspectRatioMenu.Show)
-            .Add("Analogizer Config            >", analogizerMenu.Show)
-            .Add("Patreon Config               >", patreonConfigMenu.Show)
             .Add("Directory Locations          >", directoryLocationsMenu.Show)
             .Add("Set GitHub Token", () =>
             {
@@ -716,17 +598,6 @@ internal static partial class Program
         #endregion
 
         menu.Show();
-    }
-
-    private static string PromptForCoinOpSerial()
-    {
-        Console.WriteLine();
-        Console.WriteLine("Coin-Op Collection beta access is enabled, but no .ID file was found in the root of");
-        Console.WriteLine("your install path. Paste the device serial number from the Coin-Op license portal to");
-        Console.WriteLine("create one.");
-        Console.Write("Enter serial number (or leave blank to skip): ");
-
-        return Console.ReadLine();
     }
 
     private static string PromptForInput()

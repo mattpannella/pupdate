@@ -221,4 +221,43 @@ public class CoresServiceLicenseTests : IClassFixture<TempDirectoryFixture>
         File.ReadAllBytes(Path.Combine(install, "Assets", "nes", "common", "key.bin"))
             .Should().Equal(new byte[] { 0xAA });
     }
+
+    // ---------- ImportLocalLicenseFiles ----------
+
+    [Fact]
+    public void ImportLocalLicenseFiles_NothingAtRoot_ReturnsFalse()
+    {
+        var (install, svc) = NewSvc();
+
+        svc.ImportLocalLicenseFiles().Should().BeFalse();
+        Directory.Exists(Path.Combine(install, "Licenses")).Should().BeFalse();
+    }
+
+    [Fact]
+    public void ImportLocalLicenseFiles_BetaBinAtRoot_CopiedToLicenses()
+    {
+        var (install, svc) = NewSvc();
+        WriteBytes(Path.Combine(install, "beta.bin"), new byte[] { 1, 2, 3 });
+
+        svc.ImportLocalLicenseFiles().Should().BeTrue();
+
+        File.ReadAllBytes(Path.Combine(install, "Licenses", "beta.bin")).Should().Equal(1, 2, 3);
+    }
+
+    [Fact]
+    public void ImportLocalLicenseFiles_JtbetaZipAtRoot_ExtractedToLicenses()
+    {
+        var (install, svc) = NewSvc();
+
+        using (var zip = System.IO.Compression.ZipFile.Open(Path.Combine(install, "jtbeta.zip"),
+                   System.IO.Compression.ZipArchiveMode.Create))
+        using (var entry = zip.CreateEntry("beta.bin").Open())
+        {
+            entry.Write(new byte[] { 9, 9 });
+        }
+
+        svc.ImportLocalLicenseFiles().Should().BeTrue();
+
+        File.ReadAllBytes(Path.Combine(install, "Licenses", "beta.bin")).Should().Equal(9, 9);
+    }
 }

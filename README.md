@@ -35,10 +35,10 @@ The full menu tree is documented in **[MENU.md](MENU.md)**.
 
 | Area | What it covers |
 |------|----------------|
-| **Cores** | Downloads and updates openFPGA cores from the library inventory; optional local inventory files; per-core skip, assets, rename, display modes, extras, and **version pinning** |
+| **Cores** | Downloads and updates openFPGA cores from the library inventory; optional local inventory files; per-core skip, assets, display modes, extras, and **version pinning** |
 | **Firmware** | Checks for and installs Analogue Pocket firmware |
 | **Assets** | ROMs, BIOS, and other files from configured archives (archive.org, custom, core-specific) |
-| **Pocket setup** | Display modes, image packs, library images, Game Boy palettes, instance JSON (e.g. PC Engine CD), Game & Watch ROM build flow, Super GameBoy aspect ratio, Analogizer config, **Patreon Config** (email, Patreon session cookie for JT beta auto-fetch, cookie test), **Directory Locations** (backup saves path, archive cache, temp directory), GitHub token (API rate limits), debug helpers |
+| **Pocket setup** | Display modes, image packs, library images, Game Boy palettes, instance JSON (e.g. PC Engine CD), Game & Watch ROM build flow, Super GameBoy aspect ratio, **Directory Locations** (backup saves path, archive cache, temp directory), GitHub token (API rate limits), debug helpers |
 | **Maintenance** | Update/install/reinstall/uninstall cores, ROM set archives, prune save states, clear archive cache, pin/unpin core versions, **validate/repair core JSON** |
 | **Extras** | Pocket Extras (additional assets, combination platforms, variant cores) from `pocket_extras.json` |
 | **Plugins** |  Plugins for custom functionality |
@@ -47,7 +47,7 @@ The full menu tree is documented in **[MENU.md](MENU.md)**.
 
 ## RTFM (quick links)
 
-[Update All](#update-all) · [Update Firmware](#update-firmware) · [Select Cores](#select-cores) · [Download Assets](#download-assets) · [Backup Saves & Memories](#backup-saves--memories) · [Pocket Setup](#pocket-setup) · [Pocket Maintenance](#pocket-maintenance) · [Pocket Extras](#pocket-extras) · [Plugins](#plugins) · [Pin / unpin core version](#pin--unpin-core-version) · [Settings](#settings) · [Additional settings](#additional-settings) · [Asset archives](#asset-source-archives) · [CLI](#cli-commands-and-parameters) · [Jotego beta](#jotego-beta-cores) · [Analogizer](#analogizer-setup) · [Troubleshooting](#troubleshooting) · [Developers](#developers)
+[Update All](#update-all) · [Update Firmware](#update-firmware) · [Select Cores](#select-cores) · [Download Assets](#download-assets) · [Backup Saves & Memories](#backup-saves--memories) · [Pocket Setup](#pocket-setup) · [Pocket Maintenance](#pocket-maintenance) · [Pocket Extras](#pocket-extras) · [Plugins](#plugins) · [Pin / unpin core version](#pin--unpin-core-version) · [Settings](#settings) · [Additional settings](#additional-settings) · [Asset archives](#asset-source-archives) · [CLI](#cli-commands-and-parameters) · [Jotego beta](#jotego-beta-cores) · [Moved to plugins](#features-that-moved-to-plugins) · [Troubleshooting](#troubleshooting) · [Developers](#developers)
 
 ### Update All
 
@@ -59,9 +59,8 @@ The “do everything” option. Steps marked with * follow your **Settings** tog
 4. Download missing required assets for selected cores *
 5. Remove cores you have not selected (when that option is enabled) *
 6. Run the instance JSON builder for supported cores (e.g. PC Engine CD) when enabled *
-7. Rename Jotego cores to friendly titles when enabled *
-8. Check for and install plugin updates *
-9. Run any plugins marked **Auto-run during Update All** (before or after the cores, per plugin) *
+7. Check for and install plugin updates *
+8. Run any plugins marked **Auto-run during Update All** (before or after the cores, per plugin) *
 
 **Pinned versions:** If a core has `pinned_version` set in settings, the updater resolves that version from the **inventory release list** only. If the pin does not match any listed release, that core is skipped with a message and the run continues.
 
@@ -145,17 +144,6 @@ Put `[game].zip` in each; run the menu item to build. Game & Watch **asset downl
 
 Apply **8:7** to chosen `Spiritualized.SuperGB*` cores, or restore **4:3**.
 
-### Analogizer Config
-
-**Jotego** vs **Standard** wizards for Analogizer JSON. See [Analogizer setup](#analogizer-setup).
-
-### Patreon Config
-
-Submenu under **Pocket Setup**.
-
-- **Set Patreon Session Cookie (for JT Beta auto-fetch)** — Stores your browser `session_id` cookie for experimental Patreon-based `jtbeta.zip` auto-fetch. See [Jotego beta](#jotego-beta-cores) for full steps and caveats.
-- **Test Patreon Session Cookie** — Verifies the cookie and whether the account is a Jotego patron (diagnostic only).
-
 ### Directory Locations
 
 Submenu under **Pocket Setup**.
@@ -215,7 +203,7 @@ Exact menu labels are built at runtime; see **[MENU.md](MENU.md)** for a current
 
 ## Plugins
 
-Pupdate can install and run plugins distributed as GitHub repos. Each plugin is a small program that can drive its own interactive flow inside pupdate. To install ROM packs, configure something on your Pocket, fetch external content, etc. Plugins follow the [pocket-plugin](https://github.com/openfpga-library/pocket-plugin) spec, so the same plugin works in pupdate and Pocket Sync.
+Pupdate can install and run plugins distributed as GitHub repos. Each plugin is a small program that can drive its own interactive flow inside pupdate. To install ROM packs, configure something on your Pocket, fetch external content, etc. Plugins follow the [pocket-plugin](https://github.com/openfpga-library/pocket-plugin) spec, so the same plugin works in pupdate and Pocket Sync. Several features that used to be built into pupdate are now plugins; see [Features that moved to plugins](#features-that-moved-to-plugins).
 
 A plugin sees your whole SD card (mounted as `pocket/`) and gets a private folder on your computer for its own data. It can only reach the web hosts its `plugin.json` lists.
 
@@ -230,7 +218,7 @@ A plugin sees your whole SD card (mounted as `pocket/`) and gets a private folde
 
 pupdate downloads the latest release of that repo. Example to try: `openfpga-library/pocket-plugin`.
 
-Plugins live in a `plugins` folder next to the pupdate executable (override with `config.plugins_directory`).
+Plugins live in a `plugins` folder on the SD card, next to your settings and cores (the path given with `-p`, or where pupdate runs from). Override it with `config.plugins_directory`.
 
 ### Running a plugin
 
@@ -238,7 +226,7 @@ After installing, the plugin appears in the same **Plugins** menu by its name. S
 
 ### Running plugins during Update All
 
-**Plugins → Auto-run during Update All...** (the **Plugins** tab in the TUI) marks a plugin to run on every **Update All**, in one of two phases:
+**Plugins → Auto-run during Update All...** (in the TUI: **Plugins** tab, select the plugin, **Run during Update All**) marks a plugin to run on every **Update All**, in one of two phases:
 
 - **before cores** - runs ahead of the core install loop. Use this for plugins that fetch license keys, so license gated cores aren't skipped.
 - **after cores** - runs once cores and assets are done (default). Use this for plugins that build game files or touch installed cores.
@@ -264,6 +252,8 @@ When pupdate installs that core for the first time, it offers to install each li
 
 - **Check for updates** - checks every installed plugin against its source repo and offers to update any that have a newer release.
 - **Uninstall a plugin...** - pick one from the list and confirm.
+
+In the TUI, selecting an installed plugin on the **Plugins** tab opens a menu with **Run now**, **Run during Update All**, **Check for update** and **Uninstall**; **Check for plugin updates** at the bottom of the tab checks all of them.
 
 ### CLI
 
@@ -300,7 +290,6 @@ Toggles exposed in the **Settings** menu (stored in `pupdate_settings.json`):
 | Only check assets for cores updated during 'Update All' | Skip the asset check for cores that are already up to date; only updated/installed cores get their assets checked |
 | Build game JSON Files | Instance JSON builder during Update All |
 | Delete cores, not managed by pupdate | Remove unmanaged cores from SD when enabled |
-| Automatically rename Jotego cores | Friendly platform names after install |
 | Use CRC check | Verify assets by CRC; re-download if mismatch |
 | Preserve Platforms folder | Avoid overwriting `Platforms` on Update All |
 | Skip alternative ROMs | Ignore `_alternatives` folders when fetching assets (default on) |
@@ -343,8 +332,8 @@ Edit `pupdate_settings.json` for keys that are not bool menu toggles:
 | `config.use_local_ignore_instance_json` | Use local `ignore_instance.json` |
 | `archives` | Archive definitions: `internet_archive`, `custom_archive`, `core_specific_archive`, `core_specific_custom_archive` (see below) |
 | `credentials.internet_archive` | Optional archive.org username/password |
-| `core_settings.<core_id>.*` | Per core: `skip`, `download_assets`, `platform_rename`, `pocket_extras`, `pocket_extras_version`, `display_modes`, `original_display_modes`, `selected_display_modes`, `requires_license`, **`pinned_version`** |
-| `config.plugins_directory` | Where plugins are installed (default: `plugins` next to the executable) |
+| `core_settings.<core_id>.*` | Per core: `skip`, `download_assets`, `pocket_extras`, `pocket_extras_version`, `display_modes`, `original_display_modes`, `selected_display_modes`, `requires_license`, **`pinned_version`** |
+| `config.plugins_directory` | Where plugins are installed (default: `plugins` in the install path, i.e. the SD card) |
 | `plugin_settings.<owner.repo>.*` | Per plugin: `repo`, `run_on_update`, `phase` (`before` / `after`); set via **Auto-run during Update All** or `pupdate plugins --set-auto` |
 
 ### Asset blacklist
@@ -474,10 +463,6 @@ Some items need login. Add to `pupdate_settings.json`:
     -p, --path
     -c, --core                Optional core id
 
-  analogizer-setup         Run Analogizer setup wizard
-    -p, --path
-    -j, --jotego              Jotego-specific wizard
-
   clear-archive-cache      Clear cached archive downloads (same as Pocket Maintenance → Clear Archive Cache)
     -p, --path
     -y, --yes                Required confirmation flag
@@ -513,46 +498,32 @@ pupdate validate-cores --fix
 
 Place **`jtbeta.zip`** from Patreon on the **root of the SD card** (exact name). **Update All** copies the beta key into the folders that need it. Do not rename the file.
 
-### Auto-fetching `jtbeta.zip` (optional)
-
-Pupdate can download the latest `jtbeta.zip` for you. **Manual placement (putting `jtbeta.zip` on the SD root yourself) always wins** — auto-fetch only runs when no manual key is present. Two optional sources are supported; if both are enabled, GitHub is tried first and Patreon is the fallback.
-
-**Option A — GitHub (recommended):**
-
-Jotego distributes `jtbeta.zip` via a private GitHub repo (`JTFPGA/jtbeta`). Per Jotego's own [Beta Files FAQ](https://github.com/jotego/jtbin/wiki/Beta-Files-FAQ), access is granted to **GitHub Sponsors of Jotego** — and since Jotego's [GitHub Sponsors page](https://github.com/sponsors/jotego) accepts Patreon as a payment route, existing Patreon patrons can get the same sponsor status (and therefore the repo invite) by linking their Patreon to their GitHub account.
-
-1. Make sure you have an active paid Jotego subscription. Either:
-   - Subscribe directly on [Jotego's GitHub Sponsors page](https://github.com/sponsors/jotego), or
-   - If you're already a Patreon patron, [link your Patreon account to GitHub](https://docs.github.com/en/sponsors/sponsoring-open-source-contributors/sponsoring-an-open-source-contributor-through-patreon) so GitHub recognizes your Patreon subscription as a sponsorship.
-2. Accept the invite to `JTFPGA/jtbeta` once it arrives.
-3. Create a GitHub Personal Access Token with read access to private repos (classic PAT with `repo` scope, or a fine-grained PAT with `Contents: Read` on `JTFPGA/jtbeta`).
-4. Set `github_token` in `pupdate_settings.json` to that PAT.
-5. Enable **Auto-fetch Jotego jtbeta.zip from GitHub** in the Settings menu (**Settings → Accounts** in `--tui`).
-
-**Option B — Patreon session cookie (experimental, fallback):**
-
-> **Experimental and flaky.** This uses Patreon's undocumented frontend API with your browser session cookie, not a supported public API. Cookies expire (usually in weeks, sooner if you log out or clear cookies), and Patreon can change response field names without notice. Prefer Option A if you have any way to. Treat this as a best-effort fallback, not a stable integration.
-
->  pupdate will **never** use your Patreon session cookie for anything other than making HTTP requests to `patreon.com` to locate and download `jtbeta.zip` (and, if you run the diagnostic, to verify your login and Jotego membership). It's stored locally in `pupdate_settings.json` and is never sent to any third party, telemetry endpoint, or server that isn't `patreon.com`.
-
-1. Open <https://www.patreon.com> in your browser and log in.
-2. Open DevTools (F12 or ⌘⌥I) → **Application** (Chrome/Edge/Brave) or **Storage** (Firefox) → **Cookies** → `https://www.patreon.com`.
-3. Copy the **value** of the `session_id` cookie.
-4. In pupdate: **Pocket Setup → Patreon Config → Set Patreon Session Cookie** (**Settings → Accounts → Patreon session cookie** in `--tui`), paste the value.
-5. Enable **Auto-fetch Jotego jtbeta.zip from Patreon** in the Settings menu (**Settings → Accounts** in `--tui`).
-
-Use **Pocket Setup → Patreon Config → Test Patreon Session Cookie** (**Settings → Accounts → Test Patreon session cookie** in `--tui`) to verify the cookie works and whether your account is currently a Jotego patron.
-
-**Notes:**
-
-- Your subscription/access must actually grant beta privileges — pupdate will tell you if it doesn't.
-- Auto-fetch failures never break an update run; you can always fall back to placing `jtbeta.zip` on the SD root manually.
+To have pupdate download `jtbeta.zip` for you instead, install the **Jotego Beta Key** plugin (see [Features that moved to plugins](#features-that-moved-to-plugins)). A `jtbeta.zip` on the SD root always wins over the plugin.
 
 ---
 
-## Analogizer setup
+## Features that moved to plugins
 
-**Pocket Setup → Analogizer Config** — choose **Standard** ([RndMnkIII](https://github.com/RndMnkIII)) or **Jotego** flow. For problems with generated files, ask the core author. [Supported cores](https://github.com/RndMnkIII/Analogizer/wiki/Supported-Cores-and-How-to-Configure-Them).
+A few features that only served one core author or one adapter were moved out of pupdate into [plugins](#plugins), so they can be maintained on their own and shared with Pocket Sync. Each is in the plugin catalog (**Plugins → Browse plugin catalog...**, or `pupdate plugins -i <id>`):
+
+| Was | Plugin | Catalog id | Suggested auto-run |
+|-----|--------|------------|--------------------|
+| Pocket Setup → Analogizer Config → Standard | [Analogizer Config](https://github.com/mattpannella/pocket-plugin-analogizer-config) | `analogizer-config` | no (run it when you change hardware) |
+| Pocket Setup → Analogizer Config → Jotego | [Jotego Analogizer Config](https://github.com/mattpannella/pocket-plugin-jotego-analogizer-config) | `jotego-analogizer-config` | no |
+| Setting **Auto-fetch Coin-Op Collection license** | [Coin-Op License](https://github.com/mattpannella/pocket-plugin-coinop-license) | `coinop-license` | before cores |
+| Setting **Automatically rename Jotego cores** (and `platform_rename` per core) | [Jotego Platform Names](https://github.com/mattpannella/pocket-plugin-jotego-platform-names) | `jotego-platform-names` | after cores |
+| Settings **Auto-fetch Jotego jtbeta.zip from GitHub / Patreon**, Pocket Setup → Patreon Config | [Jotego Beta Key](https://github.com/mattpannella/pocket-plugin-jotego-beta-key) | `jotego-beta-key` | before cores |
+
+Also removed: the `analogizer-setup` CLI verb (use `pupdate plugins -r "Analogizer Config"` or `-r "Jotego Analogizer Config"`).
+
+**Upgrading:** the first time you launch the menu after upgrading, pupdate checks the retired settings in your `pupdate_settings.json`. For each one that was on it asks once whether to install the replacement plugin, then drops the old key. If you answer no you can install the plugin later from the catalog. With `pupdate update -y` the offer is printed as a one-line hint and asked again on the next interactive launch. The Jotego Platform Names offer only appears if you have a `jotego.*` core installed.
+
+Notes:
+
+- The Coin-Op plugin reads the same `<serial>.ID` file from the SD card root that pupdate used, so nothing to re-enter.
+- The Jotego Beta Key plugin asks for your GitHub token or Patreon `session_id` cookie the first time it runs and keeps it in `Plugins/jotego-beta-key/` on the SD card. pupdate no longer stores `patreon_session_cookie`; `github_token` stays in settings for pupdate's own API calls. See the plugin's README for the sponsor / cookie steps.
+- Plugins that need input are skipped during `update -y`; mark the Coin-Op and Jotego Beta Key plugins to auto-run **before cores** so license-gated cores aren't skipped once the key is present.
+- The Analogizer plugins write the same `Assets/analogizer/common/analogizer.bin` and `Assets/jtpatreon/common/crtcfg.bin` files as before, and mark the current setting when you re-run them.
 
 ---
 

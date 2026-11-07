@@ -34,7 +34,6 @@ public class CoreSettingsRoundTripTests
         {
             skip = true,
             download_assets = false,
-            platform_rename = false,
             pocket_extras = true,
             pocket_extras_version = "1.0",
             display_modes = true,
@@ -48,7 +47,6 @@ public class CoreSettingsRoundTripTests
 
         restored.skip.Should().BeTrue();
         restored.download_assets.Should().BeFalse();
-        restored.platform_rename.Should().BeFalse();
         restored.pocket_extras.Should().BeTrue();
         restored.pocket_extras_version.Should().Be("1.0");
         restored.display_modes.Should().BeTrue();

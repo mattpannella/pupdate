@@ -91,9 +91,7 @@ public static class ServiceHelper
             PlatformImagePacksService = new PlatformImagePacksService(path, SettingsService.Config.github_token,
                 SettingsService.Config.use_local_image_packs);
             FirmwareService = new FirmwareService();
-            PluginsDirectory = string.IsNullOrEmpty(SettingsService.Config.plugins_directory)
-                ? Path.Combine(AppContext.BaseDirectory, "plugins")
-                : SettingsService.Config.plugins_directory;
+            PluginsDirectory = ResolvePluginsDirectory(path);
             PluginDataDirectory = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "pupdate", "plugin_data");
@@ -151,9 +149,7 @@ public static class ServiceHelper
         CoresService.StatusUpdated += StatusUpdated;
         Services.CoresService.ResetCaches();
 
-        PluginsDirectory = string.IsNullOrEmpty(SettingsService.Config.plugins_directory)
-            ? Path.Combine(AppContext.BaseDirectory, "plugins")
-            : SettingsService.Config.plugins_directory;
+        PluginsDirectory = ResolvePluginsDirectory(UpdateDirectory);
         PluginDataDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "pupdate", "plugin_data");
@@ -161,5 +157,51 @@ public static class ServiceHelper
             SettingsService.Config.github_token);
         if (StatusUpdated != null)
             PluginService.StatusUpdated += StatusUpdated;
+    }
+
+    private static string ResolvePluginsDirectory(string installPath)
+    {
+        if (!string.IsNullOrEmpty(SettingsService.Config.plugins_directory))
+        {
+            return SettingsService.Config.plugins_directory;
+        }
+
+        string directory = Path.Combine(installPath, "plugins");
+
+        MoveLegacyPlugins(Path.Combine(AppContext.BaseDirectory, "plugins"), directory);
+
+        return directory;
+    }
+
+    private static void MoveLegacyPlugins(string legacyDirectory, string directory)
+    {
+        try
+        {
+            if (!Directory.Exists(legacyDirectory) || string.Equals(
+                    Path.GetFullPath(legacyDirectory).TrimEnd(Path.DirectorySeparatorChar),
+                    Path.GetFullPath(directory).TrimEnd(Path.DirectorySeparatorChar),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            foreach (string source in Directory.GetDirectories(legacyDirectory))
+            {
+                string destination = Path.Combine(directory, Path.GetFileName(source));
+
+                if (!File.Exists(Path.Combine(source, "plugin.wasm")) || Directory.Exists(destination))
+                {
+                    continue;
+                }
+
+                Util.CopyDirectory(source, destination, true, false);
+                Directory.Delete(source, true);
+                Console.WriteLine($"Moved plugin {Path.GetFileName(source)} to {directory}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Could not move plugins from {legacyDirectory}: {ex.Message}");
+        }
     }
 }

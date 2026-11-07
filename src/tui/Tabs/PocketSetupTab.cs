@@ -11,7 +11,7 @@ namespace Pannella.TUI;
 
 /// <summary>
 /// Pocket Setup tab: things done TO the Pocket - display modes, image/palette downloads, file
-/// generators, Analogizer config, and Super GameBoy aspect ratio. pupdate's own configuration
+/// generators, and Super GameBoy aspect ratio. pupdate's own configuration
 /// (tokens, directories, thresholds, toggles) lives on the Settings tab. Built from the shared
 /// components (ActionMenuTab + SubMenuDialog + the dialog/prompt set); related actions are grouped
 /// behind submenu entries (…) to keep the list tidy, mirroring the classic menu structure.
@@ -25,11 +25,6 @@ public sealed class PocketSetupTab : ActionMenuTab
         AddAction("Generate Files…", GenerateMenu);
         AddAction("Print openFPGA Categories", () =>
             Context.RunBackground(null, () => Program.PrintOpenFpgaCategories(TuiApp.PostStatus)));
-        AddAction("Analogizer Config…", () => SubMenuDialog.Show("Analogizer Config", new (string, Action)[]
-        {
-            ("Standard Analogizer Config", AnalogizerWizard.RunStandard),
-            ("Jotego Analogizer Config", AnalogizerWizard.RunJotego),
-        }));
         AddAction("Super GameBoy: Apply 8:7 Aspect Ratio", () => ChangeSgbAspectRatio("8:7", 4, 3, 8, 7));
         AddAction("Super GameBoy: Restore 4:3 Aspect Ratio", () => ChangeSgbAspectRatio("4:3", 8, 7, 4, 3));
     }

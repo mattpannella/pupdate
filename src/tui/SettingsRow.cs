@@ -97,24 +97,3 @@ internal sealed class SettingsValueRow : SettingsRow
 
     public override void Commit(Config config) => property.SetValue(config, Value);
 }
-
-/// <summary>A row that runs something (a diagnostic, not an edit) rather than holding a value.</summary>
-internal sealed class SettingsActionRow : SettingsRow
-{
-    private readonly string label;
-    private readonly Action run;
-
-    public SettingsActionRow(string label, Action run)
-    {
-        this.label = label;
-        this.run = run;
-    }
-
-    public override string Render() => $"    {label}";
-
-    public override bool Activate()
-    {
-        run();
-        return false;
-    }
-}

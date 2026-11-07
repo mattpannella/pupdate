@@ -29,8 +29,8 @@ public class CoreUpdaterServiceTests : IDisposable
         _mock = mock;
         _mock.Reset();
 
-        // RetrieveKeys() may prompt on stdin if config goes wrong. Redirect to Null so any
-        // accidental ReadLine returns immediately rather than deadlocking the test.
+        // Redirect stdin to Null so any accidental ReadLine returns immediately rather than
+        // deadlocking the test.
         _origStdin = Console.In;
         Console.SetIn(TextReader.Null);
 

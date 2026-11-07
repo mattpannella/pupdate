@@ -123,10 +123,6 @@ public static class TuiApp
         PluginService.ChoiceHandler = TuiPluginPrompts.Choice;
         PluginService.TextHandler = TuiPluginPrompts.Text;
 
-        CoresService.CoinOpSerialPrompt = () => TuiPrompts.FromBackground(() => TuiPrompts.PromptText(
-            "Coin-Op Collection Beta",
-            "No .ID file found. Paste the device serial from the Coin-Op license portal:"));
-
         CoreUpdaterService.InstallPluginPrompt = (coreId, repo) => TuiPrompts.FromBackground(() =>
             TuiPrompts.Confirm(TuiHost.App, "Recommended Plugin",
                 $"Core {coreId} recommends the plugin {repo}. Install it?"));
@@ -157,6 +153,16 @@ public static class TuiApp
             // Show the support/donation message once, on top of the shell. Queued now so it fires
             // as soon as the main loop starts (a modal can't run before the loop exists).
             TuiHost.Invoke(SupportModal.Show);
+
+            // Then the one-time "this feature is now a plugin" offers, after the modal is dismissed.
+            // Only started when there's something pending: a background job expands the status pane.
+            if (ServiceHelper.SettingsService.Config.pending_plugin_migrations is { Count: > 0 })
+            {
+                TuiHost.Invoke(() => context.RunBackground(null, () => Program.OfferPluginMigrations(
+                    message => TuiPrompts.FromBackground(() => TuiPrompts.Confirm(TuiHost.App, "Now a Plugin", message)),
+                    message => TuiPrompts.FromBackground(() => Terminal.Gui.Views.MessageBox.Query(TuiHost.App, "Now a Plugin", message, "OK")),
+                    PostStatus)));
+            }
 
             TuiHost.Run(shell);
         }

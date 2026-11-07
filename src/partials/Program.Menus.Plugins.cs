@@ -56,8 +56,8 @@ internal static partial class Program
         var settings = ServiceHelper.SettingsService.GetPluginSettings(plugin.DirectoryName);
 
         return settings.run_on_update
-            ? $"{plugin.DisplayName}  [auto: {settings.phase} cores]"
-            : plugin.DisplayName;
+            ? $"Plugin: {plugin.DisplayName}  (runs {settings.phase} cores in Update All)"
+            : $"Plugin: {plugin.DisplayName}";
     }
 
     private static void BrowsePluginCatalogMenu()

@@ -7,9 +7,8 @@ using Pannella.Models.Settings;
 namespace Pannella.TUI;
 
 /// <summary>
-/// Plugins tab. Dynamic: lists the discovered plugins (Enter runs one) plus management actions
-/// (browse the catalog, install from GitHub, auto-run config, check for updates, uninstall).
-/// Rebuilds its list after any change.
+/// Plugins tab. Dynamic: one row per installed plugin (Enter opens its menu: run, auto-run during
+/// Update All, check for update, uninstall) plus the add/update actions. Rebuilds after any change.
 /// </summary>
 public sealed class PluginsTab : ActionMenuTab
 {
@@ -30,8 +29,7 @@ public sealed class PluginsTab : ActionMenuTab
         foreach (var plugin in plugins)
         {
             var descriptor = plugin;
-            AddAction($"Run: {descriptor.DisplayName}{AutoSuffix(descriptor)}", () =>
-                PluginRunModal.Run(descriptor.DisplayName, () => ServiceHelper.PluginService.Run(descriptor)));
+            AddAction($"Plugin: {descriptor.DisplayName}{AutoSuffix(descriptor)}", () => ShowPluginMenu(descriptor));
         }
 
         if (plugins.Count == 0)
@@ -42,16 +40,32 @@ public sealed class PluginsTab : ActionMenuTab
 
         AddAction("Browse plugin catalog…", BrowseCatalog);
         AddAction("Install from GitHub…", InstallFromGithub);
-        AddAction("Auto-run during Update All…", ConfigureAutoRun);
-        AddAction("Check for updates", CheckForUpdates);
-        AddAction("Uninstall a plugin…", UninstallPlugin);
+        AddAction("Check for plugin updates", () => CheckForUpdates(null));
     }
 
     private static string AutoSuffix(PluginDescriptor plugin)
     {
         var settings = ServiceHelper.SettingsService.GetPluginSettings(plugin.DirectoryName);
 
-        return settings.run_on_update ? $"  [auto: {settings.phase} cores]" : string.Empty;
+        return settings.run_on_update ? $"  (runs {settings.phase} cores in Update All)" : string.Empty;
+    }
+
+    private static string AutoRunState(PluginDescriptor plugin)
+    {
+        var settings = ServiceHelper.SettingsService.GetPluginSettings(plugin.DirectoryName);
+
+        return settings.run_on_update ? $"{settings.phase} cores" : "off";
+    }
+
+    private void ShowPluginMenu(PluginDescriptor descriptor)
+    {
+        SubMenuDialog.Show(descriptor.DisplayName, new (string, Action)[]
+        {
+            ("Run now", () => PluginRunModal.Run(descriptor.DisplayName, () => ServiceHelper.PluginService.Run(descriptor))),
+            ($"Run during Update All: {AutoRunState(descriptor)}", () => ConfigureAutoRun(descriptor)),
+            ("Check for update", () => CheckForUpdates(descriptor)),
+            ("Uninstall", () => UninstallPlugin(descriptor)),
+        });
     }
 
     private void BrowseCatalog()
@@ -138,36 +152,22 @@ public sealed class PluginsTab : ActionMenuTab
         });
     }
 
-    private void ConfigureAutoRun()
+    private void ConfigureAutoRun(PluginDescriptor descriptor)
     {
-        var plugins = ServiceHelper.PluginService.Discover();
-
-        if (plugins.Count == 0)
-        {
-            TuiApp.PostStatus("No plugins installed.");
-            return;
-        }
-
         var settingsService = ServiceHelper.SettingsService;
+        var current = settingsService.GetPluginSettings(descriptor.DirectoryName);
+        int currentIndex = !current.run_on_update ? 0 : current.phase == PluginPhase.before ? 1 : 2;
 
-        int? index = SelectDialog.Show("Auto-run during Update All", "Select a plugin:",
-            plugins.Select(p => $"{p.DisplayName}{AutoSuffix(p)}").ToList());
-
-        if (index == null)
+        var options = new List<string>
         {
-            return;
-        }
-
-        var descriptor = plugins[index.Value];
+            "Off",
+            "Before cores (for plugins that fetch license keys)",
+            "After cores (everything else)"
+        };
+        options[currentIndex] += "  (current)";
 
         int? choice = SelectDialog.Show(descriptor.DisplayName,
-            "When should this plugin run during 'Update All'?",
-            new[]
-            {
-                "Off",
-                "Before cores (for plugins that fetch license keys)",
-                "After cores (everything else)"
-            });
+            "Run this plugin automatically during 'Update All'?", options);
 
         if (choice == null)
         {
@@ -189,22 +189,24 @@ public sealed class PluginsTab : ActionMenuTab
 
         settingsService.Save();
         TuiApp.PostStatus(choice.Value == 0
-            ? $"{descriptor.DisplayName}: auto-run off."
+            ? $"{descriptor.DisplayName}: won't run during Update All."
             : $"{descriptor.DisplayName}: runs {(choice.Value == 1 ? "before" : "after")} cores during Update All.");
         Rebuild();
     }
 
-    private void CheckForUpdates()
+    private void CheckForUpdates(PluginDescriptor only)
     {
         Context.RunBackground(null, () =>
         {
-            var managed = ServiceHelper.PluginService.Discover()
+            var managed = (only != null ? new List<PluginDescriptor> { only } : ServiceHelper.PluginService.Discover())
                 .Where(p => !string.IsNullOrEmpty(p.Repo))
                 .ToList();
 
             if (managed.Count == 0)
             {
-                TuiApp.PostStatus("No plugins have a recorded GitHub repo to check.");
+                TuiApp.PostStatus(only != null
+                    ? $"{only.DisplayName} has no recorded GitHub repo to check."
+                    : "No plugins have a recorded GitHub repo to check.");
                 return;
             }
 
@@ -223,7 +225,9 @@ public sealed class PluginsTab : ActionMenuTab
                 }
             }
 
-            TuiApp.PostStatus(updated == 0 ? "All plugins up to date." : $"Updated {updated} plugin(s).");
+            TuiApp.PostStatus(updated == 0
+                ? (only != null ? $"{only.DisplayName} is up to date." : "All plugins up to date.")
+                : $"Updated {updated} plugin(s).");
 
             if (updated > 0)
             {
@@ -232,26 +236,8 @@ public sealed class PluginsTab : ActionMenuTab
         });
     }
 
-    private void UninstallPlugin()
+    private void UninstallPlugin(PluginDescriptor descriptor)
     {
-        var plugins = ServiceHelper.PluginService.Discover();
-
-        if (plugins.Count == 0)
-        {
-            TuiApp.PostStatus("No plugins to uninstall.");
-            return;
-        }
-
-        int? index = SelectDialog.Show("Uninstall Plugin", "Select a plugin to uninstall:",
-            plugins.Select(p => $"{p.DisplayName}  ({p.DirectoryName})").ToList());
-
-        if (index == null)
-        {
-            return;
-        }
-
-        var descriptor = plugins[index.Value];
-
         if (!TuiPrompts.Confirm(App, "Uninstall Plugin", $"Uninstall '{descriptor.DisplayName}'?"))
         {
             return;
