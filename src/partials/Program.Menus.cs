@@ -490,36 +490,8 @@ internal static partial class Program
 
         #region Pocket Maintenance
 
-        var pocketMaintenanceMenu = new ConsoleMenu()
+        var reinstallMenu = new ConsoleMenu()
             .Configure(menuConfig)
-            .Add("Update Selected", _ =>
-            {
-                var selectedCores = ShowCoresMenu(
-                    ServiceHelper.CoresService.InstalledCores,
-                    "Which cores would you like to update?",
-                    false);
-                var list = selectedCores.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToArray();
-
-                if (list.Length > 0)
-                {
-                    coreUpdaterService.RunUpdates(list);
-                }
-                Pause();
-            })
-            .Add("Install Selected", _ =>
-            {
-                var selectedCores = RunCoreSelector(
-                    ServiceHelper.CoresService.CoresNotInstalled,
-                    "Which cores would you like pupdate to manage and install?");
-                var list = selectedCores.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToArray();
-
-                if (list.Length > 0)
-                {
-                    coreUpdaterService.RunUpdates(list);
-                }
-
-                Pause();
-            })
             .Add("Reinstall All Cores", _ =>
             {
                 coreUpdaterService.RunUpdates(null, true);
@@ -563,6 +535,44 @@ internal static partial class Program
                     Pause();
                 }
             })
+            .Add("Go Back", ConsoleMenu.Close);
+
+        var pocketMaintenanceMenu = new ConsoleMenu()
+            .Configure(menuConfig)
+            .Add("Update Firmware", _ =>
+            {
+                ServiceHelper.FirmwareService.UpdateFirmware(ServiceHelper.UpdateDirectory);
+                Pause();
+            })
+            .Add("Update Selected", _ =>
+            {
+                var selectedCores = ShowCoresMenu(
+                    ServiceHelper.CoresService.InstalledCores,
+                    "Which cores would you like to update?",
+                    false);
+                var list = selectedCores.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToArray();
+
+                if (list.Length > 0)
+                {
+                    coreUpdaterService.RunUpdates(list);
+                }
+                Pause();
+            })
+            .Add("Install Selected", _ =>
+            {
+                var selectedCores = RunCoreSelector(
+                    ServiceHelper.CoresService.CoresNotInstalled,
+                    "Which cores would you like pupdate to manage and install?");
+                var list = selectedCores.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToArray();
+
+                if (list.Length > 0)
+                {
+                    coreUpdaterService.RunUpdates(list);
+                }
+
+                Pause();
+            })
+            .Add("Reinstall / Uninstall Cores >", reinstallMenu.Show)
             .Add("Manage ROM Set Archives", () =>
             {
                 ShowArchiveManagementMenu();
@@ -599,7 +609,6 @@ internal static partial class Program
             .Add("Additional Assets     >", additionalAssetsMenu.Show)
             .Add("Combination Platforms >", combinationPlatformsMenu.Show)
             .Add("Variant Cores         >", variantCoresMenu.Show)
-            .Add("Plugins               >", DisplayPluginsMenu)
             .Add("Go Back", ConsoleMenu.Close);
 
         foreach (var pocketExtra in ServiceHelper.CoresService.PocketExtrasList)
@@ -663,11 +672,6 @@ internal static partial class Program
                 ServiceHelper.CoresService.RefreshInstalledCores();
                 Pause();
             })
-            .Add("Update Firmware", _ =>
-            {
-                ServiceHelper.FirmwareService.UpdateFirmware(ServiceHelper.UpdateDirectory);
-                Pause();
-            })
             .Add("Select Cores            >", () => // \u00BB
             {
                 AskAboutNewCores(true);
@@ -699,6 +703,7 @@ internal static partial class Program
             .Add("Pocket Setup            >", pocketSetupMenu.Show)
             .Add("Pocket Maintenance      >", pocketMaintenanceMenu.Show)
             .Add("Pocket Extras           >", pocketExtrasMenu.Show)
+            .Add("Plugins                 >", DisplayPluginsMenu)
             .Add("Settings                >", () =>
             {
                 SettingsMenu();

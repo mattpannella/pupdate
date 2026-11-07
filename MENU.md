@@ -1,9 +1,8 @@
 1. Update All
-2. Update Firmware
-3. Select Cores
-4. Download Assets
-5. Backup Saves & Memories
-6. Pocket Setup
+2. Select Cores
+3. Download Assets
+4. Backup Saves & Memories
+5. Pocket Setup
    1. Manage Display Modes
       1. Enable Recommended Display Modes
       2. Enable Selected Display Modes
@@ -79,18 +78,22 @@
    8. Set GitHub Token
    9. Print openFPGA Category Structure
    10. Go Back
-7. Pocket Maintenance
-   1. Update Selected
-   2. Install Selected
-   3. Reinstall All Cores
-   4. Reinstall Select Cores
-   5. Uninstall Select Cores
-   6. Manage ROM Set Archives
-   7. Prune Save States
-   8. Clear Archive Cache
-   9. Pin/Unpin Core Version
+6. Pocket Maintenance
+   1. Update Firmware
+   2. Update Selected
+   3. Install Selected
+   4. Reinstall / Uninstall Cores
+      1. Reinstall All Cores
+      2. Reinstall Select Cores
+      3. Uninstall Select Cores
+      4. Go Back
+   5. Manage ROM Set Archives
+   6. Prune Save States
+   7. Clear Archive Cache
+   8. Pin/Unpin Core Version
+   9. Archive/Unarchive Platforms
    10. Go Back
-8. Pocket Extras
+7. Pocket Extras
    1. Additional Assets
       1. Download extras for Eric Lewis's Donkey Kong
       2. Download extras for Eric Lewis's Radar Scope
@@ -115,14 +118,14 @@
       7. Download Dual Aspect Ratio: Super GameBoy 2
       8. Download Dual Aspect Ratio: Super GameBoy 2: Vaporwave Edition
       9. Go Back
-   4. Plugins
-      1. (installed plugins, one entry each)
-      2. Browse plugin catalog...
-      3. Install from GitHub...
-      4. Auto-run during Update All...
-      5. Check for updates
-      6. Uninstall a plugin...
-      7. Back
-   5. Go Back
+   4. Go Back
+8. Plugins
+   1. (installed plugins, one entry each)
+   2. Browse plugin catalog...
+   3. Install from GitHub...
+   4. Auto-run during Update All...
+   5. Check for updates
+   6. Uninstall a plugin...
+   7. Back
 9. Settings
 10. Exit

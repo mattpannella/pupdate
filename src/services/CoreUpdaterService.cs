@@ -552,7 +552,7 @@ public class CoreUpdaterService : BaseProcess
 
             if (ServiceHelper.Unattended || prompt == null)
             {
-                WriteMessage($"Core {coreId} recommends the plugin {slug}. Install it from Pocket Extras > Plugins " +
+                WriteMessage($"Core {coreId} recommends the plugin {slug}. Install it from the Plugins menu " +
                              $"or with: pupdate plugins --install {slug}");
                 notInstalled.Add($"{slug} (recommended by {coreId})");
                 continue;

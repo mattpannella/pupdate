@@ -75,7 +75,7 @@ The “do everything” option. Steps marked with * follow your **Settings** tog
 
 ### Update Firmware
 
-Checks for Pocket firmware updates only, then exits.
+*(Pocket Maintenance)* — Checks for Pocket firmware updates only. **Update All** already does this when **Download Firmware Updates** is on in Settings. From the command line: `pupdate firmware`.
 
 ### Select Cores
 
@@ -176,13 +176,16 @@ Prints a summary of platform categories and cores (debug / reference).
 
 ## Pocket Maintenance
 
+- **Update Firmware** — See [Update Firmware](#update-firmware).
 - **Update Selected / Install Selected** — See above.
-- **Reinstall All / Select Cores** — Clean reinstall of core files (ROMs and saves are not removed).
-- **Uninstall Select Cores** — Optional removal of core-specific **Assets**; ROMs/saves untouched.
+- **Reinstall / Uninstall Cores** — Submenu:
+  - **Reinstall All / Select Cores** — Clean reinstall of core files (ROMs and saves are not removed).
+  - **Uninstall Select Cores** — Optional removal of core-specific **Assets**; ROMs/saves untouched.
 - **Manage ROM Set Archives** — Sync and manage ROM set definitions ([`romsets.json`](romsets.json)).
 - **Prune Save States** — Trims old save states under Memories.
 - **Clear Archive Cache** — Deletes cached archive downloads when **cache archive files** is enabled.
 - **Pin/Unpin Core Version** — See [next section](#pin--unpin-core-version).
+- **Archive/Unarchive Platforms** — Moves platform files in and out of `Platforms/_archive` (same as `pupdate platforms`).
 
 ---
 
@@ -218,7 +221,7 @@ A plugin sees your whole SD card (mounted as `pocket/`) and gets a private folde
 
 ### Installing a plugin
 
-**Pocket Extras → Plugins → Browse plugin catalog...** lists the plugins in [`plugins.json`](plugins.json). Pick one to see its description and links, then install it. To get a plugin listed, open a pull request that adds it to `plugins.json`.
+**Plugins → Browse plugin catalog...** lists the plugins in [`plugins.json`](plugins.json). Pick one to see its description and links, then install it. To get a plugin listed, open a pull request that adds it to `plugins.json`.
 
 **Install from GitHub...** installs anything else. Paste either:
 
@@ -231,11 +234,11 @@ Plugins live in a `plugins` folder next to the pupdate executable (override with
 
 ### Running a plugin
 
-After installing, the plugin appears in the same **Pocket Extras → Plugins** menu by its name. Select it and follow its prompts. Pick **Cancel** at any prompt to stop the plugin.
+After installing, the plugin appears in the same **Plugins** menu by its name. Select it and follow its prompts. Pick **Cancel** at any prompt to stop the plugin.
 
 ### Running plugins during Update All
 
-**Pocket Extras → Plugins → Auto-run during Update All...** (the **Plugins** tab in the TUI) marks a plugin to run on every **Update All**, in one of two phases:
+**Plugins → Auto-run during Update All...** (the **Plugins** tab in the TUI) marks a plugin to run on every **Update All**, in one of two phases:
 
 - **before cores** - runs ahead of the core install loop. Use this for plugins that fetch license keys, so license gated cores aren't skipped.
 - **after cores** - runs once cores and assets are done (default). Use this for plugins that build game files or touch installed cores.
