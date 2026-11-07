@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Terminal.Gui.ViewBase;
@@ -13,14 +14,23 @@ namespace Pannella.TUI;
 /// </summary>
 public static class SelectDialog
 {
-    public static int? Show(string title, string hint, IReadOnlyList<string> labels)
+    // forPlugin: a short list docks at the top, sized to its items, so the plugin's output stays
+    // visible below; the title is shown literally (no "_x" hotkey parsing).
+    public static int? Show(string title, string hint, IReadOnlyList<string> labels, bool forPlugin = false)
     {
+        bool compact = forPlugin && labels.Count <= 10;
+
         var dialog = new Dialog
         {
             Title = title,
             Width = Dim.Percent(80),
-            Height = Dim.Percent(80)
+            Height = compact ? labels.Count + 12 : Dim.Percent(80)
         };
+
+        if (compact)
+        {
+            dialog.Y = 0;
+        }
 
         var hintLabel = new Label
         {
@@ -29,6 +39,12 @@ public static class SelectDialog
             Width = Dim.Fill(),
             Text = $"{hint}   (↑/↓ move · Enter/click/[key] selects · Cancel below)"
         };
+
+        if (forPlugin)
+        {
+            dialog.HotKeySpecifier = TuiPrompts.NoHotKey;
+            hintLabel.HotKeySpecifier = TuiPrompts.NoHotKey;
+        }
 
         var list = new MenuListView
         {
