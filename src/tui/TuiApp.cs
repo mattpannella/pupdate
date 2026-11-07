@@ -100,7 +100,7 @@ public static class TuiApp
         TuiHost.Invoke(() => pane.SetProgress(fraction, bytesPerSecond));
     }
 
-    public static void Run(CoreUpdaterService coreUpdaterService)
+    public static void Run(CoreUpdaterService coreUpdaterService, bool checkPluginUpdates = true)
     {
         // ConfigurationManager must be enabled before the application instance is created so the
         // library themes are loaded when the driver initializes.
@@ -155,13 +155,29 @@ public static class TuiApp
             TuiHost.Invoke(SupportModal.Show);
 
             // Then the one-time "this feature is now a plugin" offers, after the modal is dismissed.
-            // Only started when there's something pending: a background job expands the status pane.
-            if (ServiceHelper.SettingsService.Config.pending_plugin_migrations is { Count: > 0 })
+            // Only started when there's something to do: a background job expands the status pane.
+            bool migrations = ServiceHelper.SettingsService.Config.pending_plugin_migrations is { Count: > 0 };
+            bool pluginUpdates = checkPluginUpdates && Program.PluginUpdateCheckDue();
+
+            if (migrations || pluginUpdates)
             {
-                TuiHost.Invoke(() => context.RunBackground(null, () => Program.OfferPluginMigrations(
-                    message => TuiPrompts.FromBackground(() => TuiPrompts.Confirm(TuiHost.App, "Now a Plugin", message)),
-                    message => TuiPrompts.FromBackground(() => Terminal.Gui.Views.MessageBox.Query(TuiHost.App, "Now a Plugin", message, "OK")),
-                    PostStatus)));
+                TuiHost.Invoke(() => context.RunBackground(null, () =>
+                {
+                    if (migrations)
+                    {
+                        Program.OfferPluginMigrations(
+                            message => TuiPrompts.FromBackground(() => TuiPrompts.Confirm(TuiHost.App, "Now a Plugin", message)),
+                            message => TuiPrompts.FromBackground(() => Terminal.Gui.Views.MessageBox.Query(TuiHost.App, "Now a Plugin", message, "OK")),
+                            PostStatus);
+                    }
+
+                    if (pluginUpdates)
+                    {
+                        Program.CheckPluginUpdatesOnLaunch(
+                            message => TuiPrompts.FromBackground(() => TuiPrompts.Confirm(TuiHost.App, "Plugin Updates", message)),
+                            PostStatus);
+                    }
+                }));
             }
 
             TuiHost.Run(shell);

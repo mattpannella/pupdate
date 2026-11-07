@@ -251,6 +251,7 @@ When pupdate installs that core for the first time, it offers to install each li
 ### Updating and uninstalling
 
 - **Check for updates** - checks every installed plugin against its source repo and offers to update any that have a newer release.
+- pupdate also checks once a day when you open the menu or TUI, and asks before updating (or updates straight away if **Check for and install plugin updates during 'Update All'** is on). `--skip-update` skips it.
 - **Uninstall a plugin...** - pick one from the list and confirm.
 
 In the TUI, selecting an installed plugin on the **Plugins** tab opens a menu with **Run now**, **Run during Update All**, **Check for update** and **Uninstall**; **Check for plugin updates** at the bottom of the tab checks all of them.

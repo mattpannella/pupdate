@@ -66,6 +66,10 @@ public class Config
 
     public string plugins_directory { get; set; } = null;
 
+    // Last time an interactive launch checked installed plugins for updates (UTC); limits it to once a day.
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public DateTime? last_plugin_update_check { get; set; }
+
     // Name of the Terminal.Gui theme used by the --tui interface (e.g. "Dark", "8-Bit"). No
     // [Description] - only bool settings get that (the settings menu casts described props to bool).
     public string tui_theme { get; set; } = "Dark";
