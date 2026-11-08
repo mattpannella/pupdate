@@ -52,7 +52,7 @@ internal partial class Program
                 continue;
             }
 
-            var phase = entry.phase ?? PluginPhase.after;
+            var phase = entry.SuggestedPhase ?? PluginPhase.after;
             var installed = ServiceHelper.PluginService.FindByRepo(entry.Slug);
             bool autoRuns = installed != null &&
                             settings.GetPluginSettings(installed.DirectoryName).run_on_update;

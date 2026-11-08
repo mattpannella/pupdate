@@ -19,8 +19,14 @@ public class PluginCatalogTests
               "description": "Fetches your Coin-Op Collection license key.",
               "tags": ["license"],
               "requires_input": false,
-              "phase": "before",
+              "pupdate": { "phase": "before" },
               "links": ["https://coinopcollection.org"]
+            },
+            {
+              "id": "legacy",
+              "repo": "someone/legacy-plugin",
+              "name": "Legacy",
+              "phase": "after"
             },
             {
               "id": "example",
@@ -36,7 +42,7 @@ public class PluginCatalogTests
     {
         var catalog = JsonConvert.DeserializeObject<PluginCatalog>(Sample);
 
-        catalog!.plugins.Should().HaveCount(2);
+        catalog!.plugins.Should().HaveCount(3);
 
         var first = catalog.plugins[0];
         first.id.Should().Be("coinop-license");
@@ -44,7 +50,7 @@ public class PluginCatalogTests
         first.DirectoryName.Should().Be("mattpannella.pocket-plugin-coinop-license");
         first.RepoUrl.Should().Be("https://github.com/mattpannella/pocket-plugin-coinop-license");
         first.requires_input.Should().BeFalse();
-        first.phase.Should().Be(PluginPhase.before);
+        first.SuggestedPhase.Should().Be(PluginPhase.before);
         first.tags.Should().ContainSingle("license");
         first.links.Should().ContainSingle("https://coinopcollection.org");
     }
@@ -53,11 +59,11 @@ public class PluginCatalogTests
     public void Parse_MinimalEntry_HasSafeDefaults()
     {
         var catalog = JsonConvert.DeserializeObject<PluginCatalog>(Sample);
-        var minimal = catalog!.plugins[1];
+        var minimal = catalog!.plugins[2];
 
         minimal.Slug.Should().Be("openfpga-library/pocket-plugin");
         minimal.RepoUrl.Should().Be("https://github.com/openfpga-library/pocket-plugin");
-        minimal.phase.Should().BeNull();
+        minimal.SuggestedPhase.Should().BeNull();
         minimal.requires_input.Should().BeFalse();
         minimal.tags.Should().BeEmpty();
         minimal.links.Should().BeEmpty();
@@ -71,5 +77,13 @@ public class PluginCatalogTests
         entry.Slug.Should().BeNull();
         entry.DirectoryName.Should().BeNull();
         entry.RepoUrl.Should().Be("not a repo");
+    }
+
+    [Fact]
+    public void Parse_TopLevelPhase_StillReadForOlderCatalogs()
+    {
+        var catalog = JsonConvert.DeserializeObject<PluginCatalog>(Sample);
+
+        catalog!.plugins[1].SuggestedPhase.Should().Be(PluginPhase.after);
     }
 }

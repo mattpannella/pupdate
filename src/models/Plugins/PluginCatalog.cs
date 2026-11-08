@@ -30,8 +30,13 @@ public class PluginCatalogEntry
     // True when the plugin asks questions, so an unattended Update All (-y) would skip it.
     public bool requires_input { get; set; }
 
+    public PupdateCatalogOptions pupdate { get; set; }
+
     [JsonConverter(typeof(StringEnumConverter))]
     public PluginPhase? phase { get; set; }
+
+    [JsonIgnore]
+    public PluginPhase? SuggestedPhase => pupdate?.phase ?? phase;
 
     public List<string> links { get; set; } = new();
 
@@ -48,4 +53,10 @@ public class PluginCatalogEntry
     {
         return this.id;
     }
+}
+
+public class PupdateCatalogOptions
+{
+    [JsonConverter(typeof(StringEnumConverter))]
+    public PluginPhase? phase { get; set; }
 }
