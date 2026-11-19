@@ -314,8 +314,15 @@ public class HttpHelper
         {
             foreach (var cookie in cookieValues.EnumerateObject())
             {
+                // archive.org may return a full Set-Cookie string ("value; expires=...; path=/; ...")
+                string value = cookie.Value.GetString() ?? string.Empty;
+                int attrStart = value.IndexOf(';');
+
+                if (attrStart >= 0)
+                    value = value[..attrStart].Trim();
+
                 this.handler.CookieContainer.Add(archiveUri,
-                    new Cookie(cookie.Name, cookie.Value.GetString(), "/", ".archive.org"));
+                    new Cookie(cookie.Name, value, "/", ".archive.org"));
             }
         }
 
