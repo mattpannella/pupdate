@@ -57,6 +57,18 @@ public class SelectLatestReleaseTests
     }
 
     [Fact]
+    public void SkipsPrereleases()
+    {
+        var releases = new List<GithubRelease>
+        {
+            new GithubRelease { tag_name = "5.10.1", draft = false, prerelease = true },
+            new GithubRelease { tag_name = "5.9.2", draft = false },
+        };
+
+        Program.SelectLatestRelease(releases, 5, int.MaxValue)!.tag_name.Should().Be("5.9.2");
+    }
+
+    [Fact]
     public void SkipsTagsWithoutParseableSemver()
     {
         var releases = new List<GithubRelease>

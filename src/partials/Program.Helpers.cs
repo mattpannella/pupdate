@@ -66,7 +66,7 @@ internal static partial class Program
         }
     }
 
-    // Highest-semver non-draft release with a major in [minMajor, maxMajor], or null if none.
+    // Highest-semver stable (non-draft, non-prerelease) release with a major in [minMajor, maxMajor], or null if none.
     internal static GithubRelease SelectLatestRelease(List<GithubRelease> releases, int minMajor, int maxMajor)
     {
         GithubRelease best = null;
@@ -74,7 +74,7 @@ internal static partial class Program
 
         foreach (GithubRelease release in releases)
         {
-            if (release.draft)
+            if (release.draft || release.prerelease)
                 continue;
 
             string semver = SemverUtil.FindSemver(release.tag_name);
