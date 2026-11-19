@@ -5,7 +5,7 @@ namespace Pannella.Services;
 
 public partial class CoresService
 {
-    private const string PLUGIN_CATALOG_END_POINT = "https://raw.githubusercontent.com/mattpannella/pupdate/main/plugins.json";
+    private const string PLUGIN_CATALOG_END_POINT = "https://raw.githubusercontent.com/openfpga-library/pocket-plugin-inventory/main/plugins.json";
     private const string PLUGIN_CATALOG_FILE = "plugins.json";
 
     private List<PluginCatalogEntry> pluginCatalogList;

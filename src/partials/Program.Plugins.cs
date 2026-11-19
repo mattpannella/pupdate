@@ -187,8 +187,8 @@ internal static partial class Program
         }
 
         Console.WriteLine(entry.requires_input
-            ? $"    Asks questions when run (unattended runs skip it); suggested phase: {entry.phase ?? PluginPhase.after} cores"
-            : $"    Runs without input; suggested phase: {entry.phase ?? PluginPhase.after} cores");
+            ? $"    Asks questions when run (unattended runs skip it); suggested phase: {entry.SuggestedPhase ?? PluginPhase.after} cores"
+            : $"    Runs without input; suggested phase: {entry.SuggestedPhase ?? PluginPhase.after} cores");
 
         Console.WriteLine();
     }

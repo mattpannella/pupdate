@@ -109,8 +109,8 @@ public sealed class PluginsTab : ActionMenuTab
         string description = selected.description ?? string.Empty;
 
         description += selected.requires_input
-            ? $"\n\nAsks questions when run (unattended runs skip it). Suggested phase: {selected.phase ?? PluginPhase.after} cores."
-            : $"\n\nRuns without input. Suggested phase: {selected.phase ?? PluginPhase.after} cores.";
+            ? $"\n\nAsks questions when run (unattended runs skip it). Suggested phase: {selected.SuggestedPhase ?? PluginPhase.after} cores."
+            : $"\n\nRuns without input. Suggested phase: {selected.SuggestedPhase ?? PluginPhase.after} cores.";
 
         if (installed[index.Value])
         {

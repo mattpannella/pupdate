@@ -222,7 +222,7 @@ A plugin sees your whole SD card (mounted as `pocket/`) and gets a private folde
 
 ### Installing a plugin
 
-**Plugins → Browse plugin catalog...** lists the plugins in [`plugins.json`](plugins.json). Pick one to see its description and links, then install it. To get a plugin listed, open a pull request that adds it to `plugins.json`.
+**Plugins → Browse plugin catalog...** lists the plugins in the shared [pocket-plugin-inventory](https://github.com/openfpga-library/pocket-plugin-inventory) catalog. Pick one to see its description and links, then install it.
 
 **Install from GitHub...** installs anything else. Paste either:
 
